@@ -35,10 +35,11 @@
       <div class="audio-player-card">
         <h3>� DJWEIRDNASTY – HIP HOP &amp; R&amp;B MEGA MIX</h3>
         <div class="player-shell">
-          <video class="mud-local-video" controls autoplay muted loop playsinline>
+          <video class="mud-local-video" id="megaMix" controls autoplay muted loop playsinline>
             <source src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/DJWEIRDNASTY-HIP-HOP-RB-MEGA-MIX.mp4" type="video/mp4">
             Your browser does not support HTML5 video.
           </video>
+          <button id="unmuteBtn" style="position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: #ffd860; color: #111; border: none; border-radius: 999px; font-weight: 700; cursor: pointer; z-index: 5; display: none;">Click to Unmute</button>
         </div>
       </div>
     </section>
@@ -166,6 +167,54 @@
   <footer class="container">
     <p>© 2026 My Website</p>
   </footer>
+  <script>
+    (function() {
+      const video = document.getElementById('megaMix');
+      const unmuteBtn = document.getElementById('unmuteBtn');
+      if (!video || !unmuteBtn) return;
+
+      // Try to unmute after autoplay starts
+      video.addEventListener('play', function tryUnmute() {
+        video.muted = false;
+        video.volume = 1;
+        // Check if browser allowed it
+        setTimeout(function() {
+          if (video.muted) {
+            // Browser blocked unmute - show the button
+            unmuteBtn.style.display = 'block';
+          } else {
+            unmuteBtn.style.display = 'none';
+          }
+        }, 100);
+      }, { once: false });
+
+      // Also try on loadeddata
+      video.addEventListener('loadeddata', function() {
+        video.muted = false;
+        video.volume = 1;
+        setTimeout(function() {
+          if (video.muted) {
+            unmuteBtn.style.display = 'block';
+          }
+        }, 200);
+      });
+
+      // Let user unmute by clicking the button
+      unmuteBtn.addEventListener('click', function() {
+        video.muted = false;
+        video.volume = 1;
+        video.play();
+        unmuteBtn.style.display = 'none';
+      });
+
+      // Hide button if user manually unmutes via controls
+      video.addEventListener('volumechange', function() {
+        if (!video.muted) {
+          unmuteBtn.style.display = 'none';
+        }
+      });
+    })();
+  </script>
   <script src="script.js?v=2"></script>
 </body>
 </html>
