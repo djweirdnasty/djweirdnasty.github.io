@@ -1,6 +1,7 @@
 node_modules/
 .env
 .DS_Store
+.wrangler/
 
 # Large video files - hosted on Cloudflare R2
 *.mp4
