@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>My Website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+    <header>
+    <div class="container">
+      <h1 class="site-banner">
+        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+      </h1>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#events">Events</a>
+        <a href="content.html">Content</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section id="home" class="hero">
+      <h2>Welcome</h2>
+      <p>I AM A REAL DJ.</p> 
+
+      <div class="audio-player-card">
+        <h3>� DJWEIRDNASTY – HIP HOP &amp; R&amp;B MEGA MIX</h3>
+        <div class="player-shell">
+          <video class="mud-local-video" controls autoplay muted loop playsinline>
+            <source src="DJWEIRDNASTY%20%E2%80%93%20HIP%20HOP%20%26%20R%26B%20MEGA%20MIX.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+      </div>
+    </section>
+    <section id="about" class="info">
+      <h2>About this page</h2>
+      <p>The official home of DJWEIRDNASTY. Discover new music, mixtapes, live events, videos, exclusive content, and the latest updates—all in one place.</p>
+    </section>
+
+    <section id="events" class="info">
+      <h2>Upcoming Events</h2>
+      <p>Here are some upcoming gigs and events to keep an eye on.</p>
+      <div class="events-grid">
+        <article class="event-card featured-event">
+          <h3>MURRDAH SEASON MONDAY live on Glocawear Radio</h3>
+          <p><strong>When:</strong> Every Monday</p>
+          <p><strong>Time:</strong> 3:00 PM to 4:00 PM</p>
+          <p><strong>Details:</strong> Djweirdnasty is live on Glocawear Radio every Monday with the Flavor Team.</p>
+        </article>
+        <article class="event-card">
+          <h3>Ghetto House Party</h3>
+          <img
+            src="ghetto-house-party.JPEG"
+            alt="Ghetto House Party Flyer"
+            class="event-flyer"
+          >
+          <p><strong>Date:</strong> Saturday, August 29, 2026</p>
+          <p><strong>Time:</strong> 9:00 PM – 3:00 AM (EDT)</p>
+          <p><strong>Location:</strong> 476 Riverly Avenue, Collingdale, PA 19023</p>
+          <p><strong>Details:</strong></p>
+          <ul>
+            <li>🎧 Live DJ spinning all night</li>
+            <li>💵 Cash Prize Giveaway</li>
+            <li>💧 First 50 guests receive a free can of Cut Water</li>
+            <li>💲 $1.00 Entry</li>
+          </ul>
+          <p><strong>House Rules:</strong></p>
+          <ul>
+            <li>Respect the property and everyone attending.</li>
+            <li>No fighting or disruptive behavior.</li>
+            <li>Government-issued ID may be required.</li>
+            <li>Entry may be denied to anyone creating a safety concern.</li>
+          </ul>
+          <p>
+            <a href="https://www.facebook.com/share/1ERFXCuNDk/" target="_blank" rel="noopener noreferrer">
+              View the Facebook event
+            </a>
+          </p>
+        </article>
+        <article class="event-card">
+          <h3>Live Performance</h3>
+          <p><strong>Date:</strong> 14 September 2026</p>
+          <p><strong>Venue:</strong> The Rooftop Lounge</p>
+          <p><strong>Details:</strong> An evening of live music and hosted performances.</p>
+        </article>
+        <article class="event-card">
+          <h3>Community Showcase</h3>
+          <p><strong>Date:</strong> 28 September 2026</p>
+          <p><strong>Venue:</strong> Downtown Arts Hall</p>
+          <p><strong>Details:</strong> A showcase featuring local artists and special guests.</p>
+        </article>
+        <article class="event-card">
+          <h3>Private Event Booking</h3>
+          <p><strong>Date:</strong> Flexible</p>
+          <p><strong>Venue:</strong> Your choice</p>
+          <p><strong>Details:</strong> Available for bookings, appearances, and performances.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" class="info">
+      <h2>Contact</h2>
+      <p>Send a message and I'll reply as soon as possible.</p>
+      <form id="contact-form" action="/api/contact" method="POST">
+
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" placeholder="Your name" required>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" placeholder="Hi! I'd like to talk about..." required></textarea>
+
+        <button type="submit">Send message</button>
+      </form>
+      <p id="form-status" class="form-status" aria-live="polite"></p>
+      <p class="email-note">Or email me directly at <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a>.</p>
+    </section>
+  </main>
+  <footer class="container">
+    <p>© 2026 My Website</p>
+  </footer>
+  <script src="script.js?v=2"></script>
+</body>
+</html>
