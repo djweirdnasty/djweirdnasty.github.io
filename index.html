@@ -160,7 +160,7 @@
       <h2>Contact</h2>
       <p>Send a message and I'll reply as soon as possible.</p>
       <form id="contact-form" action="https://formspree.io/f/mvkpzwzj" method="POST">
-        <input type="hidden" name="_next" value="https://djweirdnasty.com/thank-you.html">
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
         <label for="name">Name</label>
         <input id="name" name="name" type="text" placeholder="Your name" required>
@@ -228,6 +228,39 @@
       });
     })();
   </script>
-  <script src="script.js?v=2"></script>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const status = document.getElementById('form-status');
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button.textContent;
+      button.textContent = 'Sending...';
+      button.disabled = true;
+
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (response.ok) {
+          form.reset();
+          window.location.href = 'thank-you.html';
+        } else {
+          response.json().then(function(data) {
+            if (status) status.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            button.textContent = originalText;
+            button.disabled = false;
+          });
+        }
+      })
+      .catch(function() {
+        if (status) status.textContent = 'Oops! Something went wrong. Please try again.';
+        button.textContent = originalText;
+        button.disabled = false;
+      });
+    });
+  </script>
 </body>
 </html>
