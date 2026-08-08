@@ -399,8 +399,12 @@ section {
   box-shadow: 0 0 10px rgba(255, 216, 96, 0.3);
 }
 
-.mud-music-section .video-player-shell {
-  margin-top: 1.5rem;
+.booking-card {
+  flex: 0 1 100%;
+  max-width: 600px;
+  margin: 1.5rem auto 0;
+  text-align: center;
+  border: 2px solid #ffd860;
 }
 
 .audio-player-card {
