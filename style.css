@@ -101,6 +101,11 @@ section {
   padding: 2rem;
 }
 
+#events h2,
+#events > p {
+  text-align: center;
+}
+
 .events-grid {
   display: flex;
   flex-wrap: wrap;
