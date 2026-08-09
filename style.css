@@ -104,32 +104,35 @@ nav a:focus {
   background: #000;
   border: 1px solid #ffd860;
   border-radius: 12px;
-  padding: 0.5rem 0;
-  min-width: 180px;
+  padding: 0.4rem 0;
+  min-width: 160px;
   z-index: 1000;
-  text-align: left;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .nav-dropdown-content a {
-  display: block;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
+  display: block !important;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
   letter-spacing: 1px;
   text-shadow: none;
   color: #ff5bd7;
   white-space: nowrap;
+  text-transform: none;
 }
 
 .nav-dropdown-content a:hover,
 .nav-dropdown-content a:focus {
-  background: rgba(255, 216, 96, 0.1);
+  background: rgba(255, 216, 96, 0.12);
   color: #fff;
   transform: none;
 }
 
 .nav-dropdown:hover .nav-dropdown-content,
 .nav-dropdown:focus-within .nav-dropdown-content {
-  display: block;
+  display: flex !important;
+  flex-direction: column;
 }
 
 .hero {
