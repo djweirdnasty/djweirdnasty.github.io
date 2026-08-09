@@ -32,11 +32,22 @@
     <section id="news" class="info">
       <h2>News</h2>
       <p>Stay up to date with the latest updates across sports, music, entertainment, and national news.</p>
+
+      <div class="mud-selector">
+        <label for="newsCategorySelect">Choose a category:</label>
+        <select id="newsCategorySelect">
+          <option value="all">All Categories</option>
+          <option value="sports">🏆 Sports</option>
+          <option value="music">🎵 Music</option>
+          <option value="entertainment">🎬 Entertainment</option>
+          <option value="national">🇺🇸 National</option>
+        </select>
+      </div>
     </section>
 
-    <section id="sports" class="info">
+    <section id="sports" class="info news-category">
       <h2>🏆 Sports</h2>
-      <article class="event-card">
+      <article id="sports-1" class="event-card">
         <h3>The NBA Loses a Basketball Visionary: Don Nelson Dies at 86</h3>
         <p><strong>Sports | NBA</strong></p>
         <img src="don-nelson.png?v=2" alt="Don Nelson" class="event-flyer">
@@ -52,20 +63,21 @@
         <p>Away from basketball, Nelson eventually settled on a farm in Maui, Hawaii. He became involved in agriculture and entrepreneurship, growing flowers and coffee and later discussing his cannabis operation. Following the devastating Maui wildfires in 2023, Nelson also opened rental properties to families who had lost their homes.</p>
         <p>Don Nelson leaves behind a legacy that goes beyond the numbers. He was a champion as a player, a record-setting coach and an innovator whose ideas helped push professional basketball toward its modern era.</p>
         <p>The NBA has lost one of its great thinkers, but Don Nelson's influence on the game will continue to be felt for generations.</p>
+        <button class="share-button" data-title="The NBA Loses a Basketball Visionary: Don Nelson Dies at 86" data-url="https://djweirdnasty.com/news.html#sports-1">🔗 Share</button>
       </article>
     </section>
 
-    <section id="music" class="info">
+    <section id="music" class="info news-category">
       <h2>🎵 Music</h2>
       <p>New drops, artist spotlights, and music industry buzz coming soon.</p>
     </section>
 
-    <section id="entertainment" class="info">
+    <section id="entertainment" class="info news-category">
       <h2>🎬 Entertainment</h2>
       <p>Movie, TV, and pop culture updates coming soon.</p>
     </section>
 
-    <section id="national" class="info">
+    <section id="national" class="info news-category">
       <h2>🇺🇸 National</h2>
       <p>National news and trending stories coming soon.</p>
     </section>
@@ -73,5 +85,41 @@
   <footer class="container">
     <p>© 2026 Djweirdnastyllc</p>
   </footer>
+  <script>
+    // News category dropdown filter
+    const newsSelect = document.getElementById('newsCategorySelect');
+    const newsCategories = document.querySelectorAll('.news-category');
+
+    if (newsSelect) {
+      newsSelect.addEventListener('change', function() {
+        const selected = this.value;
+        newsCategories.forEach(function(cat) {
+          if (selected === 'all' || cat.id === selected) {
+            cat.style.display = '';
+          } else {
+            cat.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Article share buttons
+    document.querySelectorAll('.share-button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const url = this.getAttribute('data-url') || window.location.href;
+        const title = this.getAttribute('data-title') || document.title;
+
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('Link copied to clipboard!');
+          });
+        } else {
+          prompt('Copy this link to share:', url);
+        }
+      });
+    });
+  </script>
 </body>
 </html>

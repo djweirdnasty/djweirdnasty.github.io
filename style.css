@@ -450,6 +450,23 @@ section {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.share-button {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 10px 22px;
+  background: #ffd860;
+  color: #111;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.share-button:hover {
+  background: #fff;
+}
+
 .playlist-link {
   display: inline-block;
   margin-top: 1rem;
