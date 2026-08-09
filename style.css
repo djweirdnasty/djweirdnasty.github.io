@@ -424,6 +424,31 @@ section {
   color: #ffd860;
 }
 
+.tracklist {
+  margin-top: 1.5rem;
+  max-height: 280px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.tracklist h4 {
+  color: #ffd860;
+  margin-top: 0;
+}
+
+.tracklist ol {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.tracklist li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .playlist-link {
   display: inline-block;
   margin-top: 1rem;
