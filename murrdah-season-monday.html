@@ -58,11 +58,31 @@
       <div class="video-player-card" style="margin-top: 1rem;">
         <iframe src="https://www.youtube.com/embed/QPiuNUakBLA" title="Murrdah Season Monday &quot;Ayo Weird meet Skrilla &amp; Ron Murrdah first time using Public Transportation&quot;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; max-width:760px; height:430px; border-radius:12px; display:block; margin: 0 auto;"></iframe>
       </div>
-      <p style="margin-top: 1.5rem;"><a href="content.html" class="playlist-link">← Back to Content</a></p>
+      <p style="margin-top: 1.5rem; margin-bottom: 1rem;"><button class="share-button" id="msmShareBtn" data-title="Murrdah Season Monday &quot;Ayo Weird meet Skrilla &amp; Ron Murrdah first time using Public Transportation&quot;" data-url="https://djweirdnasty.com/murrdah-season-monday.html" style="margin-top: 1rem;">🔗 Share</button> <a href="content.html" class="playlist-link">← Back to Content</a></p>
     </section>
   </main>
   <footer class="container">
     <p>© 2026 Djweirdnastyllc</p>
   </footer>
+  <script>
+    const msmShareBtn = document.getElementById('msmShareBtn');
+    if (msmShareBtn) {
+      msmShareBtn.addEventListener('click', function() {
+        const url = this.getAttribute('data-url') || 'https://djweirdnasty.com/murrdah-season-monday.html';
+        const title = this.getAttribute('data-title') || document.title;
+        if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
+
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('Link copied to clipboard!');
+          });
+        } else {
+          prompt('Copy this link to share:', url);
+        }
+      });
+    }
+  </script>
 </body>
 </html>
