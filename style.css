@@ -645,6 +645,20 @@ footer {
     font-size: 2rem;
   }
 
+  nav {
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 0.5rem;
+  }
+
+  nav a {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
   .hero {
     padding: 90px 0 40px;
   }
