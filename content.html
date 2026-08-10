@@ -43,12 +43,13 @@
     </section>
 
     <section class="info content-section">
-      <article class="event-card content-card">
+      <article class="event-card content-card" id="murrdah-season-monday">
         <h2>🎙️ Murrdah Season Monday Live on Glocawear Radio</h2>
         <p>Ayo Weird speaks on meeting Skrilla, Ron Murrdah shares his experience on public transportation and Princess do Trending Topics.</p>
         <div class="video-player-card" style="margin-top: 1rem;">
           <iframe src="https://www.youtube.com/embed/QPiuNUakBLA" title="Murrdah Season Monday live on Glocawear Radio" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; max-width:700px; height:400px; border-radius:12px; display:block; margin: 0 auto;"></iframe>
         </div>
+        <button class="share-button" id="msmShareBtn" data-title="Murrdah Season Monday live on Glocawear Radio" data-url="https://djweirdnasty.com/murrdah-season-monday.html" style="margin-top: 1rem;">🔗 Share</button>
       </article>
     </section>
 
@@ -361,6 +362,26 @@
     if (mudShareBtn) {
       mudShareBtn.addEventListener('click', function() {
         const url = this.getAttribute('data-url') || window.location.href;
+        const title = this.getAttribute('data-title') || document.title;
+        if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
+
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('Link copied to clipboard!');
+          });
+        } else {
+          prompt('Copy this link to share:', url);
+        }
+      });
+    }
+
+    const msmShareBtn = document.getElementById('msmShareBtn');
+
+    if (msmShareBtn) {
+      msmShareBtn.addEventListener('click', function() {
+        const url = this.getAttribute('data-url') || 'https://djweirdnasty.com/content.html#murrdah-season-monday';
         const title = this.getAttribute('data-title') || document.title;
         if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
 
