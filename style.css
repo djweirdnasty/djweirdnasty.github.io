@@ -504,7 +504,7 @@ section {
   display: inline-block;
   margin-top: 1rem;
   padding: 10px 22px;
-  background: #ffd860;
+  background: #ff5bd7;
   color: #111;
   border: none;
   border-radius: 999px;
@@ -514,7 +514,7 @@ section {
 }
 
 .share-button:hover {
-  background: #fff;
+  background: #ff8fe5;
 }
 
 .playlist-link {
@@ -666,7 +666,7 @@ footer {
   height: 80px;
   object-fit: cover;
   border-radius: 50%;
-  border: 3px solid #ffd860;
+  border: 3px solid #ff5bd7;
   flex-shrink: 0;
 }
 .player-row h3 {
