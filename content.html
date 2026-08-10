@@ -359,7 +359,8 @@
     function updateMudShareButton(index) {
       const ep = mudEpisodes[index];
       if (!ep || !mudShareBtn) return;
-      const shareUrl = 'https://djweirdnasty.com/content.html#' + ep.slug;
+      const num = parseInt(index) + 1;
+      const shareUrl = 'https://djweirdnasty.com/mud-music-episode-' + num + '.html';
       mudShareBtn.setAttribute('data-title', ep.title);
       mudShareBtn.setAttribute('data-url', shareUrl);
     }
