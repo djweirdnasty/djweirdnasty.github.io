@@ -744,7 +744,9 @@ footer {
 }
 
 .mixtape-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 12px 24px;
   background: linear-gradient(135deg, rgba(255, 91, 215, 0.2), rgba(255, 91, 215, 0.1));
   border: 1px solid #ff5bd7;
@@ -753,6 +755,12 @@ footer {
   text-decoration: none;
   font-weight: 600;
   transition: all 0.2s ease;
+}
+
+.stream-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .mixtape-link:hover,
