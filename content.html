@@ -111,6 +111,10 @@
         </div>
       </div>
 
+      <div id="mudShareWrap" style="margin-top: 1rem;">
+        <button class="share-button" id="mudShareBtn" data-title="" data-url="">🔗 Share This Episode</button>
+      </div>
+
       <div class="video-socials" style="margin-top: 1.5rem; justify-content: center;">
         <a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer">Instagram</a>
         <a href="https://twitter.com/Djweirdnasty_" target="_blank" rel="noopener noreferrer">X</a>
@@ -125,6 +129,8 @@
   <script>
     const mudEpisodes = [
       {
+        title: "MUD MUSIC Episode 1 - MAN BEHIND THE CAMERA (Pilot)",
+        slug: "mud-music-episode-1",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-djweirdnasty.mp4",
         countdown: [
           "10. MR SMITH PHL - APPLY PRESSURE",
@@ -140,6 +146,8 @@
         ]
       },
       {
+        title: "Episode 1 - MAN BEHIND THE CAMERA (Pilot)",
+        slug: "mud-music-episode-1",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-MrSmithPhl.mp4",
         countdown: [
           "10. Trap Beckham - Get Off Yo Ass (Ft. T-Pain)",
@@ -155,6 +163,8 @@
         ]
       },
       {
+        title: "Episode 2 - Venomous Effect (MR_SMITH_PHL)",
+        slug: "mud-music-episode-2",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mudd-music-traphouseterrance.mp4",
         countdown: [
           "10. Santos - Where Da Money At (Ft. Poison Ivy)",
@@ -170,6 +180,8 @@
         ]
       },
       {
+        title: "Episode 3 - House Get a Cut (Traphouse Terrance)",
+        slug: "mud-music-episode-3",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-dtpmantana.mp4",
         countdown: [
           "10. HOLLYWOOD HIM - WHEW",
@@ -185,6 +197,8 @@
         ]
       },
       {
+        title: "Episode 4 - Don't Take It Personal (DTP Mantana)",
+        slug: "mud-music-episode-4",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-mfd.mp4",
         countdown: [
           "10. Carla G - Yo Birthday",
@@ -200,6 +214,8 @@
         ]
       },
       {
+        title: "Episode 5 - We Got Action (MFD)",
+        slug: "mud-music-episode-5",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-ronmurrdah.mp4",
         countdown: [
           "10. Ron Murrdah - Shot Caller MSM Remix",
@@ -215,6 +231,8 @@
         ]
       },
       {
+        title: "Episode 6 - 1 Thing (Ron Murrdah)",
+        slug: "mud-music-episode-6",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-dashmanotb.mp4",
         countdown: [
           "10. Dash Man OTB - Own Lane",
@@ -230,6 +248,8 @@
         ]
       },
       {
+        title: "Episode 7 - Dash Man OTB",
+        slug: "mud-music-episode-7",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-onarres.mp4",
         countdown: [
           "10. Neyo - Link Up",
@@ -245,6 +265,8 @@
         ]
       },
       {
+        title: "Episode 8 - Own Lane (Onarres Serrano)",
+        slug: "mud-music-episode-8",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-hershey.mp4",
         countdown: [
           "10. Sapphire Fyi - Alright",
@@ -260,6 +282,8 @@
         ]
       },
       {
+        title: "Episode 9 - I AM H3RSH3Y",
+        slug: "mud-music-episode-9",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-ateam.mp4",
         countdown: [
           "10. RON MURRDAH - NOBODY (MSM FREESTYLE)",
@@ -275,6 +299,8 @@
         ]
       },
       {
+        title: "Episode 10 - New York Underground (A-TEAM)",
+        slug: "mud-music-episode-10",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-alexbate.mp4",
         countdown: [
           "10. MEK46ST - GO TIME",
@@ -290,6 +316,8 @@
         ]
       },
       {
+        title: "Episode 11 - Jewstallion Talian (Alex Bate)",
+        slug: "mud-music-episode-11",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-myaallure.mp4",
         countdown: [
           "10. Trap Beckham - Bending it (Ft. SoCandy)",
@@ -305,6 +333,8 @@
         ]
       },
       {
+        title: "Episode 12 - 90's Baby (Mya Allure)",
+        slug: "mud-music-episode-12",
         src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-kervswerve.mp4",
         countdown: [
           "10. Trap Beckham - Bending It (Ft. SoCandy)",
@@ -324,6 +354,15 @@
     const mudSelect = document.getElementById('mudEpisodeSelect');
     const mudPlayer = document.getElementById('mudPlayer');
     const mudCountdownList = document.getElementById('mudCountdownList');
+    const mudShareBtn = document.getElementById('mudShareBtn');
+
+    function updateMudShareButton(index) {
+      const ep = mudEpisodes[index];
+      if (!ep || !mudShareBtn) return;
+      const shareUrl = 'https://djweirdnasty.com/content.html#' + ep.slug;
+      mudShareBtn.setAttribute('data-title', ep.title);
+      mudShareBtn.setAttribute('data-url', shareUrl);
+    }
 
     function loadMudEpisode(index) {
       const ep = mudEpisodes[index];
@@ -331,14 +370,44 @@
       mudPlayer.src = ep.src;
       mudPlayer.load();
       mudCountdownList.innerHTML = ep.countdown.map(item => `<li>${item}</li>`).join('');
+      mudSelect.value = String(index);
+      if (history && history.replaceState) {
+        history.replaceState(null, null, '#' + ep.slug);
+      }
+      updateMudShareButton(index);
     }
 
     mudSelect.addEventListener('change', function() {
       loadMudEpisode(parseInt(this.value));
     });
 
-    // Load first episode on page load
-    loadMudEpisode(0);
+    if (mudShareBtn) {
+      mudShareBtn.addEventListener('click', function() {
+        const url = this.getAttribute('data-url') || window.location.href;
+        const title = this.getAttribute('data-title') || document.title;
+        if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
+
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('Link copied to clipboard!');
+          });
+        } else {
+          prompt('Copy this link to share:', url);
+        }
+      });
+    }
+
+    // Load episode from hash or default to 0
+    function getMudEpisodeFromHash() {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash) return 0;
+      const found = mudEpisodes.findIndex(ep => ep.slug === hash);
+      return found >= 0 ? found : 0;
+    }
+
+    loadMudEpisode(getMudEpisodeFromHash());
   </script>
   <script src="script.js?v=2"></script>
 </body>
