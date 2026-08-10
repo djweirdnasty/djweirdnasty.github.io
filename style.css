@@ -653,3 +653,29 @@ footer {
     padding: 1.5rem;
   }
 }
+
+/* Player profile rows for fantasy article */
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 0.25rem;
+}
+.player-row img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #ffd860;
+  flex-shrink: 0;
+}
+.player-row h3 {
+  margin: 0;
+  text-align: left;
+}
+@media (max-width: 600px) {
+  .player-row img {
+    width: 60px;
+    height: 60px;
+  }
+}
