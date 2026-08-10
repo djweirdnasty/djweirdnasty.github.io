@@ -178,7 +178,7 @@ section {
 
 .event-card h3 {
   margin-top: 0;
-  color: #ffd860;
+  color: #ff5bd7;
 }
 
 .event-flyer {
@@ -521,10 +521,10 @@ section {
   display: inline-block;
   margin-top: 1rem;
   padding: 12px 24px;
-  background: linear-gradient(135deg, rgba(248, 201, 74, 0.2), rgba(248, 201, 74, 0.1));
-  border: 1px solid #ffd860;
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.2), rgba(255, 91, 215, 0.1));
+  border: 1px solid #ff5bd7;
   border-radius: 12px;
-  color: #ffd860;
+  color: #ff5bd7;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.2s ease;
@@ -532,7 +532,7 @@ section {
 
 .playlist-link:hover,
 .playlist-link:focus {
-  background: linear-gradient(135deg, rgba(248, 201, 74, 0.3), rgba(248, 201, 74, 0.2));
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.3), rgba(255, 91, 215, 0.2));
   transform: translateX(4px);
 }
 
