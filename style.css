@@ -693,3 +693,96 @@ footer {
     height: 60px;
   }
 }
+/* Mixtapes page styles */
+.mixtape-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  background: #000;
+  border: 1px solid #ff5bd7;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 91, 215, 0.25);
+}
+
+.mixtape-cover {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.mixtape-info {
+  flex: 1;
+  min-width: 280px;
+}
+
+.mixtape-info h1 {
+  color: #ff5bd7;
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.mixtape-host {
+  color: #fff;
+  font-size: 1.2rem;
+  margin: 0.25rem 0;
+}
+
+.mixtape-credits {
+  color: #aaa;
+  margin: 0.25rem 0 1rem;
+}
+
+.mixtape-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.mixtape-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.2), rgba(255, 91, 215, 0.1));
+  border: 1px solid #ff5bd7;
+  border-radius: 12px;
+  color: #ff5bd7;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.mixtape-link:hover,
+.mixtape-link:focus {
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.3), rgba(255, 91, 215, 0.2));
+  transform: translateX(4px);
+}
+
+.mixtape-link.youtube {
+  color: #fff;
+  border-color: #ff0000;
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(255, 0, 0, 0.1));
+}
+
+.mixtape-link.youtube:hover,
+.mixtape-link.youtube:focus {
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(255, 0, 0, 0.2));
+}
+
+@media (max-width: 700px) {
+  .mixtape-card {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mixtape-cover {
+    max-width: 100%;
+  }
+
+  .mixtape-info h1 {
+    font-size: 1.5rem;
+  }
+}
