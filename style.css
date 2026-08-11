@@ -898,6 +898,17 @@ footer {
   background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(255, 0, 0, 0.2));
 }
 
+.mixtape-link.instagram {
+  color: #fff;
+  border-color: #e1306c;
+  background: linear-gradient(135deg, rgba(225, 48, 108, 0.2), rgba(225, 48, 108, 0.1));
+}
+
+.mixtape-link.instagram:hover,
+.mixtape-link.instagram:focus {
+  background: linear-gradient(135deg, rgba(225, 48, 108, 0.3), rgba(225, 48, 108, 0.2));
+}
+
 @media (max-width: 700px) {
   .mixtape-card {
     flex-direction: column;
