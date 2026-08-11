@@ -701,14 +701,13 @@ button:focus {
   background: #ffd860;
 }
 
-form button[type="submit"],
-.submit-btn {
+form button[type="submit"].submit-btn {
   margin-top: 1.5rem;
   padding: 14px 28px;
   font-size: 1rem;
-  background: linear-gradient(180deg, #4fa8ff 0%, #1a5fd0 45%, #0b3a99 100%);
-  color: #ff4fd8;
-  border: 2px solid #4fa8ff;
+  background: linear-gradient(180deg, #4fa8ff 0%, #1a5fd0 45%, #0b3a99 100%) !important;
+  color: #ff4fd8 !important;
+  border: 2px solid #4fa8ff !important;
   border-radius: 999px;
   cursor: pointer;
   text-shadow: 0 0 6px rgba(255, 79, 216, 0.8);
@@ -716,12 +715,10 @@ form button[type="submit"],
   box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.6), inset 0 -3px 6px rgba(0, 0, 0, 0.35), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-form button[type="submit"]:hover,
-.submit-btn:hover,
-form button[type="submit"]:focus,
-.submit-btn:focus {
+form button[type="submit"].submit-btn:hover,
+form button[type="submit"].submit-btn:focus {
   transform: translateY(-2px);
-  background: linear-gradient(180deg, #6fb9ff 0%, #2a70e0 45%, #0d47b0 100%);
+  background: linear-gradient(180deg, #6fb9ff 0%, #2a70e0 45%, #0d47b0 100%) !important;
 }
 
 form {
