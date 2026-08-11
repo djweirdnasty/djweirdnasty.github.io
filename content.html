@@ -358,13 +358,10 @@
         const card = document.createElement('article');
         card.className = 'event-card mud-episode';
         card.setAttribute('data-index', i);
+        const episodeUrl = 'mud-music-episode-' + (i + 1) + '.html';
         card.innerHTML = '<h3>' + ep.title + '</h3>' +
-          '<button class="playlist-link mud-play" data-index="' + i + '">▶ Play</button>';
+          '<a href="' + episodeUrl + '" class="playlist-link mud-play">▶ Play</a>';
         mudCarousel.appendChild(card);
-      });
-      mudCarousel.addEventListener('click', function(e) {
-        const btn = e.target.closest('button[data-index]');
-        if (btn) loadMudEpisode(parseInt(btn.getAttribute('data-index')));
       });
       if (mudPrev) {
         mudPrev.addEventListener('click', function() {
