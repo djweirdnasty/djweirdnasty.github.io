@@ -43,13 +43,12 @@
     </section>
 
     <section class="info content-section">
-      <article class="event-card content-card" id="murrdah-season-monday">
-        <h2 style="color: red;">🎙️ Murrdah Season Monday <span style="color: #ffffff;">&quot;Ayo Weird meet Skrilla &amp; Ron Murrdah first time using Public Transportation&quot;</span></h2>
-        <p style="margin-bottom: 1rem;"><strong>This Week on MURRDAH SEASON MONDAY</strong></p>
-        <p style="margin-bottom: 1rem;">Ayo Weird sits down to talk about his experience meeting Philadelphia rapper and XXL Freshman artist Skrilla. Ron Murrdah takes a ride on a SEPTA public transportation bus for the first time in years. Plus, Princess returns with the latest Trending Topics. Special guest YS DOM.</p>
-        <img src="msm-screenshot.jpg" alt="Murrdah Season Monday &quot;Ayo Weird meet Skrilla &amp; Ron Murrdah first time using Public Transportation&quot;" style="width: 100%; max-width: 600px; border-radius: 12px; margin: 0 auto 1.5rem auto; display: block;" />
-        <p style="margin-bottom: 1.5rem; text-align: center;"><a href="murrdah-season-monday.html" class="playlist-link" style="display: inline-block; padding: 0.8rem 2rem; font-size: 1.1rem; background: #ff5bd7; color: #fff; border-radius: 8px; text-decoration: none; font-weight: bold;">▶ Watch Now</a></p>
-      </article>
+      <h2 style="color: red;">🎙️ MURRDAH SEASON MONDAY</h2>
+      <div id="murrdahEpisodeCarousel" class="news-carousel murrdah-carousel"></div>
+      <div class="carousel-controls">
+        <button class="carousel-btn" id="murrdahPrev" aria-label="Previous">&#10094;</button>
+        <button class="carousel-btn" id="murrdahNext" aria-label="Next">&#10095;</button>
+      </div>
     </section>
 
     <section class="info content-section mud-music-section">
@@ -375,6 +374,41 @@
       }
     }
 
+    function buildMurrdahCarousel() {
+      const murrdahEpisodes = [
+        {
+          title: "Ayo Weird meet Skrilla & Ron Murrdah first time using Public Transportation",
+          img: "msm-screenshot.jpg",
+          alt: "Murrdah Season Monday",
+          description: "Ayo Weird sits down to talk about his experience meeting Philadelphia rapper and XXL Freshman artist Skrilla. Ron Murrdah takes a ride on a SEPTA public transportation bus for the first time in years. Plus, Princess returns with the latest Trending Topics. Special guest YS DOM.",
+          url: "murrdah-season-monday.html"
+        }
+      ];
+      const carousel = document.getElementById('murrdahEpisodeCarousel');
+      const prev = document.getElementById('murrdahPrev');
+      const next = document.getElementById('murrdahNext');
+      if (!carousel) return;
+      murrdahEpisodes.forEach(function(ep, i) {
+        const card = document.createElement('article');
+        card.className = 'event-card mud-episode';
+        card.innerHTML = '<img src="' + ep.img + '" alt="' + ep.alt + '" class="event-flyer" />' +
+          '<h3>' + ep.title + '</h3>' +
+          '<p>' + ep.description + '</p>' +
+          '<a href="' + ep.url + '" class="playlist-link">▶ Watch Now</a>';
+        carousel.appendChild(card);
+      });
+      if (prev) {
+        prev.addEventListener('click', function() {
+          carousel.scrollBy({ left: -carousel.clientWidth * 0.85, behavior: 'smooth' });
+        });
+      }
+      if (next) {
+        next.addEventListener('click', function() {
+          carousel.scrollBy({ left: carousel.clientWidth * 0.85, behavior: 'smooth' });
+        });
+      }
+    }
+
     if (mudShareBtn) {
       mudShareBtn.addEventListener('click', function() {
         const url = this.getAttribute('data-url') || window.location.href;
@@ -422,6 +456,7 @@
     }
 
     buildMudCarousel();
+    buildMurrdahCarousel();
     loadMudEpisode(getMudEpisodeFromHash());
   </script>
   <script src="script.js?v=2"></script>
