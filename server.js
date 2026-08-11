@@ -1,21 +1,47 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 dotenv.config();
 
 const app = express();
 const initialPort = Number(process.env.PORT || 3000);
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(helmet());
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(__dirname));
 
-app.post('/api/contact', async (req, res) => {
-  const { name, email, message } = req.body;
+const contactLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many requests. Please try again later.' }
+});
+
+function sanitize(str) {
+  if (typeof str !== 'string') return '';
+  return str.trim().slice(0, 2000);
+}
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post('/api/contact', contactLimiter, async (req, res) => {
+  const name = sanitize(req.body.name);
+  const email = sanitize(req.body.email);
+  const message = sanitize(req.body.message);
 
   if (!name || !email || !message) {
     return res.status(400).json({ success: false, message: 'Please provide your name, email, and a message.' });
+  }
+
+  if (name.length > 100) {
+    return res.status(400).json({ success: false, message: 'Name is too long.' });
+  }
+
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
   }
 
   const smtpHost = process.env.SMTP_HOST;
