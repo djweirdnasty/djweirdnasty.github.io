@@ -62,22 +62,7 @@
         <button class="carousel-btn" id="mudNext" aria-label="Next">&#10095;</button>
       </div>
 
-      <div class="video-player-shell">
-        <div class="video-player-card">
-          <video id="mudPlayer" class="mud-local-video" controls preload="metadata">
-            <source src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-djweirdnasty.mp4" type="video/mp4">
-            Your browser does not support HTML5 video.
-          </video>
-        </div>
-        <div class="video-countdown">
-          <h3 id="mudCountdownTitle">This Week's Video Countdown</h3>
-          <ol id="mudCountdownList"></ol>
-        </div>
-      </div>
-
-      <div id="mudShareWrap" style="margin-top: 1rem;">
-        <button class="share-button" id="mudShareBtn" data-title="" data-url="">🔗 Share This Episode</button>
-      </div>
+      <p style="text-align: center; margin-top: 1rem;"><em>Pick an episode above to watch it on its own page.</em></p>
 
       <div class="video-socials" style="margin-top: 1.5rem; justify-content: center;">
         <a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer">Instagram</a>
@@ -90,229 +75,8 @@
   <footer class="container">
     <p>© 2026 Djweirdnastyllc</p>
   </footer>
+  <script src="mud-music-episodes.js"></script>
   <script>
-    const mudEpisodes = [
-      {
-        title: "Episode 1 - MAN BEHIND THE CAMERA (Pilot)",
-        slug: "mud-music-episode-1",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-djweirdnasty.mp4",
-        countdown: [
-          "10. MR SMITH PHL - APPLY PRESSURE",
-          "09. MOZZY MAJJY - PUNCHED ON FREESTYLE (FT. WALKEMDOWN GOTTI)",
-          "08. SAPPHIRE FYI - BODY",
-          "07. YS DOM - FISH GREASE (FT. RNB SMOOVE)",
-          "06. PLANETLOLA - PREDATOR OR PREY",
-          "05. RON MURRDAH - 1 THING",
-          "04. WESTEND BISHOP - REUP (FT. HEFE GUTTA)",
-          "03. MERCY700 - NO TYLENOL",
-          "02. JUST CHILL - YEAYEAH 2X",
-          "01. SNS ICYGANG - SWEATIN YOU (FT. CAPELLA GREY)",
-        ]
-      },
-      {
-        title: "Episode 2 - Venomous Effect (MR_SMITH_PHL)",
-        slug: "mud-music-episode-2",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-MrSmithPhl.mp4",
-        countdown: [
-          "10. Trap Beckham - Get Off Yo Ass (Ft. T-Pain)",
-          "09. Free Truth Ray - Let's Fall In Love (Ft. MR_SMITH_PHL)",
-          "08. MR_SMITH_PHL - Life Is What You Make It",
-          "07. MR_SMITH_PHL - No Company (Ft. H Hit Da Lid",
-          "06. Sapphire Fyi - Body",
-          "05. RON MURRDAH - New Year (Ft. Mya Allure)",
-          "04. Planet Lola - Lights Down",
-          "03. WestEnd Bishop - Demonz (Ft. Ballout Osama)",
-          "02. Jae Mansa - Swan In My Pond (Ft. Riff Raff)",
-          "01. SoCandy - Taste Like Candy",
-        ]
-      },
-      {
-        title: "Episode 3 - House Get a Cut (Traphouse Terrance)",
-        slug: "mud-music-episode-3",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mudd-music-traphouseterrance.mp4",
-        countdown: [
-          "10. Santos - Where Da Money At (Ft. Poison Ivy)",
-          "09. Sapphire Fyi - Body",
-          "08. Trap Beckham - Booty Control",
-          "07. SNS ICYGANG - Skrilla (Ft. Vado)",
-          "06. Ron Murrdah - Shot Caller MSM REMIX",
-          "05. Ranshaw - Whoa",
-          "04. Nuff Said - Big West Side",
-          "03. Zah Mula - So Good",
-          "02. Mya Allure - Banned From TV Freestyle",
-          "01. Carla G - Shake That",
-        ]
-      },
-      {
-        title: "Episode 4 - Don't Take It Personal (DTP Mantana)",
-        slug: "mud-music-episode-4",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-dtpmantana.mp4",
-        countdown: [
-          "10. HOLLYWOOD HIM - WHEW",
-          "09. TRAP BECKHAM - TWERK CONTEST (FT. B.O.B)",
-          "08. SAPPHIRE FYI - ALRIGHT",
-          "07. CARLA G - FREAK HAUX",
-          "06. KEYDOG - BLACK ROCK",
-          "05. DTP MANTANA - R4L",
-          "04. RECOHAVOC - CREATURES (FT. SKRILLA)",
-          "03. OMELLY - RIGHT NOW",
-          "02. SNS ICYGANG - NASTY WORK (FT. DAVE EAST)",
-          "01. LADII ROSE - BOUNCE 2.0 (FT. ITSCOURTNEY)",
-        ]
-      },
-      {
-        title: "Episode 5 - We Got Action (MFD)",
-        slug: "mud-music-episode-5",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-mfd.mp4",
-        countdown: [
-          "10. Carla G - Yo Birthday",
-          "09. Big Chyna - Say Sum",
-          "08. Sharod Starks - Goals",
-          "07. RanShaw - Whoa",
-          "06. SNS ICYGANG - Sweatin You (Ft. Capella Grey)",
-          "05. Mr_Smith_PHL - Shawty Bad",
-          "04. Ron Murrdah - 1 Thing",
-          "03. WestEnd Bishop - Reup (Ft. Hefe Gutta)",
-          "02. Mozzy Majjy - Punched On Freestyle",
-          "01. Mercy700 - No Tylenol",
-        ]
-      },
-      {
-        title: "Episode 6 - Ron Murrdah (Flavor Team)",
-        slug: "mud-music-episode-6",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-ronmurrdah.mp4",
-        countdown: [
-          "10. Ron Murrdah - Shot Caller MSM Remix",
-          "09. SNS ICYGANG - Skrilla (Ft. Vado)",
-          "08. Sapphire Fyi - Body",
-          "07. Trap Beckham - Booty Control",
-          "06. Santos - Where Da Money At",
-          "05. Ranshaw - Whoa",
-          "04. Mya Allure - Banned From TV Freestyle",
-          "03. Carla G - Shake That",
-          "02. Zah Mula - So Good",
-          "01. Nuff Said - Big West Side",
-        ]
-      },
-      {
-        title: "MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)",
-        slug: "mud-music-episode-7",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-dashmanotb.mp4",
-        countdown: [
-          "09. SNS ICYGANG - SHE GOT IT",
-          "08. SAPPHIRE FYI - ALRIGHT",
-          "07. DASHMANOTB - MAN UP",
-          "06. LG MALIQUE - TOO EASY",
-          "05. NEYO - LINK UP",
-          "04. RANSHAW - DIME",
-          "03. RON MURRDAH - SHOT CALLER (MSM REMIX)",
-          "02. SHAROD STARKS - GOALS",
-          "01. ENESS - BLICKY (FT. DJ CRAZY 215)",
-        ]
-      },
-      {
-        title: "MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)",
-        slug: "mud-music-episode-8",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-onarres.mp4",
-        countdown: [
-          "10. RON MURRDAH - SHOT CALLER (MSM REMIX)",
-          "09. NEYO - LINK UP",
-          "08. SAPPHIRE FYI - BODY",
-          "07. ONARRES SERRANO - OWN LANE",
-          "06. SNS ICYGANG - SWEATIN YOU (FT. CAPELLA GREY)",
-          "05. CARLA G - YO BIRTHDAY",
-          "04. MR_SMITH_PHL - SHAWTY BAD",
-          "03. RANSHAW - DIME",
-          "02. BIG CHYNA - SAY SUM",
-          "01. SOCANDY - WHOA",
-        ]
-      },
-      {
-        title: "Episode 9 - I AM H3RSH3Y",
-        slug: "mud-music-episode-9",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-hershey.mp4",
-        countdown: [
-          "10. Sapphire Fyi - Alright",
-          "09. SNS - She Got It",
-          "08. Ranshaw - Woah 21",
-          "07. Ladii Rose - MoHead",
-          "06. Drizzy P - Rumors",
-          "05. Mozzy Majjy - Koby Jersey",
-          "04. OG Capri - Life Has A Warranty",
-          "03. Sirdabidyo - Chew My G*T",
-          "02. OG Capri - Left Cheek, Right Cheek",
-          "01. J DaGid - Bend It Over",
-        ]
-      },
-      {
-        title: "Episode 10 - New York Underground (A-TEAM)",
-        slug: "mud-music-episode-10",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-ateam.mp4",
-        countdown: [
-          "10. RON MURRDAH - NOBODY (MSM FREESTYLE)",
-          "09. SHAROD STARKS - BAU FLAVA",
-          "08. SOCANDY - SMACK IT",
-          "07. SNS ICYGANG - UP IT",
-          "06. SANTOS - MEMBERSHIP",
-          "05. SAPPHIRE FYI - ALRIGHT",
-          "04. FINNATTICZ - THICK BIH LIL BIH",
-          "03. CARLA G - OOU",
-          "02. SONGBIRD THEGODDESS - UNDERESTIMATE",
-          "01. KDAMACK - PUT YOUR BACK IN IT",
-        ]
-      },
-      {
-        title: "Episode 11 - Jewstallion Talian (Alex Bate)",
-        slug: "mud-music-episode-11",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-alexbate.mp4",
-        countdown: [
-          "10. MEK46ST - GO TIME",
-          "09. SHAROD STARKS - BAU FLAVA",
-          "08. NU JERZY TWORK - OASIS",
-          "07. MYA ALLURE & MERE MERCY - HONESTLY TOXIC",
-          "06. RON MURRDAH - SPIN THE BLOCK/WHIPPING IT (FT. MURDA)",
-          "05. SAPPHIRE FYI - ALRIGHT",
-          "04. D3M - COUPE",
-          "03. SOCANDY - WOAH",
-          "02. D STURDY & ZAHSOSSA - SHAKE DHAT",
-          "01. SNS - SHE GOT IT",
-        ]
-      },
-      {
-        title: "Episode 12 - 90's Baby (Mya Allure)",
-        slug: "mud-music-episode-12",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-myaallure.mp4",
-        countdown: [
-          "10. Trap Beckham - Bending it (Ft. SoCandy)",
-          "09. Ron Murrdah - 2 Mill (MSM Remix)",
-          "08. Danja Danja - STFU",
-          "07. SNS - Papi",
-          "06. DJ ANT LIVA - Bounce That",
-          "05. Big China - Say Sum",
-          "04. Sapphire Fyi - Alright",
-          "03. Mere Mercy - Honestly Toxic (Ft. Mya Allure)",
-          "02. Mya Allure - Million Dollarz Worth of Game Freestyle",
-          "01. Dom Shizz - Lil Baby",
-        ]
-      },
-      {
-        title: "MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)",
-        slug: "mud-music-episode-13",
-        src: "https://pub-bee05643124541c98db36d257c5b9944.r2.dev/mud-music-kervswerve.mp4",
-        countdown: [
-          "10. Trap Beckham - Bending It (Ft. SoCandy)",
-          "09. Sapphire Fyi - Alright",
-          "08. Ron Murrdah - 2 Mill (MSM Remix)",
-          "07. Kerv Swerv - Pull Off",
-          "06. KashBlock Spazz - Hail Storm",
-          "05. Zigg TheArtist - Attention",
-          "04. Santos - Seeing Green 2",
-          "03. GxGotti - Lowkey (Ft. Yung Herb)",
-          "02. Sns Icygang - Papi",
-          "01. Miss Jefe - Loyalty Over Love",
-        ]
-      },
-    ];
     const mudCarousel = document.getElementById('mudEpisodeCarousel');
     const mudPlayer = document.getElementById('mudPlayer');
     const mudCountdownList = document.getElementById('mudCountdownList');
@@ -357,7 +121,7 @@
         const card = document.createElement('article');
         card.className = 'event-card mud-episode';
         card.setAttribute('data-index', i);
-        const episodeUrl = 'mud-music-episode-' + (i + 1) + '.html';
+        const episodeUrl = 'mud-music-episode.html#' + ep.slug;
         card.innerHTML = '<h3>' + ep.title + '</h3>' +
           '<a href="' + episodeUrl + '" class="playlist-link mud-play">▶ Play</a>';
         mudCarousel.appendChild(card);
@@ -457,7 +221,6 @@
 
     buildMudCarousel();
     buildMurrdahCarousel();
-    loadMudEpisode(getMudEpisodeFromHash());
   </script>
   <script src="script.js?v=2"></script>
 </body>

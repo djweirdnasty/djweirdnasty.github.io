@@ -245,6 +245,50 @@ section {
   box-shadow: 0 0 0 2px #ffd860, 0 4px 12px rgba(0,0,0,0.3);
 }
 
+.mepisode-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.mepisode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.episode-list-item {
+  display: block;
+  padding: 0.5rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  background: #000;
+  transition: all 0.2s ease;
+}
+
+.episode-list-item:hover,
+.episode-list-item:focus,
+.episode-list-item.active {
+  border-color: #ffd860;
+  color: #ffd860;
+}
+
+@media (max-width: 768px) {
+  .mepisode-layout {
+    grid-template-columns: 1fr;
+  }
+  .mepisode-list {
+    max-height: none;
+  }
+}
+
 .featured-event {
   border-color: #ffd860;
   background: #000;

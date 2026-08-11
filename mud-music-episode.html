@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <title>MUD MUSIC Episode | DJWEIRDNASTY</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta property="og:title" content="MUD MUSIC Top 10 Countdown">
+  <meta property="og:description" content="Watch the latest episode of MUD MUSIC Top 10 Countdown.">
+  <meta property="og:image" content="https://djweirdnasty.com/mud-music-logo.png">
+  <meta property="og:url" content="https://djweirdnasty.com/mud-music-episode.html">
+  <meta property="og:type" content="video.other">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MUD MUSIC Top 10 Countdown">
+  <meta name="twitter:description" content="Watch the latest episode of MUD MUSIC Top 10 Countdown.">
+  <meta name="twitter:image" content="https://djweirdnasty.com/mud-music-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=5">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 class="site-banner">
+        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+      </h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#events">Events</a>
+        <a href="news.html">News</a>
+        <a href="mixtapes.html">Mixtapes</a>
+        <a href="content.html">Content</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <p><a href="content.html" style="color: #ffd860;">← Back to Content</a></p>
+    <img src="mud-music-logo.png" alt="MUD MUSIC Top 10 Countdown" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto 1rem;" />
+    <div class="mepisode-layout">
+      <div class="mepisode-main">
+        <video id="mEpisodePlayer" class="mepisode-player" controls style="width: 100%; border-radius: 12px; display: block;"></video>
+        <div class="mepisode-info">
+          <h2 id="mEpisodeTitle" style="color: #ff5bd7; margin-top: 0;"></h2>
+          <h3>This Week's Video Countdown</h3>
+          <ol id="mEpisodeCountdown" style="padding-left: 1.5rem;"></ol>
+        </div>
+      </div>
+      <aside class="mepisode-list" id="mEpisodeList">
+        <h3 style="color: #ffd860; margin-top: 0;">More Episodes</h3>
+      </aside>
+    </div>
+    <div style="margin-top: 1rem; text-align: center;">
+      <button class="share-button" id="mEpisodeShare" data-title="" data-url="">🔗 Share This Episode</button>
+    </div>
+    <div class="video-socials" style="margin-top: 1.5rem; justify-content: center;">
+      <a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a href="https://twitter.com/Djweirdnasty_" target="_blank" rel="noopener noreferrer">X</a>
+      <a href="https://www.facebook.com/Djweirdnastyphilly" target="_blank" rel="noopener noreferrer">Facebook</a>
+      <a href="https://www.tiktok.com/@iamdjweirdnasty" target="_blank" rel="noopener noreferrer">TikTok</a>
+    </div>
+  </main>
+  <footer class="container">
+    <p>© 2026 Djweirdnastyllc</p>
+  </footer>
+  <script src="mud-music-episodes.js"></script>
+  <script>
+    const mPlayer = document.getElementById('mEpisodePlayer');
+    const mTitle = document.getElementById('mEpisodeTitle');
+    const mCountdown = document.getElementById('mEpisodeCountdown');
+    const mList = document.getElementById('mEpisodeList');
+    const mShare = document.getElementById('mEpisodeShare');
+
+    function getSlug() {
+      return window.location.hash.replace('#', '') || mudEpisodes[0].slug;
+    }
+
+    function findEpisodeIndex(slug) {
+      const found = mudEpisodes.findIndex(ep => ep.slug === slug);
+      return found >= 0 ? found : 0;
+    }
+
+    function updateShare(ep, index) {
+      if (!mShare) return;
+      const num = index + 1;
+      mShare.setAttribute('data-title', ep.title);
+      mShare.setAttribute('data-url', 'https://djweirdnasty.com/mud-music-episode-' + num + '.html');
+    }
+
+    function buildList(activeIndex) {
+      mList.querySelectorAll('.episode-list-item').forEach(function(el) { el.remove(); });
+      mudEpisodes.forEach(function(ep, i) {
+        const a = document.createElement('a');
+        a.className = 'episode-list-item' + (i === activeIndex ? ' active' : '');
+        a.href = '#' + ep.slug;
+        a.textContent = ep.title;
+        mList.appendChild(a);
+      });
+    }
+
+    function loadEpisode() {
+      const index = findEpisodeIndex(getSlug());
+      const ep = mudEpisodes[index];
+      mPlayer.src = ep.src;
+      mPlayer.load();
+      mTitle.textContent = ep.title;
+      mCountdown.innerHTML = ep.countdown.map(item => '<li>' + item + '</li>').join('');
+      buildList(index);
+      updateShare(ep, index);
+      if (history && history.replaceState) {
+        history.replaceState(null, null, '#' + ep.slug);
+      }
+    }
+
+    window.addEventListener('hashchange', loadEpisode);
+    loadEpisode();
+
+    if (mShare) {
+      mShare.addEventListener('click', function() {
+        const url = this.getAttribute('data-url') || window.location.href;
+        const title = this.getAttribute('data-title') || document.title;
+        if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
+
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function() {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('Link copied to clipboard!');
+          });
+        } else {
+          prompt('Copy this link to share:', url);
+        }
+      });
+    }
+  </script>
+  <script src="script.js?v=2"></script>
+</body>
+</html>
