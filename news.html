@@ -191,5 +191,34 @@
   <footer class="container">
     <p>© 2026 Djweirdnastyllc</p>
   </footer>
+  <script>
+    document.querySelectorAll('.news-category').forEach(function(section) {
+      const cards = Array.from(section.querySelectorAll('.event-card'));
+      if (cards.length < 1) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'news-carousel';
+      cards.forEach(function(card) { wrapper.appendChild(card); });
+      section.appendChild(wrapper);
+      const controls = document.createElement('div');
+      controls.className = 'carousel-controls';
+      const prev = document.createElement('button');
+      prev.className = 'carousel-btn';
+      prev.innerHTML = '&#10094;';
+      prev.setAttribute('aria-label', 'Previous');
+      const next = document.createElement('button');
+      next.className = 'carousel-btn';
+      next.innerHTML = '&#10095;';
+      next.setAttribute('aria-label', 'Next');
+      controls.appendChild(prev);
+      controls.appendChild(next);
+      section.appendChild(controls);
+      prev.addEventListener('click', function() {
+        wrapper.scrollBy({ left: -wrapper.clientWidth * 0.85, behavior: 'smooth' });
+      });
+      next.addEventListener('click', function() {
+        wrapper.scrollBy({ left: wrapper.clientWidth * 0.85, behavior: 'smooth' });
+      });
+    });
+  </script>
 </body>
 </html>
