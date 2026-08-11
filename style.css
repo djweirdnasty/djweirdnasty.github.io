@@ -262,7 +262,9 @@ section {
 }
 
 .episode-list-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.5rem;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
@@ -271,6 +273,18 @@ section {
   font-size: 0.9rem;
   background: #000;
   transition: all 0.2s ease;
+}
+
+.episode-list-item .episode-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.episode-list-item .episode-title {
+  line-height: 1.2;
 }
 
 .episode-list-item:hover,

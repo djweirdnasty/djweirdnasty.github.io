@@ -97,7 +97,8 @@
         const a = document.createElement('a');
         a.className = 'episode-list-item' + (i === activeIndex ? ' active' : '');
         a.href = '#' + ep.slug;
-        a.textContent = ep.title;
+        a.innerHTML = '<img src="mud-music-logo.png" alt="' + ep.title + '" class="episode-thumb" />' +
+          '<span class="episode-title">' + ep.title + '</span>';
         mList.appendChild(a);
       });
     }
