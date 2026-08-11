@@ -57,23 +57,10 @@
       <p>IN DA CUT STUDIO &amp; Socially Awkward TV presents. Talk Show/Podcast that speaks on trending topics whether news or pop culture and broadcast Top Indie Artist Music Videos.</p>
       <p><strong>Meet the man behind the Camera</strong> Ayo Weird</p>
 
-      <div class="mud-selector">
-        <label for="mudEpisodeSelect">Choose an episode:</label>
-        <select id="mudEpisodeSelect">
-          <option value="0">Episode 1 - MAN BEHIND THE CAMERA (Pilot)</option>
-          <option value="1">Episode 2 - Venomous Effect (MR_SMITH_PHL)</option>
-          <option value="2">Episode 3 - House Get a Cut (Traphouse Terrance)</option>
-          <option value="3">Episode 4 - Don't Take It Personal (DTP Mantana)</option>
-          <option value="4">Episode 5 - We Got Action (MFD)</option>
-          <option value="5">Episode 6 - Ron Murrdah (Flavor Team)</option>
-          <option value="6">MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)</option>
-          <option value="7">MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)</option>
-          <option value="8">Episode 9 - I AM H3RSH3Y</option>
-          <option value="9">Episode 10 - New York Underground (A-TEAM)</option>
-          <option value="10">Episode 11 - Jewstallion Talian (Alex Bate)</option>
-          <option value="11">Episode 12 - 90's Baby (Mya Allure)</option>
-          <option value="12">MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)</option>
-        </select>
+      <div id="mudEpisodeCarousel" class="news-carousel mud-carousel"></div>
+      <div class="carousel-controls">
+        <button class="carousel-btn" id="mudPrev" aria-label="Previous">&#10094;</button>
+        <button class="carousel-btn" id="mudNext" aria-label="Next">&#10095;</button>
       </div>
 
       <div class="video-player-shell">
@@ -327,10 +314,13 @@
         ]
       },
     ];
-    const mudSelect = document.getElementById('mudEpisodeSelect');
+    const mudCarousel = document.getElementById('mudEpisodeCarousel');
     const mudPlayer = document.getElementById('mudPlayer');
     const mudCountdownList = document.getElementById('mudCountdownList');
     const mudShareBtn = document.getElementById('mudShareBtn');
+    const mudPrev = document.getElementById('mudPrev');
+    const mudNext = document.getElementById('mudNext');
+    let currentMudIndex = 0;
 
     function updateMudShareButton(index) {
       const ep = mudEpisodes[index];
@@ -341,22 +331,52 @@
       mudShareBtn.setAttribute('data-url', shareUrl);
     }
 
+    function updateActiveMudEpisode(index) {
+      currentMudIndex = index;
+      const cards = mudCarousel.querySelectorAll('.mud-episode');
+      cards.forEach(function(card, i) {
+        if (i === index) card.classList.add('active');
+        else card.classList.remove('active');
+      });
+    }
+
     function loadMudEpisode(index) {
       const ep = mudEpisodes[index];
       if (!ep) return;
       mudPlayer.src = ep.src;
       mudPlayer.load();
       mudCountdownList.innerHTML = ep.countdown.map(item => `<li>${item}</li>`).join('');
-      mudSelect.value = String(index);
+      updateActiveMudEpisode(index);
       if (history && history.replaceState) {
         history.replaceState(null, null, '#' + ep.slug);
       }
       updateMudShareButton(index);
     }
 
-    mudSelect.addEventListener('change', function() {
-      loadMudEpisode(parseInt(this.value));
-    });
+    function buildMudCarousel() {
+      mudEpisodes.forEach(function(ep, i) {
+        const card = document.createElement('article');
+        card.className = 'event-card mud-episode';
+        card.setAttribute('data-index', i);
+        card.innerHTML = '<h3>' + ep.title + '</h3>' +
+          '<button class="playlist-link mud-play" data-index="' + i + '">▶ Play</button>';
+        mudCarousel.appendChild(card);
+      });
+      mudCarousel.addEventListener('click', function(e) {
+        const btn = e.target.closest('button[data-index]');
+        if (btn) loadMudEpisode(parseInt(btn.getAttribute('data-index')));
+      });
+      if (mudPrev) {
+        mudPrev.addEventListener('click', function() {
+          mudCarousel.scrollBy({ left: -mudCarousel.clientWidth * 0.85, behavior: 'smooth' });
+        });
+      }
+      if (mudNext) {
+        mudNext.addEventListener('click', function() {
+          mudCarousel.scrollBy({ left: mudCarousel.clientWidth * 0.85, behavior: 'smooth' });
+        });
+      }
+    }
 
     if (mudShareBtn) {
       mudShareBtn.addEventListener('click', function() {
@@ -404,6 +424,7 @@
       return found >= 0 ? found : 0;
     }
 
+    buildMudCarousel();
     loadMudEpisode(getMudEpisodeFromHash());
   </script>
   <script src="script.js?v=2"></script>

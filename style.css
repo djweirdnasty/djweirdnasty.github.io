@@ -240,6 +240,11 @@ section {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
+.mud-episode.active {
+  border-color: #ffd860;
+  box-shadow: 0 0 0 2px #ffd860, 0 4px 12px rgba(0,0,0,0.3);
+}
+
 .featured-event {
   border-color: #ffd860;
   background: #000;
