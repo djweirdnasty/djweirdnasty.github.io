@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-50T2Z1K2SP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-50T2Z1K2SP');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <title>Contact | DJWEIRDNASTY</title>
+  <meta property="og:title" content="Contact | DJWEIRDNASTY">
+  <meta property="og:description" content="Get in touch with DJWEIRDNASTY for bookings, appearances, and performances.">
+  <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
+  <meta property="og:url" content="https://djweirdnasty.com/contact.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Contact | DJWEIRDNASTY">
+  <meta name="twitter:description" content="Get in touch with DJWEIRDNASTY for bookings, appearances, and performances.">
+  <meta name="twitter:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 class="site-banner">
+        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+      </h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#events">Events</a>
+        <a href="news.html">News</a>
+        <a href="mixtapes.html">Mixtapes</a>
+        <a href="content.html">Content</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section id="contact" class="info">
+      <h2>Contact</h2>
+      <p>Send a message and I'll reply as soon as possible.</p>
+      <form id="contact-form" action="https://formspree.io/f/mvkpzwzj" method="POST">
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" placeholder="Your name" required>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" placeholder="Hi! I'd like to talk about..." required></textarea>
+
+        <button type="submit" class="submit-btn">Submit</button>
+      </form>
+      <p id="form-status" class="form-status" aria-live="polite"></p>
+      <p class="email-note">Or email me directly at <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a>.</p>
+    </section>
+  </main>
+  <footer class="container">
+    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+  </footer>
+  <script>
+    document.getElementById('contact-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const status = document.getElementById('form-status');
+      const button = form.querySelector('button[type="submit"]');
+      const originalText = button.textContent;
+      button.textContent = 'Sending...';
+      button.disabled = true;
+
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (response.ok) {
+          form.reset();
+          window.location.href = 'thank-you.html';
+        } else {
+          response.json().then(function(data) {
+            if (status) status.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            button.textContent = originalText;
+            button.disabled = false;
+          });
+        }
+      })
+      .catch(function() {
+        if (status) status.textContent = 'Oops! Something went wrong. Please try again.';
+        button.textContent = originalText;
+        button.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>

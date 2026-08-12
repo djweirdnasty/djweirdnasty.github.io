@@ -37,7 +37,7 @@
         <a href="mixtapes.html">Mixtapes</a>
         <a href="content.html">Content</a>
         <a href="#newsletter">Newsletter</a>
-        <a href="#contact">Contact</a>
+        <a href="contact.html">Contact</a>
       </nav>
     </div>
   </header>
@@ -204,7 +204,7 @@
         <article class="event-card booking-card">
           <h3>Private Event Booking</h3>
           <p>Flexible dates at your venue — available for bookings, appearances, and performances.</p>
-          <a href="index.html#contact" class="playlist-link">Read more</a>
+          <a href="contact.html" class="playlist-link">Read more</a>
         </article>
       </div>
     </section>
@@ -226,64 +226,9 @@
       </form>
       <p id="newsletter-status" class="form-status" aria-live="polite"></p>
     </section>
-
-    <section id="contact" class="info">
-      <h2>Contact</h2>
-      <p>Send a message and I'll reply as soon as possible.</p>
-      <form id="contact-form" action="https://formspree.io/f/mvkpzwzj" method="POST">
-        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
-
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text" placeholder="Your name" required>
-
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="you@example.com" required>
-
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="5" placeholder="Hi! I'd like to talk about..." required></textarea>
-
-        <button type="submit" class="submit-btn">Submit</button>
-      </form>
-      <p id="form-status" class="form-status" aria-live="polite"></p>
-      <p class="email-note">Or email me directly at <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a>.</p>
-    </section>
   </main>
   <footer class="container">
     <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
-  <script>
-    document.getElementById('contact-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const form = e.target;
-      const status = document.getElementById('form-status');
-      const button = form.querySelector('button[type="submit"]');
-      const originalText = button.textContent;
-      button.textContent = 'Sending...';
-      button.disabled = true;
-
-      fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
-      })
-      .then(function(response) {
-        if (response.ok) {
-          form.reset();
-          window.location.href = 'thank-you.html';
-        } else {
-          response.json().then(function(data) {
-            if (status) status.textContent = data.error || 'Oops! Something went wrong. Please try again.';
-            button.textContent = originalText;
-            button.disabled = false;
-          });
-        }
-      })
-      .catch(function() {
-        if (status) status.textContent = 'Oops! Something went wrong. Please try again.';
-        button.textContent = originalText;
-        button.disabled = false;
-      });
-    });
-  </script>
 </body>
 </html>
