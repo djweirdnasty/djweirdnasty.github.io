@@ -212,14 +212,15 @@
     <section id="newsletter" class="info newsletter-section">
       <h2>Newsletter</h2>
       <p>Sign up for exclusive updates, new mixtapes, events, and content drops.</p>
-      <form action="https://formspree.io/f/mvkpzwzj" method="POST" id="newsletter-form" target="_blank">
+      <!-- Replace NEWSLETTER_API_URL with your deployed API URL (e.g. https://your-app.onrender.com) -->
+      <form id="newsletter-form" onsubmit="return handleNewsletterSubmit(event)">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
         <label for="newsletter-name">Name</label>
-        <input id="newsletter-name" name="NAME" type="text" placeholder="Your name" required>
+        <input id="newsletter-name" name="name" type="text" placeholder="Your name" required>
 
         <label for="newsletter-email">Email</label>
-        <input id="newsletter-email" name="EMAIL" type="email" placeholder="you@example.com" required>
+        <input id="newsletter-email" name="email" type="email" placeholder="you@example.com" required>
 
         <button type="submit" class="submit-btn">Subscribe</button>
       </form>
@@ -229,5 +230,50 @@
   <footer class="container">
     <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
+  <script>
+    const NEWSLETTER_API_URL = 'https://your-newsletter-api.onrender.com';
+    function handleNewsletterSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const status = document.getElementById('newsletter-status');
+      const btn = form.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      status.textContent = '';
+      status.style.color = '';
+
+      const payload = {
+        name: document.getElementById('newsletter-name').value,
+        email: document.getElementById('newsletter-email').value
+      };
+
+      fetch(NEWSLETTER_API_URL + '/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          status.textContent = data.message || 'Subscribed! Check your email to confirm.';
+          status.style.color = '#60ff80';
+          form.reset();
+        } else {
+          status.textContent = data.detail || 'Something went wrong.';
+          status.style.color = '#ff5566';
+        }
+      })
+      .catch(function() {
+        status.textContent = 'Could not connect. Please try again later.';
+        status.style.color = '#ff5566';
+      })
+      .finally(function() {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      });
+      return false;
+    }
+  </script>
 </body>
 </html>
