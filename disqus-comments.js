@@ -1,5 +1,5 @@
 (function () {
-  var DISQUS_SHORTNAME = 'djweirdnasty'; // Replace with your Disqus shortname
+  var DISQUS_SHORTNAME = 'djweirdnasty-com';
 
   function injectDisqus() {
     var article = document.querySelector('article.info, main article');
