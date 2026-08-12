@@ -53,17 +53,17 @@ header h1 {
 nav {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 nav a {
   font-family: 'Monoton', cursive;
-  font-size: 1.3rem;
+  font-size: 1rem;
   text-decoration: none;
   color: #ff5bd7;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-shadow:
     0 0 4px #ff4fd8,
     0 0 8px #ff4fd8,
