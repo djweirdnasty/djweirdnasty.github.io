@@ -5,4 +5,4 @@ compatibility_date = "2024-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "djweirdnasty-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "2c884dce-8de2-4296-95b9-1a4bcbff1463"
