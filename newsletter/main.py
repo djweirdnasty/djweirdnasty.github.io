@@ -22,7 +22,14 @@ admin_pass = os.getenv("ADMIN_PASSWORD", "change-this-password")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[website_url, "http://localhost:5500", "http://127.0.0.1:5500"],
+    allow_origins=[
+        website_url,
+        "https://djweirdnasty.github.io",
+        "https://djweirdnasty.com",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
