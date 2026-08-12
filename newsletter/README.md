@@ -1,6 +1,8 @@
 # DJWEIRDNASTY Newsletter System
 
-A self-hosted newsletter platform built with FastAPI + SQLite + Brevo.
+A self-hosted newsletter platform built with FastAPI + SQLite + pure SMTP.
+
+**No third-party email API. No send limits.** Uses Python's built-in `smtplib` to connect directly to your own mail server or Amazon SES.
 
 ## Features
 - Subscriber signup with email confirmation (double opt-in)
@@ -24,10 +26,33 @@ cp .env.example .env
 # Edit .env with your values
 ```
 
-### 3. Get a free Brevo API key
-- Sign up at [brevo.com](https://www.brevo.com) (free: 300 emails/day)
-- Go to Settings → API Keys → Generate
-- Paste the key into `.env` as `BREVO_API_KEY`
+### 3. Configure SMTP (your own mail server — no send limits)
+
+**Option A: Amazon SES** ($0.10 per 1,000 emails — practically unlimited)
+1. Sign up at [aws.amazon.com/ses](https://aws.amazon.com/ses/)
+2. Verify your sending domain
+3. Create SMTP credentials in SES console
+4. Set in `.env`:
+   - `SMTP_HOST=email-smtp.us-east-1.amazonaws.com`
+   - `SMTP_PORT=587`
+   - `SMTP_USER=your-ses-username`
+   - `SMTP_PASSWORD=your-ses-password`
+   - `SMTP_USE_TLS=true`
+
+**Option B: Your own mail server** (Postfix, Mailcow, etc.)
+- `SMTP_HOST=mail.yourdomain.com`
+- `SMTP_PORT=587`
+- `SMTP_USER=your-username`
+- `SMTP_PASSWORD=your-password`
+- `SMTP_USE_TLS=true`
+
+**Option C: Gmail** (500 emails/day, good for testing)
+- Enable 2FA → generate an App Password
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USER=djweirdnasty@gmail.com`
+- `SMTP_PASSWORD=your-app-password`
+- `SMTP_USE_TLS=true`
 
 ### 4. Run locally
 ```bash
