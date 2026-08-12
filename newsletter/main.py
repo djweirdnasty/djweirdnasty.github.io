@@ -138,10 +138,7 @@ def confirm_subscription(token: str, db: Session = Depends(get_db)):
     sub.confirmed = True
     sub.confirm_token = ""
     db.commit()
-    return HTMLResponse(
-        "<h2>Subscription confirmed!</h2><p>You're now subscribed to the DJWEIRDNASTY newsletter.</p>"
-        f'<p><a href="{website_url}">Back to site</a></p>'
-    )
+    return RedirectResponse(f"{website_url}/newsletter-confirmed.html", status_code=302)
 
 
 @app.get("/api/unsubscribe/{token}")
