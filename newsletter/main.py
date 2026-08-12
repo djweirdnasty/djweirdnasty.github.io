@@ -59,6 +59,17 @@ def _check_scheduled_campaigns():
 scheduler.add_job(_check_scheduled_campaigns, "interval", minutes=5)
 
 
+@app.on_event("startup")
+def log_smtp_config():
+    import email_service
+    print(f"[startup] SMTP_HOST={email_service.SMTP_HOST}")
+    print(f"[startup] SMTP_PORT={email_service.SMTP_PORT}")
+    print(f"[startup] SMTP_USER={email_service.SMTP_USER}")
+    print(f"[startup] SMTP_PASSWORD set: {bool(email_service.SMTP_PASSWORD)}")
+    print(f"[startup] SMTP_USE_TLS={email_service.SMTP_USE_TLS}")
+    print(f"[startup] FROM_EMAIL={email_service.FROM_EMAIL}")
+
+
 # ─── Pydantic models ───
 
 class SubscribeRequest(BaseModel):
