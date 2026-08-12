@@ -62,9 +62,16 @@
 
       <h2>New Campaign</h2>
       <div class="editor">
+        <select id="templateSelect" onchange="loadTemplate()" style="width:100%;padding:12px;margin:0.5rem 0;border-radius:8px;border:1px solid #333;background:#1a1a2a;color:#eee;font-size:1rem;">
+          <option value="">— Start from blank —</option>
+        </select>
         <input type="text" id="campSubject" placeholder="Subject line">
         <textarea id="campBody" placeholder="Write your newsletter HTML here. Use {{name}} for subscriber name. {{unsubscribe_url}} will be auto-appended."></textarea>
-        <button class="btn btn-primary" onclick="createCampaign()">Save Draft</button>
+        <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:#888;">
+          <input type="datetime-local" id="campSchedule" style="padding:8px;border-radius:8px;border:1px solid #333;background:#1a1a2a;color:#eee;">
+          Schedule for later (optional)
+        </label>
+        <button class="btn btn-primary" onclick="createCampaign()">Save Campaign</button>
         <div class="msg msg-ok" id="campMsg"></div>
       </div>
 
@@ -113,7 +120,30 @@
     async function showDashboard() {
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
-      await Promise.all([loadSubs(), loadCampaigns()]);
+      await Promise.all([loadSubs(), loadCampaigns(), loadTemplates()]);
+    }
+
+    let templates = {};
+    async function loadTemplates() {
+      const res = await fetch('/api/admin/templates', {headers: authHeaders()});
+      if (!res.ok) return;
+      const data = await res.json();
+      const select = document.getElementById('templateSelect');
+      data.templates.forEach(t => {
+        templates[t.key] = t;
+        const opt = document.createElement('option');
+        opt.value = t.key;
+        opt.textContent = t.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function loadTemplate() {
+      const key = document.getElementById('templateSelect').value;
+      if (!key) return;
+      const t = templates[key];
+      document.getElementById('campSubject').value = t.subject;
+      document.getElementById('campBody').value = t.body;
     }
 
     async function loadSubs() {
@@ -148,15 +178,22 @@
       const subject = document.getElementById('campSubject').value;
       const body = document.getElementById('campBody').value;
       if (!subject || !body) return;
+      const schedInput = document.getElementById('campSchedule').value;
+      let scheduled_at = null;
+      if (schedInput) {
+        scheduled_at = new Date(schedInput).toISOString();
+      }
       const res = await fetch('/api/admin/campaigns', {
         method: 'POST', headers: authHeaders(),
-        body: JSON.stringify({subject, body})
+        body: JSON.stringify({subject, body, scheduled_at})
       });
       if (res.ok) {
         document.getElementById('campMsg').style.display = 'block';
-        document.getElementById('campMsg').textContent = 'Campaign saved!';
+        document.getElementById('campMsg').textContent = scheduled_at ? 'Campaign scheduled!' : 'Campaign saved!';
         document.getElementById('campSubject').value = '';
         document.getElementById('campBody').value = '';
+        document.getElementById('campSchedule').value = '';
+        document.getElementById('templateSelect').value = '';
         await loadCampaigns();
         setTimeout(() => document.getElementById('campMsg').style.display = 'none', 3000);
       }

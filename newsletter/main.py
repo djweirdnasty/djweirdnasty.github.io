@@ -7,10 +7,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from database import get_db, Subscriber, Campaign, CampaignRecipient
+from database import get_db, SessionLocal, Subscriber, Campaign, CampaignRecipient
 from auth import create_access_token, decode_access_token, generate_token
 from email_service import send_email
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Template
+from apscheduler.schedulers.background import BackgroundScheduler
 import uvicorn
 
 app = FastAPI(title="DJWEIRDNASTY Newsletter API")
@@ -28,6 +29,27 @@ app.add_middleware(
 )
 
 jinja_env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates")))
+
+# ─── Scheduler ───
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+
+def _check_scheduled_campaigns():
+    db = SessionLocal()
+    try:
+        due = db.query(Campaign).filter(
+            Campaign.status == "scheduled",
+            Campaign.scheduled_at != None,
+            Campaign.scheduled_at <= datetime.utcnow(),
+        ).all()
+        for c in due:
+            _send_campaign_emails(c.id, db)
+    finally:
+        db.close()
+
+scheduler.add_job(_check_scheduled_campaigns, "interval", minutes=5)
 
 
 # ─── Pydantic models ───
@@ -238,8 +260,10 @@ def send_campaign(camp_id: int, background_tasks: BackgroundTasks, db: Session =
     return {"ok": True, "message": f"Sending campaign to {len(subs)} subscribers..."}
 
 
-def _send_campaign_emails(camp_id: int):
-    db = SessionLocal()
+def _send_campaign_emails(camp_id: int, db=None):
+    own_session = db is None
+    if own_session:
+        db = SessionLocal()
     try:
         c = db.query(Campaign).filter(Campaign.id == camp_id).first()
         if not c:
@@ -262,7 +286,8 @@ def _send_campaign_emails(camp_id: int):
         c.sent_at = datetime.utcnow()
         db.commit()
     finally:
-        db.close()
+        if own_session:
+            db.close()
 
 
 @app.delete("/api/admin/campaigns/{camp_id}")
@@ -309,6 +334,61 @@ def track_click(token: str):
     return RedirectResponse(url=website_url, status_code=302)
 
 
+# ─── Email templates ───
+
+EMAIL_TEMPLATES = {
+    "new_mixtape": {
+        "name": "New Mixtape Drop",
+        "subject": "🔥 New Mixtape from DJWEIRDNASTY!",
+        "body": """<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0f;color:#eee;padding:2rem;border-radius:12px;">
+<h1 style="color:#ff4fd8;text-align:center;">New Mixtape Drop!</h1>
+<p>Hey {{name}},</p>
+<p>A new mixtape just dropped. Come check it out on the site.</p>
+<p style="text-align:center;margin:2rem 0;">
+  <a href="https://djweirdnasty.com/mixtapes.html" style="display:inline-block;padding:14px 28px;background:linear-gradient(180deg,#4fa8ff,#1a5fd0);color:#ff4fd8;border-radius:999px;text-decoration:none;font-weight:bold;">Listen Now</a>
+</p>
+<p style="color:#888;font-size:12px;">DJWEIRDNASTY</p>
+</div>""",
+    },
+    "new_event": {
+        "name": "New Event Announcement",
+        "subject": "🎤 New Event — Don't Miss Out!",
+        "body": """<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0f;color:#eee;padding:2rem;border-radius:12px;">
+<h1 style="color:#ff4fd8;text-align:center;">New Event!</h1>
+<p>Hey {{name}},</p>
+<p>Got a new event coming up. Check the details on the website.</p>
+<p style="text-align:center;margin:2rem 0;">
+  <a href="https://djweirdnasty.com/#events" style="display:inline-block;padding:14px 28px;background:linear-gradient(180deg,#4fa8ff,#1a5fd0);color:#ff4fd8;border-radius:999px;text-decoration:none;font-weight:bold;">View Event</a>
+</p>
+<p style="color:#888;font-size:12px;">DJWEIRDNASTY</p>
+</div>""",
+    },
+    "general": {
+        "name": "General Update",
+        "subject": "DJWEIRDNASTY Update",
+        "body": """<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0f;color:#eee;padding:2rem;border-radius:12px;">
+<h1 style="color:#ff4fd8;text-align:center;">What's Good {{name}}</h1>
+<p>Here's what's been going on with DJWEIRDNASTY:</p>
+<p style="margin:1.5rem 0;">Write your update here...</p>
+<p style="text-align:center;margin:2rem 0;">
+  <a href="https://djweirdnasty.com" style="display:inline-block;padding:14px 28px;background:linear-gradient(180deg,#4fa8ff,#1a5fd0);color:#ff4fd8;border-radius:999px;text-decoration:none;font-weight:bold;">Visit Site</a>
+</p>
+<p style="color:#888;font-size:12px;">DJWEIRDNASTY</p>
+</div>""",
+    },
+}
+
+
+@app.get("/api/admin/templates")
+def list_templates(_: dict = Depends(require_admin)):
+    return {
+        "templates": [
+            {"key": k, "name": v["name"], "subject": v["subject"], "body": v["body"]}
+            for k, v in EMAIL_TEMPLATES.items()
+        ]
+    }
+
+
 # ─── Admin dashboard ───
 
 @app.get("/admin", response_class=HTMLResponse)
@@ -324,8 +404,6 @@ def request_base_url():
         return os.getenv("RENDER_EXTERNAL_URL").rstrip("/")
     return f"http://{os.getenv('HOST', '0.0.0.0')}:{os.getenv('PORT', '8000')}"
 
-
-from database import SessionLocal
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))

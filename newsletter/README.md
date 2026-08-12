@@ -2,17 +2,18 @@
 
 A self-hosted newsletter platform built with FastAPI + SQLite + pure SMTP.
 
-**No third-party email API. No send limits.** Uses Python's built-in `smtplib` to connect directly to your own mail server or Amazon SES.
+**No third-party email API.** Uses Python's built-in `smtplib` to connect directly to your SMTP server.
 
 ## Features
 - Subscriber signup with email confirmation (double opt-in)
 - Unsubscribe links in every email
 - Admin dashboard at `/admin`
-- Campaign editor (HTML newsletters)
+- Campaign editor with pre-built email templates
+- Scheduled campaign sending
 - Open/click tracking
 - Subscriber management
 
-## Setup
+## Phase 1 — $0 Development
 
 ### 1. Install dependencies
 ```bash
@@ -26,32 +27,46 @@ cp .env.example .env
 # Edit .env with your values
 ```
 
-### 3. Configure SMTP (your own mail server — no send limits)
+### 3. Configure SMTP
 
-**Option A: Amazon SES** ($0.10 per 1,000 emails — practically unlimited)
+**Honest note:** Running a mail server from home is not practical. You need a static IP, reverse DNS (PTR), SPF/DKIM/DMARC records, port 25 access (many ISPs block it), and good IP reputation. Without these, your emails will go to spam.
+
+**Recommended options:**
+
+| Option | Limit | Cost | Difficulty |
+|---------|-------|------|------------|
+| Gmail SMTP | 500/day | $0 | Easy — good for testing |
+| Amazon SES | Unlimited* | $0.10/1K emails | Medium — best value |
+| Self-hosted (Mail-in-a-Box) | Unlimited | $4/mo VPS | Hard — full control |
+
+*SES has soft limits you can raise by request.
+
+**Gmail** (free, 500/day — start here):
+- Enable 2FA → generate an App Password at myaccount.google.com/apppasswords
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USER=djweirdnasty@gmail.com`
+- `SMTP_PASSWORD=your-app-password`
+- `SMTP_USE_TLS=true`
+
+**Amazon SES** ($0.10 per 1,000 emails — scale here):
 1. Sign up at [aws.amazon.com/ses](https://aws.amazon.com/ses/)
-2. Verify your sending domain
+2. Verify your sending domain (add SPF/DKIM/DMARC records)
 3. Create SMTP credentials in SES console
-4. Set in `.env`:
+4. Request production access (out of sandbox)
+5. Set in `.env`:
    - `SMTP_HOST=email-smtp.us-east-1.amazonaws.com`
    - `SMTP_PORT=587`
    - `SMTP_USER=your-ses-username`
    - `SMTP_PASSWORD=your-ses-password`
    - `SMTP_USE_TLS=true`
 
-**Option B: Your own mail server** (Postfix, Mailcow, etc.)
+**Self-hosted mail server** (full control, more work):
+- Requires a VPS ($4/mo DigitalOcean), domain with DNS control
+- Install Mail-in-a-Box: `curl -s https://mailinabox.email/setup.sh | bash -s`
+- Must configure: reverse DNS/PTR, SPF, DKIM, DMARC, TLS
 - `SMTP_HOST=mail.yourdomain.com`
 - `SMTP_PORT=587`
-- `SMTP_USER=your-username`
-- `SMTP_PASSWORD=your-password`
-- `SMTP_USE_TLS=true`
-
-**Option C: Gmail** (500 emails/day, good for testing)
-- Enable 2FA → generate an App Password
-- `SMTP_HOST=smtp.gmail.com`
-- `SMTP_PORT=587`
-- `SMTP_USER=djweirdnasty@gmail.com`
-- `SMTP_PASSWORD=your-app-password`
 - `SMTP_USE_TLS=true`
 
 ### 4. Run locally
@@ -61,7 +76,9 @@ python main.py
 - API runs at `http://localhost:8000`
 - Admin dashboard at `http://localhost:8000/admin`
 
-### 5. Deploy to Render (free tier)
+## Phase 2 — $0 Deployment
+
+### Deploy to Render (free tier)
 1. Push this repo to GitHub
 2. Go to [render.com](https://render.com) → New → Web Service
 3. Connect your GitHub repo
@@ -72,10 +89,19 @@ python main.py
 5. Add environment variables from your `.env` file
 6. Deploy
 
-### 6. Wire up your website
-Update the newsletter form in `index.html` to point to your API:
-```html
-<form action="https://your-api.onrender.com/api/subscribe" method="POST">
+**Note:** Render free tier spins down after 15 min of inactivity. First request after sleep takes ~30s to wake. For production, consider the $7/mo paid tier.
+
+### Alternative: Fly.io (free tier)
+```bash
+npm install -g flyctl
+fly launch  # from newsletter/ directory
+fly deploy
+```
+
+### Wire up your website
+Update `NEWSLETTER_API_URL` in `index.html` to your deployed API URL:
+```js
+const NEWSLETTER_API_URL = 'https://your-api.onrender.com';
 ```
 
 ## Admin Dashboard
@@ -98,3 +124,4 @@ Visit `https://your-api.onrender.com/admin` and login with your `ADMIN_USERNAME`
 | GET | `/api/admin/campaigns/{id}` | Campaign details |
 | POST | `/api/admin/campaigns/{id}/send` | Send campaign |
 | DELETE | `/api/admin/campaigns/{id}` | Delete campaign |
+| GET | `/api/admin/templates` | List email templates |
