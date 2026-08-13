@@ -304,9 +304,12 @@ function renderLoginForm(holder, authArea, formArea) {
 function renderRegisterForm(holder, authArea, formArea) {
   var form = document.createElement('div');
   form.innerHTML = [
-    '<input type="text" class="djwn-reg-username" placeholder="Username" />',
-    '<input type="email" class="djwn-reg-email" placeholder="Email" />',
-    '<input type="password" class="djwn-reg-password" placeholder="Password (min 6 chars)" />',
+    '<label style="display:block;color:rgba(255,255,255,0.6);font-size:0.8rem;margin-bottom:4px;">Username</label>',
+    '<input type="text" class="djwn-reg-username" placeholder="Choose a username" autocomplete="username" />',
+    '<label style="display:block;color:rgba(255,255,255,0.6);font-size:0.8rem;margin-bottom:4px;">Email</label>',
+    '<input type="email" class="djwn-reg-email" placeholder="you@example.com" autocomplete="email" />',
+    '<label style="display:block;color:rgba(255,255,255,0.6);font-size:0.8rem;margin-bottom:4px;">Password</label>',
+    '<input type="password" class="djwn-reg-password" placeholder="At least 6 characters" minlength="6" autocomplete="new-password" />',
     '<div class="djwn-reg-error"></div>',
   ].join('');
 
@@ -316,11 +319,37 @@ function renderRegisterForm(holder, authArea, formArea) {
   btn.style.marginBottom = '0.5rem';
 
   btn.onclick = async function () {
-    var username = form.querySelector('.djwn-reg-username').value;
-    var email = form.querySelector('.djwn-reg-email').value;
+    var username = form.querySelector('.djwn-reg-username').value.trim();
+    var email = form.querySelector('.djwn-reg-email').value.trim();
     var password = form.querySelector('.djwn-reg-password').value;
     var errEl = form.querySelector('.djwn-reg-error');
     errEl.textContent = '';
+
+    // Client-side validation with clearer messages
+    if (!username || username.length < 2) {
+      errEl.textContent = 'Username must be at least 2 characters.';
+      return;
+    }
+    if (/\s/.test(username)) {
+      errEl.textContent = 'Username cannot contain spaces.';
+      return;
+    }
+    if (/@/.test(username)) {
+      errEl.textContent = 'Your email should go in the Email field, not the Username field.';
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errEl.textContent = 'Please enter a valid email address.';
+      return;
+    }
+    if (email.indexOf(' ') >= 0) {
+      errEl.textContent = 'Email cannot contain spaces.';
+      return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = 'Creating account...';
