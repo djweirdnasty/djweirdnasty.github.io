@@ -10,6 +10,11 @@ body {
   color: #f4f4f4;
   text-align: center;
   min-height: 100vh;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 .container {
@@ -41,12 +46,12 @@ header h1 {
 }
 .site-banner img {
   /* reduce banner height: responsive, shorter on large screens */
-  width: 100vw;
+  width: 100%;
   max-width: none;
   height: auto;
   max-height: clamp(120px, 14vh, 240px); /* shorter, responsive cap */
   display: block;
-  margin-left: calc((100% - 100vw) / 2);
+  margin: 0 auto;
   object-fit: cover;
 }
 
@@ -785,16 +790,24 @@ footer {
 
   nav {
     flex-wrap: nowrap;
-    gap: 12px;
+    gap: 10px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 0.5rem;
+    padding: 0 0.75rem;
+    justify-content: flex-start;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  nav::-webkit-scrollbar {
+    display: none;
   }
 
   nav a {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     letter-spacing: 1px;
     white-space: nowrap;
+    padding: 0.35rem 0;
   }
 
   .hero {
@@ -802,7 +815,62 @@ footer {
   }
 
   .info {
-    padding: 1.5rem;
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .event-card {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: auto;
+    padding: 1rem;
+  }
+
+  .event-flyer {
+    max-width: 100%;
+    margin: 0.75rem auto;
+  }
+
+  img,
+  video,
+  embed,
+  object {
+    max-width: 100%;
+    height: auto;
+  }
+
+  iframe {
+    max-width: 100%;
+  }
+
+  .news-carousel .event-card {
+    flex: 0 0 85%;
+    max-width: 280px;
+  }
+
+  .news-carousel .event-flyer {
+    height: 160px;
+  }
+
+  .playlist-link,
+  .share-button {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    margin-top: 0.75rem;
+  }
+
+  .events-grid {
+    gap: 0.75rem;
+  }
+
+  .events-grid .event-card {
+    flex: 1 1 100%;
+  }
+
+  .video-highlight,
+  .mepisode-layout {
+    grid-template-columns: 1fr;
   }
 }
 
