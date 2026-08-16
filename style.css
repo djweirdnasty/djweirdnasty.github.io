@@ -148,6 +148,18 @@ section {
   margin: 3rem 0;
 }
 
+body.home main.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+body.home main.container > section {
+  flex: 1 1 calc(50% - 0.75rem);
+  min-width: 300px;
+  margin: 0;
+}
+
 .info {
   text-align: left;
   background: #000;
