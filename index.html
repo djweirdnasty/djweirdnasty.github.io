@@ -250,8 +250,8 @@
     </section>
 
     <section id="latest-mixtapes" class="info">
-      <h2>Mixtapes &amp; MUD MUSIC</h2>
-      <p>Listen to the latest mixes and watch the newest episodes.</p>
+      <h2>Mixtapes &amp; MURRDAH SEASON MONDAY</h2>
+      <p>Listen to the latest mixes and catch up on MURRDAH SEASON MONDAY.</p>
       <div class="events-grid" id="latest-mixtapes-grid">
         <article class="event-card">
           <h3>Mixtapes</h3>
@@ -359,9 +359,9 @@
           var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/news-(entertainment|national|sports|music)\.html$/); }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
           var ng = document.getElementById('latest-news-grid');
           if (ng) ng.innerHTML = news.map(function(i) { return card(i,'Read more'); }).join('');
-          var mix = items.filter(function(i) { return i.path === '/mixtapes.html' || i.path.indexOf('/mud-music-') === 0; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
+          var mix = items.filter(function(i) { return i.path === '/mixtapes.html' || i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
           var mg = document.getElementById('latest-mixtapes-grid');
-          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path.indexOf('/mud-music-') === 0 ? 'Watch' : 'Listen'); }).join('');
+          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path === '/mixtapes.html' ? 'Listen' : 'Read more'); }).join('');
         })
         .catch(function() {});
     })();
