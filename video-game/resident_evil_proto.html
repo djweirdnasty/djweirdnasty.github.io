@@ -103,6 +103,8 @@
       align-items: center;
       padding: 8px 16px;
       box-sizing: border-box;
+      position: relative;
+      z-index: 11;
     }
     .dpad {
       display: grid;
@@ -121,6 +123,9 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css?v=5">
 </head>
 <body>
@@ -136,13 +141,13 @@
         <a href="/news.html">News</a>
         <a href="/mixtapes.html">Mixtapes</a>
         <a href="/content.html">Content</a>
-        <a href="/video-game/resident_evil_proto.html">Games</a>
         <a href="/index.html#newsletter">Newsletter</a>
         <a href="/index.html#contact">Contact</a>
         <a href="/privacy-policy.html">Privacy</a>
       </nav>
     </div>
   </header>
+  <p style="width: 100%; max-width: 600px; text-align: left; padding: 10px 20px; box-sizing: border-box; margin: 0;"><a href="/content.html" style="color: #ffd860;">&larr; Back to Content</a></p>
   <main id="game-main">
 <div id="title">YOUIE</div>
 <canvas id="game" width="640" height="480"></canvas>
@@ -152,7 +157,6 @@
   <p><strong>Desktop:</strong> Click to start</p>
   <p><strong>Mobile:</strong> Press FIRE to start</p>
   <p class="hint">Find keys, fight zombies, escape each level.</p>
-  <a href="/content.html" class="back-link">&larr; Back to Content</a>
 </div>
 <div id="hud">WASD/Arrows: move | Click: shoot | Find keys, reach the door</div>
 <div id="mobile-controls">
@@ -475,7 +479,6 @@ canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0
 canvas.addEventListener('touchmove', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
 if (titleScreen) {
   titleScreen.addEventListener('click', () => restart());
-  titleScreen.addEventListener('touchend', e => { e.preventDefault(); restart(); }, {passive: false});
 }
 if (gameMain) {
   gameMain.addEventListener('mouseenter', () => { document.body.style.overflow = 'hidden'; });
