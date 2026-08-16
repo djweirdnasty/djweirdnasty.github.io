@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>YOUIE</title>
+<style>
+  body {
+    margin: 0;
+    background: #050505;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    touch-action: manipulation;
+  }
+  canvas {
+    image-rendering: pixelated;
+    border: 4px solid #333;
+    background: #111;
+    max-width: 90vw;
+    height: auto;
+    touch-action: none;
+  }
+  #hud {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  #title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #0f0;
+  }
+  #mobile-controls {
+    display: none;
+  }
+  .btn {
+    background: #222;
+    border: 2px solid #0f0;
+    color: #0f0;
+    font-size: 20px;
+    border-radius: 8px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .btn:active { background: #0f0; color: #000; }
+  @media (pointer: coarse) {
+    body { justify-content: flex-start; padding-top: 10px; }
+    canvas { max-width: 100vw; max-height: 55vh; width: auto; }
+    #title { font-size: 18px; margin-bottom: 4px; }
+    #hud { display: none; }
+    #mobile-controls {
+      display: flex;
+      width: 100%;
+      max-width: 640px;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      box-sizing: border-box;
+    }
+    .dpad {
+      display: grid;
+      grid-template-columns: 48px 48px 48px;
+      grid-template-rows: 48px 48px;
+      gap: 4px;
+    }
+    #fire-btn {
+      width: 80px; height: 80px; font-size: 16px; border-radius: 50%;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="title">YOUIE</div>
+<canvas id="game" width="640" height="480"></canvas>
+<div id="hud">WASD/Arrows: move | Click: shoot | Find keys, reach the door</div>
+<div id="mobile-controls">
+  <div class="dpad">
+    <div></div>
+    <div class="btn" data-key="w">▲</div>
+    <div></div>
+    <div class="btn" data-key="a">◀</div>
+    <div class="btn" data-key="s">▼</div>
+    <div class="btn" data-key="d">▶</div>
+  </div>
+  <div class="btn" id="fire-btn">FIRE</div>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const world = { w: 640, h: 480 };
+
+const outerWalls = [
+  { x: 40,  y: 40,  w: 560, h: 20 }, // top
+  { x: 40,  y: 40,  w: 20,  h: 120 }, // left upper
+  { x: 40,  y: 280, w: 20,  h: 160 }, // left lower
+  { x: 580, y: 40,  w: 20,  h: 120 }, // right upper
+  { x: 580, y: 280, w: 20,  h: 160 }, // right lower
+  { x: 40,  y: 420, w: 560, h: 20 }, // bottom
+];
+
+const innerMansion = [
+  { x: 40,  y: 180, w: 220, h: 20 },
+  { x: 200, y: 280, w: 400, h: 20 },
+  { x: 300, y: 60,  w: 20,  h: 120 },
+  { x: 420, y: 180, w: 20,  h: 100 },
+];
+
+const innerOpen = [
+  { x: 280, y: 180, w: 80, h: 80 },
+];
+
+const doors = {
+  right: { x: 580, y: 160, w: 20, h: 120 },
+  top:   { x: 300, y: 40,  w: 40, h: 20 },
+};
+
+const pistol = { name: 'Pistol', damage: 1, color: '#ff0', bulletSize: 3 };
+const shotgun = { name: 'Shotgun', damage: 8, color: '#f00', bulletSize: 5 };
+
+const levels = [
+  {
+    name: 'Mansion Hall',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'ammo', x: 500, y: 100, size: 8, amount: 4 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 40 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 480, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 },
+    ],
+    zombieHealth: 2, zombieSpeed: 45, zombieDamage: 20,
+  },
+  {
+    name: 'Bigger Room',
+    start: { x: 80, y: 400 },
+    walls: [...outerWalls, ...innerOpen],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'key', x: 120, y: 80, size: 8 },
+      { type: 'ammo', x: 320, y: 240, size: 8, amount: 6 },
+      { type: 'ammo', x: 540, y: 80, size: 8, amount: 4 },
+      { type: 'med',  x: 80,  y: 360, size: 8, amount: 40 },
+    ],
+    zombies: [
+      { x: 200, y: 120 }, { x: 500, y: 80 }, { x: 450, y: 350 },
+      { x: 120, y: 250 }, { x: 560, y: 360 }, { x: 350, y: 120 },
+      { x: 320, y: 320 }, { x: 520, y: 250 },
+    ],
+    zombieHealth: 3, zombieSpeed: 52, zombieDamage: 25,
+  },
+  {
+    name: 'Two Keys',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 2,
+    items: [
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'key', x: 520, y: 120, size: 8 },
+      { type: 'ammo', x: 300, y: 100, size: 8, amount: 4 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 40 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 540, y: 120 }, { x: 480, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 320, y: 240 },
+    ],
+    zombieHealth: 3, zombieSpeed: 62, zombieDamage: 25,
+  },
+  {
+    name: 'Horde',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'key', x: 540, y: 120, size: 8 },
+      { type: 'ammo', x: 500, y: 100, size: 8, amount: 4 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'ammo', x: 120, y: 120, size: 8, amount: 6 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 60 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 480, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 540, y: 360 },
+      { x: 300, y: 120 }, { x: 300, y: 240 }, { x: 320, y: 360 }, { x: 200, y: 240 },
+    ],
+    zombieHealth: 4, zombieSpeed: 55, zombieDamage: 35,
+  },
+  {
+    name: 'Magnum Run',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'weapon', x: 320, y: 240, size: 10, weapon: shotgun, amount: 12 },
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'ammo', x: 500, y: 100, size: 8, amount: 4 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 80 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 480, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 320, y: 150 },
+      { x: 320, y: 320 }, { x: 540, y: 360 }, { x: 540, y: 120 },
+      { x: 250, y: 240 },
+    ],
+    zombieHealth: 8, zombieSpeed: 70, zombieDamage: 40,
+  },
+  {
+    name: 'Nightmare Hall',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 2,
+    items: [
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'key', x: 540, y: 120, size: 8 },
+      { type: 'ammo', x: 320, y: 240, size: 8, amount: 4 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 50 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 480, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 540, y: 360 },
+      { x: 300, y: 120 }, { x: 300, y: 240 }, { x: 320, y: 360 },
+      { x: 200, y: 240 }, { x: 540, y: 240 }, { x: 120, y: 240 },
+    ],
+    zombieHealth: 5, zombieSpeed: 66, zombieDamage: 35,
+  },
+  {
+    name: 'Open Chamber',
+    start: { x: 80, y: 400 },
+    walls: [...outerWalls, ...innerOpen],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'key', x: 120, y: 80, size: 8 },
+      { type: 'ammo', x: 320, y: 240, size: 8, amount: 6 },
+      { type: 'ammo', x: 540, y: 80, size: 8, amount: 4 },
+      { type: 'ammo', x: 120, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 540, y: 360, size: 8, amount: 60 },
+    ],
+    zombies: [
+      { x: 200, y: 120 }, { x: 500, y: 80 }, { x: 450, y: 350 },
+      { x: 120, y: 250 }, { x: 560, y: 360 }, { x: 350, y: 120 },
+      { x: 320, y: 320 }, { x: 520, y: 250 }, { x: 250, y: 80 },
+      { x: 560, y: 160 }, { x: 100, y: 160 }, { x: 350, y: 350 },
+      { x: 520, y: 120 }, { x: 200, y: 360 },
+    ],
+    zombieHealth: 6, zombieSpeed: 70, zombieDamage: 38,
+  },
+  {
+    name: 'Triple Lock',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 3,
+    items: [
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'key', x: 520, y: 120, size: 8 },
+      { type: 'key', x: 540, y: 360, size: 8 },
+      { type: 'ammo', x: 300, y: 240, size: 8, amount: 6 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 70 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 540, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 540, y: 360 },
+      { x: 300, y: 120 }, { x: 300, y: 240 }, { x: 320, y: 360 },
+      { x: 200, y: 240 }, { x: 540, y: 240 }, { x: 120, y: 240 },
+    ],
+    zombieHealth: 7, zombieSpeed: 72, zombieDamage: 40,
+  },
+  {
+    name: 'Heavy Breach',
+    start: { x: 80, y: 400 },
+    walls: [...outerWalls, ...innerOpen],
+    door: doors.right,
+    keysNeeded: 1,
+    items: [
+      { type: 'weapon', x: 320, y: 240, size: 10, weapon: shotgun, amount: 14 },
+      { type: 'key', x: 540, y: 400, size: 8 },
+      { type: 'ammo', x: 120, y: 80, size: 8, amount: 4 },
+      { type: 'ammo', x: 120, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 540, y: 80, size: 8, amount: 80 },
+    ],
+    zombies: [
+      { x: 200, y: 120 }, { x: 500, y: 80 }, { x: 450, y: 350 },
+      { x: 120, y: 250 }, { x: 560, y: 360 }, { x: 350, y: 120 },
+      { x: 320, y: 320 }, { x: 520, y: 250 }, { x: 250, y: 80 },
+      { x: 560, y: 160 }, { x: 100, y: 160 }, { x: 350, y: 350 },
+      { x: 520, y: 120 }, { x: 200, y: 360 }, { x: 450, y: 120 },
+    ],
+    zombieHealth: 10, zombieSpeed: 72, zombieDamage: 45,
+  },
+  {
+    name: 'Final Escape',
+    start: { x: 80, y: 360 },
+    walls: [...outerWalls, ...innerMansion],
+    door: doors.right,
+    keysNeeded: 2,
+    items: [
+      { type: 'weapon', x: 320, y: 240, size: 10, weapon: shotgun, amount: 16 },
+      { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'key', x: 540, y: 120, size: 8 },
+      { type: 'ammo', x: 300, y: 100, size: 8, amount: 6 },
+      { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
+      { type: 'med',  x: 100, y: 360, size: 8, amount: 100 },
+    ],
+    zombies: [
+      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 540, y: 120 },
+      { x: 160, y: 360 }, { x: 450, y: 360 }, { x: 540, y: 360 },
+      { x: 300, y: 120 }, { x: 300, y: 240 }, { x: 320, y: 360 },
+      { x: 200, y: 240 }, { x: 540, y: 240 }, { x: 120, y: 240 },
+      { x: 520, y: 360 }, { x: 350, y: 80 }, { x: 250, y: 120 },
+      { x: 120, y: 360 }, { x: 500, y: 240 }, { x: 450, y: 120 },
+    ],
+    zombieHealth: 12, zombieSpeed: 75, zombieDamage: 50,
+  },
+];
+
+let currentLevel = 0;
+let walls = [];
+let door = {};
+let items = [];
+let zombies = [];
+let bullets = [];
+
+let player = {
+  x: 80, y: 360, size: 14, speed: 120,
+  health: 100, maxHealth: 100,
+  ammo: 6, keys: 0,
+  weapon: { ...pistol },
+  lastHit: 0, dead: false, won: false
+};
+
+const input = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowLeft:false, ArrowDown:false, ArrowRight:false };
+const mouse = { x: 0, y: 0 };
+let message = '';
+let messageUntil = 0;
+let fireHeld = false;
+let lastShot = 0;
+
+function showMessage(text, time=2000) {
+  message = text;
+  messageUntil = performance.now() + time;
+}
+
+window.addEventListener('keydown', e => {
+  if (input.hasOwnProperty(e.key)) input[e.key] = true;
+  if (e.key.toLowerCase() === 'r') restart();
+});
+window.addEventListener('keyup', e => {
+  if (input.hasOwnProperty(e.key)) input[e.key] = false;
+});
+function setAim(clientX, clientY) {
+  const r = canvas.getBoundingClientRect();
+  mouse.x = (clientX - r.left) * (canvas.width / r.width);
+  mouse.y = (clientY - r.top) * (canvas.height / r.height);
+}
+canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
+canvas.addEventListener('mousedown', () => shoot());
+
+// On-screen mobile controls
+const dpadBtns = document.querySelectorAll('.dpad .btn[data-key]');
+dpadBtns.forEach(btn => {
+  const k = btn.dataset.key;
+  const set = v => { input[k] = v; };
+  btn.addEventListener('touchstart', e => { e.preventDefault(); set(true); }, {passive: false});
+  btn.addEventListener('touchend',   e => { e.preventDefault(); set(false); }, {passive: false});
+  btn.addEventListener('touchcancel', e => { e.preventDefault(); set(false); }, {passive: false});
+});
+const fireBtn = document.getElementById('fire-btn');
+fireBtn.addEventListener('touchstart', e => { e.preventDefault(); fireHeld = true; }, {passive: false});
+fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireHeld = false; }, {passive: false});
+fireBtn.addEventListener('touchcancel', e => { e.preventDefault(); fireHeld = false; }, {passive: false});
+canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+
+function loadLevel(n) {
+  currentLevel = n;
+  const lvl = levels[currentLevel];
+  walls = [...lvl.walls];
+  door = { ...lvl.door };
+  items = lvl.items.map(i => ({ ...i, taken: false }));
+  zombies = lvl.zombies.map(z => ({
+    x: z.x, y: z.y,
+    size: 12,
+    speed: lvl.zombieSpeed,
+    health: lvl.zombieHealth,
+    damage: lvl.zombieDamage,
+    lastAttack: 0
+  }));
+  player.x = lvl.start.x;
+  player.y = lvl.start.y;
+  player.keys = 0;
+  player.weapon = { ...pistol };
+  bullets = [];
+  showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.'), 2500);
+}
+
+function restart() {
+  currentLevel = 0;
+  player = {
+    x: 80, y: 360, size: 14, speed: 120,
+    health: 100, maxHealth: 100,
+    ammo: 6, keys: 0,
+    weapon: { ...pistol },
+    lastHit: 0, dead: false, won: false
+  };
+  loadLevel(0);
+}
+
+function nextLevel() {
+  currentLevel++;
+  if (currentLevel >= levels.length) {
+    player.won = true;
+    showMessage('ALL LEVELS CLEARED! Press R to restart.', 5000);
+  } else {
+    loadLevel(currentLevel);
+    showMessage('Level ' + currentLevel + ' cleared. Next floor.');
+  }
+}
+
+function autoAim() {
+  const px = player.x + player.size/2;
+  const py = player.y + player.size/2;
+  let best = Infinity, tx = mouse.x, ty = mouse.y;
+  for (const z of zombies) {
+    const zx = z.x + z.size/2, zy = z.y + z.size/2;
+    const d = Math.hypot(px - zx, py - zy);
+    if (d < best) { best = d; tx = zx; ty = zy; }
+  }
+  mouse.x = tx;
+  mouse.y = ty;
+}
+
+function shoot() {
+  if (player.dead || player.won) return;
+  if (player.ammo <= 0) {
+    showMessage('Out of ammo!');
+    return;
+  }
+  const px = player.x + player.size/2;
+  const py = player.y + player.size/2;
+  const dx = mouse.x - px;
+  const dy = mouse.y - py;
+  const len = Math.hypot(dx, dy);
+  if (len === 0) return;
+  bullets.push({
+    x: player.x + player.size/2, y: player.y + player.size/2,
+    vx: (dx / len) * 500, vy: (dy / len) * 500,
+    size: player.weapon.bulletSize,
+    color: player.weapon.color,
+    damage: player.weapon.damage,
+    life: 1.2
+  });
+  player.ammo--;
+}
+
+function rectHit(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function moveEntity(ent, dx, dy) {
+  ent.x += dx;
+  const ew = ent.size, eh = ent.size;
+  for (const w of walls) {
+    if (rectHit({ x: ent.x, y: ent.y, w: ew, h: eh }, w)) {
+      if (dx > 0) ent.x = w.x - ew;
+      else if (dx < 0) ent.x = w.x + w.w;
+    }
+  }
+  ent.y += dy;
+  for (const w of walls) {
+    if (rectHit({ x: ent.x, y: ent.y, w: ew, h: eh }, w)) {
+      if (dy > 0) ent.y = w.y - eh;
+      else if (dy < 0) ent.y = w.y + w.h;
+    }
+  }
+  ent.x = Math.max(0, Math.min(world.w - ew, ent.x));
+  ent.y = Math.max(0, Math.min(world.h - eh, ent.y));
+}
+
+function update(dt) {
+  if (player.dead || player.won) return;
+  const lvl = levels[currentLevel];
+
+  // Move player
+  let mdx = 0, mdy = 0;
+  if (input.w || input.ArrowUp)    mdy -= 1;
+  if (input.s || input.ArrowDown)  mdy += 1;
+  if (input.a || input.ArrowLeft)  mdx -= 1;
+  if (input.d || input.ArrowRight) mdx += 1;
+  if (mdx !== 0 || mdy !== 0) {
+    const len = Math.hypot(mdx, mdy);
+    mdx = (mdx / len) * player.speed * dt;
+    mdy = (mdy / len) * player.speed * dt;
+    moveEntity(player, mdx, mdy);
+  }
+
+  const playerRect = { x: player.x, y: player.y, w: player.size, h: player.size };
+
+  // Door
+  if (rectHit(playerRect, door)) {
+    if (player.keys < lvl.keysNeeded) {
+      if (mdx > 0) player.x = door.x - player.size;
+      if (mdx < 0) player.x = door.x + door.w;
+      if (mdy > 0) player.y = door.y - player.size;
+      if (mdy < 0) player.y = door.y + door.h;
+      showMessage('Locked. Need ' + lvl.keysNeeded + ' keys.');
+    } else {
+      nextLevel();
+      return;
+    }
+  }
+
+  // Items
+  for (const it of items) {
+    if (it.taken) continue;
+    const dist = Math.hypot(player.x + player.size/2 - it.x, player.y + player.size/2 - it.y);
+    if (dist < player.size/2 + it.size) {
+      it.taken = true;
+      if (it.type === 'key') {
+        player.keys++;
+        showMessage('Key acquired! (' + player.keys + '/' + lvl.keysNeeded + ')');
+      }
+      if (it.type === 'ammo') {
+        player.ammo += it.amount;
+        showMessage('Ammo + ' + it.amount);
+      }
+      if (it.type === 'med') {
+        player.health = Math.min(player.maxHealth, player.health + it.amount);
+        showMessage('Medkit + ' + it.amount);
+      }
+      if (it.type === 'weapon') {
+        player.weapon = { ...it.weapon };
+        player.ammo += it.amount || 0;
+        showMessage(it.weapon.name + ' acquired!');
+      }
+    }
+  }
+
+  // Zombies
+  const now = performance.now();
+
+  // Mobile auto-fire
+  if (fireHeld && now - lastShot > 250) {
+    autoAim();
+    shoot();
+    lastShot = now;
+  }
+
+  for (let i = zombies.length - 1; i >= 0; i--) {
+    const z = zombies[i];
+    const zx = z.x + z.size/2, zy = z.y + z.size/2;
+    const px = player.x + player.size/2, py = player.y + player.size/2;
+    const dist = Math.hypot(px - zx, py - zy);
+
+    if (dist < 220) {
+      const zx_dir = (px - zx) / dist;
+      const zy_dir = (py - zy) / dist;
+      moveEntity(z, zx_dir * z.speed * dt, zy_dir * z.speed * dt);
+    } else {
+      const a = now * 0.001 + i;
+      moveEntity(z, Math.sin(a) * z.speed * 0.3 * dt, Math.cos(a) * z.speed * 0.3 * dt);
+    }
+
+    // Attack
+    if (dist < player.size/2 + z.size/2 + 4 && now - z.lastAttack > 900) {
+      player.health -= z.damage;
+      z.lastAttack = now;
+      if (player.health <= 0) {
+        player.dead = true;
+        showMessage('YOU DIED. Press R.', 5000);
+      }
+    }
+  }
+
+  // Bullets
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    b.life -= dt;
+    let remove = b.x < 0 || b.y < 0 || b.x > world.w || b.y > world.h || b.life <= 0;
+    for (const w of walls) if (rectHit({ x: b.x, y: b.y, w: b.size, h: b.size }, w)) { remove = true; break; }
+    for (let j = zombies.length - 1; j >= 0; j--) {
+      const z = zombies[j];
+      if (rectHit({ x: b.x, y: b.y, w: b.size, h: b.size }, { x: z.x, y: z.y, w: z.size, h: z.size })) {
+        z.health -= b.damage;
+        remove = true;
+        if (z.health <= 0) zombies.splice(j, 1);
+        break;
+      }
+    }
+    if (remove) bullets.splice(i, 1);
+  }
+
+  if (now > messageUntil) message = '';
+}
+
+function draw() {
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#444';
+  for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
+
+  // Door
+  const lvl = levels[currentLevel];
+  ctx.fillStyle = player.keys >= lvl.keysNeeded ? '#282' : '#642';
+  ctx.fillRect(door.x, door.y, door.w, door.h);
+  ctx.strokeStyle = '#000';
+  ctx.strokeRect(door.x, door.y, door.w, door.h);
+  if (player.keys < lvl.keysNeeded) {
+    ctx.fillStyle = '#0f0';
+    ctx.font = '10px Courier New';
+    ctx.fillText('LOCKED', door.x - 10, door.y + 60);
+  }
+
+  // Items
+  for (const it of items) {
+    if (it.taken) continue;
+    if (it.type === 'key')    ctx.fillStyle = '#ff0';
+    else if (it.type === 'ammo') ctx.fillStyle = '#00f';
+    else if (it.type === 'med')  ctx.fillStyle = '#fff';
+    else if (it.type === 'weapon') { ctx.fillStyle = '#f0f'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; }
+    ctx.fillRect(it.x - it.size/2, it.y - it.size/2, it.size, it.size);
+    if (it.type === 'weapon') ctx.strokeRect(it.x - it.size/2, it.y - it.size/2, it.size, it.size);
+  }
+
+  // Bullets
+  for (const b of bullets) {
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.size, b.size);
+  }
+
+  // Zombies
+  for (const z of zombies) {
+    ctx.fillStyle = '#a33';
+    ctx.fillRect(z.x, z.y, z.size, z.size);
+  }
+
+  // Player
+  ctx.fillStyle = player.dead ? '#555' : '#3a3';
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // Crosshair
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI*2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(mouse.x - 10, mouse.y);
+  ctx.lineTo(mouse.x + 10, mouse.y);
+  ctx.moveTo(mouse.x, mouse.y - 10);
+  ctx.lineTo(mouse.x, mouse.y + 10);
+  ctx.stroke();
+
+  // HUD
+  ctx.fillStyle = '#0f0';
+  ctx.font = '14px Courier New';
+  const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
+  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon.name}`;
+  ctx.fillText(hud, 10, 20);
+  if (message) ctx.fillText(message, 10, 460);
+}
+
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+restart();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
