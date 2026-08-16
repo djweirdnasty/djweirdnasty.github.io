@@ -234,16 +234,28 @@ section {
 
 .news-carousel .event-card {
   flex: 0 0 85%;
-  max-width: 320px;
+  max-width: 480px;
   scroll-snap-align: start;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.5rem;
+  align-items: start;
 }
 
-.news-carousel .event-flyer {
-  height: 220px;
-  width: 100%;
+.news-carousel .event-card > * {
+  grid-column: 2;
+  margin: 0;
+}
+
+.news-carousel .event-card > img.event-flyer {
+  grid-column: 1;
+  grid-row: 1 / span 5;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
   object-position: top;
-  margin: 0 auto 0.75rem;
+  margin: 0;
+  align-self: center;
 }
 
 .carousel-controls {

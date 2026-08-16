@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=8">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -145,7 +145,8 @@
         card.className = 'event-card mud-episode';
         card.setAttribute('data-index', i);
         const episodeUrl = 'mud-music-episode.html#' + ep.slug;
-        card.innerHTML = '<h3>' + ep.title + '</h3>' +
+        card.innerHTML = '<img src="mud-music-logo.png" alt="' + ep.title + '" class="event-flyer" />' +
+          '<h3>' + ep.title + '</h3>' +
           '<a href="' + episodeUrl + '" class="playlist-link mud-play">▶ Play</a>';
         mudCarousel.appendChild(card);
       });
