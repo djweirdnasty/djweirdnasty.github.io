@@ -157,6 +157,7 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const achievement = document.getElementById('achievement');
+const gameMain = document.getElementById('game-main');
 
 const world = { w: 640, h: 480 };
 
@@ -457,13 +458,10 @@ fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireHeld = fal
 fireBtn.addEventListener('touchcancel', e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
 canvas.addEventListener('touchmove', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
-document.addEventListener('wheel', e => {
-  if (e.target === canvas || (e.target.closest && e.target.closest('#game-main'))) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.returnValue = false;
-  }
-}, {passive: false, capture: true});
+if (gameMain) {
+  gameMain.addEventListener('mouseenter', () => { document.body.style.overflow = 'hidden'; });
+  gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
+}
 
 function loadLevel(n) {
   currentLevel = n;
