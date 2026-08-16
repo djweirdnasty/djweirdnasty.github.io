@@ -806,6 +806,17 @@ const CAROUSEL_EXCLUDE = ['/404.html','/contact.html','/privacy-policy.html','/t
 async function loadCarousel() {
   const track = document.querySelector('#content-carousel .carousel-track');
   if (!track) return;
+  const jsonRes = await fetch('/video-game/contents.json?_=' + Date.now()).catch(() => null);
+  if (jsonRes && jsonRes.ok) {
+    try {
+      const items = await jsonRes.json();
+      if (items.length) {
+        track.innerHTML = items.map(item => `<a href="${item.path}" class="carousel-slide"><img src="${item.img}" alt="${item.title}"><span>${item.title}</span></a>`).join('');
+        startCarousel(items.length);
+        return;
+      }
+    } catch (e) {}
+  }
   const sitemapRes = await fetch('/sitemap.xml').catch(() => null);
   if (!sitemapRes) return;
   const sitemapText = await sitemapRes.text();
