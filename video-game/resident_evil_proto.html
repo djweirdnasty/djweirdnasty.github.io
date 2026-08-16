@@ -57,7 +57,7 @@
   }
   .btn:active { background: #0f0; color: #000; }
   header { width: 100%; flex-shrink: 0; }
-  #game-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; overflow: hidden; }
+  #game-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; overflow: hidden; position: relative; }
   #game-comments { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; }
   #game-comments h2 { text-align: center; }
   #game-comments form { display: flex; flex-direction: column; gap: 12px; }
@@ -82,6 +82,10 @@
   #badge-restart { background: #0f0; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
   #badge-restart:hover { background: #1aff1a; }
   #leaderboard { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; margin: 0 auto; }
+  #title-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,5,5,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; color: #0f0; text-align: center; cursor: pointer; }
+  #title-screen h1 { font-size: 48px; margin: 0 0 20px; color: #ff0; }
+  #title-screen p { font-size: 18px; margin: 0 0 12px; }
+  #title-screen .hint { color: #888; font-size: 14px; margin-top: 20px; }
   #leaderboard h2 { text-align: center; color: #ff0; }
   #leaderboard-list { list-style: none; padding: 0; }
   #leaderboard-list li { background: #111; border: 1px solid #0f0; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -141,6 +145,13 @@
   <main id="game-main">
 <div id="title">YOUIE</div>
 <canvas id="game" width="640" height="480"></canvas>
+<div id="title-screen">
+  <h1>YOUIE</h1>
+  <p>Resident Evil inspired survival shooter</p>
+  <p><strong>Desktop:</strong> Click to start</p>
+  <p><strong>Mobile:</strong> Press FIRE to start</p>
+  <p class="hint">Find keys, fight zombies, escape each level.</p>
+</div>
 <div id="hud">WASD/Arrows: move | Click: shoot | Find keys, reach the door</div>
 <div id="mobile-controls">
   <div class="dpad">
@@ -158,6 +169,8 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
+const titleScreen = document.getElementById('title-screen');
+let gameStarted = false;
 
 const world = { w: 640, h: 480 };
 
@@ -453,11 +466,15 @@ dpadBtns.forEach(btn => {
   btn.addEventListener('touchcancel', e => { e.preventDefault(); set(false); }, {passive: false});
 });
 const fireBtn = document.getElementById('fire-btn');
-fireBtn.addEventListener('touchstart', e => { e.preventDefault(); if (player.dead || player.won) { restart(); return; } fireHeld = true; }, {passive: false});
+fireBtn.addEventListener('touchstart', e => { e.preventDefault(); if (!gameStarted || player.dead || player.won) { restart(); return; } fireHeld = true; }, {passive: false});
 fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 fireBtn.addEventListener('touchcancel', e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
 canvas.addEventListener('touchmove', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
+if (titleScreen) {
+  titleScreen.addEventListener('click', () => restart());
+  titleScreen.addEventListener('touchend', e => { e.preventDefault(); restart(); }, {passive: false});
+}
 if (gameMain) {
   gameMain.addEventListener('mouseenter', () => { document.body.style.overflow = 'hidden'; });
   gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
@@ -486,6 +503,8 @@ function loadLevel(n) {
 }
 
 function restart() {
+  gameStarted = true;
+  if (titleScreen) titleScreen.style.display = 'none';
   currentLevel = 0;
   player = {
     x: 80, y: 360, size: 14, speed: 120,
@@ -577,7 +596,7 @@ function moveEntity(ent, dx, dy) {
 }
 
 function update(dt) {
-  if (player.dead || player.won) return;
+  if (!gameStarted || player.dead || player.won) return;
   const lvl = levels[currentLevel];
 
   // Move player
@@ -695,6 +714,11 @@ function update(dt) {
 }
 
 function draw() {
+  if (!gameStarted) {
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -770,7 +794,6 @@ function loop(now) {
   draw();
   requestAnimationFrame(loop);
 }
-restart();
 requestAnimationFrame(loop);
 </script>
   <div id="achievement">
