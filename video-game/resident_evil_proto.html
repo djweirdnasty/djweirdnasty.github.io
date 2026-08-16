@@ -63,10 +63,27 @@
   #game-comments input, #game-comments textarea { background: #111; border: 2px solid #0f0; color: #0f0; padding: 10px; font-family: 'Courier New', Courier, monospace; }
   #game-comments button { background: #0f0; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
   #game-comments button:hover { background: #1aff1a; }
-  #achievement { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #ff0; text-align: center; }
-  #achievement .badge { font-size: 100px; line-height: 1; margin-bottom: 20px; }
-  #achievement h2 { margin: 0 0 10px; font-size: 28px; color: #ff0; }
-  #achievement p { margin: 0; color: #0f0; font-size: 16px; }
+  #achievement { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #ff0; text-align: center; overflow: auto; padding: 20px; box-sizing: border-box; }
+  #badge-form, #badge-result { max-width: 500px; width: 100%; }
+  #badge-form h2, #badge-result h2 { margin: 0 0 10px; font-size: 28px; color: #ff0; }
+  #badge-form p { margin: 0 0 20px; color: #0f0; font-size: 16px; }
+  #badge-claim-form { display: flex; flex-direction: column; gap: 12px; }
+  #badge-claim-form input, #badge-claim-form button { padding: 12px; font-family: 'Courier New', Courier, monospace; background: #111; border: 2px solid #0f0; color: #0f0; }
+  #badge-claim-form input[type="file"] { color: #0f0; }
+  #badge-claim-form button { background: #0f0; color: #000; border: none; font-weight: bold; cursor: pointer; }
+  #badge-claim-form button:hover { background: #1aff1a; }
+  #badge-result { display: none; flex-direction: column; align-items: center; }
+  #personal-badge { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin: 20px 0; }
+  .badge-wrap { position: relative; width: 300px; height: 300px; }
+  .badge-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  #badge-player-name { position: absolute; bottom: 15%; left: 0; right: 0; text-align: center; font-size: 24px; font-weight: bold; color: #ffd700; text-shadow: 2px 2px 0 #000; }
+  #badge-player-photo { width: 120px; height: 120px; border-radius: 12px; border: 3px solid #0f0; object-fit: cover; }
+  #badge-restart { background: #0f0; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
+  #badge-restart:hover { background: #1aff1a; }
+  #leaderboard { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; margin: 0 auto; }
+  #leaderboard h2 { text-align: center; color: #ff0; }
+  #leaderboard-list { list-style: none; padding: 0; }
+  #leaderboard-list li { background: #111; border: 1px solid #0f0; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
   @media (pointer: coarse) {
     body { justify-content: flex-start; padding-top: 10px; }
     canvas { max-width: 100vw; max-height: 55vh; width: auto; }
@@ -470,11 +487,13 @@ function restart() {
     weapon: { ...pistol },
     lastHit: 0, dead: false, won: false
   };
+  if (typeof resetAchievementForm === 'function') resetAchievementForm();
   if (achievement) achievement.style.display = 'none';
   loadLevel(0);
 }
 
 function showAchievement() {
+  if (typeof resetAchievementForm === 'function') resetAchievementForm();
   if (achievement) achievement.style.display = 'flex';
 }
 
@@ -748,9 +767,26 @@ restart();
 requestAnimationFrame(loop);
 </script>
   <div id="achievement">
-    <div class="badge">&#127942;</div>
-    <h2>Achievement Unlocked</h2>
-    <p>You cleared all 10 stages of YOUIE.</p>
+    <div id="badge-form">
+      <h2>ALL 10 STAGES CLEARED!</h2>
+      <p>Enter your name and upload your photo to join the leaderboard and receive your badge.</p>
+      <form id="badge-claim-form">
+        <input type="text" id="badge-name" placeholder="Your name" required>
+        <input type="file" id="badge-photo" accept="image/*" required>
+        <button type="submit">Claim Badge</button>
+      </form>
+    </div>
+    <div id="badge-result">
+      <h2>Achievement Unlocked</h2>
+      <div id="personal-badge">
+        <div class="badge-wrap">
+          <img src="/youie-achievement-badge.png" alt="YOUIE achievement badge">
+          <span id="badge-player-name"></span>
+        </div>
+        <img id="badge-player-photo" alt="Player photo">
+      </div>
+      <button id="badge-restart">Play Again</button>
+    </div>
   </div>
   </main>
   <section id="game-comments">
@@ -762,5 +798,74 @@ requestAnimationFrame(loop);
       <button type="submit">Send Feedback</button>
     </form>
   </section>
+
+  <section id="leaderboard">
+    <h2>YOUIE Leaderboard</h2>
+    <ol id="leaderboard-list"></ol>
+  </section>
+
+  <script>
+    const badgeForm = document.getElementById('badge-form');
+    const badgeResult = document.getElementById('badge-result');
+    const badgePlayerName = document.getElementById('badge-player-name');
+    const badgePlayerPhoto = document.getElementById('badge-player-photo');
+    const badgeNameInput = document.getElementById('badge-name');
+    const badgePhotoInput = document.getElementById('badge-photo');
+    const claimForm = document.getElementById('badge-claim-form');
+    const badgeRestart = document.getElementById('badge-restart');
+    const leaderboardList = document.getElementById('leaderboard-list');
+
+    function resetAchievementForm() {
+      if (badgeForm) badgeForm.style.display = 'block';
+      if (badgeResult) badgeResult.style.display = 'none';
+      if (claimForm) claimForm.reset();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderLeaderboard() {
+      if (!leaderboardList) return;
+      const data = JSON.parse(localStorage.getItem('youie-leaderboard') || '[]');
+      leaderboardList.innerHTML = data.map(function(entry) {
+        return '<li><strong>' + escapeHtml(entry.name) + '</strong><span>' + new Date(entry.date).toLocaleDateString() + '</span></li>';
+      }).join('');
+    }
+
+    function saveLeaderboard(name) {
+      const data = JSON.parse(localStorage.getItem('youie-leaderboard') || '[]');
+      data.unshift({ name: name, date: new Date().toISOString() });
+      if (data.length > 20) data.pop();
+      localStorage.setItem('youie-leaderboard', JSON.stringify(data));
+      renderLeaderboard();
+    }
+
+    if (claimForm) {
+      claimForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = badgeNameInput.value.trim();
+        const file = badgePhotoInput.files[0];
+        if (!name || !file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          badgePlayerName.textContent = name;
+          badgePlayerPhoto.src = ev.target.result;
+          saveLeaderboard(name);
+          badgeForm.style.display = 'none';
+          badgeResult.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (badgeRestart) {
+      badgeRestart.addEventListener('click', function() {
+        if (typeof restart === 'function') restart();
+      });
+    }
+
+    renderLeaderboard();
+  </script>
 </body>
 </html>
