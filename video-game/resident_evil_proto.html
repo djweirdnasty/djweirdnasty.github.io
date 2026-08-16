@@ -415,6 +415,7 @@ let player = {
 
 const input = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowLeft:false, ArrowDown:false, ArrowRight:false };
 const mouse = { x: 0, y: 0 };
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
 let message = '';
 let messageUntil = 0;
 let fireHeld = false;
@@ -450,7 +451,7 @@ dpadBtns.forEach(btn => {
   btn.addEventListener('touchcancel', e => { e.preventDefault(); set(false); }, {passive: false});
 });
 const fireBtn = document.getElementById('fire-btn');
-fireBtn.addEventListener('touchstart', e => { e.preventDefault(); fireHeld = true; }, {passive: false});
+fireBtn.addEventListener('touchstart', e => { e.preventDefault(); if (player.dead || player.won) { restart(); return; } fireHeld = true; }, {passive: false});
 fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 fireBtn.addEventListener('touchcancel', e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
@@ -501,7 +502,7 @@ function nextLevel() {
   currentLevel++;
   if (currentLevel >= levels.length) {
     player.won = true;
-    showMessage('ALL LEVELS CLEARED! Press R to restart.', 5000);
+    showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
     showAchievement();
   } else {
     loadLevel(currentLevel);
@@ -659,7 +660,7 @@ function update(dt) {
       z.lastAttack = now;
       if (player.health <= 0) {
         player.dead = true;
-        showMessage('YOU DIED. Press R.', 5000);
+        showMessage(isTouch ? 'YOU DIED. Press FIRE.' : 'YOU DIED. Press R.', 5000);
       }
     }
   }
