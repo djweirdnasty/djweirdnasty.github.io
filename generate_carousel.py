@@ -85,5 +85,17 @@ def main():
         json.dump(items, f, indent=2)
     print(f'Wrote {len(items)} items to {out_path}')
 
+    html_path = os.path.join(out_dir, 'resident_evil_proto.html')
+    if os.path.exists(html_path):
+        with open(html_path,'r',encoding='utf-8') as f:
+            html = f.read()
+        json_data = json.dumps(items, ensure_ascii=True, separators=(',',':'))
+        placeholder = 'const CAROUSEL_CONTENTS = [];'
+        new_html = html.replace(placeholder, f'const CAROUSEL_CONTENTS = {json_data};')
+        if new_html != html:
+            with open(html_path,'w',encoding='utf-8') as f:
+                f.write(new_html)
+            print(f'Inlined carousel data into {html_path}')
+
 if __name__ == '__main__':
     main()
