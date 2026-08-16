@@ -77,7 +77,13 @@ def main():
         if not img:
             continue
         img_path = urlparse(urljoin(url, img)).path
-        items.append({'path': path, 'title': title, 'img': img_path})
+        file_path = path.lstrip('/')
+        updated = int(os.path.getmtime(file_path))
+        items.append({'path': path, 'title': title, 'img': img_path, 'updated': updated})
+    with open('contents.json','w',encoding='utf-8') as f:
+        json.dump(items, f, indent=2)
+    print(f'Wrote {len(items)} items to contents.json')
+
     out_dir = 'video-game'
     os.makedirs(out_dir, exist_ok=True)
     out_path = os.path.join(out_dir, 'contents.json')
@@ -90,8 +96,7 @@ def main():
         with open(html_path,'r',encoding='utf-8') as f:
             html = f.read()
         json_data = json.dumps(items, ensure_ascii=True, separators=(',',':'))
-        placeholder = 'const CAROUSEL_CONTENTS = [];'
-        new_html = html.replace(placeholder, f'const CAROUSEL_CONTENTS = {json_data};')
+        new_html = re.sub(r'const CAROUSEL_CONTENTS = \[.*?\];', lambda m: f'const CAROUSEL_CONTENTS = {json_data};', html, count=1, flags=re.DOTALL)
         if new_html != html:
             with open(html_path,'w',encoding='utf-8') as f:
                 f.write(new_html)
