@@ -87,6 +87,14 @@
   #title-screen p { font-size: 18px; margin: 0 0 12px; }
   #title-screen .hint { color: #888; font-size: 14px; margin-top: 20px; }
   #title-screen .back-link { margin-top: 24px; padding: 10px 20px; border: 2px solid #0f0; color: #0f0; text-decoration: none; font-weight: bold; border-radius: 8px; }
+  #content-carousel { width: 100%; max-width: 640px; margin: 20px auto 0; padding: 0 20px 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; }
+  #content-carousel h2 { text-align: center; color: #ff0; font-size: 20px; margin: 0 0 12px; }
+  #content-carousel .carousel-viewport { width: 100%; overflow: hidden; border: 1px solid #0f0; border-radius: 12px; background: #000; }
+  #content-carousel .carousel-track { display: flex; transition: transform 0.5s ease-in-out; }
+  #content-carousel .carousel-slide { min-width: 100%; display: block; position: relative; height: 180px; text-decoration: none; }
+  #content-carousel .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+  #content-carousel .carousel-slide span { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: rgba(0,0,0,0.75); color: #0f0; font-weight: bold; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #content-carousel .carousel-loading { padding: 20px; text-align: center; }
   #leaderboard h2 { text-align: center; color: #ff0; }
   #leaderboard-list { list-style: none; padding: 0; }
   #leaderboard-list li { background: #111; border: 1px solid #0f0; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -794,6 +802,55 @@ function loop(now) {
   draw();
   requestAnimationFrame(loop);
 }
+const CAROUSEL_EXCLUDE = ['/404.html','/contact.html','/privacy-policy.html','/thank-you.html','/newsletter-confirmed.html','/yandex_cf0ccdb95afad35c.html','/video-game/resident_evil_proto.html','/video-game/index.html'];
+async function loadCarousel() {
+  const track = document.querySelector('#content-carousel .carousel-track');
+  if (!track) return;
+  const sitemapRes = await fetch('/sitemap.xml').catch(() => null);
+  if (!sitemapRes) return;
+  const sitemapText = await sitemapRes.text();
+  const sitemapDoc = new DOMParser().parseFromString(sitemapText, 'application/xml');
+  const urls = [...sitemapDoc.getElementsByTagName('loc')].map(n => n.textContent);
+  const parser = new DOMParser();
+  const items = [];
+  await Promise.all(urls.map(async (loc) => {
+    try {
+      const path = new URL(loc).pathname;
+      if (CAROUSEL_EXCLUDE.includes(path)) return;
+      const res = await fetch(path);
+      if (!res.ok) return;
+      const html = await res.text();
+      const doc = parser.parseFromString(html, 'text/html');
+      const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
+                    doc.querySelector('title')?.textContent || path;
+      let img = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
+                doc.querySelector('meta[name="twitter:image"]')?.getAttribute('content') || '';
+      if (!img) {
+        const imgEl = doc.querySelector('article img, main img, .info img, .event-flyer');
+        if (imgEl) img = imgEl.getAttribute('src');
+      }
+      if (!img) return;
+      const imgPath = new URL(img, loc).pathname;
+      items.push({path, title, img: imgPath});
+    } catch (e) {}
+  }));
+  if (!items.length) {
+    track.innerHTML = '<p class="carousel-loading">No more content found.</p>';
+    return;
+  }
+  track.innerHTML = items.map(item => `<a href="${item.path}" class="carousel-slide"><img src="${item.img}" alt="${item.title}"><span>${item.title}</span></a>`).join('');
+  startCarousel(items.length);
+}
+function startCarousel(len) {
+  if (len <= 1) return;
+  let i = 0;
+  const track = document.querySelector('#content-carousel .carousel-track');
+  setInterval(() => {
+    i = (i + 1) % len;
+    track.style.transform = `translateX(-${i * 100}%)`;
+  }, 20000);
+}
+loadCarousel();
 loadLevel(0);
 requestAnimationFrame(loop);
 </script>
@@ -820,6 +877,12 @@ requestAnimationFrame(loop);
     </div>
   </div>
   </main>
+  <section id="content-carousel">
+    <h2>More from DJWEIRDNASTY</h2>
+    <div class="carousel-viewport">
+      <div class="carousel-track"><p class="carousel-loading">Loading featured content...</p></div>
+    </div>
+  </section>
   <section id="game-comments">
     <h2>Player Feedback</h2>
     <form action="mailto:kurtisctabb@gmail.com" method="post" enctype="text/plain">
