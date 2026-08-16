@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from datetime import datetime, timezone
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse, urldefrag
 
@@ -50,17 +51,28 @@ class PageParser(HTMLParser):
         if self.in_title:
             self.title += data
 
+def parse_published(html):
+    m = re.search(r'Published:\s*([^<]+)', html)
+    if m:
+        try:
+            dt = datetime.strptime(m.group(1).strip(), '%A, %B %d, %Y')
+            return int(dt.replace(tzinfo=timezone.utc).timestamp())
+        except ValueError:
+            pass
+    return 0
+
 def get_title_img(path):
     file_path = path.lstrip('/')
     if not os.path.exists(file_path):
-        return None, None
+        return None, None, 0
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
         html = f.read()
     parser = PageParser()
     parser.feed(html)
     title = parser.og_title.strip() or parser.title.strip() or path
     img = parser.og_image or parser.twitter_image or parser.first_img
-    return title, img
+    published = parse_published(html)
+    return title, img, published
 
 def main():
     with open('sitemap.xml','r',encoding='utf-8') as f:
@@ -73,13 +85,15 @@ def main():
         path = urlparse(urldefrag(url)[0]).path
         if path in EXCLUDE:
             continue
-        title, img = get_title_img(path)
+        title, img, published = get_title_img(path)
         if not img:
             continue
         img_path = urlparse(urljoin(url, img)).path
         file_path = path.lstrip('/')
         updated = int(os.path.getmtime(file_path))
-        items.append({'path': path, 'title': title, 'img': img_path, 'updated': updated})
+        if not published:
+            published = updated
+        items.append({'path': path, 'title': title, 'img': img_path, 'updated': updated, 'published': published})
     with open('contents.json','w',encoding='utf-8') as f:
         json.dump(items, f, indent=2)
     print(f'Wrote {len(items)} items to contents.json')
