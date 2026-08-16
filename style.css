@@ -181,6 +181,27 @@ section {
   padding: 1rem;
 }
 
+.horizontal-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex: 0 1 100%;
+  max-width: 800px;
+}
+
+.horizontal-card .event-flyer {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  margin: 0;
+}
+
+.horizontal-card .card-body {
+  flex: 1;
+  text-align: left;
+}
+
 .event-card h3 {
   margin-top: 0;
   color: #ff5bd7;
