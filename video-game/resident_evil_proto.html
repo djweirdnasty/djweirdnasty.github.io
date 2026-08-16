@@ -82,7 +82,7 @@
   #badge-restart { background: #0f0; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
   #badge-restart:hover { background: #1aff1a; }
   #leaderboard { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; margin: 0 auto; }
-  #title-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,5,5,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; color: #0f0; text-align: center; cursor: pointer; }
+  #title-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,5,5,0.82); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; color: #0f0; text-align: center; cursor: pointer; text-shadow: 0 0 8px #000; }
   #title-screen h1 { font-size: 48px; margin: 0 0 20px; color: #ff0; }
   #title-screen p { font-size: 18px; margin: 0 0 12px; }
   #title-screen .hint { color: #888; font-size: 14px; margin-top: 20px; }
@@ -504,7 +504,7 @@ function loadLevel(n) {
   player.keys = 0;
   player.weapon = { ...pistol };
   bullets = [];
-  showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.'), 2500);
+  if (gameStarted) showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.'), 2500);
 }
 
 function restart() {
@@ -719,11 +719,6 @@ function update(dt) {
 }
 
 function draw() {
-  if (!gameStarted) {
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    return;
-  }
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -799,6 +794,7 @@ function loop(now) {
   draw();
   requestAnimationFrame(loop);
 }
+loadLevel(0);
 requestAnimationFrame(loop);
 </script>
   <div id="achievement">
