@@ -227,8 +227,8 @@
     "path": "/news-entertainment.html",
     "title": "Entertainment News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.png",
-    "updated": 1786951151,
-    "published": 1786579200
+    "updated": 1786955116,
+    "published": 1786838400
   },
   {
     "path": "/news-fantasy-football-2026.html",
@@ -243,6 +243,13 @@
     "img": "/coach-stephanie-white.jpeg",
     "updated": 1786951151,
     "published": 1786492800
+  },
+  {
+    "path": "/news-hayden-panettiere.html",
+    "title": "Hayden Panettiere Dies at 36: \u2018Heroes\u2019 and \u2018Nashville\u2019 Star Remembered",
+    "img": "/hayden.avif",
+    "updated": 1786955107,
+    "published": 1786838400
   },
   {
     "path": "/news-google-pixel-11.html",
