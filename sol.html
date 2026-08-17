@@ -119,29 +119,6 @@
       </form>
       <p id="sol-quick-status" class="form-status" aria-live="polite"></p>
 
-      <h2>Test a DJ Booking Request</h2>
-      <form id="sol-test-form">
-        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
-
-        <label for="sol-name">Name</label>
-        <input id="sol-name" name="name" type="text" placeholder="Your name" required>
-
-        <label for="sol-email">Email</label>
-        <input id="sol-email" name="email" type="email" placeholder="you@example.com" required>
-
-        <label for="sol-event">Event Type</label>
-        <input id="sol-event" name="event" type="text" placeholder="Private party, club, wedding..." required>
-
-        <label for="sol-date">Event Date</label>
-        <input id="sol-date" name="date" type="date" required>
-
-        <label for="sol-message">Message</label>
-        <textarea id="sol-message" name="message" rows="4" placeholder="Tell us about your event..." required></textarea>
-
-        <button type="submit" class="submit-btn">Test Booking Request</button>
-      </form>
-      <p id="sol-status" class="form-status" aria-live="polite"></p>
-
       <h2 style="margin-top: 2rem;">Open the SOL App</h2>
       <p>When the app is installed and running, you can open it directly with the deep link below:</p>
       <p><a href="sol://" class="playlist-link">Open SOL App</a></p>
@@ -355,71 +332,6 @@
 
     document.getElementById('sol-use-location').addEventListener('click', useMyLocation);
     document.getElementById('sol-refresh-djs').addEventListener('click', showAllDJs);
-
-    document.getElementById('sol-test-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const status = document.getElementById('sol-status');
-      const btn = e.target.querySelector('button[type="submit"]');
-      const original = btn.textContent;
-      btn.textContent = 'Sending...';
-      btn.disabled = true;
-      status.textContent = '';
-
-      const form = e.target;
-      const clientId = form.email.value.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
-
-      const payload = {
-        client_id: clientId,
-        client_name: form.name.value,
-        event_location: selectedLocation,
-        event_date: form.date.value,
-        event_time: '08:00 PM',
-        duration: 4,
-        equipment: {
-          speakers: 0,
-          microphones: 0,
-          strobe_lights: 0,
-          projector: false,
-          photographer: false,
-          security_needed: false,
-          security_armed: false,
-          mc_services: false
-        },
-        special_requests: form.message.value,
-        event_type: form.event.value,
-        age_bracket: 'All Ages'
-      };
-
-      fetch(BOOKING_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      .then(function(res) {
-        return res.json().then(function(data) {
-          return { ok: res.ok, status: res.status, data: data };
-        });
-      })
-      .then(function(result) {
-        if (result.ok) {
-          status.textContent = 'Booking request sent! ' + (result.data.message || '') + ' Matched ' + (result.data.matched_djs || '0') + ' DJs.';
-          status.style.color = '#22c55e';
-          form.reset();
-        } else {
-          const detail = result.data.detail || result.data.message || 'Error ' + result.status;
-          status.textContent = 'SOL booking error: ' + detail;
-          status.style.color = '#ff4d8f';
-        }
-      })
-      .catch(function(err) {
-        status.textContent = 'Network error: ' + err.message;
-        status.style.color = '#ff4d8f';
-      })
-      .finally(function() {
-        btn.textContent = original;
-        btn.disabled = false;
-      });
-    });
 
     document.getElementById('sol-quick-form').addEventListener('submit', function(e) {
       e.preventDefault();
