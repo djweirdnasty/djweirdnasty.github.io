@@ -462,6 +462,7 @@ let items = [];
 let zombies = [];
 let bullets = [];
 let greyDoor = null;
+let itemDoors = [];
 
 let player = {
   x: 80, y: 360, size: 14, speed: 120,
@@ -534,6 +535,7 @@ function saveLevelState(n) {
   if (n < 0 || n >= levels.length) return;
   levelStates[n] = {
     items: items.map(i => ({ ...i })),
+    itemDoors: itemDoors.map(d => ({ ...d })),
     keys: player.keys,
     greyKeys: player.greyKeys,
     greyDoor: greyDoor ? { ...greyDoor } : null
@@ -548,11 +550,27 @@ function loadLevel(n, preserve = false, from = '') {
   if (levelStates[currentLevel]) {
     const st = levelStates[currentLevel];
     items = st.items.map(i => ({ ...i }));
+    itemDoors = st.itemDoors ? st.itemDoors.map(d => ({ ...d })) : [];
     player.keys = st.keys;
     player.greyKeys = st.greyKeys;
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
   } else {
     items = lvl.items.map(i => ({ ...i, taken: false }));
+    const sx = currentLevel === 0 ? 60 : lvl.start.x + 40;
+    const sy = currentLevel === 0 ? 100 : lvl.start.y;
+    const loot = [
+      { type: 'ammo', amount: 8 },
+      { type: 'med', amount: 40 },
+      { type: 'ammo', amount: 8 },
+      { type: 'med', amount: 60 },
+      { type: 'weapon', weapon: pistol, amount: 12 },
+      { type: 'ammo', amount: 8 },
+      { type: 'med', amount: 60 },
+      { type: 'ammo', amount: 8 },
+      { type: 'med', amount: 80 },
+      { type: 'weapon', weapon: shotgun, amount: 12 }
+    ];
+    itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
     player.keys = 0;
     player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
@@ -780,6 +798,16 @@ function update(dt) {
         if (mdy < 0) player.y = greyDoor.y + greyDoor.h;
         showMessage('Locked. Need grey key.');
       }
+    }
+  }
+
+  // Item doors
+  for (const d of itemDoors) {
+    if (d.opened) continue;
+    if (rectHit(playerRect, d)) {
+      d.opened = true;
+      const contains = { ...d.contains, x: d.x + d.w/2, y: d.y + d.h/2, size: d.contains.size || 8, taken: false };
+      items.push(contains);
     }
   }
 
@@ -1081,6 +1109,19 @@ function draw() {
       ctx.fillStyle = '#0f0';
       ctx.font = '10px Courier New';
       ctx.fillText('LOCKED', greyDoor.x - 10, greyDoor.y + 60);
+    }
+  }
+
+  // Item doors
+  for (const d of itemDoors) {
+    ctx.fillStyle = d.opened ? '#282' : '#642';
+    ctx.fillRect(d.x, d.y, d.w, d.h);
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(d.x, d.y, d.w, d.h);
+    if (!d.opened) {
+      ctx.fillStyle = '#0f0';
+      ctx.font = '10px Courier New';
+      ctx.fillText('LOOT', d.x - 6, d.y + 28);
     }
   }
 
