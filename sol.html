@@ -33,6 +33,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -60,6 +62,15 @@
     <section class="info" style="text-align: left;">
       <h1>Sounds of Logan (SOL)</h1>
       <p>SOL is the DJ booking and payment app built for DJWEIRDNASTY. Use this page to test the booking flow before it goes live on iOS and Android.</p>
+
+      <h2>Live DJ Map</h2>
+      <p>See available DJs near your event location. Click the map to set the venue, or use your current location.</p>
+      <div id="sol-map" style="height: 400px; width: 100%; border-radius: 12px; margin: 1rem 0; overflow: hidden; border: 1px solid #ff4d8f;"></div>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+        <button type="button" id="sol-use-location" class="submit-btn">Use my location</button>
+        <button type="button" id="sol-refresh-djs" class="submit-btn">Refresh DJs</button>
+      </div>
+      <p id="sol-map-status" class="form-status" aria-live="polite"></p>
 
       <h2>Test a DJ Booking Request</h2>
       <form id="sol-test-form">
@@ -93,7 +104,118 @@
     <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script>
-    const SOL_API_URL = 'https://rork-dj-booking-payment-app.onrender.com/api/bookings/request';
+    const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
+    const BOOKING_URL = API_BASE + '/api/bookings/request';
+    const SEARCH_URL = API_BASE + '/api/djs/search';
+
+    // Default test location: New York, NY (where the sample DJs are)
+    let selectedLocation = {
+      latitude: 40.7128,
+      longitude: -74.0060,
+      address: 'New York, NY (test location)',
+      city: 'New York',
+      state: 'NY'
+    };
+
+    let map, selectedMarker, djMarkers = [];
+    const mapStatus = document.getElementById('sol-map-status');
+
+    function initMap() {
+      map = L.map('sol-map').setView([selectedLocation.latitude, selectedLocation.longitude], 12);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+
+      selectedMarker = L.marker([selectedLocation.latitude, selectedLocation.longitude], { draggable: true })
+        .addTo(map)
+        .bindPopup('Event location')
+        .openPopup();
+
+      selectedMarker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        updateLocation(pos.lat, pos.lng);
+      });
+
+      map.on('click', function(e) {
+        selectedMarker.setLatLng(e.latlng);
+        updateLocation(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    function updateLocation(lat, lng) {
+      selectedLocation = {
+        latitude: lat,
+        longitude: lng,
+        address: 'Selected location',
+        city: 'Unknown',
+        state: 'Unknown'
+      };
+      searchDjs(selectedLocation);
+    }
+
+    function clearDjMarkers() {
+      djMarkers.forEach(function(m) { map.removeLayer(m); });
+      djMarkers = [];
+    }
+
+    function searchDjs(location) {
+      mapStatus.textContent = 'Loading DJs...';
+      mapStatus.style.color = '#ffd860';
+      clearDjMarkers();
+
+      fetch(SEARCH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(location)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.djs && data.djs.length > 0) {
+          mapStatus.textContent = data.djs.length + ' DJ(s) found';
+          mapStatus.style.color = '#22c55e';
+          data.djs.forEach(function(dj) {
+            const m = L.marker([dj.location.latitude, dj.location.longitude])
+              .addTo(map)
+              .bindPopup('<strong>' + dj.name + '</strong><br>$' + dj.hourly_rate + '/hr<br>' + (dj.status || ''));
+            djMarkers.push(m);
+          });
+        } else {
+          mapStatus.textContent = 'No DJs found near this location.';
+          mapStatus.style.color = '#ff4d8f';
+        }
+      })
+      .catch(function(err) {
+        mapStatus.textContent = 'Map error: ' + err.message;
+        mapStatus.style.color = '#ff4d8f';
+      });
+    }
+
+    function useMyLocation() {
+      if (!navigator.geolocation) {
+        mapStatus.textContent = 'Geolocation is not supported by your browser.';
+        mapStatus.style.color = '#ff4d8f';
+        return;
+      }
+      mapStatus.textContent = 'Getting your location...';
+      mapStatus.style.color = '#ffd860';
+
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        map.setView([lat, lng], 13);
+        selectedMarker.setLatLng([lat, lng]);
+        updateLocation(lat, lng);
+      }, function(err) {
+        mapStatus.textContent = 'Could not get location: ' + err.message;
+        mapStatus.style.color = '#ff4d8f';
+      });
+    }
+
+    document.getElementById('sol-use-location').addEventListener('click', useMyLocation);
+    document.getElementById('sol-refresh-djs').addEventListener('click', function() {
+      searchDjs(selectedLocation);
+    });
 
     document.getElementById('sol-test-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -110,13 +232,7 @@
       const payload = {
         client_id: clientId,
         client_name: form.name.value,
-        event_location: {
-          latitude: 39.9526,
-          longitude: -75.1652,
-          address: 'Philadelphia, PA (test booking)',
-          city: 'Philadelphia',
-          state: 'PA'
-        },
+        event_location: selectedLocation,
         event_date: form.date.value,
         event_time: '08:00 PM',
         duration: 4,
@@ -135,7 +251,7 @@
         age_bracket: 'All Ages'
       };
 
-      fetch(SOL_API_URL, {
+      fetch(BOOKING_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -165,6 +281,9 @@
         btn.disabled = false;
       });
     });
+
+    initMap();
+    searchDjs(selectedLocation);
   </script>
 </body>
 </html>
