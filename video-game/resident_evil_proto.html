@@ -212,6 +212,7 @@ const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
 let gameStarted = false;
+let gameBeaten = false;
 
 const world = { w: 640, h: 480 };
 
@@ -245,6 +246,7 @@ const returnDoor = { x: 40, y: 160, w: 20, h: 120 };
 const pistol = { name: 'Pistol', damage: 1, color: '#ff0', bulletSize: 3 };
 const shotgun = { name: 'Shotgun', damage: 8, color: '#f00', bulletSize: 5 };
 const grenadeLauncher = { name: 'Grenade Launcher', damage: 20, color: '#888', bulletSize: 8, splash: 60 };
+const rpg = { name: 'RPG', damage: 100, color: '#0f0', bulletSize: 14, splash: 120 };
 
 const levels = [
   {
@@ -555,6 +557,7 @@ function saveLevelState(n) {
   levelStates[n] = {
     items: items.map(i => ({ ...i })),
     itemDoors: itemDoors.map(d => ({ ...d })),
+    zombies: zombies.map(z => ({ ...z })),
     keys: player.keys,
     greyKeys: player.greyKeys,
     greyDoor: greyDoor ? { ...greyDoor } : null
@@ -569,11 +572,11 @@ function loadLevel(n, preserve = false, from = '') {
   if (levelStates[currentLevel]) {
     const st = levelStates[currentLevel];
     items = st.items.map(i => ({ ...i }));
-    itemDoors = (currentLevel % 3 === 0 && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
+    itemDoors = (currentLevel % 3 === 0 && currentLevel + 4 < levels.length && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
     player.keys = st.keys;
     player.greyKeys = st.greyKeys;
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
-  } else if (currentLevel % 3 === 0) {
+  } else if (currentLevel % 3 === 0 && currentLevel + 4 < levels.length) {
     items = lvl.items.map(i => ({ ...i, taken: false }));
     const sx = currentLevel === 0 ? 60 : lvl.start.x + 40;
     const sy = currentLevel === 0 ? 100 : lvl.start.y;
@@ -589,7 +592,7 @@ function loadLevel(n, preserve = false, from = '') {
       { type: 'med', amount: 80 },
       { type: 'weapon', weapon: shotgun, amount: 12 }
     ];
-    itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
+    itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, locked: true, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
     player.keys = 0;
     player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
@@ -600,14 +603,24 @@ function loadLevel(n, preserve = false, from = '') {
     player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
   }
-  zombies = lvl.zombies.map(z => ({
-    x: z.x, y: z.y,
-    size: 12,
-    speed: lvl.zombieSpeed,
-    health: lvl.zombieHealth,
-    damage: lvl.zombieDamage,
-    lastAttack: 0
-  }));
+  if (currentLevel === 2 && gameBeaten && !items.some(i => i.type === 'weapon' && i.weapon && i.weapon.name === 'RPG')) {
+    items.push({ type: 'weapon', x: 300, y: 240, size: 14, weapon: rpg, amount: Infinity, taken: false });
+  }
+  if (currentLevel >= 4 && (currentLevel - 4) % 3 === 0 && !items.some(i => i.type === 'lootKey' && i.targetLevel === currentLevel - 4)) {
+    items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
+  }
+  if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
+    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z }));
+  } else {
+    zombies = lvl.zombies.map(z => ({
+      x: z.x, y: z.y,
+      size: 12,
+      speed: lvl.zombieSpeed,
+      health: lvl.zombieHealth,
+      damage: lvl.zombieDamage,
+      lastAttack: 0
+    }));
+  }
   if (from === 'left') {
     player.x = returnDoor.x + returnDoor.w;
     player.y = returnDoor.y + returnDoor.h/2 - player.size/2;
@@ -656,6 +669,7 @@ function nextLevel() {
   saveLevelState(currentLevel);
   currentLevel++;
   if (currentLevel >= levels.length) {
+    gameBeaten = true;
     player.won = true;
     showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
     showAchievement();
@@ -840,6 +854,7 @@ function update(dt) {
   for (const d of itemDoors) {
     if (d.opened) continue;
     if (rectHit(playerRect, d)) {
+      if (d.locked) { showMessage('Locked. Need loot key.'); continue; }
       d.opened = true;
       const contains = { ...d.contains, x: d.x + d.w/2, y: d.y + d.h/2, size: d.contains.size || 8, taken: false };
       items.push(contains);
@@ -867,6 +882,21 @@ function update(dt) {
       if (it.type === 'med') {
         player.health = Math.min(player.maxHealth, player.health + it.amount);
         showMessage('Medkit + ' + it.amount);
+      }
+      if (it.type === 'lootKey') {
+        showMessage('Loot key acquired!');
+        const target = it.targetLevel;
+        if (levelStates[target]) {
+          if (levelStates[target].itemDoors && levelStates[target].itemDoors[0]) levelStates[target].itemDoors[0].locked = false;
+          const d = levelStates[target] && levelStates[target].itemDoors ? levelStates[target].itemDoors[0] : null;
+          const targetLvl = levels[target];
+          if (d && targetLvl) {
+            const bx = d.x + d.w + 20, by = d.y;
+            const boss = { x: bx, y: by, size: 24, speed: targetLvl.zombieSpeed * 1.2, health: targetLvl.zombieHealth * 3, damage: targetLvl.zombieDamage * 2, lastAttack: 0 };
+            if (!levelStates[target].zombies) levelStates[target].zombies = [];
+            levelStates[target].zombies.push(boss);
+          }
+        }
       }
       if (it.type === 'weapon') {
         const idx = player.weapons.findIndex(w => w.name === it.weapon.name);
@@ -1057,6 +1087,24 @@ function colorKey(img) {
   }
 }
 
+function drawLootKey(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#90f';
+  ctx.strokeStyle = '#50a';
+  ctx.lineWidth = 1;
+  // bow
+  ctx.beginPath();
+  ctx.arc(-s * 0.25, 0, s * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  // shaft
+  ctx.fillRect(-s * 0.1, -s * 0.08, s * 0.65, s * 0.16);
+  // teeth
+  ctx.fillRect(s * 0.35, -s * 0.08, s * 0.15, s * 0.16);
+  ctx.restore();
+}
+
 function drawWeapon(ctx, x, y, s, weapon) {
   ctx.save();
   ctx.translate(x, y);
@@ -1167,7 +1215,7 @@ function draw() {
     if (!d.opened) {
       ctx.fillStyle = '#0f0';
       ctx.font = '10px Courier New';
-      ctx.fillText('LOOT', d.x - 6, d.y + 28);
+      ctx.fillText(d.locked ? 'LOCKED' : 'LOOT', d.x - 6, d.y + 28);
     }
   }
 
@@ -1178,6 +1226,7 @@ function draw() {
     else if (it.type === 'greyKey') { drawGreyKey(ctx, it.x, it.y, it.size); continue; }
     else if (it.type === 'ammo') { drawAmmo(ctx, it.x, it.y, it.size, it.amount); continue; }
     else if (it.type === 'med') { drawMed(ctx, it.x, it.y, it.size); continue; }
+    else if (it.type === 'lootKey') { drawLootKey(ctx, it.x, it.y, it.size); continue; }
     else if (it.type === 'weapon') { drawWeapon(ctx, it.x, it.y, it.size, it.weapon); continue; }
   }
 
@@ -1269,7 +1318,8 @@ function draw() {
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
-  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
+  const ammo = player.ammo === Infinity ? '∞' : player.ammo;
+  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
   ctx.fillText(hud, 10, portraitY + portraitSize + 18);
   if (message) ctx.fillText(message, 10, 460);
 }
