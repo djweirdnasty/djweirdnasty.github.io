@@ -240,6 +240,7 @@ const levels = [
     keysNeeded: 1,
     items: [
       { type: 'key', x: 120, y: 120, size: 8 },
+      { type: 'weapon', x: 540, y: 120, size: 10, weapon: pistol, amount: 12 },
       { type: 'ammo', x: 500, y: 100, size: 8, amount: 4 },
       { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
       { type: 'med',  x: 100, y: 360, size: 8, amount: 40 },
@@ -520,7 +521,7 @@ if (gameMain) {
   gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
 }
 
-function loadLevel(n) {
+function loadLevel(n, preserve = false) {
   currentLevel = n;
   const lvl = levels[currentLevel];
   walls = [...lvl.walls];
@@ -539,9 +540,14 @@ function loadLevel(n) {
   player.y = lvl.start.y;
   if (currentLevel === 0) { player.x = 20; player.y = 100; }
   player.keys = 0;
-  player.weapons = [{ ...pistol }];
-  player.weaponIndex = 0;
-  player.weapon = { ...player.weapons[player.weaponIndex] };
+  player.greyKeys = 0;
+  if (!preserve) {
+    player.weapons = [];
+    player.weaponIndex = -1;
+    player.weapon = null;
+  } else if (player.weaponIndex >= 0) {
+    player.weapon = { ...player.weapons[player.weaponIndex] };
+  }
   bullets = [];
   if (gameStarted) showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.'), 2500);
 }
@@ -553,8 +559,8 @@ function restart() {
   player = {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
-    ammo: 6, keys: 0, greyKeys: 0,
-    weapons: [{ ...pistol }], weaponIndex: 0, weapon: { ...pistol },
+    ammo: 0, keys: 0, greyKeys: 0,
+    weapons: [], weaponIndex: -1, weapon: null,
     lastHit: 0, dead: false, won: false
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
@@ -574,7 +580,7 @@ function nextLevel() {
     showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
     showAchievement();
   } else {
-    loadLevel(currentLevel);
+    loadLevel(currentLevel, true);
     showMessage('Level ' + currentLevel + ' cleared. Next floor.');
   }
 }
@@ -593,6 +599,7 @@ function autoAim() {
 }
 
 function shoot() {
+  if (!player.weapon) return;
   if (player.dead || player.won) return;
   if (player.ammo <= 0) {
     showMessage('Out of ammo!');
@@ -667,6 +674,12 @@ function canSee(ax, ay, bx, by) {
   return true;
 }
 
+function hasExited() {
+  if (door.x + door.w >= world.w - 40) return player.x + player.size/2 > door.x + door.w;
+  if (door.y <= 40) return player.y + player.size/2 < door.y;
+  return false;
+}
+
 function update(dt) {
   if (!gameStarted || player.dead || player.won) return;
   const lvl = levels[currentLevel];
@@ -694,10 +707,11 @@ function update(dt) {
       if (mdy > 0) player.y = door.y - player.size;
       if (mdy < 0) player.y = door.y + door.h;
       showMessage('Locked. Need ' + lvl.keysNeeded + ' keys.');
-    } else {
-      nextLevel();
-      return;
     }
+  }
+  if (player.keys >= lvl.keysNeeded && hasExited()) {
+    nextLevel();
+    return;
   }
 
   // Grey door
@@ -989,7 +1003,7 @@ function draw() {
   const dy = mouse.y - cy;
   const s = player.size;
   const drawH = s * 4;
-  const img = (fireHeld || mouseHeld) ? playerImg : playerIdleImg;
+  const img = (player.weapon && (fireHeld || mouseHeld)) ? playerImg : playerIdleImg;
   if (img.complete && img.naturalWidth > 0) {
     const frames = 4;
     const frameW = img.naturalWidth / frames;
@@ -1049,7 +1063,7 @@ function draw() {
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
-  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon.name}`;
+  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
   ctx.fillText(hud, 10, 50);
   if (message) ctx.fillText(message, 10, 460);
 }
