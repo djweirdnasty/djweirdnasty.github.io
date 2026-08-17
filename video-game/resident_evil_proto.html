@@ -185,7 +185,7 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
-playerImg.src = 'main-character-vector.svg';
+playerImg.src = 'main-character-vector.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const achievement = document.getElementById('achievement');
@@ -983,12 +983,14 @@ function draw() {
   ctx.translate(cx, cy);
   ctx.rotate(aim);
   if (playerImg.complete && playerImg.naturalWidth > 0) {
-    ctx.drawImage(playerImg, -drawSize/2, -drawSize/2, drawSize, drawSize);
+    const drawH = drawSize;
+    const drawW = drawH * (playerImg.naturalWidth / playerImg.naturalHeight);
+    ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
       ctx.globalAlpha = 0.5;
-      ctx.fillRect(-drawSize/2, -drawSize/2, drawSize, drawSize);
+      ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
     }
