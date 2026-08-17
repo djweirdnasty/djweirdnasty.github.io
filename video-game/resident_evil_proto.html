@@ -168,7 +168,7 @@
   <p style="width: 100%; max-width: 600px; text-align: left; padding: 10px 20px; box-sizing: border-box; margin: 0;"><a href="/content.html" style="color: #ffd860;">&larr; Back to Content</a></p>
   <main id="game-main">
 <div id="title">YOUIE</div>
-<canvas id="game" width="640" height="480"></canvas>
+<canvas id="game" width="800" height="600"></canvas>
 <div id="title-screen">
   <h1>YOUIE</h1>
   <p>It is a survival shooter under development</p>
@@ -503,8 +503,8 @@ window.addEventListener('keyup', e => {
 });
 function setAim(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
-  mouse.x = (clientX - r.left) * (canvas.width / r.width);
-  mouse.y = (clientY - r.top) * (canvas.height / r.height);
+  mouse.x = (clientX - r.left) * (world.w / r.width);
+  mouse.y = (clientY - r.top) * (world.h / r.height);
 }
 canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
 canvas.addEventListener('mousedown', () => { mouseHeld = true; shoot(); });
@@ -1074,8 +1074,11 @@ function drawWeapon(ctx, x, y, s, weapon) {
 
 function draw() {
   const now = performance.now();
+  const scaleX = canvas.width / world.w;
+  const scaleY = canvas.height / world.h;
+  ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
   ctx.fillStyle = '#111';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, world.w, world.h);
 
   // Portrait and health bar
   const portraitSize = 64;
