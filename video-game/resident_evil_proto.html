@@ -276,7 +276,7 @@ const rpg = { name: 'RPG', damage: 100, color: '#0f0', bulletSize: 14, splash: 1
 
 const levels = [
   {
-    name: 'Mansion Hall',
+    name: 'Safe Room',
     start: { x: 80, y: 360 },
     walls: [...outerWalls, ...innerMansion],
     door: doors.right,
@@ -288,10 +288,7 @@ const levels = [
       { type: 'ammo', x: 450, y: 360, size: 8, amount: 4 },
       { type: 'med',  x: 100, y: 360, size: 8, amount: 40 },
     ],
-    zombies: [
-      { x: 160, y: 120 }, { x: 500, y: 120 }, { x: 480, y: 120 },
-      { x: 160, y: 360 }, { x: 450, y: 360 },
-    ],
+    zombies: [],
     zombieHealth: 2, zombieSpeed: 45, zombieDamage: 20,
   },
   {
@@ -698,7 +695,6 @@ function loadLevel(n, preserve = false, from = '') {
   } else {
     player.x = lvl.start.x;
     player.y = lvl.start.y;
-    if (currentLevel === 0) { player.x = 20; player.y = 100; }
   }
   if (!preserve) {
     player.weapons = [];
@@ -723,8 +719,8 @@ function respawn() {
   player.health = player.maxHealth;
   player.lastHit = 0;
   const lvl = levels[currentLevel];
-  player.x = (currentLevel === 0) ? 20 : lvl.start.x;
-  player.y = (currentLevel === 0) ? 100 : lvl.start.y;
+  player.x = lvl.start.x;
+  player.y = lvl.start.y;
   bullets = [];
   showMessage('Respawned at checkpoint. Press LEFT to backtrack.', 3000);
 }
