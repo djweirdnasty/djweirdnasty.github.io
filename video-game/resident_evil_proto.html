@@ -189,9 +189,12 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
-playerImg.src = 'main-character-vector.png';
+playerImg.src = 'main-character-with-gun.png';
+const playerIdleImg = new Image();
+playerIdleImg.src = 'main-character-without-gun.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
+let mouseHeld = false;
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
@@ -490,7 +493,9 @@ function setAim(clientX, clientY) {
   mouse.y = (clientY - r.top) * (canvas.height / r.height);
 }
 canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
-canvas.addEventListener('mousedown', () => shoot());
+canvas.addEventListener('mousedown', () => { mouseHeld = true; shoot(); });
+canvas.addEventListener('mouseup', () => mouseHeld = false);
+window.addEventListener('mouseup', () => mouseHeld = false);
 
 // On-screen mobile controls
 const dpadBtns = document.querySelectorAll('.dpad .btn[data-key]');
@@ -980,25 +985,33 @@ function draw() {
   const hitFlash = now - player.lastHit < 200;
   const cx = player.x + player.size/2;
   const cy = player.y + player.size/2;
-  const aim = Math.atan2(mouse.y - cy, mouse.x - cx);
+  const dx = mouse.x - cx;
+  const dy = mouse.y - cy;
   const s = player.size;
-  const drawSize = s * 2.5;
-  ctx.save();
-  ctx.translate(cx, cy);
-  if (Math.cos(aim) < 0) ctx.scale(-1, 1);
-  if (playerImg.complete && playerImg.naturalWidth > 0) {
-    const drawH = drawSize;
-    const drawW = drawH * (playerImg.naturalWidth / playerImg.naturalHeight);
-    ctx.drawImage(playerImg, -drawW/2, -drawH/2, drawW, drawH);
+  const drawH = s * 4;
+  const img = (fireHeld || mouseHeld) ? playerImg : playerIdleImg;
+  if (img.complete && img.naturalWidth > 0) {
+    const frames = 4;
+    const frameW = img.naturalWidth / frames;
+    const frameH = img.naturalHeight;
+    const frameIndex = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 0 : 1) : (dx < 0 ? 2 : 3);
+    const drawW = drawH * (frameW / frameH);
+    const sx = frameIndex * frameW;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.drawImage(img, sx, 0, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
       ctx.globalAlpha = 0.5;
-      ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
+      ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
     }
+    ctx.restore();
   } else {
+    ctx.save();
+    ctx.translate(cx, cy);
     ctx.fillStyle = player.dead ? '#555' : (hitFlash ? '#f00' : '#3a3');
     ctx.fillRect(-s*0.3, -s*0.3, s*0.6, s*0.6);
     ctx.fillStyle = '#ffcc99';
@@ -1016,8 +1029,8 @@ function draw() {
     ctx.moveTo(s*0.25, 0);
     ctx.lineTo(s*0.9, 0);
     ctx.stroke();
+    ctx.restore();
   }
-  ctx.restore();
 
   // Crosshair
   ctx.strokeStyle = '#0f0';
