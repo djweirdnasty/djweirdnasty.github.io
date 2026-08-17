@@ -957,14 +957,27 @@ function update(dt) {
   for (const h of hazards) {
     if (rectHit(playerRect, h)) {
       if (now - (h.lastHit || 0) > 600) {
-        const dmg = typeof h.damage === 'number' ? h.damage : 1;
-        player.health = Math.max(0, player.health - dmg);
-        h.lastHit = now;
-        if (player.health <= 0) {
-          player.dead = true;
-          showMessage(isTouch ? 'YOU DIED. Press FIRE.' : 'YOU DIED. Press R.', 5000);
-        } else {
-          showMessage(h.type === 'fire' ? 'Burning!' : 'Spikes!', 1000);
+        try {
+          const dmg = typeof h.damage === 'number' ? h.damage : 1;
+          if (h.type === 'fire') {
+            player.health = Math.max(1, player.health - dmg);
+            player.x = Math.max(0, player.x - 8);
+            h.lastHit = now;
+            showMessage('Burning!', 1000);
+          } else {
+            player.health = Math.max(0, player.health - dmg);
+            h.lastHit = now;
+            if (player.health <= 0) {
+              player.dead = true;
+              gameStarted = false;
+              if (titleScreen) titleScreen.style.display = 'flex';
+              showMessage(isTouch ? 'YOU DIED. Press FIRE.' : 'YOU DIED. Press R.', 5000);
+            } else {
+              showMessage('Spikes!', 1000);
+            }
+          }
+        } catch (err) {
+          console.error('Hazard error:', err);
         }
       }
     }
