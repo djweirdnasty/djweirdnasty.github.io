@@ -1078,10 +1078,18 @@ function draw() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Portrait and health bar
-  const portraitSize = 24;
+  const portraitSize = 64;
   const portraitX = 10;
   const portraitY = 10;
-  ctx.drawImage(playerPortrait, portraitX, portraitY, portraitSize, portraitSize);
+  const pw = playerPortrait.width;
+  const ph = playerPortrait.height;
+  if (pw && ph) {
+    const sx = pw * 0.15;
+    const sy = 0;
+    const sw = pw * 0.7;
+    const sh = ph * 0.25;
+    ctx.drawImage(playerPortrait, sx, sy, sw, sh, portraitX, portraitY, portraitSize, portraitSize);
+  }
 
   const barW = 100;
   const barX = portraitX + portraitSize + 8;
@@ -1243,7 +1251,7 @@ function draw() {
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
   const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
-  ctx.fillText(hud, 10, 50);
+  ctx.fillText(hud, 10, portraitY + portraitSize + 18);
   if (message) ctx.fillText(message, 10, 460);
 }
 
