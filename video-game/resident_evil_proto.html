@@ -1371,26 +1371,31 @@ function draw() {
   for (const z of zombies) {
     const dx = (player.x + player.size/2) - (z.x + z.size/2);
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
-    const adx = Math.abs(dx);
-    const ady = Math.abs(dy);
-    let dir = 1;
-    if (adx > ady) {
-      dir = dx > 0 ? 3 : 2;
-    } else {
-      dir = dy > 0 ? 1 : 0;
-    }
+    const angle = Math.atan2(dy, dx);
     const drawH = z.size * 3;
-    if (dir === 1 && zombieWalkImg.complete && zombieWalkImg.naturalWidth > 0) {
+    if (zombieWalkImg.complete && zombieWalkImg.naturalWidth > 0) {
       const walkFrames = 4;
       const walkW = zombieWalkImg.naturalWidth / walkFrames;
       const walkH = zombieWalkImg.naturalHeight;
       const walkFrame = Math.floor(now / 150) % walkFrames;
       const drawW = drawH * (walkW / walkH);
-      ctx.drawImage(zombieWalkImg, walkFrame * walkW, 0, walkW, walkH, z.x + z.size/2 - drawW/2, z.y + z.size/2 - drawH/2, drawW, drawH);
+      ctx.save();
+      ctx.translate(z.x + z.size/2, z.y + z.size/2);
+      ctx.rotate(angle + Math.PI / 2);
+      ctx.drawImage(zombieWalkImg, walkFrame * walkW, 0, walkW, walkH, -drawW/2, -drawH/2, drawW, drawH);
+      ctx.restore();
     } else if (zombieImg.complete && zombieImg.naturalWidth > 0) {
       const frames = 4;
       const frameW = zombieImg.naturalWidth / frames;
       const frameH = zombieImg.naturalHeight;
+      const adx = Math.abs(dx);
+      const ady = Math.abs(dy);
+      let dir = 1;
+      if (adx > ady) {
+        dir = dx > 0 ? 3 : 2;
+      } else {
+        dir = dy > 0 ? 1 : 0;
+      }
       const drawW = drawH * (frameW / frameH);
       ctx.drawImage(zombieImg, dir * frameW, 0, frameW, frameH, z.x + z.size/2 - drawW/2, z.y + z.size/2 - drawH/2, drawW, drawH);
     } else {
