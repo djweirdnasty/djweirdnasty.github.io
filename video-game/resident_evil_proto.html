@@ -72,6 +72,10 @@
   #game-comments input, #game-comments textarea { background: #111; border: 2px solid #0f0; color: #0f0; padding: 10px; font-family: 'Courier New', Courier, monospace; }
   #game-comments button { background: #0f0; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
   #game-comments button:hover { background: #1aff1a; }
+  #cutscene { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; color: #0f0; text-align: center; padding: 20px; box-sizing: border-box; }
+  #cutscene p { max-width: 600px; font-size: 18px; line-height: 1.6; margin: 0 0 24px; }
+  #cutscene button { background: #0f0; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
+  #cutscene button:hover { background: #1aff1a; }
   #achievement { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999; color: #ff0; text-align: center; overflow: auto; padding: 20px; box-sizing: border-box; }
   #badge-form, #badge-result { max-width: 500px; width: 100%; }
   #badge-form h2, #badge-result h2 { margin: 0 0 10px; font-size: 28px; color: #ff0; }
@@ -228,7 +232,12 @@ let levelStates = [];
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
+const cutscene = document.getElementById('cutscene');
+const cutsceneText = document.getElementById('cutscene-text');
+const cutsceneBtn = document.getElementById('cutscene-btn');
 let gameStarted = false;
+let cutsceneActive = false;
+let introShown = false;
 let gameBeaten = localStorage.getItem('youie-registered-winner') === 'true';
 
 const world = { w: 640, h: 480 };
@@ -480,6 +489,53 @@ const levels = [
   },
 ];
 
+const loreNotes = [
+  { x: 80, y: 80, text: 'Front door is jammed. Find another way out.' },
+  { x: 560, y: 80, text: 'This hall held parties. Now it holds bodies.' },
+  { x: 300, y: 80, text: 'Two keys for two locks. Someone wanted guests to stay.' },
+  { x: 80, y: 120, text: 'They keep coming. The bites are not the worst part.' },
+  { x: 560, y: 360, text: 'A magnum is hidden in the east wing. Heavy hands only.' },
+  { x: 300, y: 240, text: 'The halls loop. I keep passing the same portrait.' },
+  { x: 80, y: 80, text: 'The grey door needs a master key. It is in the archives.' },
+  { x: 560, y: 80, text: 'Three locks? This was never just a house.' },
+  { x: 560, y: 120, text: 'The breach is here. They are breaking through the walls.' },
+  { x: 300, y: 80, text: 'Get to the helipad. It is the only way off this estate.' },
+];
+
+const levelHazards = [
+  [{ type: 'fire', x: 300, y: 240, w: 60, h: 40, damage: 8 }],
+  [{ type: 'spike', x: 320, y: 160, w: 80, h: 40, damage: 20 }],
+  [{ type: 'fire', x: 300, y: 100, w: 80, h: 40, damage: 10 }],
+  [{ type: 'fire', x: 150, y: 280, w: 80, h: 40, damage: 10 }, { type: 'spike', x: 450, y: 120, w: 80, h: 40, damage: 20 }],
+  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 12 }],
+  [{ type: 'spike', x: 300, y: 300, w: 80, h: 40, damage: 25 }],
+  [{ type: 'fire', x: 120, y: 80, w: 80, h: 40, damage: 12 }, { type: 'spike', x: 500, y: 360, w: 80, h: 40, damage: 25 }],
+  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 15 }],
+  [{ type: 'spike', x: 320, y: 240, w: 80, h: 40, damage: 25 }, { type: 'fire', x: 500, y: 120, w: 60, h: 40, damage: 15 }],
+  [{ type: 'fire', x: 300, y: 120, w: 80, h: 40, damage: 15 }, { type: 'spike', x: 300, y: 360, w: 80, h: 40, damage: 30 }],
+];
+
+const masterKeySpawns = [
+  null, null, null, null, null, null,
+  { x: 300, y: 120 },
+  { x: 300, y: 120 },
+  { x: 560, y: 80 },
+  { x: 120, y: 80 },
+];
+
+const secretWalls = [
+  [],
+  [{ x: 300, y: 180, w: 20, h: 80, hp: 10, breakable: true, contains: { type: 'ammo', amount: 10, size: 8 } }],
+  [{ x: 500, y: 260, w: 60, h: 20, hp: 12, breakable: true, contains: { type: 'med', amount: 40, size: 8 } }],
+  [{ x: 200, y: 120, w: 20, h: 60, hp: 15, breakable: true, contains: { type: 'ammo', amount: 12, size: 8 } }],
+  [{ x: 400, y: 300, w: 80, h: 20, hp: 18, breakable: true, contains: { type: 'weapon', weapon: shotgun, amount: 8, size: 10 } }],
+  [{ x: 100, y: 200, w: 20, h: 60, hp: 20, breakable: true, contains: { type: 'med', amount: 80, size: 8 } }],
+  [{ x: 540, y: 160, w: 40, h: 20, hp: 15, breakable: true, contains: { type: 'ammo', amount: 12, size: 8 } }],
+  [{ x: 300, y: 240, w: 20, h: 60, hp: 18, breakable: true, contains: { type: 'med', amount: 60, size: 8 } }],
+  [{ x: 120, y: 80, w: 80, h: 20, hp: 25, breakable: true, contains: { type: 'ammo', amount: 16, size: 8 } }],
+  [{ x: 300, y: 240, w: 60, h: 20, hp: 30, breakable: true, contains: { type: 'weapon', weapon: shotgun, amount: 10, size: 10 } }],
+];
+
 let currentLevel = 0;
 let walls = [];
 let door = {};
@@ -488,11 +544,12 @@ let zombies = [];
 let bullets = [];
 let greyDoor = null;
 let itemDoors = [];
+let hazards = [];
 
 let player = {
   x: 80, y: 360, size: 14, speed: 120,
   health: 100, maxHealth: 100,
-  ammo: 6, keys: 0, greyKeys: 0,
+  ammo: 6, keys: 0, greyKeys: 0, masterKeys: 0,
   weapons: [{ ...pistol }], weaponIndex: 0, weapon: { ...pistol },
   lastHit: 0, dead: false, won: false
 };
@@ -508,6 +565,20 @@ let lastShot = 0;
 function showMessage(text, time=2000) {
   message = text;
   messageUntil = performance.now() + time;
+}
+
+function showCutscene(text, cb) {
+  if (!cutscene || !cutsceneText || !cutsceneBtn) { if (cb) cb(); return; }
+  cutsceneText.textContent = text;
+  cutscene.style.display = 'flex';
+  cutsceneActive = true;
+  gameStarted = false;
+  cutsceneBtn.onclick = function() {
+    cutscene.style.display = 'none';
+    cutsceneActive = false;
+    gameStarted = true;
+    if (cb) cb();
+  };
 }
 
 window.addEventListener('keydown', e => {
@@ -573,10 +644,13 @@ function saveLevelState(n) {
   if (n < 0 || n >= levels.length) return;
   levelStates[n] = {
     items: items.map(i => ({ ...i })),
+    walls: walls.map(w => ({ ...w })),
+    hazards: hazards.map(h => ({ ...h })),
     itemDoors: itemDoors.map(d => ({ ...d })),
     zombies: zombies.map(z => ({ ...z })),
     keys: player.keys,
     greyKeys: player.greyKeys,
+    masterKeys: player.masterKeys,
     greyDoor: greyDoor ? { ...greyDoor } : null
   };
 }
@@ -584,14 +658,17 @@ function saveLevelState(n) {
 function loadLevel(n, preserve = false, from = '') {
   currentLevel = n;
   const lvl = levels[currentLevel];
-  walls = [...lvl.walls];
+  walls = [...lvl.walls, ...(secretWalls[currentLevel] || [])];
   door = { ...lvl.door };
   if (levelStates[currentLevel]) {
     const st = levelStates[currentLevel];
+    walls = st.walls ? st.walls.map(w => ({ ...w })) : [...lvl.walls, ...(secretWalls[currentLevel] || [])];
     items = st.items.map(i => ({ ...i }));
+    hazards = st.hazards ? st.hazards.map(h => ({ ...h })) : [];
     itemDoors = (currentLevel % 3 === 0 && currentLevel + 4 < levels.length && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
     player.keys = st.keys;
     player.greyKeys = st.greyKeys;
+    player.masterKeys = st.masterKeys || 0;
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
   } else if (currentLevel % 3 === 0 && currentLevel + 4 < levels.length) {
     items = lvl.items.map(i => ({ ...i, taken: false }));
@@ -613,15 +690,15 @@ function loadLevel(n, preserve = false, from = '') {
     player.keys = 0;
     player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
-  } else {
-    items = lvl.items.map(i => ({ ...i, taken: false }));
-    itemDoors = [];
-    player.keys = 0;
-    player.greyKeys = 0;
-    greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
   }
-  if (currentLevel === 2 && gameBeaten && !items.some(i => i.type === 'weapon' && i.weapon && i.weapon.name === 'RPG')) {
-    items.push({ type: 'weapon', x: 300, y: 240, size: 14, weapon: rpg, amount: Infinity, taken: false });
+  const mkey = masterKeySpawns[currentLevel];
+  if (mkey && !items.some(i => i.type === 'masterKey')) {
+    items.push({ type: 'masterKey', x: mkey.x, y: mkey.y, size: 8, taken: false });
+  }
+  if (levelStates[currentLevel] && levelStates[currentLevel].hazards) {
+    hazards = levelStates[currentLevel].hazards.map(h => ({ ...h }));
+  } else {
+    hazards = (levelHazards[currentLevel] || []).map(h => ({ ...h, lastHit: 0 }));
   }
   if (currentLevel >= 4 && (currentLevel - 4) % 3 === 0 && !items.some(i => i.type === 'lootKey' && i.targetLevel === currentLevel - 4)) {
     items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
@@ -661,20 +738,27 @@ function loadLevel(n, preserve = false, from = '') {
 }
 
 function restart() {
+  if (cutsceneActive) return;
   gameStarted = true;
   if (titleScreen) titleScreen.style.display = 'none';
+  if (cutscene) cutscene.style.display = 'none';
+  if (achievement) achievement.style.display = 'none';
   currentLevel = 0;
   player = {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
-    ammo: 0, keys: 0, greyKeys: 0,
+    ammo: 0, keys: 0, greyKeys: 0, masterKeys: 0,
     weapons: [], weaponIndex: -1, weapon: null,
     lastHit: 0, dead: false, won: false
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
-  if (achievement) achievement.style.display = 'none';
   levelStates = [];
-  loadLevel(0);
+  if (introShown) {
+    loadLevel(0);
+  } else {
+    showCutscene(introText, function() { loadLevel(0); });
+    introShown = true;
+  }
 }
 
 function showAchievement() {
@@ -688,7 +772,7 @@ function nextLevel() {
   if (currentLevel >= levels.length) {
     player.won = true;
     showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
-    showAchievement();
+    showCutscene(endingText, showAchievement);
   } else {
     loadLevel(currentLevel, true, 'left');
     showMessage('Level ' + currentLevel + ' cleared. Next floor.');
@@ -852,7 +936,10 @@ function update(dt) {
   // Grey door
   if (greyDoor && !greyDoor.opened) {
     if (rectHit(playerRect, greyDoor)) {
-      if (player.greyKeys > 0) {
+      if (player.masterKeys > 0) {
+        greyDoor.opened = true;
+        showMessage('Master key opens the door!');
+      } else if (player.greyKeys > 0) {
         greyDoor.opened = true;
         player.greyKeys--;
         showMessage('Grey door unlocked!');
@@ -861,7 +948,23 @@ function update(dt) {
         if (mdx < 0) player.x = greyDoor.x + greyDoor.w;
         if (mdy > 0) player.y = greyDoor.y - player.size;
         if (mdy < 0) player.y = greyDoor.y + greyDoor.h;
-        showMessage('Locked. Need grey key.');
+        showMessage('Locked. Need a key.');
+      }
+    }
+  }
+
+  // Hazards
+  for (const h of hazards) {
+    if (rectHit(playerRect, h)) {
+      if (now - (h.lastHit || 0) > 500) {
+        player.health -= h.damage;
+        h.lastHit = now;
+        if (player.health <= 0) {
+          player.dead = true;
+          showMessage(isTouch ? 'YOU DIED. Press FIRE.' : 'YOU DIED. Press R.', 5000);
+        } else {
+          showMessage(h.type === 'fire' ? 'Burning!' : 'Spikes!', 1000);
+        }
       }
     }
   }
@@ -913,6 +1016,13 @@ function update(dt) {
             levelStates[target].zombies.push(boss);
           }
         }
+      }
+      if (it.type === 'lore') {
+        showMessage(it.text, 6000);
+      }
+      if (it.type === 'masterKey') {
+        player.masterKeys++;
+        showMessage('Master key acquired!');
       }
       if (it.type === 'weapon') {
         const idx = player.weapons.findIndex(w => w.name === it.weapon.name);
@@ -973,7 +1083,24 @@ function update(dt) {
     b.y += b.vy * dt;
     b.life -= dt;
     let remove = b.x < 0 || b.y < 0 || b.x > world.w || b.y > world.h || b.life <= 0;
-    for (const w of walls) if (rectHit({ x: b.x, y: b.y, w: b.size, h: b.size }, w)) { remove = true; break; }
+    for (let wi = walls.length - 1; wi >= 0; wi--) {
+      const w = walls[wi];
+      if (rectHit({ x: b.x, y: b.y, w: b.size, h: b.size }, w)) {
+        if (w.breakable) {
+          w.hp -= b.damage;
+          if (w.hp <= 0) {
+            walls.splice(wi, 1);
+            if (w.contains) {
+              const reward = { ...w.contains, x: w.x + w.w / 2, y: w.y + w.h / 2, size: w.contains.size || 8, taken: false };
+              items.push(reward);
+            }
+            showMessage('Secret wall destroyed!');
+          }
+        }
+        remove = true;
+        break;
+      }
+    }
     let direct = null;
     for (let j = zombies.length - 1; j >= 0; j--) {
       const z = zombies[j];
@@ -1152,6 +1279,36 @@ function drawWeapon(ctx, x, y, s, weapon) {
   ctx.restore();
 }
 
+function drawLore(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#ff9';
+  ctx.fillRect(-s, -s * 1.4, s * 2, s * 2.8);
+  ctx.strokeStyle = '#0f0';
+  ctx.strokeRect(-s, -s * 1.4, s * 2, s * 2.8);
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(-s * 0.6, -s * 0.7, s * 1.2, 2);
+  ctx.fillRect(-s * 0.6, -s * 0.4, s * 1.2, 2);
+  ctx.fillRect(-s * 0.6, -s * 0.1, s * 1.2, 2);
+  ctx.fillRect(-s * 0.6, s * 0.2, s * 1.2, 2);
+  ctx.restore();
+}
+
+function drawMasterKey(ctx, x, y, s) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#ffd700';
+  ctx.fillRect(-s, -s * 0.3, s * 2, s * 0.6);
+  ctx.strokeStyle = '#fff';
+  ctx.strokeRect(-s, -s * 0.3, s * 2, s * 0.6);
+  ctx.beginPath();
+  ctx.arc(s * 0.2, -s * 0.5, s * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000';
+  ctx.fillRect(s * 0.4, -s * 0.15, s * 0.8, s * 0.3);
+  ctx.restore();
+}
+
 function draw() {
   const now = performance.now();
   const scaleX = canvas.width / world.w;
@@ -1161,8 +1318,10 @@ function draw() {
   ctx.fillRect(0, 0, world.w, world.h);
 
   // Portrait and health bar (drawn last, after the game world)
-  ctx.fillStyle = '#444';
-  for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
+  for (const w of walls) {
+    ctx.fillStyle = w.breakable ? (w.hp < w.maxHp / 2 ? '#b42' : '#a52') : '#444';
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+  }
 
   // Return door
   if (currentLevel > 0) {
@@ -1213,6 +1372,24 @@ function draw() {
     }
   }
 
+  // Hazards
+  for (const h of hazards) {
+    if (h.type === 'fire') {
+      ctx.fillStyle = Math.sin(now / 100) > 0 ? '#f50' : '#a30';
+      ctx.fillRect(h.x, h.y, h.w, h.h);
+    } else if (h.type === 'spike') {
+      ctx.fillStyle = '#888';
+      for (let sx = h.x; sx < h.x + h.w; sx += 10) {
+        ctx.beginPath();
+        ctx.moveTo(sx, h.y + h.h);
+        ctx.lineTo(sx + 5, h.y);
+        ctx.lineTo(sx + 10, h.y + h.h);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
   // Items
   for (const it of items) {
     if (it.taken) continue;
@@ -1221,6 +1398,8 @@ function draw() {
     else if (it.type === 'ammo') { drawAmmo(ctx, it.x, it.y, it.size, it.amount); continue; }
     else if (it.type === 'med') { drawMed(ctx, it.x, it.y, it.size); continue; }
     else if (it.type === 'lootKey') { drawLootKey(ctx, it.x, it.y, it.size); continue; }
+    else if (it.type === 'lore') { drawLore(ctx, it.x, it.y, it.size); continue; }
+    else if (it.type === 'masterKey') { drawMasterKey(ctx, it.x, it.y, it.size); continue; }
     else if (it.type === 'weapon') { drawWeapon(ctx, it.x, it.y, it.size, it.weapon); continue; }
   }
 
@@ -1423,6 +1602,11 @@ loadCarousel();
 loadLevel(0);
 requestAnimationFrame(loop);
 </script>
+  <div id="cutscene" style="display:none;">
+    <p id="cutscene-text"></p>
+    <button id="cutscene-btn">Continue</button>
+  </div>
+
   <div id="achievement">
     <div id="badge-auth">
       <h2>Claim your win</h2>
