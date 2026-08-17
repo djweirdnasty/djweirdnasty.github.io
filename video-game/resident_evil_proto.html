@@ -1063,14 +1063,15 @@ function draw() {
   const dy = mouse.y - cy;
   const s = player.size;
   const drawH = s * 4;
-  const moving = input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight;
-  const img = (player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
+  const alive = !player.dead && !player.won;
+  const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
+  const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
   if (img.complete && img.naturalWidth > 0) {
     const frames = 4;
     const frameW = img.naturalWidth / frames;
     const frameH = img.naturalHeight;
     let frameIndex = 1;
-    if (facing.x !== 0) frameIndex = facing.x < 0 ? 2 : 3;
+    if (facing.x !== 0) frameIndex = facing.x < 0 ? 3 : 2;
     else if (facing.y !== 0) frameIndex = facing.y < 0 ? 0 : 1;
     const drawW = drawH * (frameW / frameH);
     let off;
