@@ -972,6 +972,37 @@ function colorKey(img) {
   }
 }
 
+function drawWeapon(ctx, x, y, s, weapon) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#555';
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 1;
+  const barrel = weapon.name === 'Shotgun' ? s * 1.6 : (weapon.name === 'Grenade Launcher' ? s * 1.2 : s * 0.9);
+  const bodyW = s * 1.1;
+  const bodyH = s * 0.25;
+  // body
+  ctx.fillRect(-bodyW/2, -bodyH/2, bodyW, bodyH);
+  ctx.strokeRect(-bodyW/2, -bodyH/2, bodyW, bodyH);
+  // barrel
+  ctx.fillRect(0, -s*0.08, barrel, s*0.16);
+  ctx.strokeRect(0, -s*0.08, barrel, s*0.16);
+  // handle
+  ctx.beginPath();
+  ctx.moveTo(-s*0.25, bodyH/2);
+  ctx.lineTo(-s*0.35, s*0.9);
+  ctx.lineTo(s*0.05, s*0.9);
+  ctx.lineTo(s*0.1, bodyH/2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  // trigger guard
+  ctx.beginPath();
+  ctx.arc(0, bodyH/2, s*0.2, 0, Math.PI, false);
+  ctx.stroke();
+  ctx.restore();
+}
+
 function draw() {
   const now = performance.now();
   ctx.fillStyle = '#111';
@@ -1038,9 +1069,7 @@ function draw() {
     else if (it.type === 'greyKey') { drawGreyKey(ctx, it.x, it.y, it.size); continue; }
     else if (it.type === 'ammo') { drawAmmo(ctx, it.x, it.y, it.size, it.amount); continue; }
     else if (it.type === 'med') { drawMed(ctx, it.x, it.y, it.size); continue; }
-    else if (it.type === 'weapon') { ctx.fillStyle = '#f0f'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; }
-    ctx.fillRect(it.x - it.size/2, it.y - it.size/2, it.size, it.size);
-    if (it.type === 'weapon') ctx.strokeRect(it.x - it.size/2, it.y - it.size/2, it.size, it.size);
+    else if (it.type === 'weapon') { drawWeapon(ctx, it.x, it.y, it.size, it.weapon); continue; }
   }
 
   // Bullets
