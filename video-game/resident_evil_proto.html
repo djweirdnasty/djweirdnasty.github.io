@@ -786,8 +786,8 @@ function update(dt) {
   // Items
   for (const it of items) {
     if (it.taken) continue;
-    const dist = Math.hypot(player.x + player.size/2 - it.x, player.y + player.size/2 - it.y);
-    if (dist < player.size/2 + it.size) {
+    const itemRect = { x: it.x - it.size, y: it.y - it.size, w: it.size * 2, h: it.size * 2 };
+    if (rectHit(playerRect, itemRect)) {
       it.taken = true;
       if (it.type === 'key') {
         player.keys++;
