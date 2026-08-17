@@ -650,9 +650,6 @@ function loadLevel(n, preserve = false, from = '') {
     walls = st.walls ? st.walls.map(w => ({ ...w })) : [...lvl.walls, ...(secretWalls[currentLevel] || [])];
     items = st.items.map(i => ({ ...i }));
     itemDoors = (currentLevel % 3 === 0 && currentLevel + 4 < levels.length && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
-    player.keys = st.keys;
-    player.greyKeys = st.greyKeys;
-    player.masterKeys = st.masterKeys || 0;
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
   } else if (currentLevel % 3 === 0 && currentLevel + 4 < levels.length) {
     items = lvl.items.map(i => ({ ...i, taken: false }));
@@ -671,8 +668,6 @@ function loadLevel(n, preserve = false, from = '') {
       { type: 'weapon', weapon: shotgun, amount: 12 }
     ];
     itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, locked: true, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
-    player.keys = 0;
-    player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
   }
   const mkey = masterKeySpawns[currentLevel];
@@ -719,8 +714,24 @@ function loadLevel(n, preserve = false, from = '') {
   }
 }
 
+function respawn() {
+  gameStarted = true;
+  if (titleScreen) titleScreen.style.display = 'none';
+  if (cutscene) cutscene.style.display = 'none';
+  if (achievement) achievement.style.display = 'none';
+  player.dead = false;
+  player.health = player.maxHealth;
+  player.lastHit = 0;
+  const lvl = levels[currentLevel];
+  player.x = (currentLevel === 0) ? 20 : lvl.start.x;
+  player.y = (currentLevel === 0) ? 100 : lvl.start.y;
+  bullets = [];
+  showMessage('Respawned at checkpoint. Press LEFT to backtrack.', 3000);
+}
+
 function restart() {
   if (cutsceneActive) return;
+  if (player.dead) { respawn(); return; }
   gameStarted = true;
   if (titleScreen) titleScreen.style.display = 'none';
   if (cutscene) cutscene.style.display = 'none';
@@ -1037,7 +1048,7 @@ function update(dt) {
       z.lastAttack = now;
       if (player.health <= 0) {
         player.dead = true;
-        showMessage(isTouch ? 'YOU DIED. Press FIRE.' : 'YOU DIED. Press R.', 5000);
+        showMessage(isTouch ? 'YOU DIED. Press FIRE to respawn.' : 'YOU DIED. Press R to respawn.', 5000);
       }
     }
   }
