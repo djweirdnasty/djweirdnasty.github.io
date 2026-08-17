@@ -201,6 +201,7 @@ let facing = { x: 0, y: 1 };
 let playerImgOff = null;
 let playerIdleImgOff = null;
 let playerWalkingOff = null;
+let levelStates = [];
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
@@ -529,13 +530,33 @@ if (gameMain) {
   gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
 }
 
+function saveLevelState(n) {
+  if (n < 0 || n >= levels.length) return;
+  levelStates[n] = {
+    items: items.map(i => ({ ...i })),
+    keys: player.keys,
+    greyKeys: player.greyKeys,
+    greyDoor: greyDoor ? { ...greyDoor } : null
+  };
+}
+
 function loadLevel(n, preserve = false, from = '') {
   currentLevel = n;
   const lvl = levels[currentLevel];
   walls = [...lvl.walls];
   door = { ...lvl.door };
-  greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
-  items = lvl.items.map(i => ({ ...i, taken: false }));
+  if (levelStates[currentLevel]) {
+    const st = levelStates[currentLevel];
+    items = st.items.map(i => ({ ...i }));
+    player.keys = st.keys;
+    player.greyKeys = st.greyKeys;
+    greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
+  } else {
+    items = lvl.items.map(i => ({ ...i, taken: false }));
+    player.keys = 0;
+    player.greyKeys = 0;
+    greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
+  }
   zombies = lvl.zombies.map(z => ({
     x: z.x, y: z.y,
     size: 12,
@@ -555,8 +576,6 @@ function loadLevel(n, preserve = false, from = '') {
     player.y = lvl.start.y;
     if (currentLevel === 0) { player.x = 20; player.y = 100; }
   }
-  player.keys = 0;
-  player.greyKeys = 0;
   if (!preserve) {
     player.weapons = [];
     player.weaponIndex = -1;
@@ -581,6 +600,7 @@ function restart() {
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
   if (achievement) achievement.style.display = 'none';
+  levelStates = [];
   loadLevel(0);
 }
 
@@ -590,6 +610,7 @@ function showAchievement() {
 }
 
 function nextLevel() {
+  saveLevelState(currentLevel);
   currentLevel++;
   if (currentLevel >= levels.length) {
     player.won = true;
@@ -603,6 +624,7 @@ function nextLevel() {
 
 function prevLevel() {
   if (currentLevel <= 0) return;
+  saveLevelState(currentLevel);
   currentLevel--;
   loadLevel(currentLevel, true, 'right');
   showMessage('Back to floor ' + (currentLevel + 1));
