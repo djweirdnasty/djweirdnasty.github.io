@@ -121,13 +121,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Default to New York, NY
+    // Default to Philadelphia, PA (where the real DJs are)
     let selectedLocation = {
-      latitude: 40.7128,
-      longitude: -74.0060,
-      address: 'New York, NY',
-      city: 'New York',
-      state: 'NY'
+      latitude: 39.9526,
+      longitude: -75.1652,
+      address: 'Philadelphia, PA',
+      city: 'Philadelphia',
+      state: 'PA'
     };
 
     let map, selectedMarker, userMarker, userCircle;
