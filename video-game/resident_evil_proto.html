@@ -985,7 +985,7 @@ function draw() {
   const drawSize = s * 2.5;
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.rotate(aim);
+  if (Math.cos(aim) < 0) ctx.scale(-1, 1);
   if (playerImg.complete && playerImg.naturalWidth > 0) {
     const drawH = drawSize;
     const drawW = drawH * (playerImg.naturalWidth / playerImg.naturalHeight);
