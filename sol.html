@@ -85,7 +85,12 @@
       <p id="sol-map-status" class="form-status" aria-live="polite"></p>
 
       <h3>Available DJs</h3>
-      <div id="sol-dj-list"></div>
+      <div id="sol-dj-carousel" style="position:relative;">
+        <button type="button" id="sol-dj-prev" class="submit-btn" style="position:absolute; top:50%; left:0; transform:translateY(-50%); z-index:10; padding:0.5rem 0.75rem; border-radius:8px;">&#10094;</button>
+        <div id="sol-dj-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:1rem; padding:0 3rem; scrollbar-width:none; -ms-overflow-style:none;"></div>
+        <button type="button" id="sol-dj-next" class="submit-btn" style="position:absolute; top:50%; right:0; transform:translateY(-50%); z-index:10; padding:0.5rem 0.75rem; border-radius:8px;">&#10095;</button>
+        <div id="sol-dj-dots" style="display:flex; justify-content:center; gap:0.5rem; margin-top:0.75rem;"></div>
+      </div>
 
       <h2>Quick Book a DJ</h2>
       <form id="sol-quick-form">
@@ -482,8 +487,10 @@
     }
 
     function findDjs() {
-      const list = document.getElementById('sol-dj-list');
-      list.innerHTML = '';
+      const track = document.getElementById('sol-dj-track');
+      const dots = document.getElementById('sol-dj-dots');
+      track.innerHTML = '';
+      dots.innerHTML = '';
 
       fetch(SEARCH_URL, {
         method: 'POST',
@@ -493,51 +500,78 @@
       .then(function(res) { return res.json(); })
       .then(function(data) {
         if (data.djs && data.djs.length > 0) {
-          renderDjList(data.djs);
-          mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + selectedLocation.city;
+          renderDjCarousel(data.djs);
+          mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + (selectedLocation.city || selectedLocation.address);
           mapStatus.style.color = '#22c55e';
         } else {
-          list.innerHTML = '<p>No verified DJs found near this location.</p>';
+          track.innerHTML = '<p style="width:100%; text-align:center;">No verified DJs found near this location.</p>';
           mapStatus.textContent = 'No DJs found near this location.';
           mapStatus.style.color = '#ff4d8f';
         }
       })
       .catch(function(err) {
-        list.innerHTML = '<p>Could not load DJs.</p>';
+        track.innerHTML = '<p style="width:100%; text-align:center;">Could not load DJs.</p>';
         mapStatus.textContent = 'DJ search error: ' + err.message;
         mapStatus.style.color = '#ff4d8f';
       });
     }
 
-    function renderDjList(djs) {
-      const list = document.getElementById('sol-dj-list');
-      list.innerHTML = '';
+    function renderDjCarousel(djs) {
+      const track = document.getElementById('sol-dj-track');
+      const dots = document.getElementById('sol-dj-dots');
+      track.innerHTML = '';
+      dots.innerHTML = '';
 
-      djs.forEach(function(dj) {
+      djs.forEach(function(dj, index) {
         const div = document.createElement('div');
-        div.style.cssText = 'background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin-bottom:1rem; display:flex; gap:1rem; align-items:flex-start; flex-wrap:wrap;';
+        div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; text-align:center;';
 
-        const avatar = dj.avatar ? '<img src="' + dj.avatar + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' : '';
+        const avatar = dj.avatar ? '<img src="' + dj.avatar + '" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' : '';
         const verified = dj.is_verified ? '✅ Verified' : '⏳ Unverified';
-        const genres = (dj.genres || []).join(', ');
-        const specialties = (dj.specialties || []).join(', ');
-        const equip = (dj.equipment || []).join(', ');
+        const genres = (dj.genres || []).slice(0, 3).join(', ');
         const navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
 
         div.innerHTML =
-          '<div>' + avatar + '</div>' +
-          '<div style="flex:1; min-width:200px;">' +
-          '<h3 style="margin:0 0 0.25rem;">' + (dj.name || 'DJ') + ' <span style="font-size:0.8rem;color:#ffd860;">⭐ ' + dj.rating + ' (' + dj.review_count + ')</span></h3>' +
-          '<p style="margin:0.25rem 0; color:#ccc;">' + verified + ' · $' + dj.hourly_rate + '/hr</p>' +
-          '<p style="margin:0.25rem 0; font-size:0.9rem;"><strong>Genres:</strong> ' + genres + '</p>' +
-          '<p style="margin:0.25rem 0; font-size:0.9rem;"><strong>Specialties:</strong> ' + specialties + '</p>' +
-          '<p style="margin:0.25rem 0; font-size:0.9rem;"><strong>Equipment:</strong> ' + equip + '</p>' +
-          '<a href="' + navUrl + '" target="_blank" class="playlist-link">Get directions</a>' +
-          '</div>';
+          '<div style="margin-bottom:0.75rem;">' + avatar + '</div>' +
+          '<h3 style="margin:0 0 0.25rem; font-size:1.1rem;">' + (dj.name || 'DJ') + '</h3>' +
+          '<p style="margin:0.25rem 0; color:#ffd860; font-size:0.9rem;">⭐ ' + dj.rating + ' (' + dj.review_count + ') · $' + dj.hourly_rate + '/hr</p>' +
+          '<p style="margin:0.25rem 0; color:#ccc; font-size:0.8rem;">' + verified + '</p>' +
+          '<p style="margin:0.5rem 0; font-size:0.85rem; color:#aaa;">' + genres + '</p>' +
+          '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="font-size:0.9rem;">Get directions</a>';
 
-        list.appendChild(div);
+        track.appendChild(div);
+
+        const dot = document.createElement('span');
+        dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#444;cursor:pointer;';
+        dot.addEventListener('click', function() {
+          const cardWidth = 276;
+          track.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
+        });
+        dots.appendChild(dot);
+      });
+
+      track.addEventListener('scroll', function() {
+        const cardWidth = 276;
+        const idx = Math.round(track.scrollLeft / cardWidth);
+        Array.from(dots.children).forEach(function(d, i) {
+          d.style.background = (i === idx) ? '#ff4d8f' : '#444';
+          d.style.width = (i === idx) ? '24px' : '8px';
+          d.style.borderRadius = (i === idx) ? '4px' : '50%';
+        });
       });
     }
+
+    document.getElementById('sol-dj-prev').addEventListener('click', function() {
+      const track = document.getElementById('sol-dj-track');
+      const cardWidth = 276;
+      track.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    });
+
+    document.getElementById('sol-dj-next').addEventListener('click', function() {
+      const track = document.getElementById('sol-dj-track');
+      const cardWidth = 276;
+      track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    });
 
     document.getElementById('sol-search-location').addEventListener('click', searchLocation);
     document.getElementById('sol-refresh-djs').addEventListener('click', findDjs);
