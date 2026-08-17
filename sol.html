@@ -120,27 +120,49 @@
         <label for="sol-quick-duration">Duration (hours)</label>
         <input id="sol-quick-duration" name="duration" type="number" min="1" max="12" value="4" required>
 
-        <h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Equipment & Extras</h3>
+        <h3 style="margin-top:1.5rem; margin-bottom:0.75rem;">Equipment & Extras</h3>
 
-        <label for="sol-speakers">Speakers ($50 each) <input id="sol-speakers" name="speakers" type="number" min="0" max="10" value="0" style="width:60px;"></label>
-        <label for="sol-microphones">Microphones ($25 each) <input id="sol-microphones" name="microphones" type="number" min="0" max="10" value="0" style="width:60px;"></label>
-        <label for="sol-strobes">Strobe Lights ($50 each) <input id="sol-strobes" name="strobe_lights" type="number" min="0" max="10" value="0" style="width:60px;"></label>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <div>
+            <label for="sol-speakers" style="display:block; font-weight:600; margin-bottom:0.25rem;">Speakers — $50 each</label>
+            <input id="sol-speakers" name="speakers" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
 
-        <label style="display:flex; align-items:center; gap:0.5rem;">
-          <input id="sol-projector" type="checkbox"> Projector ($50)
-        </label>
-        <label style="display:flex; align-items:center; gap:0.5rem;">
-          <input id="sol-photographer" type="checkbox"> Photographer ($200)
-        </label>
-        <label style="display:flex; align-items:center; gap:0.5rem;">
-          <input id="sol-security" type="checkbox"> Security ($300 unarmed / $600 armed)
-        </label>
-        <label style="display:flex; align-items:center; gap:0.5rem;">
-          <input id="sol-security-armed" type="checkbox" disabled> Armed
-        </label>
-        <label style="display:flex; align-items:center; gap:0.5rem;">
-          <input id="sol-mc" type="checkbox"> MC Services ($50)
-        </label>
+          <div>
+            <label for="sol-microphones" style="display:block; font-weight:600; margin-bottom:0.25rem;">Microphones — $25 each</label>
+            <input id="sol-microphones" name="microphones" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
+
+          <div>
+            <label for="sol-strobes" style="display:block; font-weight:600; margin-bottom:0.25rem;">Strobe Lights — $50 each</label>
+            <input id="sol-strobes" name="strobe_lights" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-projector" type="checkbox" style="width:18px; height:18px;">
+            <span>Projector — $50</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-photographer" type="checkbox" style="width:18px; height:18px;">
+            <span>Photographer — $200</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-security" type="checkbox" style="width:18px; height:18px;">
+            <span>Security — $300 unarmed / $600 armed</span>
+          </label>
+
+          <label id="sol-security-armed-label" style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer; opacity:0.4;">
+            <input id="sol-security-armed" type="checkbox" disabled style="width:18px; height:18px;">
+            <span>Armed security</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-mc" type="checkbox" style="width:18px; height:18px;">
+            <span>MC Services — $50</span>
+          </label>
+        </div>
 
         <div id="sol-price-breakdown" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1rem 0;">
           <p style="margin:0.25rem 0;"><strong>Base:</strong> $25/hr × <span id="price-duration">4</span> hrs = $<span id="price-base">100</span></p>
@@ -665,7 +687,9 @@
     });
     document.getElementById('sol-security').addEventListener('change', function() {
       const armed = document.getElementById('sol-security-armed');
+      const armedLabel = document.getElementById('sol-security-armed-label');
       armed.disabled = !this.checked;
+      armedLabel.style.opacity = this.checked ? '1' : '0.4';
       if (!this.checked) armed.checked = false;
       calculatePrice();
     });
