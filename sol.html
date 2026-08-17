@@ -405,6 +405,7 @@
       const equipment = getEquipment();
       const payload = {
         client_id: clientId,
+        client_email: form.email.value,
         client_name: form.name.value,
         event_location: selectedLocation,
         event_date: form.date.value,
