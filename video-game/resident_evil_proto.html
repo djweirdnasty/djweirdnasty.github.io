@@ -978,16 +978,17 @@ function draw() {
   const cy = player.y + player.size/2;
   const aim = Math.atan2(mouse.y - cy, mouse.x - cx);
   const s = player.size;
+  const drawSize = s * 2.5;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(aim);
   if (playerImg.complete && playerImg.naturalWidth > 0) {
-    ctx.drawImage(playerImg, -s/2, -s/2, s, s);
+    ctx.drawImage(playerImg, -drawSize/2, -drawSize/2, drawSize, drawSize);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
       ctx.globalAlpha = 0.5;
-      ctx.fillRect(-s/2, -s/2, s, s);
+      ctx.fillRect(-drawSize/2, -drawSize/2, drawSize, drawSize);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
     }
