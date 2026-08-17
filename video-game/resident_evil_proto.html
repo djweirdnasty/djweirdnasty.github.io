@@ -720,11 +720,10 @@ function respawn() {
   player.dead = false;
   player.health = player.maxHealth;
   player.lastHit = 0;
-  const lvl = levels[currentLevel];
-  player.x = lvl.start.x;
-  player.y = lvl.start.y;
-  bullets = [];
-  showMessage('Respawned at checkpoint. Press LEFT to backtrack.', 3000);
+  saveLevelState(currentLevel);
+  currentLevel = 0;
+  loadLevel(0, true, '');
+  showMessage('Respawned in Safe Room.', 3000);
 }
 
 function restart() {
