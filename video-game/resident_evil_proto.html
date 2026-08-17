@@ -195,6 +195,9 @@ playerIdleImg.src = 'main-character-without-gun.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 let mouseHeld = false;
+let facing = { x: 0, y: 1 };
+let playerImgOff = null;
+let playerIdleImgOff = null;
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
@@ -226,6 +229,8 @@ const doors = {
   right: { x: 580, y: 160, w: 20, h: 120 },
   top:   { x: 300, y: 40,  w: 40, h: 20 },
 };
+
+const returnDoor = { x: 40, y: 160, w: 20, h: 120 };
 
 const pistol = { name: 'Pistol', damage: 1, color: '#ff0', bulletSize: 3 };
 const shotgun = { name: 'Shotgun', damage: 8, color: '#f00', bulletSize: 5 };
@@ -521,7 +526,7 @@ if (gameMain) {
   gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
 }
 
-function loadLevel(n, preserve = false) {
+function loadLevel(n, preserve = false, from = '') {
   currentLevel = n;
   const lvl = levels[currentLevel];
   walls = [...lvl.walls];
@@ -536,9 +541,17 @@ function loadLevel(n, preserve = false) {
     damage: lvl.zombieDamage,
     lastAttack: 0
   }));
-  player.x = lvl.start.x;
-  player.y = lvl.start.y;
-  if (currentLevel === 0) { player.x = 20; player.y = 100; }
+  if (from === 'left') {
+    player.x = returnDoor.x + returnDoor.w;
+    player.y = returnDoor.y + returnDoor.h/2 - player.size/2;
+  } else if (from === 'right') {
+    player.x = door.x - player.size;
+    player.y = door.y + door.h/2 - player.size/2;
+  } else {
+    player.x = lvl.start.x;
+    player.y = lvl.start.y;
+    if (currentLevel === 0) { player.x = 20; player.y = 100; }
+  }
   player.keys = 0;
   player.greyKeys = 0;
   if (!preserve) {
@@ -580,9 +593,16 @@ function nextLevel() {
     showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
     showAchievement();
   } else {
-    loadLevel(currentLevel, true);
+    loadLevel(currentLevel, true, 'left');
     showMessage('Level ' + currentLevel + ' cleared. Next floor.');
   }
+}
+
+function prevLevel() {
+  if (currentLevel <= 0) return;
+  currentLevel--;
+  loadLevel(currentLevel, true, 'right');
+  showMessage('Back to floor ' + (currentLevel + 1));
 }
 
 function autoAim() {
@@ -691,6 +711,7 @@ function update(dt) {
   if (input.a || input.ArrowLeft)  mdx -= 1;
   if (input.d || input.ArrowRight) mdx += 1;
   if (mdx !== 0 || mdy !== 0) {
+    facing = { x: mdx, y: mdy };
     const len = Math.hypot(mdx, mdy);
     mdx = (mdx / len) * player.speed * dt;
     mdy = (mdy / len) * player.speed * dt;
@@ -711,6 +732,12 @@ function update(dt) {
   }
   if (player.keys >= lvl.keysNeeded && hasExited()) {
     nextLevel();
+    return;
+  }
+
+  // Return door
+  if (currentLevel > 0 && player.x + player.size/2 < returnDoor.x) {
+    prevLevel();
     return;
   }
 
@@ -923,6 +950,25 @@ function drawMed(ctx, x, y, s) {
   ctx.restore();
 }
 
+function colorKey(img) {
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const o = c.getContext('2d');
+    o.drawImage(img, 0, 0);
+    const imageData = o.getImageData(0, 0, c.width, c.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] === 0 && data[i+1] === 0 && data[i+2] === 0) data[i+3] = 0;
+    }
+    o.putImageData(imageData, 0, 0);
+    return c;
+  } catch (e) {
+    return img;
+  }
+}
+
 function draw() {
   const now = performance.now();
   ctx.fillStyle = '#111';
@@ -945,6 +991,17 @@ function draw() {
 
   ctx.fillStyle = '#444';
   for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
+
+  // Return door
+  if (currentLevel > 0) {
+    ctx.fillStyle = '#282';
+    ctx.fillRect(returnDoor.x, returnDoor.y, returnDoor.w, returnDoor.h);
+    ctx.strokeStyle = '#000';
+    ctx.strokeRect(returnDoor.x, returnDoor.y, returnDoor.w, returnDoor.h);
+    ctx.fillStyle = '#0f0';
+    ctx.font = '10px Courier New';
+    ctx.fillText('BACK', returnDoor.x, returnDoor.y + 60);
+  }
 
   // Door
   const lvl = levels[currentLevel];
@@ -1008,12 +1065,15 @@ function draw() {
     const frames = 4;
     const frameW = img.naturalWidth / frames;
     const frameH = img.naturalHeight;
-    const frameIndex = Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 0 : 1) : (dx < 0 ? 2 : 3);
+    let frameIndex = 1;
+    if (facing.x !== 0) frameIndex = facing.x < 0 ? 2 : 3;
+    else if (facing.y !== 0) frameIndex = facing.y < 0 ? 0 : 1;
     const drawW = drawH * (frameW / frameH);
+    const off = img === playerImg ? (playerImgOff || (playerImgOff = colorKey(playerImg))) : (playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg)));
     const sx = frameIndex * frameW;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.drawImage(img, sx, 0, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
+    ctx.drawImage(off, sx, 0, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
