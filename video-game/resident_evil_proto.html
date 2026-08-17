@@ -27,10 +27,16 @@
     height: auto;
     touch-action: none;
     display: block;
+    position: relative;
+    z-index: 1;
   }
+  #game-main:fullscreen { width: 100vw; height: 100vh; padding: 20px; box-sizing: border-box; }
+  #game-main:fullscreen canvas { max-width: 90vw; max-height: 85vh; width: auto; height: auto; }
   #hud {
     margin-top: 8px;
     font-size: 14px;
+    position: relative;
+    z-index: 2;
   }
   #title {
     font-size: 24px;
@@ -83,6 +89,17 @@
   #badge-player-photo { width: 120px; height: 120px; border-radius: 12px; border: 3px solid #0f0; object-fit: cover; }
   #badge-restart { background: #0f0; color: #000; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
   #badge-restart:hover { background: #1aff1a; }
+  #badge-auth { display: none; flex-direction: column; align-items: center; justify-content: center; max-width: 500px; width: 100%; }
+  #badge-auth h2 { margin: 0 0 10px; font-size: 28px; color: #ff0; }
+  #badge-auth p { margin: 0 0 20px; color: #0f0; font-size: 16px; }
+  #badge-auth form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  #badge-auth input { padding: 12px; font-family: 'Courier New', Courier, monospace; background: #111; border: 2px solid #0f0; color: #0f0; box-sizing: border-box; width: 100%; }
+  #badge-auth button[type="submit"] { background: #0f0; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer; font-family: 'Courier New', Courier, monospace; }
+  #badge-auth button[type="submit"]:hover { background: #1aff1a; }
+  #auth-tabs { display: flex; gap: 1rem; margin-bottom: 1rem; justify-content: center; }
+  .auth-tab { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1rem; padding: 4px 0; border-bottom: 2px solid transparent; }
+  .auth-tab.active { color: #0f0; border-bottom-color: #0f0; }
+  .auth-error { color: #f00; font-size: 0.85rem; margin-bottom: 8px; }
   #leaderboard { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; margin: 0 auto; }
   #title-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(5,5,5,0.82); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; color: #0f0; text-align: center; cursor: pointer; text-shadow: 0 0 8px #000; }
   #title-screen h1 { font-size: 48px; margin: 0 0 20px; color: #ff0; }
@@ -212,7 +229,7 @@ const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
 let gameStarted = false;
-let gameBeaten = false;
+let gameBeaten = localStorage.getItem('youie-registered-winner') === 'true';
 
 const world = { w: 640, h: 480 };
 
@@ -669,7 +686,6 @@ function nextLevel() {
   saveLevelState(currentLevel);
   currentLevel++;
   if (currentLevel >= levels.length) {
-    gameBeaten = true;
     player.won = true;
     showMessage('ALL LEVELS CLEARED! Press ' + (isTouch ? 'FIRE' : 'R') + ' to restart.', 5000);
     showAchievement();
@@ -1144,29 +1160,7 @@ function draw() {
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, world.w, world.h);
 
-  // Portrait and health bar
-  const portraitSize = 64;
-  const portraitX = 10;
-  const portraitY = 10;
-  const pw = playerPortrait.width;
-  const ph = playerPortrait.height;
-  if (pw && ph) {
-    const sx = pw * 0.15;
-    const sy = 0;
-    const sw = pw * 0.7;
-    const sh = ph * 0.25;
-    ctx.drawImage(playerPortrait, sx, sy, sw, sh, portraitX, portraitY, portraitSize, portraitSize);
-  }
-
-  const barW = 100;
-  const barX = portraitX + portraitSize + 8;
-  const barY = portraitY + portraitSize / 2 - 4;
-  const hpPct = Math.max(0, player.health) / player.maxHealth;
-  ctx.fillStyle = '#f00';
-  ctx.fillRect(barX, barY, barW, 8);
-  ctx.fillStyle = '#0f0';
-  ctx.fillRect(barX, barY, barW * hpPct, 8);
-
+  // Portrait and health bar (drawn last, after the game world)
   ctx.fillStyle = '#444';
   for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
 
@@ -1314,6 +1308,29 @@ function draw() {
   ctx.lineTo(mouse.x, mouse.y + 10);
   ctx.stroke();
 
+  // Portrait and health bar
+  const portraitSize = 64;
+  const portraitX = 10;
+  const portraitY = 10;
+  const pw = playerPortrait.width;
+  const ph = playerPortrait.height;
+  if (pw && ph) {
+    const sx = pw * 0.15;
+    const sy = 0;
+    const sw = pw * 0.7;
+    const sh = ph * 0.25;
+    ctx.drawImage(playerPortrait, sx, sy, sw, sh, portraitX, portraitY, portraitSize, portraitSize);
+  }
+
+  const barW = 100;
+  const barX = portraitX + portraitSize + 8;
+  const barY = portraitY + portraitSize / 2 - 4;
+  const hpPct = Math.max(0, player.health) / player.maxHealth;
+  ctx.fillStyle = '#f00';
+  ctx.fillRect(barX, barY, barW, 8);
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(barX, barY, barW * hpPct, 8);
+
   // HUD
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
@@ -1407,6 +1424,27 @@ loadLevel(0);
 requestAnimationFrame(loop);
 </script>
   <div id="achievement">
+    <div id="badge-auth">
+      <h2>Claim your win</h2>
+      <p>Sign up or log in with the same account used for article comments to be recognized as a previous winner and unlock the RPG on your next run.</p>
+      <div id="auth-tabs">
+        <button type="button" class="auth-tab active" id="login-tab">Log In</button>
+        <button type="button" class="auth-tab" id="register-tab">Sign Up</button>
+      </div>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <div class="auth-error" id="login-error"></div>
+        <button type="submit">Log In</button>
+      </form>
+      <form id="register-form" style="display:none;">
+        <input type="text" id="register-username" placeholder="Username" required>
+        <input type="email" id="register-email" placeholder="Email" required>
+        <input type="password" id="register-password" placeholder="Password" required>
+        <div class="auth-error" id="register-error"></div>
+        <button type="submit">Sign Up</button>
+      </form>
+    </div>
     <div id="badge-form">
       <h2>ALL 10 STAGES CLEARED!</h2>
       <p>Enter your name and upload your photo to join the leaderboard and receive your badge.</p>
@@ -1451,6 +1489,20 @@ requestAnimationFrame(loop);
   </section>
 
   <script>
+    const API_BASE = 'https://djweirdnasty-api.kurtisctabb.workers.dev/api';
+    function getToken() { return localStorage.getItem('djwn_token'); }
+    function setToken(t) { localStorage.setItem('djwn_token', t); }
+    function getUsername() { return localStorage.getItem('djwn_username'); }
+    function setUsername(u) { localStorage.setItem('djwn_username', u); }
+    async function apiPost(path, body) {
+      const res = await fetch(API_BASE + path, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      return res.json();
+    }
+
     const badgeForm = document.getElementById('badge-form');
     const badgeResult = document.getElementById('badge-result');
     const badgePlayerName = document.getElementById('badge-player-name');
@@ -1460,11 +1512,25 @@ requestAnimationFrame(loop);
     const claimForm = document.getElementById('badge-claim-form');
     const badgeRestart = document.getElementById('badge-restart');
     const leaderboardList = document.getElementById('leaderboard-list');
+    const badgeAuth = document.getElementById('badge-auth');
+    const loginTab = document.getElementById('login-tab');
+    const registerTab = document.getElementById('register-tab');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
 
     function resetAchievementForm() {
-      if (badgeForm) badgeForm.style.display = 'block';
-      if (badgeResult) badgeResult.style.display = 'none';
-      if (claimForm) claimForm.reset();
+      if (getToken()) {
+        if (badgeAuth) badgeAuth.style.display = 'none';
+        if (badgeForm) badgeForm.style.display = 'block';
+        if (badgeResult) badgeResult.style.display = 'none';
+        if (claimForm) claimForm.reset();
+        localStorage.setItem('youie-registered-winner', 'true');
+        gameBeaten = true;
+      } else if (badgeAuth) {
+        if (badgeAuth) badgeAuth.style.display = 'flex';
+        if (badgeForm) badgeForm.style.display = 'none';
+        if (badgeResult) badgeResult.style.display = 'none';
+      }
     }
 
     function escapeHtml(s) {
@@ -1485,6 +1551,56 @@ requestAnimationFrame(loop);
       if (data.length > 20) data.pop();
       localStorage.setItem('youie-leaderboard', JSON.stringify(data));
       renderLeaderboard();
+    }
+
+    if (loginTab && registerTab && loginForm && registerForm) {
+      loginTab.addEventListener('click', function() {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        loginForm.style.display = 'flex';
+        registerForm.style.display = 'none';
+      });
+      registerTab.addEventListener('click', function() {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        registerForm.style.display = 'flex';
+        loginForm.style.display = 'none';
+      });
+    }
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = '';
+        const res = await apiPost('/auth/login', { email: email, password: password });
+        if (res.error) { errEl.textContent = res.error; return; }
+        setToken(res.token);
+        setUsername(res.username);
+        localStorage.setItem('youie-registered-winner', 'true');
+        gameBeaten = true;
+        resetAchievementForm();
+      });
+    }
+
+    if (registerForm) {
+      registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+        const errEl = document.getElementById('register-error');
+        errEl.textContent = '';
+        const res = await apiPost('/auth/register', { username: username, email: email, password: password });
+        if (res.error) { errEl.textContent = res.error; return; }
+        setToken(res.token);
+        setUsername(res.username);
+        localStorage.setItem('youie-registered-winner', 'true');
+        gameBeaten = true;
+        resetAchievementForm();
+      });
     }
 
     if (claimForm) {
