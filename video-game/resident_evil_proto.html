@@ -223,6 +223,8 @@ const playerWalkingImg = new Image();
 playerWalkingImg.src = 'main-character-walking.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
+const zombieImg = new Image();
+zombieImg.src = 'zombie-figure.png';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
@@ -1366,8 +1368,27 @@ function draw() {
 
   // Zombies
   for (const z of zombies) {
-    ctx.fillStyle = '#a33';
-    ctx.fillRect(z.x, z.y, z.size, z.size);
+    if (zombieImg.complete && zombieImg.naturalWidth > 0) {
+      const frames = 4;
+      const frameW = zombieImg.naturalWidth / frames;
+      const frameH = zombieImg.naturalHeight;
+      const dx = (player.x + player.size/2) - (z.x + z.size/2);
+      const dy = (player.y + player.size/2) - (z.y + z.size/2);
+      const adx = Math.abs(dx);
+      const ady = Math.abs(dy);
+      let dir = 1;
+      if (adx > ady) {
+        dir = dx > 0 ? 3 : 2;
+      } else {
+        dir = dy > 0 ? 1 : 0;
+      }
+      const drawH = z.size * 3;
+      const drawW = drawH * (frameW / frameH);
+      ctx.drawImage(zombieImg, dir * frameW, 0, frameW, frameH, z.x + z.size/2 - drawW/2, z.y + z.size/2 - drawH/2, drawW, drawH);
+    } else {
+      ctx.fillStyle = '#a33';
+      ctx.fillRect(z.x, z.y, z.size, z.size);
+    }
   }
 
   // Player
