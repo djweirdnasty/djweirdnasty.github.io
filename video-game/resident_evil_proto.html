@@ -56,6 +56,8 @@
     cursor: pointer;
   }
   .btn:active { background: #0f0; color: #000; }
+  #fullscreen-btn { display: inline-block; margin-bottom: 8px; font-size: 14px; }
+  @media (pointer: coarse) { #fullscreen-btn { display: none; } }
   header { width: 100%; flex-shrink: 0; }
   #game-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; overflow: hidden; position: relative; }
   #game-comments { width: 100%; max-width: 600px; padding: 20px; box-sizing: border-box; color: #0f0; font-family: 'Courier New', Courier, monospace; }
@@ -168,6 +170,7 @@
   <p style="width: 100%; max-width: 600px; text-align: left; padding: 10px 20px; box-sizing: border-box; margin: 0;"><a href="/content.html" style="color: #ffd860;">&larr; Back to Content</a></p>
   <main id="game-main">
 <div id="title">YOUIE</div>
+<button id="fullscreen-btn" type="button" class="btn">Fullscreen</button>
 <canvas id="game" width="800" height="600"></canvas>
 <div id="title-screen">
   <h1>YOUIE</h1>
@@ -533,6 +536,19 @@ if (gameMain) {
   gameMain.addEventListener('mouseenter', () => { document.body.style.overflow = 'hidden'; });
   gameMain.addEventListener('mouseleave', () => { document.body.style.overflow = 'auto'; });
 }
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+if (fullscreenBtn && gameMain) {
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      gameMain.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  });
+}
+document.addEventListener('fullscreenchange', () => {
+  if (fullscreenBtn) fullscreenBtn.textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
+});
 
 function saveLevelState(n) {
   if (n < 0 || n >= levels.length) return;
