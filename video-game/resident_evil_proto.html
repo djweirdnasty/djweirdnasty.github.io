@@ -700,6 +700,8 @@ function rectHit(a, b) {
 }
 
 function moveEntity(ent, dx, dy) {
+  const lvl = levels[currentLevel];
+  const doorLocked = ent === player && player.keys < (lvl ? lvl.keysNeeded : 0);
   ent.x += dx;
   const ew = ent.size, eh = ent.size;
   for (const w of walls) {
@@ -708,12 +710,20 @@ function moveEntity(ent, dx, dy) {
       else if (dx < 0) ent.x = w.x + w.w;
     }
   }
+  if (doorLocked && rectHit({ x: ent.x, y: ent.y, w: ew, h: eh }, door)) {
+    if (dx > 0) ent.x = door.x - ew;
+    else if (dx < 0) ent.x = door.x + door.w;
+  }
   ent.y += dy;
   for (const w of walls) {
     if (rectHit({ x: ent.x, y: ent.y, w: ew, h: eh }, w)) {
       if (dy > 0) ent.y = w.y - eh;
       else if (dy < 0) ent.y = w.y + w.h;
     }
+  }
+  if (doorLocked && rectHit({ x: ent.x, y: ent.y, w: ew, h: eh }, door)) {
+    if (dy > 0) ent.y = door.y - eh;
+    else if (dy < 0) ent.y = door.y + door.h;
   }
   ent.x = Math.max(0, Math.min(world.w - ew, ent.x));
   ent.y = Math.max(0, Math.min(world.h - eh, ent.y));
