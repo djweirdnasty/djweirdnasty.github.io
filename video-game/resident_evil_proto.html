@@ -734,7 +734,10 @@ function loadLevel(n, preserve = false, from = '') {
     player.weapon = { ...player.weapons[player.weaponIndex] };
   }
   bullets = [];
-  if (gameStarted) showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.'), 2500);
+  if (gameStarted) {
+    const backHint = currentLevel > 0 ? ' Press LEFT to go back.' : '';
+    showMessage(lvl.name + ': ' + (lvl.keysNeeded > 1 ? 'Find ' + lvl.keysNeeded + ' keys.' : 'Find the key. Escape.') + backHint, 3000);
+  }
 }
 
 function restart() {
@@ -1351,7 +1354,7 @@ function draw() {
     ctx.strokeRect(returnDoor.x, returnDoor.y, returnDoor.w, returnDoor.h);
     ctx.fillStyle = '#0f0';
     ctx.font = '10px Courier New';
-    ctx.fillText('BACK', returnDoor.x, returnDoor.y + 60);
+    ctx.fillText('<- BACK', returnDoor.x - 10, returnDoor.y + 60);
   }
 
   // Door
