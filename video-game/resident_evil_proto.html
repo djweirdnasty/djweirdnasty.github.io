@@ -186,6 +186,8 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
 playerImg.src = 'main-character.svg';
+const playerPortrait = new Image();
+playerPortrait.src = 'main-character.png';
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
@@ -903,13 +905,20 @@ function draw() {
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Health bar
+  // Portrait and health bar
+  const portraitSize = 24;
+  const portraitX = 10;
+  const portraitY = 10;
+  ctx.drawImage(playerPortrait, portraitX, portraitY, portraitSize, portraitSize);
+
   const barW = 100;
+  const barX = portraitX + portraitSize + 8;
+  const barY = portraitY + portraitSize / 2 - 4;
   const hpPct = Math.max(0, player.health) / player.maxHealth;
   ctx.fillStyle = '#f00';
-  ctx.fillRect(10, 30, barW, 8);
+  ctx.fillRect(barX, barY, barW, 8);
   ctx.fillStyle = '#0f0';
-  ctx.fillRect(10, 30, barW * hpPct, 8);
+  ctx.fillRect(barX, barY, barW * hpPct, 8);
 
   ctx.fillStyle = '#444';
   for (const w of walls) ctx.fillRect(w.x, w.y, w.w, w.h);
@@ -1021,7 +1030,7 @@ function draw() {
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
   const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${player.ammo}  ${keyText}  GUN: ${player.weapon.name}`;
-  ctx.fillText(hud, 10, 20);
+  ctx.fillText(hud, 10, 50);
   if (message) ctx.fillText(message, 10, 460);
 }
 
