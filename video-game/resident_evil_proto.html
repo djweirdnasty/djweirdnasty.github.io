@@ -550,11 +550,11 @@ function loadLevel(n, preserve = false, from = '') {
   if (levelStates[currentLevel]) {
     const st = levelStates[currentLevel];
     items = st.items.map(i => ({ ...i }));
-    itemDoors = st.itemDoors ? st.itemDoors.map(d => ({ ...d })) : [];
+    itemDoors = (currentLevel % 3 === 0 && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
     player.keys = st.keys;
     player.greyKeys = st.greyKeys;
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
-  } else {
+  } else if (currentLevel % 3 === 0) {
     items = lvl.items.map(i => ({ ...i, taken: false }));
     const sx = currentLevel === 0 ? 60 : lvl.start.x + 40;
     const sy = currentLevel === 0 ? 100 : lvl.start.y;
@@ -571,6 +571,12 @@ function loadLevel(n, preserve = false, from = '') {
       { type: 'weapon', weapon: shotgun, amount: 12 }
     ];
     itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
+    player.keys = 0;
+    player.greyKeys = 0;
+    greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
+  } else {
+    items = lvl.items.map(i => ({ ...i, taken: false }));
+    itemDoors = [];
     player.keys = 0;
     player.greyKeys = 0;
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
