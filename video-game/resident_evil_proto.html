@@ -575,7 +575,7 @@ window.addEventListener('keydown', e => {
     player.weapon = { ...player.weapons[player.weaponIndex] };
     showMessage('Switched to ' + player.weapon.name);
   }
-  if (e.key.toLowerCase() === 'r') restart();
+  if (e.key.toLowerCase() === 'r' && (!gameStarted || player.dead || player.won)) restart();
 });
 window.addEventListener('keyup', e => {
   if (input.hasOwnProperty(e.key)) input[e.key] = false;
