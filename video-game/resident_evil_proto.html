@@ -503,16 +503,16 @@ const loreNotes = [
 ];
 
 const levelHazards = [
-  [{ type: 'fire', x: 300, y: 240, w: 60, h: 40, damage: 8 }],
-  [{ type: 'spike', x: 320, y: 160, w: 80, h: 40, damage: 20 }],
-  [{ type: 'fire', x: 300, y: 100, w: 80, h: 40, damage: 10 }],
-  [{ type: 'fire', x: 150, y: 280, w: 80, h: 40, damage: 10 }, { type: 'spike', x: 450, y: 120, w: 80, h: 40, damage: 20 }],
-  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 12 }],
-  [{ type: 'spike', x: 300, y: 300, w: 80, h: 40, damage: 25 }],
-  [{ type: 'fire', x: 120, y: 80, w: 80, h: 40, damage: 12 }, { type: 'spike', x: 500, y: 360, w: 80, h: 40, damage: 25 }],
-  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 15 }],
-  [{ type: 'spike', x: 320, y: 240, w: 80, h: 40, damage: 25 }, { type: 'fire', x: 500, y: 120, w: 60, h: 40, damage: 15 }],
-  [{ type: 'fire', x: 300, y: 120, w: 80, h: 40, damage: 15 }, { type: 'spike', x: 300, y: 360, w: 80, h: 40, damage: 30 }],
+  [{ type: 'fire', x: 300, y: 240, w: 60, h: 40, damage: 4 }],
+  [{ type: 'spike', x: 320, y: 160, w: 80, h: 40, damage: 10 }],
+  [{ type: 'fire', x: 300, y: 100, w: 80, h: 40, damage: 4 }],
+  [{ type: 'fire', x: 150, y: 280, w: 80, h: 40, damage: 5 }, { type: 'spike', x: 450, y: 120, w: 80, h: 40, damage: 12 }],
+  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 6 }],
+  [{ type: 'spike', x: 300, y: 300, w: 80, h: 40, damage: 15 }],
+  [{ type: 'fire', x: 120, y: 80, w: 80, h: 40, damage: 6 }, { type: 'spike', x: 500, y: 360, w: 80, h: 40, damage: 15 }],
+  [{ type: 'fire', x: 300, y: 240, w: 100, h: 60, damage: 8 }],
+  [{ type: 'spike', x: 320, y: 240, w: 80, h: 40, damage: 15 }, { type: 'fire', x: 500, y: 120, w: 60, h: 40, damage: 8 }],
+  [{ type: 'fire', x: 300, y: 120, w: 80, h: 40, damage: 8 }, { type: 'spike', x: 300, y: 360, w: 80, h: 40, damage: 18 }],
 ];
 
 const masterKeySpawns = [
@@ -956,8 +956,9 @@ function update(dt) {
   // Hazards
   for (const h of hazards) {
     if (rectHit(playerRect, h)) {
-      if (now - (h.lastHit || 0) > 500) {
-        player.health -= h.damage;
+      if (now - (h.lastHit || 0) > 600) {
+        const dmg = typeof h.damage === 'number' ? h.damage : 1;
+        player.health = Math.max(0, player.health - dmg);
         h.lastHit = now;
         if (player.health <= 0) {
           player.dead = true;
