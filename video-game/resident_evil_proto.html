@@ -192,12 +192,15 @@ const playerImg = new Image();
 playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
+const playerWalkingImg = new Image();
+playerWalkingImg.src = 'main-character-walking.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
 let playerIdleImgOff = null;
+let playerWalkingOff = null;
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
 const titleScreen = document.getElementById('title-screen');
@@ -1060,7 +1063,8 @@ function draw() {
   const dy = mouse.y - cy;
   const s = player.size;
   const drawH = s * 4;
-  const img = (player.weapon && (fireHeld || mouseHeld)) ? playerImg : playerIdleImg;
+  const moving = input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight;
+  const img = (player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
   if (img.complete && img.naturalWidth > 0) {
     const frames = 4;
     const frameW = img.naturalWidth / frames;
@@ -1069,7 +1073,10 @@ function draw() {
     if (facing.x !== 0) frameIndex = facing.x < 0 ? 2 : 3;
     else if (facing.y !== 0) frameIndex = facing.y < 0 ? 0 : 1;
     const drawW = drawH * (frameW / frameH);
-    const off = img === playerImg ? (playerImgOff || (playerImgOff = colorKey(playerImg))) : (playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg)));
+    let off;
+    if (img === playerImg) off = playerImgOff || (playerImgOff = colorKey(playerImg));
+    else if (img === playerWalkingImg) off = playerWalkingOff || (playerWalkingOff = colorKey(playerWalkingImg));
+    else off = playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg));
     const sx = frameIndex * frameW;
     ctx.save();
     ctx.translate(cx, cy);
