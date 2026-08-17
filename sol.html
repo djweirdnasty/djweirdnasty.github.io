@@ -120,6 +120,35 @@
         <label for="sol-quick-duration">Duration (hours)</label>
         <input id="sol-quick-duration" name="duration" type="number" min="1" max="12" value="4" required>
 
+        <h3 style="margin-top:1.5rem; margin-bottom:0.5rem;">Equipment & Extras</h3>
+
+        <label for="sol-speakers">Speakers ($50 each) <input id="sol-speakers" name="speakers" type="number" min="0" max="10" value="0" style="width:60px;"></label>
+        <label for="sol-microphones">Microphones ($25 each) <input id="sol-microphones" name="microphones" type="number" min="0" max="10" value="0" style="width:60px;"></label>
+        <label for="sol-strobes">Strobe Lights ($50 each) <input id="sol-strobes" name="strobe_lights" type="number" min="0" max="10" value="0" style="width:60px;"></label>
+
+        <label style="display:flex; align-items:center; gap:0.5rem;">
+          <input id="sol-projector" type="checkbox"> Projector ($50)
+        </label>
+        <label style="display:flex; align-items:center; gap:0.5rem;">
+          <input id="sol-photographer" type="checkbox"> Photographer ($200)
+        </label>
+        <label style="display:flex; align-items:center; gap:0.5rem;">
+          <input id="sol-security" type="checkbox"> Security ($300 unarmed / $600 armed)
+        </label>
+        <label style="display:flex; align-items:center; gap:0.5rem;">
+          <input id="sol-security-armed" type="checkbox" disabled> Armed
+        </label>
+        <label style="display:flex; align-items:center; gap:0.5rem;">
+          <input id="sol-mc" type="checkbox"> MC Services ($50)
+        </label>
+
+        <div id="sol-price-breakdown" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1rem 0;">
+          <p style="margin:0.25rem 0;"><strong>Base:</strong> $25/hr × <span id="price-duration">4</span> hrs = $<span id="price-base">100</span></p>
+          <p style="margin:0.25rem 0;"><strong>Equipment:</strong> $<span id="price-equipment">0</span></p>
+          <p style="margin:0.25rem 0;"><strong>Travel Fee:</strong> $<span id="price-travel">0</span></p>
+          <p style="margin:0.25rem 0; color:#ffd860; font-size:1.1rem;"><strong>Estimated Total:</strong> $<span id="price-total">100</span></p>
+        </div>
+
         <button type="submit" class="submit-btn">Quick Book Now</button>
       </form>
       <p id="sol-quick-status" class="form-status" aria-live="polite"></p>
@@ -157,6 +186,7 @@
       city: 'Philadelphia',
       state: 'PA'
     };
+    let closestDjDistance = 0;
 
     let map, selectedMarker, userMarker, userCircle;
     const djMarkers = {};
@@ -350,6 +380,7 @@
       const form = e.target;
       const clientId = form.email.value.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
 
+      const equipment = getEquipment();
       const payload = {
         client_id: clientId,
         client_name: form.name.value,
@@ -357,16 +388,7 @@
         event_date: form.date.value,
         event_time: '08:00 PM',
         duration: parseInt(form.duration.value) || 4,
-        equipment: {
-          speakers: 0,
-          microphones: 0,
-          strobe_lights: 0,
-          projector: false,
-          photographer: false,
-          security_needed: false,
-          security_armed: false,
-          mc_services: false
-        },
+        equipment: equipment,
         special_requests: '',
         event_type: form.event.value,
         age_bracket: 'All Ages'
@@ -403,6 +425,47 @@
         btn.disabled = false;
       });
     });
+
+    function getEquipment() {
+      const securityNeeded = document.getElementById('sol-security').checked;
+      const securityArmed = securityNeeded && document.getElementById('sol-security-armed').checked;
+      return {
+        speakers: parseInt(document.getElementById('sol-speakers').value) || 0,
+        microphones: parseInt(document.getElementById('sol-microphones').value) || 0,
+        strobe_lights: parseInt(document.getElementById('sol-strobes').value) || 0,
+        projector: document.getElementById('sol-projector').checked,
+        photographer: document.getElementById('sol-photographer').checked,
+        security_needed: securityNeeded,
+        security_armed: securityArmed,
+        mc_services: document.getElementById('sol-mc').checked
+      };
+    }
+
+    function calculatePrice() {
+      const duration = parseInt(document.getElementById('sol-quick-duration').value) || 4;
+      const equipment = getEquipment();
+
+      const base = 25 * duration;
+      let equipmentCost = 0;
+      equipmentCost += equipment.speakers * 50;
+      equipmentCost += equipment.microphones * 25;
+      equipmentCost += equipment.strobe_lights * 50;
+      equipmentCost += equipment.projector ? 50 : 0;
+      equipmentCost += equipment.photographer ? 200 : 0;
+      equipmentCost += equipment.security_needed ? (equipment.security_armed ? 600 : 300) : 0;
+      equipmentCost += equipment.mc_services ? 50 : 0;
+
+      const travelFee = Math.max(0, closestDjDistance - 10) * 1.0;
+      const total = base + equipmentCost + travelFee;
+
+      document.getElementById('price-duration').textContent = duration;
+      document.getElementById('price-base').textContent = base;
+      document.getElementById('price-equipment').textContent = equipmentCost;
+      document.getElementById('price-travel').textContent = travelFee.toFixed(2);
+      document.getElementById('price-total').textContent = total.toFixed(2);
+
+      return { base, equipmentCost, travelFee, total };
+    }
 
     function updateEventNav() {
       const link = document.getElementById('sol-event-nav');
@@ -500,7 +563,9 @@
       .then(function(res) { return res.json(); })
       .then(function(data) {
         if (data.djs && data.djs.length > 0) {
+          closestDjDistance = data.djs[0].distance || 0;
           renderDjCarousel(data.djs);
+          calculatePrice();
           mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + (selectedLocation.city || selectedLocation.address);
           mapStatus.style.color = '#22c55e';
         } else {
@@ -592,6 +657,17 @@
       if (box && !box.contains(e.target) && e.target !== input) {
         box.style.display = 'none';
       }
+    });
+
+    ['sol-quick-duration','sol-speakers','sol-microphones','sol-strobes','sol-projector','sol-photographer','sol-security','sol-security-armed','sol-mc'].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', calculatePrice);
+    });
+    document.getElementById('sol-security').addEventListener('change', function() {
+      const armed = document.getElementById('sol-security-armed');
+      armed.disabled = !this.checked;
+      if (!this.checked) armed.checked = false;
+      calculatePrice();
     });
 
     initMap();
