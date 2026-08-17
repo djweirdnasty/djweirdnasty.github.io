@@ -954,18 +954,24 @@ function update(dt) {
   }
 
   // Hazards
-  for (const h of hazards) {
-    if (rectHit(playerRect, h)) {
-      if (now - (h.lastHit || 0) > 600) {
-        try {
-          const dmg = typeof h.damage === 'number' ? h.damage : 1;
+  if (!Array.isArray(hazards)) {
+    console.error('Hazards array missing');
+    hazards = [];
+  }
+  try {
+    for (const h of hazards) {
+      if (!h || typeof h.x !== 'number' || typeof h.y !== 'number' || typeof h.w !== 'number' || typeof h.h !== 'number' || typeof h.damage !== 'number' || typeof h.lastHit !== 'number') {
+        continue;
+      }
+      if (rectHit(playerRect, h)) {
+        if (now - h.lastHit > 600) {
           if (h.type === 'fire') {
-            player.health = Math.max(1, player.health - dmg);
+            player.health = Math.max(1, player.health - h.damage);
             player.x = Math.max(0, player.x - 8);
             h.lastHit = now;
             showMessage('Burning!', 1000);
           } else {
-            player.health = Math.max(0, player.health - dmg);
+            player.health = Math.max(0, player.health - h.damage);
             h.lastHit = now;
             if (player.health <= 0) {
               player.dead = true;
@@ -976,11 +982,11 @@ function update(dt) {
               showMessage('Spikes!', 1000);
             }
           }
-        } catch (err) {
-          console.error('Hazard error:', err);
         }
       }
     }
+  } catch (err) {
+    console.error('Hazard error:', err);
   }
 
   // Item doors
