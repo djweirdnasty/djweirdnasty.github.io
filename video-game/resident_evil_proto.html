@@ -227,10 +227,6 @@ const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
-let playerImgOff = null;
-let playerIdleImgOff = null;
-let playerWalkingOff = null;
-let zombieImgOff = null;
 let levelStates = [];
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
@@ -639,7 +635,7 @@ function saveLevelState(n) {
     items: items.map(i => ({ ...i })),
     walls: walls.map(w => ({ ...w })),
     itemDoors: itemDoors.map(d => ({ ...d })),
-    zombies: zombies.map(z => ({ ...z })),
+    zombies: zombies.map(z => ({ ...z, stagger: 0 })),
     keys: player.keys,
     greyKeys: player.greyKeys,
     masterKeys: player.masterKeys,
@@ -685,11 +681,14 @@ function loadLevel(n, preserve = false, from = '') {
   if (mkey && !items.some(i => i.type === 'masterKey')) {
     items.push({ type: 'masterKey', x: mkey.x, y: mkey.y, size: 8, taken: false });
   }
+  if (loreNotes[currentLevel] && !items.some(i => i.type === 'lore')) {
+    items.push({ type: 'lore', x: loreNotes[currentLevel].x, y: loreNotes[currentLevel].y, size: 8, text: loreNotes[currentLevel].text, taken: false });
+  }
   if (currentLevel >= 4 && (currentLevel - 4) % 3 === 0 && !items.some(i => i.type === 'lootKey' && i.targetLevel === currentLevel - 4)) {
     items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
   }
   if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
-    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: z.stagger || 0 }));
+    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: 0 }));
   } else {
     zombies = lvl.zombies.map(z => ({
       x: z.x, y: z.y,
@@ -936,7 +935,9 @@ function getFlow(px, py) {
 
 function hasExited() {
   if (door.x + door.w >= world.w - 40) return player.x + player.size/2 > door.x + door.w;
+  if (door.x <= 40) return player.x + player.size/2 < door.x;
   if (door.y <= 40) return player.y + player.size/2 < door.y;
+  if (door.y + door.h >= world.h - 40) return player.y + player.size/2 > door.y + door.h;
   return false;
 }
 
@@ -1493,7 +1494,7 @@ function draw() {
   for (const z of zombies) {
     const dx = (player.x + player.size/2) - (z.x + z.size/2);
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
-    const drawH = z.size * 4;
+    const drawH = z.size * 7;
     const isStaggered = now < z.stagger;
     if (zombieImg.complete && zombieImg.naturalWidth > 0) {
       const frames = 4;
@@ -1508,19 +1509,17 @@ function draw() {
         dir = dy > 0 ? 1 : 0;
       }
       const drawW = drawH * (frameW / frameH);
-      let off;
-      off = zombieImgOff || (zombieImgOff = colorKey(zombieImg));
       ctx.save();
-      ctx.translate(z.x + z.size/2, z.y + z.size/2 - drawH/2);
+      ctx.translate(z.x + z.size/2, z.y + z.size/2);
       if (isStaggered) {
         ctx.rotate(Math.sin(now * 0.03) * 0.15);
       }
-      ctx.drawImage(off, dir * frameW, 0, frameW, frameH, -drawW/2, -drawH/2, drawW, drawH);
+      ctx.drawImage(zombieImg, dir * frameW, 0, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
       if (isStaggered) {
         ctx.globalCompositeOperation = 'source-atop';
         ctx.fillStyle = '#f00';
         ctx.globalAlpha = 0.4;
-        ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
+        ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
       }
@@ -1552,13 +1551,9 @@ function draw() {
     const sx = dirIndex * frameW;
     const sy = 0;
     const drawW = drawH * (frameW / frameH);
-    let off;
-    if (img === playerImg) off = playerImgOff || (playerImgOff = colorKey(playerImg));
-    else if (img === playerWalkingImg) off = playerWalkingOff || (playerWalkingOff = colorKey(playerWalkingImg));
-    else off = playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg));
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.drawImage(off, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
+    ctx.drawImage(img, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
