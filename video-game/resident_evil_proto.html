@@ -226,7 +226,7 @@ playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
 const zombieWalkImg = new Image();
-zombieWalkImg.src = 'zombie-walk.png';
+zombieWalkImg.src = 'zombie-walk-sheet.png';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
@@ -1469,18 +1469,35 @@ function draw() {
   for (const z of zombies) {
     const dx = (player.x + player.size/2) - (z.x + z.size/2);
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
-    const angle = Math.atan2(dy, dx);
     const drawH = z.size * 4;
+    const isStaggered = now < z.stagger;
     if (zombieWalkImg.complete && zombieWalkImg.naturalWidth > 0) {
-      const walkFrames = 4;
-      const walkW = zombieWalkImg.naturalWidth / walkFrames;
-      const walkH = zombieWalkImg.naturalHeight;
-      const walkFrame = Math.floor(now / 150) % walkFrames;
-      const drawW = drawH * (walkW / walkH);
+      const cols = 4, rows = 4;
+      const frameW = zombieWalkImg.naturalWidth / cols;
+      const frameH = zombieWalkImg.naturalHeight / rows;
+      let dirIndex = 1;
+      if (Math.abs(dx) > Math.abs(dy)) dirIndex = dx > 0 ? 2 : 3;
+      else dirIndex = dy > 0 ? 1 : 0;
+      const vLen = Math.hypot(z.vx, z.vy);
+      const isMoving = vLen > 5;
+      const animFrame = isMoving ? Math.floor(now / 150) % rows : 0;
+      const sx = dirIndex * frameW;
+      const sy = (isStaggered ? 0 : animFrame) * frameH;
+      const drawW = drawH * (frameW / frameH);
       ctx.save();
       ctx.translate(z.x + z.size/2, z.y + z.size/2);
-      ctx.rotate(angle + Math.PI / 2);
-      ctx.drawImage(zombieWalkImg, walkFrame * walkW, 0, walkW, walkH, -drawW/2, -drawH/2, drawW, drawH);
+      if (isStaggered) {
+        ctx.rotate(Math.sin(now * 0.03) * 0.15);
+      }
+      ctx.drawImage(zombieWalkImg, sx, sy, frameW, frameH, -drawW/2, -drawH/2, drawW, drawH);
+      if (isStaggered) {
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = '#f00';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
       ctx.restore();
     } else if (zombieImg.complete && zombieImg.naturalWidth > 0) {
       const frames = 4;
