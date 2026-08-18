@@ -220,7 +220,7 @@ playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'main-character-walking.png';
+playerWalkingImg.src = 'player-walk-sheet.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
@@ -1513,22 +1513,34 @@ function draw() {
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
   const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
+  const isWalkingSheet = (img === playerWalkingImg && img.naturalWidth > 0 && img.naturalHeight > 200);
   if (img.complete && img.naturalWidth > 0) {
-    const frames = 4;
-    const frameW = img.naturalWidth / frames;
-    const frameH = img.naturalHeight;
-    let frameIndex = 1;
-    if (facing.x !== 0) frameIndex = facing.x < 0 ? 3 : 2;
-    else if (facing.y !== 0) frameIndex = facing.y < 0 ? 0 : 1;
+    let dirIndex = 1;
+    if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
+    else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
+    let sx, sy, frameW, frameH;
+    if (isWalkingSheet) {
+      const cols = 4, rows = 4;
+      frameW = img.naturalWidth / cols;
+      frameH = img.naturalHeight / rows;
+      const animFrame = moving ? Math.floor(now / 120) % rows : 0;
+      sx = dirIndex * frameW;
+      sy = animFrame * frameH;
+    } else {
+      const frames = 4;
+      frameW = img.naturalWidth / frames;
+      frameH = img.naturalHeight;
+      sx = dirIndex * frameW;
+      sy = 0;
+    }
     const drawW = drawH * (frameW / frameH);
     let off;
     if (img === playerImg) off = playerImgOff || (playerImgOff = colorKey(playerImg));
     else if (img === playerWalkingImg) off = playerWalkingOff || (playerWalkingOff = colorKey(playerWalkingImg));
     else off = playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg));
-    const sx = frameIndex * frameW;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.drawImage(off, sx, 0, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
+    ctx.drawImage(off, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
