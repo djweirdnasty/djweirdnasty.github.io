@@ -1612,35 +1612,6 @@ function draw() {
 
   ctx.restore();
 
-  // Flashlight overlay
-  const pcx = canvas.width / 2, pcy = canvas.height / 2;
-  const aim = Math.atan2(mouse.y - (player.y + player.size/2), mouse.x - (player.x + player.size/2));
-  ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.85)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = 'destination-out';
-  const grd = ctx.createRadialGradient(pcx, pcy, 30, pcx, pcy, 140);
-  grd.addColorStop(0, 'rgba(0,0,0,1)');
-  grd.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.arc(pcx, pcy, 140, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(pcx, pcy);
-  ctx.arc(pcx, pcy, 180, aim - 0.4, aim + 0.4);
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fill();
-  ctx.globalCompositeOperation = 'source-over';
-  if (now - lastShot < 80) {
-    ctx.fillStyle = 'rgba(255, 255, 200, 0.7)';
-    ctx.beginPath();
-    ctx.arc(pcx, pcy, 30, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-
   // Portrait and health bar
   const portraitSize = 64;
   const portraitX = 10;
