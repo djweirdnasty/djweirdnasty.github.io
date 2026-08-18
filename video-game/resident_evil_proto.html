@@ -227,8 +227,8 @@ const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
 const zombieWalkImg = new Image();
 zombieWalkImg.src = 'zombie-walk-sheet.png';
-const phillyWalkImg = new Image();
-phillyWalkImg.src = 'philly-walk-sheet.png';
+const bgImg = new Image();
+bgImg.src = 'philly-4frame.jpeg';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
@@ -354,7 +354,6 @@ const levels = [
       { x: 300, y: 120 }, { x: 300, y: 240 }, { x: 320, y: 360 }, { x: 200, y: 240 },
     ],
     zombieHealth: 4, zombieSpeed: 55, zombieDamage: 35,
-    zombieSprite: 'philly',
   },
   {
     name: 'Magnum Run',
@@ -398,7 +397,6 @@ const levels = [
       { x: 200, y: 240 }, { x: 540, y: 240 }, { x: 120, y: 240 },
     ],
     zombieHealth: 5, zombieSpeed: 66, zombieDamage: 35,
-    zombieSprite: 'philly',
   },
   {
     name: 'Open Chamber',
@@ -445,7 +443,6 @@ const levels = [
       { x: 200, y: 240 }, { x: 540, y: 240 }, { x: 120, y: 240 },
     ],
     zombieHealth: 7, zombieSpeed: 72, zombieDamage: 40,
-    zombieSprite: 'philly',
   },
   {
     name: 'Heavy Breach',
@@ -687,7 +684,7 @@ function loadLevel(n, preserve = false, from = '') {
     items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
   }
   if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
-    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: z.stagger || 0, sprite: z.sprite || 'zombie' }));
+    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: z.stagger || 0 }));
   } else {
     zombies = lvl.zombies.map(z => ({
       x: z.x, y: z.y,
@@ -697,7 +694,6 @@ function loadLevel(n, preserve = false, from = '') {
       damage: lvl.zombieDamage,
       lastAttack: 0,
       stagger: 0,
-      sprite: lvl.zombieSprite || 'zombie',
       vx: 0, vy: 0
     }));
   }
@@ -1394,8 +1390,12 @@ function draw() {
   ctx.setTransform(scaleX, 0, 0, scaleY, canvas.width/2 - camera.x * scaleX, canvas.height/2 - camera.y * scaleY);
   ctx.fillStyle = '#000';
   ctx.fillRect(-2000, -2000, 6000, 6000);
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0, 0, world.w, world.h);
+  if (bgImg.complete && bgImg.naturalWidth > 0) {
+    ctx.drawImage(bgImg, 0, 0, world.w, world.h);
+  } else {
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, world.w, world.h);
+  }
 
   // Portrait and health bar (drawn last, after the game world)
   for (const w of walls) {
@@ -1477,9 +1477,9 @@ function draw() {
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
     const drawH = z.size * 4;
     const isStaggered = now < z.stagger;
-    const sheet = (z.sprite === 'philly' && phillyWalkImg.complete && phillyWalkImg.naturalWidth > 0) ? phillyWalkImg : zombieWalkImg;
+    const sheet = zombieWalkImg;
     if (sheet.complete && sheet.naturalWidth > 0) {
-      const cols = 4, rows = 4;
+      const cols = 4, rows = 2;
       const frameW = sheet.naturalWidth / cols;
       const frameH = sheet.naturalHeight / rows;
       let dirIndex = 1;
