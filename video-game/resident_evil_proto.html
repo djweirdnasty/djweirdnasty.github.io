@@ -243,6 +243,9 @@ let cutsceneActive = false;
 let introShown = false;
 let gameBeaten = localStorage.getItem('youie-registered-winner') === 'true';
 
+const introText = 'You wake in the safe room of an abandoned estate. The front door is jammed. Something is moving in the halls. Find a way out — and pray you are not the only one still breathing.';
+const endingText = 'You burst through the final door. The cold air hits your face. You made it out. But the estate is still out there... and something is still inside.';
+
 const world = { w: 640, h: 480 };
 
 const outerWalls = [
@@ -590,6 +593,7 @@ function setAim(clientX, clientY) {
 }
 canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
 canvas.addEventListener('mousedown', () => { mouseHeld = true; shoot(); });
+let shotCooldown = { pistol: 200, shotgun: 600, 'Grenade Launcher': 800, RPG: 1200 };
 canvas.addEventListener('mouseup', () => mouseHeld = false);
 window.addEventListener('mouseup', () => mouseHeld = false);
 
@@ -646,31 +650,35 @@ function saveLevelState(n) {
 function loadLevel(n, preserve = false, from = '') {
   currentLevel = n;
   const lvl = levels[currentLevel];
-  walls = [...lvl.walls, ...(secretWalls[currentLevel] || [])];
+  walls = [...lvl.walls, ...(secretWalls[currentLevel] || []).map(w => ({ ...w, maxHp: w.hp }))];
   door = { ...lvl.door };
   if (levelStates[currentLevel]) {
     const st = levelStates[currentLevel];
-    walls = st.walls ? st.walls.map(w => ({ ...w })) : [...lvl.walls, ...(secretWalls[currentLevel] || [])];
+    walls = st.walls ? st.walls.map(w => ({ ...w, maxHp: w.maxHp || w.hp })) : [...lvl.walls, ...(secretWalls[currentLevel] || []).map(w => ({ ...w, maxHp: w.hp }))];
     items = st.items.map(i => ({ ...i }));
     itemDoors = (currentLevel % 3 === 0 && currentLevel + 4 < levels.length && st.itemDoors) ? st.itemDoors.map(d => ({ ...d })) : [];
     greyDoor = st.greyDoor ? { ...st.greyDoor } : (lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null);
-  } else if (currentLevel % 3 === 0 && currentLevel + 4 < levels.length) {
+  } else {
     items = lvl.items.map(i => ({ ...i, taken: false }));
-    const sx = currentLevel === 0 ? 60 : lvl.start.x + 40;
-    const sy = currentLevel === 0 ? 100 : lvl.start.y;
-    const loot = [
-      { type: 'ammo', amount: 8 },
-      { type: 'med', amount: 40 },
-      { type: 'ammo', amount: 8 },
-      { type: 'med', amount: 60 },
-      { type: 'weapon', weapon: pistol, amount: 12 },
-      { type: 'ammo', amount: 8 },
-      { type: 'med', amount: 60 },
-      { type: 'ammo', amount: 8 },
-      { type: 'med', amount: 80 },
-      { type: 'weapon', weapon: shotgun, amount: 12 }
-    ];
-    itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, locked: true, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
+    if (currentLevel % 3 === 0 && currentLevel + 4 < levels.length) {
+      const sx = currentLevel === 0 ? 60 : lvl.start.x + 40;
+      const sy = currentLevel === 0 ? 100 : lvl.start.y;
+      const loot = [
+        { type: 'ammo', amount: 8 },
+        { type: 'med', amount: 40 },
+        { type: 'ammo', amount: 8 },
+        { type: 'med', amount: 60 },
+        { type: 'weapon', weapon: pistol, amount: 12 },
+        { type: 'ammo', amount: 8 },
+        { type: 'med', amount: 60 },
+        { type: 'ammo', amount: 8 },
+        { type: 'med', amount: 80 },
+        { type: 'weapon', weapon: shotgun, amount: 12 }
+      ];
+      itemDoors = [{ x: sx, y: sy, w: 16, h: 40, opened: false, locked: true, contains: loot[currentLevel] || { type: 'ammo', amount: 8 } }];
+    } else {
+      itemDoors = [];
+    }
     greyDoor = lvl.greyDoor ? { ...lvl.greyDoor, opened: false } : null;
   }
   const mkey = masterKeySpawns[currentLevel];
@@ -803,6 +811,9 @@ function shoot() {
     showMessage('Out of ammo!');
     return;
   }
+  const now = performance.now();
+  const cd = shotCooldown[player.weapon.name] || 250;
+  if (now - lastShot < cd) return;
   const px = player.x + player.size/2;
   const py = player.y + player.size/2;
   const dx = mouse.x - px;
@@ -935,6 +946,20 @@ function update(dt) {
   const pcx = player.x + player.size/2, pcy = player.y + player.size/2;
   camera.x += (pcx - camera.x) * 0.1;
   camera.y += (pcy - camera.y) * 0.1;
+  const scaleX = canvas.width / world.w;
+  const scaleY = canvas.height / world.h;
+  const viewWInWorld = canvas.width / scaleX;
+  const viewHInWorld = canvas.height / scaleY;
+  if (viewWInWorld < world.w) {
+    camera.x = Math.max(viewWInWorld/2, Math.min(world.w - viewWInWorld/2, camera.x));
+  } else {
+    camera.x = world.w / 2;
+  }
+  if (viewHInWorld < world.h) {
+    camera.y = Math.max(viewHInWorld/2, Math.min(world.h - viewHInWorld/2, camera.y));
+  } else {
+    camera.y = world.h / 2;
+  }
 
   // Move player
   let mdx = 0, mdy = 0;
