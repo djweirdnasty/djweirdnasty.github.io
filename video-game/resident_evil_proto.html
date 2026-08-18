@@ -227,6 +227,11 @@ const WALK_FRAMES = {
   2: [ { x: 1606, y: 540, w: 599, h: 1094 }, { x: 1144, y: 1859, w: 596, h: 1098 } ],
   3: [ { x: 2167, y: 543, w: 614, h: 1091 }, { x: 567, y: 1863, w: 612, h: 1092 } ]
 };
+const walkDir2Frame1Img = new Image();
+walkDir2Frame1Img.src = 'walk-dir2-frame1-fixed.png';
+const walkDir3Frame1Img = new Image();
+walkDir3Frame1Img.src = 'walk-dir3-frame1-fixed.png';
+const WALK_FRAME_OVERRIDES = { 2: walkDir2Frame1Img, 3: walkDir3Frame1Img };
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
@@ -1552,10 +1557,17 @@ function draw() {
     if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
     else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
     let sx, sy, frameW, frameH;
+    let drawSrcImg = img;
     if (img === playerWalkingImg) {
       const animFrame = moving ? (Math.floor(now / 150) % 2) : 0;
-      const rect = WALK_FRAMES[dirIndex][animFrame];
-      sx = rect.x; sy = rect.y; frameW = rect.w; frameH = rect.h;
+      const overrideImg = animFrame === 1 ? WALK_FRAME_OVERRIDES[dirIndex] : null;
+      if (overrideImg && overrideImg.complete && overrideImg.naturalWidth > 0) {
+        drawSrcImg = overrideImg;
+        sx = 0; sy = 0; frameW = overrideImg.naturalWidth; frameH = overrideImg.naturalHeight;
+      } else {
+        const rect = WALK_FRAMES[dirIndex][animFrame];
+        sx = rect.x; sy = rect.y; frameW = rect.w; frameH = rect.h;
+      }
     } else {
       const frames = 4;
       frameW = img.naturalWidth / frames;
@@ -1566,7 +1578,7 @@ function draw() {
     const drawW = drawH * (frameW / frameH);
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.drawImage(img, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
+    ctx.drawImage(drawSrcImg, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
