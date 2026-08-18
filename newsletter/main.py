@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from database import get_db, SessionLocal, Subscriber, Campaign, CampaignRecipient
 from auth import create_access_token, decode_access_token, generate_token
-from email_service import send_email
+from email_service import send_email, send_email_async
 from jinja2 import Environment, FileSystemLoader, Template
 from apscheduler.schedulers.background import BackgroundScheduler
 import uvicorn
@@ -19,6 +19,7 @@ app = FastAPI(title="DJWEIRDNASTY Newsletter API")
 website_url = os.getenv("WEBSITE_URL", "https://djweirdnasty.com")
 admin_user = os.getenv("ADMIN_USERNAME", "admin")
 admin_pass = os.getenv("ADMIN_PASSWORD", "change-this-password")
+admin_email = os.getenv("ADMIN_EMAIL", "")
 
 app.add_middleware(
     CORSMiddleware,
@@ -126,6 +127,10 @@ def subscribe(req: SubscribeRequest, db: Session = Depends(get_db)):
     <p>If you didn't sign up, you can ignore this email.</p>
     """
     send_email(req.email, "Confirm your DJWEIRDNASTY newsletter subscription", html)
+
+    if admin_email:
+        admin_html = f"<p>New DJWEIRDNASTY newsletter signup:</p><p><strong>Name:</strong> {req.name or 'Not provided'}<br><strong>Email:</strong> {req.email}</p>"
+        send_email_async(admin_email, "New DJWEIRDNASTY newsletter signup", admin_html)
 
     return {"ok": True, "message": "Check your email to confirm your subscription!"}
 

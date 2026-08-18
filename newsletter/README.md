@@ -27,6 +27,8 @@ cp .env.example .env
 # Edit .env with your values
 ```
 
+To receive an email alert for every new newsletter signup, set `ADMIN_EMAIL` in your `.env` file.
+
 ### 3. Configure SMTP
 
 **Honest note:** Running a mail server from home is not practical. You need a static IP, reverse DNS (PTR), SPF/DKIM/DMARC records, port 25 access (many ISPs block it), and good IP reputation. Without these, your emails will go to spam.
