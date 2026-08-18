@@ -220,20 +220,17 @@ playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'player-walk-sheet.png?v=51';
+playerWalkingImg.src = 'main-character-walking.png';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
-const zombieWalkImg = new Image();
-zombieWalkImg.src = 'zombie-walk-sheet.png?v=51';
-const bgImg = new Image();
-bgImg.src = 'philly-4frame.jpeg?v=51';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
 let playerIdleImgOff = null;
 let playerWalkingOff = null;
+let zombieImgOff = null;
 let levelStates = [];
 const achievement = document.getElementById('achievement');
 const gameMain = document.getElementById('game-main');
@@ -1390,12 +1387,8 @@ function draw() {
   ctx.setTransform(scaleX, 0, 0, scaleY, canvas.width/2 - camera.x * scaleX, canvas.height/2 - camera.y * scaleY);
   ctx.fillStyle = '#000';
   ctx.fillRect(-2000, -2000, 6000, 6000);
-  if (bgImg.complete && bgImg.naturalWidth > 0) {
-    ctx.drawImage(bgImg, 0, 0, world.w, world.h);
-  } else {
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, world.w, world.h);
-  }
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, world.w, world.h);
 
   // Portrait and health bar (drawn last, after the game world)
   for (const w of walls) {
@@ -1475,38 +1468,9 @@ function draw() {
   for (const z of zombies) {
     const dx = (player.x + player.size/2) - (z.x + z.size/2);
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
-    const drawH = z.size * 7;
+    const drawH = z.size * 4;
     const isStaggered = now < z.stagger;
-    const sheet = zombieWalkImg;
-    if (sheet.complete && sheet.naturalWidth > 0) {
-      const cols = 4, rows = 4;
-      const frameW = sheet.naturalWidth / cols;
-      const frameH = sheet.naturalHeight / rows;
-      let dirIndex = 1;
-      if (Math.abs(dx) > Math.abs(dy)) dirIndex = dx > 0 ? 2 : 3;
-      else dirIndex = dy > 0 ? 1 : 0;
-      const vLen = Math.hypot(z.vx, z.vy);
-      const isMoving = vLen > 5;
-      const animFrame = isMoving ? Math.floor(now / 150) % rows : 0;
-      const sx = dirIndex * frameW;
-      const sy = (isStaggered ? 0 : animFrame) * frameH;
-      const drawW = drawH * (frameW / frameH);
-      ctx.save();
-      ctx.translate(z.x + z.size/2, z.y + z.size/2 - drawH/2);
-      if (isStaggered) {
-        ctx.rotate(Math.sin(now * 0.03) * 0.15);
-      }
-      ctx.drawImage(sheet, sx, sy, frameW, frameH, -drawW/2, -drawH/2, drawW, drawH);
-      if (isStaggered) {
-        ctx.globalCompositeOperation = 'source-atop';
-        ctx.fillStyle = '#f00';
-        ctx.globalAlpha = 0.4;
-        ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
-        ctx.globalAlpha = 1;
-        ctx.globalCompositeOperation = 'source-over';
-      }
-      ctx.restore();
-    } else if (zombieImg.complete && zombieImg.naturalWidth > 0) {
+    if (zombieImg.complete && zombieImg.naturalWidth > 0) {
       const frames = 4;
       const frameW = zombieImg.naturalWidth / frames;
       const frameH = zombieImg.naturalHeight;
@@ -1519,7 +1483,23 @@ function draw() {
         dir = dy > 0 ? 1 : 0;
       }
       const drawW = drawH * (frameW / frameH);
-      ctx.drawImage(zombieImg, dir * frameW, 0, frameW, frameH, z.x + z.size/2 - drawW/2, z.y + z.size/2 - drawH/2, drawW, drawH);
+      let off;
+      off = zombieImgOff || (zombieImgOff = colorKey(zombieImg));
+      ctx.save();
+      ctx.translate(z.x + z.size/2, z.y + z.size/2 - drawH/2);
+      if (isStaggered) {
+        ctx.rotate(Math.sin(now * 0.03) * 0.15);
+      }
+      ctx.drawImage(off, dir * frameW, 0, frameW, frameH, -drawW/2, -drawH/2, drawW, drawH);
+      if (isStaggered) {
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = '#f00';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      ctx.restore();
     } else {
       ctx.fillStyle = '#a33';
       ctx.fillRect(z.x, z.y, z.size, z.size);
@@ -1536,42 +1516,29 @@ function draw() {
   const drawH = s * 7;
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
-  const useWalkSheet = moving && playerWalkingImg.complete && playerWalkingImg.naturalWidth > 0;
-  const useGunSheet = alive && player.weapon && (fireHeld || mouseHeld) && playerImg.complete && playerImg.naturalWidth > 0;
-  const img = useGunSheet ? playerImg : (useWalkSheet ? playerWalkingImg : (playerIdleImg.complete && playerIdleImg.naturalWidth > 0 ? playerIdleImg : null));
-  if (img) {
+  const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
+  if (img.complete && img.naturalWidth > 0) {
     let dirIndex = 1;
     if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
     else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
-    let sx, sy, frameW, frameH, sourceImg;
-    if (img === playerWalkingImg) {
-      const cols = 4, rows = 4;
-      frameW = img.naturalWidth / cols;
-      frameH = img.naturalHeight / rows;
-      const animFrame = moving ? Math.floor(now / 120) % rows : 0;
-      sx = dirIndex * frameW;
-      sy = animFrame * frameH;
-      sourceImg = img;
-    } else {
-      const frames = 4;
-      frameW = img.naturalWidth / frames;
-      frameH = img.naturalHeight;
-      sx = dirIndex * frameW;
-      sy = 0;
-      let off;
-      if (img === playerImg) off = playerImgOff || (playerImgOff = colorKey(playerImg));
-      else off = playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg));
-      sourceImg = off;
-    }
+    const frames = 4;
+    const frameW = img.naturalWidth / frames;
+    const frameH = img.naturalHeight;
+    const sx = dirIndex * frameW;
+    const sy = 0;
     const drawW = drawH * (frameW / frameH);
+    let off;
+    if (img === playerImg) off = playerImgOff || (playerImgOff = colorKey(playerImg));
+    else if (img === playerWalkingImg) off = playerWalkingOff || (playerWalkingOff = colorKey(playerWalkingImg));
+    else off = playerIdleImgOff || (playerIdleImgOff = colorKey(playerIdleImg));
     ctx.save();
-    ctx.translate(cx, cy - drawH/2);
-    ctx.drawImage(sourceImg, sx, sy, frameW, frameH, -drawW/2, -drawH/2, drawW, drawH);
+    ctx.translate(cx, cy);
+    ctx.drawImage(off, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
     if (hitFlash) {
       ctx.globalCompositeOperation = 'source-atop';
       ctx.fillStyle = '#f00';
       ctx.globalAlpha = 0.5;
-      ctx.fillRect(-drawW/2, -drawH/2, drawW, drawH);
+      ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
     }
