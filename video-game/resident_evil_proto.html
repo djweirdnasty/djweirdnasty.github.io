@@ -679,7 +679,7 @@ function loadLevel(n, preserve = false, from = '') {
     items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
   }
   if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
-    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z }));
+    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0 }));
   } else {
     zombies = lvl.zombies.map(z => ({
       x: z.x, y: z.y,
@@ -687,7 +687,8 @@ function loadLevel(n, preserve = false, from = '') {
       speed: lvl.zombieSpeed,
       health: lvl.zombieHealth,
       damage: lvl.zombieDamage,
-      lastAttack: 0
+      lastAttack: 0,
+      vx: 0, vy: 0
     }));
   }
   if (from === 'left') {
@@ -878,6 +879,46 @@ function canSee(ax, ay, bx, by) {
   return true;
 }
 
+const gridW = 20;
+let cols, rows;
+let blocked = [];
+let wallCount = -1;
+
+function buildGrid() {
+  cols = Math.ceil(world.w / gridW);
+  rows = Math.ceil(world.h / gridW);
+  blocked = new Array(rows).fill().map(() => new Array(cols).fill(false));
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = { x: c * gridW, y: r * gridW, w: gridW, h: gridW };
+      for (const w of walls) {
+        if (rectHit(cell, w)) { blocked[r][c] = true; break; }
+      }
+    }
+  }
+}
+
+function getFlow(px, py) {
+  if (wallCount !== walls.length) { wallCount = walls.length; buildGrid(); }
+  const pc = Math.floor(px / gridW), pr = Math.floor(py / gridW);
+  const flow = new Array(rows).fill().map(() => new Array(cols).fill(null));
+  if (pr < 0 || pr >= rows || pc < 0 || pc >= cols || blocked[pr][pc]) return flow;
+  const q = [[pc, pr]];
+  flow[pr][pc] = { x: 0, y: 0 };
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for (let i = 0; i < q.length; i++) {
+    const [c, r] = q[i];
+    for (const [dc, dr] of dirs) {
+      const nc = c + dc, nr = r + dr;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+      if (blocked[nr][nc] || flow[nr][nc]) continue;
+      flow[nr][nc] = { x: -dc, y: -dr };
+      q.push([nc, nr]);
+    }
+  }
+  return flow;
+}
+
 function hasExited() {
   if (door.x + door.w >= world.w - 40) return player.x + player.size/2 > door.x + door.w;
   if (door.y <= 40) return player.y + player.size/2 < door.y;
@@ -1017,6 +1058,8 @@ function update(dt) {
 
   // Zombies
   const now = performance.now();
+  const px = player.x + player.size/2, py = player.y + player.size/2;
+  const pFlow = getFlow(px, py);
 
   // Mobile auto-fire
   if (fireHeld && now - lastShot > 250) {
@@ -1028,17 +1071,57 @@ function update(dt) {
   for (let i = zombies.length - 1; i >= 0; i--) {
     const z = zombies[i];
     const zx = z.x + z.size/2, zy = z.y + z.size/2;
-    const px = player.x + player.size/2, py = player.y + player.size/2;
-    const dist = Math.hypot(px - zx, py - zy);
+    const dx = px - zx, dy = py - zy;
+    const dist = Math.hypot(dx, dy);
+    const canSeePlayer = dist < 300 && canSee(zx, zy, px, py);
+    const attackRange = player.size/2 + z.size/2 + 4;
 
-    if (dist < 220 && canSee(zx, zy, px, py)) {
-      const zx_dir = (px - zx) / dist;
-      const zy_dir = (py - zy) / dist;
-      moveEntity(z, zx_dir * z.speed * dt, zy_dir * z.speed * dt);
-    } else {
-      const a = now * 0.001 + i;
-      moveEntity(z, Math.sin(a) * z.speed * 0.3 * dt, Math.cos(a) * z.speed * 0.3 * dt);
+    let desiredX = 0, desiredY = 0;
+    if (canSeePlayer && dist > attackRange) {
+      desiredX = dx / dist;
+      desiredY = dy / dist;
+    } else if (dist > attackRange) {
+      const c = Math.floor(zx / gridW), r = Math.floor(zy / gridW);
+      const f = (pFlow[r] && pFlow[r][c]) || null;
+      if (f && (f.x || f.y)) {
+        desiredX = f.x;
+        desiredY = f.y;
+      } else {
+        const a = now * 0.001 + i;
+        desiredX = Math.sin(a);
+        desiredY = Math.cos(a);
+      }
     }
+
+    // Separation
+    for (let j = 0; j < zombies.length; j++) {
+      if (j === i) continue;
+      const oz = zombies[j];
+      const ox = oz.x + oz.size/2, oy = oz.y + oz.size/2;
+      const sdx = zx - ox, sdy = zy - oy;
+      const sd = Math.hypot(sdx, sdy);
+      if (sd > 0 && sd < z.size * 1.5) {
+        desiredX += (sdx / sd) * 1.5;
+        desiredY += (sdy / sd) * 1.5;
+      }
+    }
+
+    const len = Math.hypot(desiredX, desiredY);
+    if (len > 0) { desiredX /= len; desiredY /= len; }
+
+    const accel = 5;
+    if (dist > attackRange) {
+      z.vx += (desiredX * z.speed - z.vx) * accel * dt;
+      z.vy += (desiredY * z.speed - z.vy) * accel * dt;
+    } else {
+      z.vx *= 0.8;
+      z.vy *= 0.8;
+    }
+
+    const vLen = Math.hypot(z.vx, z.vy);
+    if (vLen > z.speed) { z.vx = (z.vx / vLen) * z.speed; z.vy = (z.vy / vLen) * z.speed; }
+
+    moveEntity(z, z.vx * dt, z.vy * dt);
 
     // Attack
     if (dist < player.size/2 + z.size/2 + 4 && now - z.lastAttack > 900) {
