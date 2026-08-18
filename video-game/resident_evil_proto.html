@@ -543,6 +543,7 @@ let player = {
 
 const input = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowLeft:false, ArrowDown:false, ArrowRight:false };
 const mouse = { x: 0, y: 0 };
+let camera = { x: 320, y: 240 };
 const isTouch = window.matchMedia('(pointer: coarse)').matches;
 let message = '';
 let messageUntil = 0;
@@ -583,8 +584,10 @@ window.addEventListener('keyup', e => {
 });
 function setAim(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
-  mouse.x = (clientX - r.left) * (world.w / r.width);
-  mouse.y = (clientY - r.top) * (world.h / r.height);
+  mouse.x = camera.x + (clientX - r.left - r.width / 2) * (world.w / r.width);
+  mouse.y = camera.y + (clientY - r.top - r.height / 2) * (world.h / r.height);
+  mouse.x = Math.max(0, Math.min(world.w, mouse.x));
+  mouse.y = Math.max(0, Math.min(world.h, mouse.y));
 }
 canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
 canvas.addEventListener('mousedown', () => { mouseHeld = true; shoot(); });
@@ -679,7 +682,7 @@ function loadLevel(n, preserve = false, from = '') {
     items.push({ type: 'lootKey', x: 300, y: 120, size: 8, targetLevel: currentLevel - 4, taken: false });
   }
   if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
-    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0 }));
+    zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: z.stagger || 0 }));
   } else {
     zombies = lvl.zombies.map(z => ({
       x: z.x, y: z.y,
@@ -688,6 +691,7 @@ function loadLevel(n, preserve = false, from = '') {
       health: lvl.zombieHealth,
       damage: lvl.zombieDamage,
       lastAttack: 0,
+      stagger: 0,
       vx: 0, vy: 0
     }));
   }
@@ -816,6 +820,7 @@ function shoot() {
     life: 1.2
   });
   player.ammo--;
+  lastShot = performance.now();
 }
 
 function rectHit(a, b) {
@@ -928,6 +933,9 @@ function hasExited() {
 function update(dt) {
   if (!gameStarted || player.dead || player.won) return;
   const lvl = levels[currentLevel];
+  const pcx = player.x + player.size/2, pcy = player.y + player.size/2;
+  camera.x += (pcx - camera.x) * 0.1;
+  camera.y += (pcy - camera.y) * 0.1;
 
   // Move player
   let mdx = 0, mdy = 0;
@@ -1110,9 +1118,10 @@ function update(dt) {
     if (len > 0) { desiredX /= len; desiredY /= len; }
 
     const accel = 5;
+    const slow = (now < z.stagger) ? 0.3 : 1;
     if (dist > attackRange) {
-      z.vx += (desiredX * z.speed - z.vx) * accel * dt;
-      z.vy += (desiredY * z.speed - z.vy) * accel * dt;
+      z.vx += (desiredX * z.speed * slow - z.vx) * accel * dt;
+      z.vy += (desiredY * z.speed * slow - z.vy) * accel * dt;
     } else {
       z.vx *= 0.8;
       z.vy *= 0.8;
@@ -1165,6 +1174,9 @@ function update(dt) {
       const z = zombies[j];
       if (rectHit({ x: b.x, y: b.y, w: b.size, h: b.size }, { x: z.x, y: z.y, w: z.size, h: z.size })) {
         z.health -= b.damage;
+        z.stagger = now + 300;
+        z.vx += b.vx * 0.15;
+        z.vy += b.vy * 0.15;
         remove = true;
         direct = z;
         if (z.health <= 0) zombies.splice(j, 1);
@@ -1372,7 +1384,10 @@ function draw() {
   const now = performance.now();
   const scaleX = canvas.width / world.w;
   const scaleY = canvas.height / world.h;
-  ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+  ctx.save();
+  ctx.setTransform(scaleX, 0, 0, scaleY, canvas.width/2 - camera.x * scaleX, canvas.height/2 - camera.y * scaleY);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(-2000, -2000, 6000, 6000);
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 0, world.w, world.h);
 
@@ -1455,7 +1470,7 @@ function draw() {
     const dx = (player.x + player.size/2) - (z.x + z.size/2);
     const dy = (player.y + player.size/2) - (z.y + z.size/2);
     const angle = Math.atan2(dy, dx);
-    const drawH = z.size * 3;
+    const drawH = z.size * 4;
     if (zombieWalkImg.complete && zombieWalkImg.naturalWidth > 0) {
       const walkFrames = 4;
       const walkW = zombieWalkImg.naturalWidth / walkFrames;
@@ -1494,7 +1509,7 @@ function draw() {
   const dx = mouse.x - cx;
   const dy = mouse.y - cy;
   const s = player.size;
-  const drawH = s * 4;
+  const drawH = s * 7;
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
   const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
@@ -1558,6 +1573,37 @@ function draw() {
   ctx.moveTo(mouse.x, mouse.y - 10);
   ctx.lineTo(mouse.x, mouse.y + 10);
   ctx.stroke();
+
+  ctx.restore();
+
+  // Flashlight overlay
+  const pcx = canvas.width / 2, pcy = canvas.height / 2;
+  const aim = Math.atan2(mouse.y - (player.y + player.size/2), mouse.x - (player.x + player.size/2));
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.85)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.globalCompositeOperation = 'destination-out';
+  const grd = ctx.createRadialGradient(pcx, pcy, 30, pcx, pcy, 140);
+  grd.addColorStop(0, 'rgba(0,0,0,1)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(pcx, pcy, 140, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(pcx, pcy);
+  ctx.arc(pcx, pcy, 180, aim - 0.4, aim + 0.4);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  if (now - lastShot < 80) {
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.7)';
+    ctx.beginPath();
+    ctx.arc(pcx, pcy, 30, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 
   // Portrait and health bar
   const portraitSize = 64;
