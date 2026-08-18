@@ -221,6 +221,12 @@ const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
 playerWalkingImg.src = 'main-character-walking.png';
+const WALK_FRAMES = {
+  0: [ { x: 609, y: 538, w: 431, h: 1092 }, { x: 2307, y: 1858, w: 430, h: 1090 } ],
+  1: [ { x: 1141, y: 538, w: 490, h: 1117 }, { x: 1717, y: 1858, w: 491, h: 1117 } ],
+  2: [ { x: 1606, y: 540, w: 599, h: 1094 }, { x: 1144, y: 1859, w: 596, h: 1098 } ],
+  3: [ { x: 2167, y: 543, w: 614, h: 1091 }, { x: 567, y: 1863, w: 612, h: 1092 } ]
+};
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
@@ -1545,11 +1551,18 @@ function draw() {
     let dirIndex = 1;
     if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
     else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
-    const frames = 4;
-    const frameW = img.naturalWidth / frames;
-    const frameH = img.naturalHeight;
-    const sx = dirIndex * frameW;
-    const sy = 0;
+    let sx, sy, frameW, frameH;
+    if (img === playerWalkingImg) {
+      const animFrame = moving ? (Math.floor(now / 150) % 2) : 0;
+      const rect = WALK_FRAMES[dirIndex][animFrame];
+      sx = rect.x; sy = rect.y; frameW = rect.w; frameH = rect.h;
+    } else {
+      const frames = 4;
+      frameW = img.naturalWidth / frames;
+      frameH = img.naturalHeight;
+      sx = dirIndex * frameW;
+      sy = 0;
+    }
     const drawW = drawH * (frameW / frameH);
     ctx.save();
     ctx.translate(cx, cy);
