@@ -220,15 +220,15 @@ playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'player-walk-sheet.png?v=50';
+playerWalkingImg.src = 'player-walk-sheet.png?v=51';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
 const zombieWalkImg = new Image();
-zombieWalkImg.src = 'zombie-walk-sheet.png?v=50';
+zombieWalkImg.src = 'zombie-walk-sheet.png?v=51';
 const bgImg = new Image();
-bgImg.src = 'philly-4frame.jpeg?v=50';
+bgImg.src = 'philly-4frame.jpeg?v=51';
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let playerImgOff = null;
@@ -1479,7 +1479,7 @@ function draw() {
     const isStaggered = now < z.stagger;
     const sheet = zombieWalkImg;
     if (sheet.complete && sheet.naturalWidth > 0) {
-      const cols = 4, rows = 2;
+      const cols = 4, rows = 4;
       const frameW = sheet.naturalWidth / cols;
       const frameH = sheet.naturalHeight / rows;
       let dirIndex = 1;
