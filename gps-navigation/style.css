@@ -1,0 +1,276 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #111;
+  color: #fff;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 360px;
+  min-width: 280px;
+  background: #1a1a1a;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+}
+
+.logo {
+  display: block;
+  width: 150px;
+  max-width: 100%;
+  margin: 0 0 8px;
+  align-self: center;
+}
+
+.logo-text {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #00d4ff;
+  text-align: center;
+}
+
+.search-box label {
+  display: block;
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+}
+
+.suggestions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  background: #252525;
+  border: 1px solid #444;
+  border-radius: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #ddd;
+  border-bottom: 1px solid #333;
+}
+
+.suggestions li:last-child {
+  border-bottom: none;
+}
+
+.suggestions li:hover {
+  background: #333;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #00d4ff;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+button.secondary {
+  background: #333;
+  color: #fff;
+}
+
+button.danger {
+  background: #ff4757;
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.status {
+  background: #2a2a2a;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #ccc;
+  min-height: 44px;
+}
+
+.eta {
+  background: #2a2a2a;
+  padding: 14px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.eta strong {
+  font-size: 1.4rem;
+  color: #00d4ff;
+}
+
+.instructions h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+  color: #aaa;
+}
+
+.instructions ol {
+  padding-left: 20px;
+  margin: 0;
+  color: #ddd;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+}
+
+.map-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  background: #222;
+}
+
+.next-turn {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid #00d4ff;
+  border-radius: 16px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+#turnIcon {
+  font-size: 2rem;
+  color: #00d4ff;
+}
+
+#turnText {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.my-location {
+  background: #2a2a2a;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.my-location h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+  color: #aaa;
+}
+
+.my-location .coords {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+.my-location #myLocationAddress {
+  color: #fff;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #2a2a2a;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+
+.profile label {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.profile select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #3a3a3a;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: 45%;
+    border-right: none;
+    border-bottom: 1px solid #333;
+  }
+
+  .map-wrap {
+    height: 55%;
+  }
+}

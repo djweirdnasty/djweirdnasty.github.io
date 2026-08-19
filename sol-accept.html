@@ -79,7 +79,8 @@
         '<p><strong>Extras:</strong> ' + (extras.length ? extras.join(', ') : 'None') + '</p>' +
         '<p><strong>Total Cost:</strong> $' + esc(Number(booking.total_cost || 0).toFixed(2)) + '</p>' +
         '<p><strong>Status:</strong> ' + esc(booking.status) + '</p>' +
-        (booking.dj_name ? '<p><strong>Accepted by:</strong> ' + esc(booking.dj_name) + '</p>' : '');
+        (booking.dj_name ? '<p><strong>Accepted by:</strong> ' + esc(booking.dj_name) + '</p>' : '') +
+        '<p style="margin-top:1rem;"><a href="gps-navigation/index.html?lat=' + encodeURIComponent(loc.latitude) + '&lng=' + encodeURIComponent(loc.longitude) + '&address=' + encodeURIComponent(loc.address || 'Gig location') + '" class="playlist-link" target="_blank" rel="noopener">Navigate to gig</a></p>';
     }
 
     async function postAction(path, actionName) {

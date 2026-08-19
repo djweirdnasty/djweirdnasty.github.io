@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My GPS Navigation</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <img src="sol-logo.png" alt="SOL" class="logo" />
+      <p class="logo-text">Navigation</p>
+
+      <div class="search-box">
+        <label for="destination">Where to?</label>
+        <input id="destination" type="text" placeholder="Enter address or place" autocomplete="off" />
+        <ul id="suggestions" class="suggestions" hidden></ul>
+        <div class="row">
+          <button id="searchBtn">Search</button>
+          <button id="locateBtn" class="secondary">My Location</button>
+        </div>
+      </div>
+
+      <div class="my-location">
+        <h2>My Location</h2>
+        <div id="myLocationAddress">--</div>
+        <div id="myLocationCoords" class="coords">--</div>
+        <div class="row">
+          <button id="trackToggle" class="secondary">Start Tracking</button>
+          <button id="centerMeBtn" class="secondary">Center</button>
+        </div>
+      </div>
+
+      <div class="profile">
+        <label for="profile">Mode</label>
+        <select id="profile">
+          <option value="driving" selected>Driving</option>
+          <option value="foot">Walking</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button id="routeBtn" disabled>Get Directions</button>
+        <button id="startNavBtn" disabled>Start Navigation</button>
+        <button id="stopNavBtn" class="danger" disabled>Stop</button>
+      </div>
+
+      <div class="status" id="status">Waiting for location…</div>
+
+      <div class="eta" id="etaPanel" hidden>
+        <div><strong id="etaText">-- min</strong></div>
+        <div id="distanceText">-- mi</div>
+      </div>
+
+      <div class="instructions" id="instructions" hidden>
+        <h2>Turn-by-turn</h2>
+        <ol id="stepsList"></ol>
+      </div>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+      <div id="nextTurn" class="next-turn" hidden>
+        <div id="turnIcon">↑</div>
+        <div id="turnText">Continue straight</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
