@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <title>SOL Booking Response | DJWEIRDNASTY</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=8">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 class="site-banner">
+        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+      </h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="sol.html">SOL</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="info" style="text-align: left;">
+      <h1 id="page-title">SOL Booking Response</h1>
+      <p id="status" class="form-status" aria-live="polite">Loading…</p>
+      <div id="details" style="margin-top:1.5rem;"></div>
+      <p style="margin-top:1.5rem;">
+        <a href="sol.html" class="playlist-link">Back to SOL</a>
+      </p>
+    </section>
+  </main>
+  <footer class="container">
+    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+  </footer>
+  <script>
+    const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('booking_id');
+    const djId = params.get('dj_id');
+    const action = params.get('action');
+
+    const statusEl = document.getElementById('status');
+    const detailsEl = document.getElementById('details');
+    const titleEl = document.getElementById('page-title');
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function renderBooking(booking) {
+      const loc = booking.event_location || {};
+      const eq = booking.equipment || {};
+      const extras = [];
+      if (eq.speakers) extras.push(`Speakers: ${eq.speakers}`);
+      if (eq.microphones) extras.push(`Microphones: ${eq.microphones}`);
+      if (eq.strobe_lights) extras.push(`Strobe Lights: ${eq.strobe_lights}`);
+      if (eq.projector) extras.push('Projector');
+      if (eq.photographer) extras.push('Photographer');
+      if (eq.security_needed) extras.push(eq.security_armed ? 'Security (Armed)' : 'Security (Unarmed)');
+      if (eq.mc_services) extras.push('MC Services');
+
+      detailsEl.innerHTML =
+        '<h2>Gig Details</h2>' +
+        '<p><strong>Client:</strong> ' + esc(booking.client_name) + '</p>' +
+        '<p><strong>Event Type:</strong> ' + esc(booking.event_type) + '</p>' +
+        '<p><strong>Date & Time:</strong> ' + esc(booking.event_date) + ' at ' + esc(booking.event_time) + '</p>' +
+        '<p><strong>Duration:</strong> ' + esc(booking.duration) + ' hours</p>' +
+        '<p><strong>Location:</strong> ' + esc(loc.address || 'Selected location') + '</p>' +
+        '<p><strong>Extras:</strong> ' + (extras.length ? extras.join(', ') : 'None') + '</p>' +
+        '<p><strong>Total Cost:</strong> $' + esc(Number(booking.total_cost || 0).toFixed(2)) + '</p>' +
+        '<p><strong>Status:</strong> ' + esc(booking.status) + '</p>' +
+        (booking.dj_name ? '<p><strong>Accepted by:</strong> ' + esc(booking.dj_name) + '</p>' : '');
+    }
+
+    async function postAction(path, actionName) {
+      titleEl.textContent = actionName === 'accept' ? 'Accepting Gig…' : 'Declining Gig…';
+      statusEl.textContent = actionName === 'accept' ? 'Confirming your acceptance…' : 'Recording your decline…';
+      const url = API_BASE + '/api/bookings/' + encodeURIComponent(bookingId) + '/' + actionName + '?dj_id=' + encodeURIComponent(djId);
+      try {
+        const res = await fetch(url, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          statusEl.textContent = data.message || 'Action recorded.';
+          statusEl.style.color = actionName === 'accept' ? '#22c55e' : '#ff4d8f';
+          if (data.booking) renderBooking(data.booking);
+        } else {
+          const err = await res.text();
+          statusEl.textContent = err || 'Could not record action.';
+          statusEl.style.color = '#ff4d8f';
+        }
+      } catch (e) {
+        statusEl.textContent = 'Network error: ' + e.message;
+        statusEl.style.color = '#ff4d8f';
+      }
+    }
+
+    async function loadBooking() {
+      if (!bookingId) {
+        statusEl.textContent = 'Missing booking ID in the URL.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      if (!djId) {
+        statusEl.textContent = 'Missing DJ ID in the URL.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+
+      if (action === 'accept' || action === 'decline') {
+        await postAction(action, action);
+      }
+
+      if (action !== 'accept') {
+        try {
+          const res = await fetch(API_BASE + '/api/bookings/' + encodeURIComponent(bookingId));
+          if (res.ok) {
+            const booking = await res.json();
+            renderBooking(booking);
+            if (!action) titleEl.textContent = 'Gig Details';
+          } else {
+            const err = await res.text();
+            statusEl.textContent = 'Could not load booking: ' + err;
+            statusEl.style.color = '#ff4d8f';
+          }
+        } catch (e) {
+          statusEl.textContent = 'Network error loading booking: ' + e.message;
+          statusEl.style.color = '#ff4d8f';
+        }
+      }
+    }
+
+    loadBooking();
+  </script>
+</body>
+</html>

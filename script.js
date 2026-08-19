@@ -54,3 +54,4 @@ if (form && statusMessage) {
     statusMessage.textContent = error.message || `Sorry, something went wrong. Please email ${emailAddress} directly.`;
   }
 });
+}
