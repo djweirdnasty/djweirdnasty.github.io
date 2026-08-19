@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <title>SOL Admin | DJWEIRDNASTY</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="stylesheet" href="style.css?v=8">
+  <style>
+    .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .admin-table th, .admin-table td { border: 1px solid #333; padding: 8px; text-align: left; }
+    .admin-table th { background: #111; color: #00ff88; }
+    .admin-table tr:nth-child(even) { background: #0a0a0a; }
+    .admin-form label { display: block; margin: 0.5rem 0 0.2rem; }
+    .admin-form input, .admin-form select { width: 100%; padding: 8px; background: #111; color: #fff; border: 1px solid #333; border-radius: 4px; }
+    .admin-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .btn-sm { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-save { background: #22c55e; color: #fff; }
+    .btn-danger { background: #ff4d8f; color: #fff; }
+    .login-box { max-width: 400px; margin: 3rem auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1 class="site-banner">
+        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+      </h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="sol.html">SOL</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="login-box" id="loginBox">
+      <h1>Admin Login</h1>
+      <p>Enter your admin key to manage DJs.</p>
+      <input id="adminKeyInput" type="password" placeholder="Admin key" />
+      <p>
+        <button id="loginBtn" class="playlist-link">Login</button>
+      </p>
+      <p class="form-status" id="loginStatus"></p>
+    </section>
+
+    <section class="info" id="dashboard" style="display:none;">
+      <h1>DJ Admin Dashboard</h1>
+      <p>
+        <button id="toggleAdd" class="playlist-link">Add DJ</button>
+        <button id="refreshBtn" class="playlist-link">Refresh</button>
+      </p>
+
+      <div id="addForm" class="admin-form" style="display:none; margin:1.5rem 0; padding:1rem; border:1px solid #333; border-radius:8px;">
+        <h2>Add New DJ</h2>
+        <div class="row">
+          <div><label>Name</label><input id="djName" type="text" /></div>
+          <div><label>Email</label><input id="djEmail" type="email" /></div>
+        </div>
+        <div class="row">
+          <div><label>Phone</label><input id="djPhone" type="text" value="+1" /></div>
+          <div><label>Hourly Rate</label><input id="djRate" type="number" value="300" /></div>
+        </div>
+        <div class="row">
+          <div><label>Genres (comma-separated)</label><input id="djGenres" type="text" value="Hip-Hop, Top 40" /></div>
+          <div><label>Equipment (comma-separated)</label><input id="djEquipment" type="text" value="Pioneer DJ Controller, Sound System" /></div>
+        </div>
+        <div class="row">
+          <div><label>Rating</label><input id="djRating" type="number" step="0.1" value="4.8" /></div>
+          <div><label>Review Count</label><input id="djReviews" type="number" value="0" /></div>
+        </div>
+        <div class="row">
+          <div><label>Experience (years)</label><input id="djExperience" type="number" value="5" /></div>
+          <div><label>Status</label>
+            <select id="djStatus">
+              <option value="online" selected>online</option>
+              <option value="offline">offline</option>
+              <option value="busy">busy</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div><label>Address</label><input id="djAddress" type="text" value="Philadelphia, PA" /></div>
+          <div><label>City</label><input id="djCity" type="text" value="Philadelphia" /></div>
+        </div>
+        <div class="row">
+          <div><label>State</label><input id="djState" type="text" value="PA" /></div>
+          <div><label>Latitude</label><input id="djLat" type="number" step="any" value="39.9526" /></div>
+        </div>
+        <div class="row">
+          <div><label>Longitude</label><input id="djLng" type="number" step="any" value="-75.1652" /></div>
+          <div><label>Specialties (comma-separated)</label><input id="djSpecialties" type="text" value="Private Parties, Clubs" /></div>
+        </div>
+        <div>
+          <label>Avatar URL (optional)</label>
+          <input id="djAvatar" type="text" />
+        </div>
+        <p>
+          <label><input id="djVerified" type="checkbox" checked /> Verified</label>
+        </p>
+        <p>
+          <button id="createBtn" class="playlist-link">Create DJ</button>
+          <span id="addStatus" class="form-status"></span>
+        </p>
+      </div>
+
+      <table class="admin-table" id="djsTable">
+        <thead>
+          <tr><th>Name</th><th>Email</th><th>Verified</th><th>Status</th><th>Rate</th><th>City</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="djsBody"></tbody>
+      </table>
+      <p class="form-status" id="status"></p>
+    </section>
+  </main>
+  <footer class="container">
+    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+  </footer>
+  <script>
+    const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
+    let adminKey = sessionStorage.getItem('adminKey') || '';
+
+    const $ = (id) => document.getElementById(id);
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setStatus(text, color) {
+      const el = $('status');
+      el.textContent = text;
+      if (color) el.style.color = color;
+    }
+
+    function apiHeaders() {
+      return { 'Content-Type': 'application/json', 'x-admin-key': adminKey };
+    }
+
+    function showDashboard() {
+      $('loginBox').style.display = 'none';
+      $('dashboard').style.display = 'block';
+      loadDJs();
+    }
+
+    async function loadDJs() {
+      setStatus('Loading DJs…');
+      try {
+        const res = await fetch(API_BASE + '/api/admin/djs', { headers: { 'x-admin-key': adminKey } });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        renderDJs(data.djs);
+        setStatus('');
+      } catch (e) {
+        setStatus('Error: ' + e.message, '#ff4d8f');
+      }
+    }
+
+    function renderDJs(djs) {
+      const tb = $('djsBody');
+      tb.innerHTML = '';
+      if (!djs || !djs.length) {
+        tb.innerHTML = '<tr><td colspan="7">No DJs found.</td></tr>';
+        return;
+      }
+      djs.forEach((dj) => {
+        const loc = dj.location || {};
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc(dj.name) + '</td>' +
+          '<td>' + esc(dj.email) + '</td>' +
+          '<td>' + (dj.is_verified ? 'Yes' : 'No') + '</td>' +
+          '<td>' + esc(dj.status) + '</td>' +
+          '<td>$' + esc(Number(dj.hourly_rate).toFixed(0)) + '</td>' +
+          '<td>' + esc(loc.city || '') + '</td>' +
+          '<td>' +
+            '<button class="btn-sm btn-save" data-id="' + esc(dj.id) + '">' + (dj.is_verified ? 'Revoke' : 'Verify') + '</button> ' +
+            '<button class="btn-sm btn-danger" data-id="' + esc(dj.id) + '">Delete</button>' +
+          '</td>';
+        tb.appendChild(tr);
+      });
+
+      tb.querySelectorAll('.btn-save').forEach((btn) => {
+        btn.addEventListener('click', () => toggleVerified(btn.dataset.id));
+      });
+      tb.querySelectorAll('.btn-danger').forEach((btn) => {
+        btn.addEventListener('click', () => deleteDJ(btn.dataset.id));
+      });
+    }
+
+    async function toggleVerified(id) {
+      const rows = document.querySelectorAll('#djsBody tr');
+      const row = Array.from(rows).find((r) => r.querySelector('.btn-save')?.dataset.id === id);
+      if (!row) return;
+      const cells = row.querySelectorAll('td');
+      const dj = {
+        id,
+        name: cells[0].textContent,
+        email: cells[1].textContent,
+        phone: '+1',
+        hourly_rate: 0,
+        genres: [],
+        equipment: [],
+        rating: 0,
+        review_count: 0,
+        location: { latitude: 0, longitude: 0, address: '', city: '', state: '' },
+        status: cells[3].textContent,
+        is_verified: cells[2].textContent === 'No',
+        specialties: [],
+        experience: 0,
+        avatar: null
+      };
+      try {
+        const res = await fetch(API_BASE + '/api/admin/djs', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(dj) });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('Updated ' + dj.name);
+        loadDJs();
+      } catch (e) {
+        setStatus('Update failed: ' + e.message, '#ff4d8f');
+      }
+    }
+
+    async function deleteDJ(id) {
+      if (!confirm('Delete this DJ?')) return;
+      try {
+        const res = await fetch(API_BASE + '/api/admin/djs/' + id, { method: 'DELETE', headers: { 'x-admin-key': adminKey } });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('DJ deleted');
+        loadDJs();
+      } catch (e) {
+        setStatus('Delete failed: ' + e.message, '#ff4d8f');
+      }
+    }
+
+    async function createDJ() {
+      const genres = $('djGenres').value.split(',').map(s => s.trim()).filter(Boolean);
+      const equipment = $('djEquipment').value.split(',').map(s => s.trim()).filter(Boolean);
+      const specialties = $('djSpecialties').value.split(',').map(s => s.trim()).filter(Boolean);
+      const id = crypto && crypto.randomUUID ? crypto.randomUUID() : ('dj_' + Date.now().toString(36));
+      const dj = {
+        id,
+        name: $('djName').value,
+        email: $('djEmail').value,
+        phone: $('djPhone').value || '+1',
+        hourly_rate: parseFloat($('djRate').value) || 0,
+        genres,
+        equipment,
+        rating: parseFloat($('djRating').value) || 0,
+        review_count: parseInt($('djReviews').value) || 0,
+        location: {
+          latitude: parseFloat($('djLat').value) || 0,
+          longitude: parseFloat($('djLng').value) || 0,
+          address: $('djAddress').value,
+          city: $('djCity').value,
+          state: $('djState').value
+        },
+        status: $('djStatus').value,
+        is_verified: $('djVerified').checked,
+        specialties,
+        experience: parseInt($('djExperience').value) || 0,
+        avatar: $('djAvatar').value || null,
+        punctuality_score: 0.8,
+        total_bookings_completed: 0
+      };
+      try {
+        const res = await fetch(API_BASE + '/api/admin/djs', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(dj) });
+        if (!res.ok) throw new Error(await res.text());
+        $('addStatus').textContent = 'DJ created.';
+        $('addStatus').style.color = '#22c55e';
+        loadDJs();
+      } catch (e) {
+        $('addStatus').textContent = 'Error: ' + e.message;
+        $('addStatus').style.color = '#ff4d8f';
+      }
+    }
+
+    $('loginBtn').addEventListener('click', () => {
+      const val = $('adminKeyInput').value.trim();
+      if (!val) { $('loginStatus').textContent = 'Enter an admin key.'; return; }
+      adminKey = val;
+      sessionStorage.setItem('adminKey', adminKey);
+      $('loginStatus').textContent = '';
+      showDashboard();
+    });
+
+    $('toggleAdd').addEventListener('click', () => {
+      const f = $('addForm');
+      f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    });
+
+    $('refreshBtn').addEventListener('click', loadDJs);
+    $('createBtn').addEventListener('click', createDJ);
+
+    if (adminKey) showDashboard();
+  </script>
+</body>
+</html>
