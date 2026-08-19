@@ -5,3 +5,7 @@ node_modules/
 
 # Large video files - hosted on Cloudflare R2
 *.mp4
+
+# Local SMTP experiment and private keys
+mysmtp/
+ssh-key-*.key
