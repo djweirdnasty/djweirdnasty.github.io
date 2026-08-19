@@ -1,13 +1,15 @@
 import os
 import secrets
 from datetime import datetime
+import json
+import urllib.request
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from database import get_db, SessionLocal, Subscriber, Campaign, CampaignRecipient
+from database import get_db, SessionLocal, Subscriber, Campaign, CampaignRecipient, DigestState
 from auth import create_access_token, decode_access_token, generate_token
 from email_service import send_email, send_email_async
 from jinja2 import Environment, FileSystemLoader, Template
@@ -58,6 +60,130 @@ def _check_scheduled_campaigns():
         db.close()
 
 scheduler.add_job(_check_scheduled_campaigns, "interval", minutes=5)
+
+
+EXCLUDED_CONTENT_PAGES = {
+    "/news.html",
+    "/news-national.html",
+    "/news-music.html",
+    "/news-entertainment.html",
+    "/news-sports.html",
+}
+
+
+def _is_content_item(path: str) -> bool:
+    if path in EXCLUDED_CONTENT_PAGES:
+        return False
+    if path.startswith("/news-") and path.endswith(".html"):
+        return True
+    if path.startswith("/murrdah-") and path.endswith(".html"):
+        return True
+    if path.startswith("/mud-music-") and path.endswith(".html"):
+        return True
+    return False
+
+
+def _check_new_content():
+    try:
+        req = urllib.request.Request(
+            f"{website_url}/contents.json",
+            headers={"User-Agent": "DJWEIRDNASTY Newsletter"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as response:
+            data = json.load(response)
+    except Exception as e:
+        print(f"[auto-digest] failed to fetch contents: {e}")
+        return
+
+    if not isinstance(data, list):
+        return
+
+    db = SessionLocal()
+    try:
+        state = db.query(DigestState).first()
+        if not state:
+            state = DigestState(last_published_at=datetime.utcnow())
+            db.add(state)
+            db.commit()
+            return
+
+        new_items = []
+        for item in data:
+            path = item.get("path", "")
+            published_ts = item.get("published")
+            if not published_ts or not _is_content_item(path):
+                continue
+            try:
+                item_dt = datetime.utcfromtimestamp(int(published_ts))
+            except (TypeError, ValueError):
+                continue
+            if item_dt > state.last_published_at:
+                new_items.append(item)
+
+        if not new_items:
+            return
+
+        new_items.sort(key=lambda x: x.get("published", 0))
+
+        cards = []
+        for item in new_items:
+            title = item.get("title", "")
+            img = item.get("img", "")
+            path = item.get("path", "")
+            url = f"{website_url}{path}"
+            img_url = img if img and img.startswith("http") else f"{website_url}{img}" if img else ""
+            img_html = f'<a href="{url}"><img src="{img_url}" alt="{title}" style="max-width:100%;border-radius:12px;margin:0.5rem 0;"></a>' if img_url else ""
+            cards.append(
+                f'<div style="margin-bottom:1.5rem;text-align:center;">'
+                f'<a href="{url}" style="text-decoration:none;color:#ff4fd8;"><h3 style="margin:0.5rem 0;">{title}</h3></a>'
+                f'{img_html}'
+                f'</div>'
+            )
+
+        body = f"""<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0f;color:#eee;padding:2rem;border-radius:12px;">
+<h1 style="color:#ff4fd8;text-align:center;">What&rsquo;s New</h1>
+<p>Hey {{name}},</p>
+<p>We just added new content to the site:</p>
+{''.join(cards)}
+<p style="text-align:center;margin:2rem 0;">
+  <a href="{website_url}/news.html" style="display:inline-block;padding:14px 28px;background:linear-gradient(180deg,#4fa8ff,#1a5fd0);color:#ff4fd8;border-radius:999px;text-decoration:none;font-weight:bold;">Read More</a>
+</p>
+<p style="color:#888;font-size:12px;">DJWEIRDNASTY</p>
+</div>"""
+
+        subs = db.query(Subscriber).filter(Subscriber.confirmed == True, Subscriber.unsubscribed == False).all()
+        max_published = max(int(item.get("published", 0)) for item in new_items)
+
+        if not subs:
+            state.last_published_at = datetime.utcfromtimestamp(max_published)
+            db.commit()
+            return
+
+        camp = Campaign(subject="New DJWEIRDNASTY Content", body=body, status="sending")
+        db.add(camp)
+        db.commit()
+
+        for sub in subs:
+            open_token = generate_token()
+            click_token = generate_token()
+            cr = CampaignRecipient(
+                campaign_id=camp.id,
+                subscriber_id=sub.id,
+                open_token=open_token,
+                click_token=click_token,
+            )
+            db.add(cr)
+        db.commit()
+
+        _send_campaign_emails(camp.id, db)
+
+        state.last_published_at = datetime.utcfromtimestamp(max_published)
+        db.commit()
+    finally:
+        db.close()
+
+
+scheduler.add_job(_check_new_content, "interval", minutes=60)
 
 
 @app.on_event("startup")

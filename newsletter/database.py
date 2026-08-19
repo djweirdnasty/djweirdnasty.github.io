@@ -61,4 +61,12 @@ class CampaignRecipient(Base):
     campaign = relationship("Campaign", back_populates="recipients")
 
 
+class DigestState(Base):
+    __tablename__ = "digest_state"
+
+    id = Column(Integer, primary_key=True)
+    last_published_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 Base.metadata.create_all(engine)
