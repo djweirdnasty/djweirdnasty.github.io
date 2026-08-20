@@ -220,7 +220,7 @@ playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'main-character-walking.png';
+playerWalkingImg.src = 'character-walk-cycle.png';
 const WALK_FRAMES = {
   0: [ { x: 609, y: 538, w: 431, h: 1092 }, { x: 2307, y: 1858, w: 430, h: 1090 } ],
   1: [ { x: 1141, y: 538, w: 490, h: 1117 }, { x: 1717, y: 1858, w: 491, h: 1117 } ],
@@ -1559,15 +1559,15 @@ function draw() {
     let sx, sy, frameW, frameH;
     let drawSrcImg = img;
     if (img === playerWalkingImg) {
-      const animFrame = moving ? (Math.floor(now / 150) % 2) : 0;
-      const overrideImg = animFrame === 1 ? WALK_FRAME_OVERRIDES[dirIndex] : null;
-      if (overrideImg && overrideImg.complete && overrideImg.naturalWidth > 0) {
-        drawSrcImg = overrideImg;
-        sx = 0; sy = 0; frameW = overrideImg.naturalWidth; frameH = overrideImg.naturalHeight;
-      } else {
-        const rect = WALK_FRAMES[dirIndex][animFrame];
-        sx = rect.x; sy = rect.y; frameW = rect.w; frameH = rect.h;
-      }
+      const cols = 8;
+      const rows = 4;
+      const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
+      const animFrame = moving ? (Math.floor(now / 80) % cols) : 0;
+      const row = rowMap[dirIndex];
+      frameW = img.naturalWidth / cols;
+      frameH = img.naturalHeight / rows;
+      sx = animFrame * frameW;
+      sy = row * frameH;
     } else {
       const frames = 4;
       frameW = img.naturalWidth / frames;
