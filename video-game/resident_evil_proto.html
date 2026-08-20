@@ -221,6 +221,8 @@ const playerIdleImg = new Image();
 playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
 playerWalkingImg.src = 'character-walk-cycle.png';
+const playerPistolWalkingImg = new Image();
+playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png';
 const WALK_FRAMES = {
   0: [ { x: 609, y: 538, w: 431, h: 1092 }, { x: 2307, y: 1858, w: 430, h: 1090 } ],
   1: [ { x: 1141, y: 538, w: 490, h: 1117 }, { x: 1717, y: 1858, w: 491, h: 1117 } ],
@@ -1551,14 +1553,21 @@ function draw() {
   const drawH = s * 7;
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
-  const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
+  let img;
+  if (alive && player.weapon && (fireHeld || mouseHeld)) {
+    img = playerImg;
+  } else if (moving) {
+    img = (alive && player.weapon) ? playerPistolWalkingImg : playerWalkingImg;
+  } else {
+    img = playerIdleImg;
+  }
   if (img.complete && img.naturalWidth > 0) {
     let dirIndex = 1;
     if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
     else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
     let sx, sy, frameW, frameH;
     let drawSrcImg = img;
-    if (img === playerWalkingImg) {
+    if (img === playerWalkingImg || img === playerPistolWalkingImg) {
       const cols = 8;
       const rows = 4;
       const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
