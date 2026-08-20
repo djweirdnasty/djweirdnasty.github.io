@@ -11,8 +11,9 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; upgrade-insecure-requests">
   <title>SOL | Sounds of Logan DJ Booking</title>
+  <meta name="description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:title" content="SOL | Sounds of Logan DJ Booking">
   <meta property="og:description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
@@ -32,19 +33,456 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
+  <style>
+    /* ===== SOL App Styles ===== */
+    #sol-app-content { max-width: 100%; }
+
+    /* All .submit-btn buttons get consistent styling */
+    .submit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff4d8f 0%, #e33471 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(255, 77, 143, 0.3);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .submit-btn:hover, .submit-btn:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 77, 143, 0.45);
+      filter: brightness(1.1);
+    }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Inputs & selects inside SOL */
+    #sol-app-content input[type="text"],
+    #sol-app-content input[type="email"],
+    #sol-app-content input[type="password"],
+    #sol-app-content input[type="number"],
+    #sol-app-content input[type="tel"],
+    #sol-app-content input[type="date"],
+    #sol-app-content input[type="url"],
+    #sol-app-content select,
+    #sol-app-content textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.5);
+      color: #f4f4f4;
+      font: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #sol-app-content input:focus,
+    #sol-app-content select:focus,
+    #sol-app-content textarea:focus {
+      outline: none;
+      border-color: #ff4d8f;
+      box-shadow: 0 0 0 3px rgba(255, 77, 143, 0.15);
+    }
+    #sol-app-content select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff4d8f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.85rem center;
+      padding-right: 2rem;
+    }
+    #sol-app-content label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ccc;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section headings */
+    #sol-app-content h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ff4d8f;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(255, 77, 143, 0.2);
+    }
+    #sol-app-content h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffd860;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    /* Cards */
+    #sol-app-content div[style*="background:#111"] {
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* Account bar */
+    #sol-account-bar {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Auth gate */
+    #sol-gate {
+      max-width: 440px;
+    }
+    #sol-account-box {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.25) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 77, 143, 0.08);
+    }
+
+    /* Admin stats cards */
+    #sol-admin-console > div:first-child > div {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #sol-admin-console > div:first-child > div:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+    }
+
+    /* Admin tab buttons */
+    #sol-admin-console .submit-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      background: rgba(30, 30, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+    #sol-admin-console .submit-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      border-color: rgba(255, 77, 143, 0.3);
+    }
+
+    /* DJ Console sections */
+    #sol-dj-console > div[style*="background:#111"],
+    #sol-dj-console form[style*="background:#111"] {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.15) !important;
+    }
+
+    /* DJ profile header */
+    #sol-dj-profile {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.25) !important;
+    }
+
+    /* DJ status pills */
+    #sol-dj-console > div[style*="grid-template-columns:repeat(2"] > div {
+      border-radius: 12px !important;
+      transition: transform 0.2s;
+    }
+    #sol-dj-console > div[style*="grid-template-columns:repeat(2"] > div:hover {
+      transform: translateY(-1px);
+    }
+
+    /* DJ carousel cards */
+    #sol-dj-track > div {
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    #sol-dj-track > div:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(255, 77, 143, 0.2);
+      border-color: rgba(255, 77, 143, 0.5) !important;
+    }
+
+    /* Carousel nav buttons */
+    #sol-dj-prev, #sol-dj-next {
+      background: rgba(20, 20, 20, 0.9) !important;
+      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+      min-width: 40px;
+    }
+    #sol-dj-prev:hover, #sol-dj-next:hover {
+      background: rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Filter bar */
+    #sol-dj-filter-name,
+    #sol-dj-filter-genre,
+    #sol-dj-filter-price,
+    #sol-dj-filter-sort {
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Price breakdown */
+    #sol-price-breakdown {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.06) 0%, rgba(0, 0, 0, 0.4) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Modals */
+    #sol-dj-profile-modal > div,
+    #sol-rate-modal > div {
+      background: linear-gradient(135deg, #161616 0%, #0a0a0a 100%) !important;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 77, 143, 0.1);
+    }
+
+    /* Star rating */
+    .sol-star:hover, .sol-star.sol-star-active {
+      color: #ffd860 !important;
+      transform: scale(1.15);
+      transition: all 0.15s;
+    }
+
+    /* Chat box */
+    #sol-chat-box {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Blocked date chips */
+    #sol-dj-blocked-dates > div {
+      transition: transform 0.15s;
+    }
+    #sol-dj-blocked-dates > div:hover {
+      transform: scale(1.03);
+    }
+
+    /* Gallery thumbnails */
+    #sol-dj-gallery > div {
+      transition: transform 0.2s;
+    }
+    #sol-dj-gallery > div:hover {
+      transform: scale(1.05);
+    }
+
+    /* Scrollbar styling for SOL */
+    #sol-dj-track::-webkit-scrollbar { display: none; }
+    #sol-app-content ::-webkit-scrollbar { width: 6px; }
+    #sol-app-content ::-webkit-scrollbar-track { background: transparent; }
+    #sol-app-content ::-webkit-scrollbar-thumb { background: rgba(255, 77, 143, 0.3); border-radius: 3px; }
+    #sol-app-content ::-webkit-scrollbar-thumb:hover { background: rgba(255, 77, 143, 0.5); }
+
+    /* Mobile */
+    @media (max-width: 720px) {
+      .sol-map-app { flex-direction: column !important; height: 600px !important; }
+      .sol-map-sidebar { width: 100% !important; min-width: 0 !important; max-height: 280px; border-right: none !important; border-bottom: 1px solid #333; }
+      .sol-map-wrap { height: 320px; }
+
+      /* Admin stats: 2-col on mobile */
+      #sol-admin-console > div:first-child { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+      #sol-admin-console > div:first-child > div { padding: 0.6rem !important; }
+      #sol-admin-console > div:first-child > div > div:first-child { font-size: 1.1rem !important; }
+
+      /* Admin tab buttons: scrollable row */
+      #sol-admin-console > div[style*="flex-wrap:wrap"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+      }
+      #sol-admin-console > div[style*="flex-wrap:wrap"] .submit-btn {
+        flex-shrink: 0;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+      }
+
+      /* Admin earnings summary: stack */
+      #sol-admin-panel-earnings > div[style*="grid-template-columns:repeat(3"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Headings */
+      #sol-app-content h2 { font-size: 1.25rem; }
+      #sol-app-content h3 { font-size: 1rem; }
+
+      /* Account bar: stack */
+      #sol-account-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      #sol-account-bar > div { justify-content: center; flex-wrap: wrap; }
+      #sol-account-bar .submit-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+
+      /* Auth gate */
+      #sol-gate { margin: 1rem auto; }
+      #sol-account-box { padding: 1rem !important; }
+
+      /* DJ Console: stack status grid */
+      #sol-dj-console > div[style*="grid-template-columns:repeat(2"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* DJ Console: full width on mobile */
+      #sol-dj-console { padding: 0; }
+      #sol-dj-console > div,
+      #sol-dj-console > form {
+        padding: 1rem !important;
+      }
+
+      /* DJ profile header: smaller avatar */
+      #sol-dj-profile img,
+      #sol-dj-profile > div[style*="border-radius:36px"] {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 28px !important;
+        font-size: 22px !important;
+      }
+
+      /* DJ carousel: smaller cards */
+      #sol-dj-track > div {
+        flex: 0 0 220px !important;
+        min-width: 220px !important;
+        padding: 0.75rem !important;
+      }
+      #sol-dj-track > div img,
+      #sol-dj-track > div > div[style*="100px"] {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 28px !important;
+      }
+
+      /* Filter bar: stack */
+      #sol-app-content > div > div[style*="gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap"] {
+        flex-direction: column;
+      }
+      #sol-app-content > div > div[style*="gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap"] > * {
+        width: 100% !important;
+      }
+
+      /* Quick form: full width inputs */
+      #sol-quick-form { padding: 0; }
+      #sol-quick-form input,
+      #sol-quick-form select,
+      #sol-quick-form textarea {
+        max-width: 100% !important;
+      }
+      #sol-quick-form input[style*="max-width:120px"] {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Equipment section: stack */
+      #sol-quick-form > div[style*="flex-direction:column"] > div > input[style*="max-width:120px"] {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Price breakdown: smaller text */
+      #sol-price-breakdown { padding: 0.75rem !important; }
+      #sol-price-breakdown p { font-size: 0.9rem !important; }
+
+      /* Modals: full width on mobile */
+      #sol-dj-profile-modal > div,
+      #sol-rate-modal > div {
+        max-width: 95% !important;
+        width: 95% !important;
+        max-height: 90vh !important;
+        padding: 1.25rem !important;
+      }
+      #sol-dj-profile-modal > div > div[style*="text-align:center"] img,
+      #sol-dj-profile-modal > div > div[style*="text-align:center"] > div[style*="120px"] {
+        width: 90px !important;
+        height: 90px !important;
+        font-size: 36px !important;
+      }
+
+      /* My Bookings cards: stack */
+      #sol-my-bookings > div[style*="flex-direction:row"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      /* Promo/dispute/playlist sections: full width */
+      #sol-playlist-section,
+      #sol-app-content > div[style*="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem"] {
+        padding: 0.75rem !important;
+      }
+
+      /* Chat box: full width */
+      #sol-chat-box { padding: 0.75rem !important; }
+      #sol-chat-messages { max-height: 200px !important; }
+
+      /* DJ gallery: smaller thumbnails */
+      #sol-dj-gallery > div {
+        width: 80px !important;
+        height: 80px !important;
+      }
+      #sol-dj-gallery > div > img {
+        width: 80px !important;
+        height: 80px !important;
+      }
+
+      /* DJ earnings: smaller text */
+      #sol-dj-earnings { padding: 0.75rem !important; }
+
+      /* Admin DJ/user/booking cards: stack */
+      #sol-admin-djs-list > div[style*="display:flex"],
+      #sol-admin-users-list > div[style*="display:flex"],
+      #sol-admin-bookings-list > div[style*="display:flex"],
+      #sol-admin-earnings-list > div[style*="display:flex"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+      }
+      #sol-admin-djs-list > div img,
+      #sol-admin-users-list > div img,
+      #sol-admin-djs-list > div > div[style*="border-radius:50%"],
+      #sol-admin-users-list > div > div[style*="border-radius:50%"] {
+        width: 40px !important;
+        height: 40px !important;
+        align-self: center !important;
+      }
+      #sol-admin-djs-list > div .submit-btn,
+      #sol-admin-users-list > div .submit-btn,
+      #sol-admin-bookings-list > div .submit-btn {
+        width: 100% !important;
+        text-align: center !important;
+      }
+
+      /* Admin add DJ form: full width */
+      #sol-admin-add-dj-form { padding: 1rem !important; }
+
+      /* Admin verifications: stack buttons */
+      #sol-admin-verifications-list .submit-btn { width: 100% !important; }
+      #sol-admin-verifications-list > div[style*="display:flex; gap:0.5rem"] {
+        flex-direction: column !important;
+      }
+
+      /* Info section padding */
+      .info { padding: 1rem !important; border-radius: 16px !important; }
+
+      /* Container narrower on mobile */
+      .container { width: 92% !important; }
+
+      /* Footer */
+      footer { padding: 1rem 0 2rem !important; font-size: 0.85rem; }
+    }
+
+    /* Extra small phones */
+    @media (max-width: 400px) {
+      #sol-admin-console > div:first-child { grid-template-columns: 1fr !important; }
+      #sol-dj-track > div { flex: 0 0 180px !important; min-width: 180px !important; }
+      #sol-app-content h2 { font-size: 1.1rem; }
+      .submit-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    }
+  </style>
 </head>
 <body>
   <header>
     <div class="container">
-      <h1 class="site-banner">
-        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
-      </h1>
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
       <nav>
         <a href="index.html">Home</a>
         <a href="index.html#about">About</a>
@@ -63,28 +501,349 @@
   <main class="container">
     <section class="info" style="text-align: left;">
       <h1>Sounds of Logan (SOL)</h1>
-      <p>SOL is the DJ booking and payment app built for DJWEIRDNASTY. Use this page to test the booking flow before it goes live on iOS and Android.</p>
 
+      <div id="sol-gate" style="max-width:420px; margin:2rem auto; text-align:center;">
+        <p>Sign in to book a DJ, message them, and pay securely — all in one place.</p>
+        <div id="sol-account-box" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin:1rem 0; text-align:left;">
+          <div id="sol-auth-forms">
+            <input id="sol-auth-name" type="text" placeholder="Your name" autocomplete="name" style="display:none; width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <input id="sol-auth-email" type="email" placeholder="Email" autocomplete="email" style="width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <input id="sol-auth-password" type="password" placeholder="Password" autocomplete="current-password" style="width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <button type="button" id="sol-auth-submit" class="submit-btn" style="width:100%;">Sign In</button>
+            <p style="margin-top:0.75rem; font-size:0.85rem; text-align:center;">
+              <a href="#" id="sol-auth-toggle-mode" class="playlist-link">Need an account? Create one</a>
+            </p>
+            <p style="margin-top:0.35rem; font-size:0.85rem; text-align:center;"><a href="#" id="sol-auth-forgot" class="playlist-link">Forgot password?</a></p>
+          </div>
+          <p id="sol-auth-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
+        </div>
+      </div>
+
+      <div id="sol-app-content" style="display:none;">
+        <div id="sol-account-bar" style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem;">
+          <span>Signed in as <strong id="sol-account-email"></strong></span>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" id="sol-admin-toggle" class="submit-btn" style="display:none; background:#00d4ff; color:#000;">Admin Console</button>
+            <button type="button" id="sol-dj-mode-toggle" class="submit-btn" style="display:none;">DJ Mode</button>
+            <button type="button" id="sol-account-signout" class="submit-btn">Sign Out</button>
+          </div>
+        </div>
+
+        <div id="sol-dj-console" style="display:none;">
+          <h2>DJ Console</h2>
+
+          <div id="sol-dj-profile" style="display:flex; flex-direction:column; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+            <img id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;">
+            <div id="sol-dj-avatar-fallback" style="width:72px; height:72px; border-radius:36px; background:#ff4d8f; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#fff; margin-bottom:0.5rem;">DJ</div>
+            <strong id="sol-dj-name" style="font-size:1.2rem;"></strong>
+            <span id="sol-dj-location" style="color:#aaa; font-size:0.85rem;"></span>
+            <div id="sol-dj-verified-badge" style="display:none; margin-top:0.5rem; background:#22c55e; color:#fff; padding:0.25rem 0.75rem; border-radius:12px; font-size:0.8rem;">Verified DJ</div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <span id="sol-dj-status-label">You are <strong>Offline</strong></span>
+            <label style="position:relative; display:inline-block; width:52px; height:28px;">
+              <input type="checkbox" id="sol-dj-online-toggle" style="opacity:0; width:0; height:0;">
+              <span id="sol-dj-toggle-track" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#444; border-radius:28px; transition:0.2s;"></span>
+              <span id="sol-dj-toggle-knob" style="position:absolute; height:22px; width:22px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.2s;"></span>
+            </label>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem;">
+            <span style="font-size:0.9rem;">Share Live Location <span id="sol-dj-loc-status" style="color:#888; font-size:0.8rem;"></span></span>
+            <button type="button" id="sol-dj-share-loc" class="submit-btn" style="background:#333; padding:0.5rem 1rem;">Start</button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:1rem;">
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-pending">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Pending Requests</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-upcoming">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Upcoming Events</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-dj-stat-earnings">$0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Earnings</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-rating">-</div>
+              <div style="font-size:0.8rem; color:#aaa;">Rating</div>
+            </div>
+          </div>
+
+          <h3>Booking Requests</h3>
+          <div id="sol-dj-booking-requests" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+          <h3>Upcoming Events</h3>
+          <div id="sol-dj-upcoming-events" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+          <h3>Client Conversations</h3>
+          <div id="sol-dj-conversations" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+          <p id="sol-dj-console-status" class="form-status" aria-live="polite"></p>
+
+          <h3 style="margin-top:2rem;">DJ Profile & Verification</h3>
+          <div id="sol-dj-setup" style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-top:0.75rem;">
+            <div id="sol-dj-verify-status" style="margin-bottom:1rem; padding:0.75rem; border-radius:8px; text-align:center;"></div>
+            <form id="sol-dj-setup-form">
+              <label for="sol-dj-stage-name">Stage Name</label>
+              <input id="sol-dj-stage-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-avatar-url">Profile Picture URL</label>
+              <input id="sol-dj-avatar-url" type="text" placeholder="https://..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-city">City</label>
+              <input id="sol-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-state">State</label>
+              <input id="sol-dj-state" type="text" placeholder="PA" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-genres">Genres (comma separated)</label>
+              <input id="sol-dj-genres" type="text" placeholder="Hip-Hop, R&B, Top 40" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-specialties">Specialties (comma separated)</label>
+              <input id="sol-dj-specialties" type="text" placeholder="Weddings, Clubs, Corporate" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-equipment">Equipment (comma separated)</label>
+              <input id="sol-dj-equipment" type="text" placeholder="Pioneer DDJ-SX3, Speakers, Lighting" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-hourly-rate">Hourly Rate ($)</label>
+              <input id="sol-dj-hourly-rate" type="number" min="50" max="1000" placeholder="250" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-experience">Years of Experience</label>
+              <input id="sol-dj-experience" type="number" min="0" max="50" placeholder="5" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-bio">Bio</label>
+              <textarea id="sol-dj-bio" placeholder="Tell clients about yourself..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+
+              <button type="submit" class="submit-btn" style="width:100%;">Save Profile & Submit for Verification</button>
+            </form>
+            <p id="sol-dj-setup-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
+          </div>
+
+          <h3 style="margin-top:2rem;">Availability Calendar</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Block off dates you're unavailable.</p>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+            <input id="sol-dj-block-date" type="date" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <button type="button" id="sol-dj-block-add" class="submit-btn">Block Date</button>
+          </div>
+          <div id="sol-dj-blocked-dates" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Photo Gallery</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Add image URLs to showcase your past events.</p>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+            <input id="sol-dj-gallery-url" type="text" placeholder="https://image-url.jpg" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <button type="button" id="sol-dj-gallery-add" class="submit-btn">Add Photo</button>
+          </div>
+          <div id="sol-dj-gallery" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">My Earnings</h3>
+          <div id="sol-dj-earnings" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Total Earnings:</span>
+              <strong id="sol-dj-earnings-total" style="color:#22c55e;">$0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Completed Gigs:</span>
+              <strong id="sol-dj-earnings-gigs" style="color:#fff;">0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Platform Fees:</span>
+              <strong id="sol-dj-earnings-fees" style="color:#ff4d8f;">$0</strong>
+            </div>
+            <button type="button" id="sol-dj-export-csv" class="submit-btn" style="width:100%; margin-top:0.5rem;">Export Earnings (CSV)</button>
+          </div>
+
+          <h3 style="margin-top:2rem;">DJ Network</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Message other verified DJs for collabs.</p>
+          <div id="sol-dj-network" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Waitlist</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Clients who requested you when you were booked.</p>
+          <div id="sol-dj-waitlist" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem;"></div>
+        </div>
+
+        <div id="sol-admin-console" style="display:none;">
+          <h2>Admin Console</h2>
+
+          <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.75rem; margin-bottom:1rem;">
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#00d4ff;" id="sol-admin-stat-djs">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total DJs</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-admin-stat-online">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Online Now</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#ffd860;" id="sol-admin-stat-bookings">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Bookings</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#ff4d8f;" id="sol-admin-stat-users">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Users</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-admin-stat-revenue">$0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Revenue</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+            <button type="button" id="sol-admin-tab-djs" class="submit-btn" style="background:#00d4ff; color:#000;">Manage DJs</button>
+            <button type="button" id="sol-admin-tab-bookings" class="submit-btn">All Bookings</button>
+            <button type="button" id="sol-admin-tab-verifications" class="submit-btn">DJ Verifications</button>
+            <button type="button" id="sol-admin-tab-users" class="submit-btn">Users</button>
+            <button type="button" id="sol-admin-tab-earnings" class="submit-btn">Earnings</button>
+            <button type="button" id="sol-admin-tab-add-dj" class="submit-btn">Add DJ</button>
+            <button type="button" id="sol-admin-tab-disputes" class="submit-btn">Disputes</button>
+          </div>
+
+          <div id="sol-admin-panel-djs">
+            <h3>Registered DJs</h3>
+            <div id="sol-admin-djs-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-bookings" style="display:none;">
+            <h3>All Bookings</h3>
+            <div id="sol-admin-bookings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-verifications" style="display:none;">
+            <h3>DJ Verification Requests</h3>
+            <div id="sol-admin-verifications-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-users" style="display:none;">
+            <h3>Registered Users</h3>
+            <input id="sol-admin-user-search" type="text" placeholder="Search by name or email..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:1rem;">
+            <div id="sol-admin-users-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-earnings" style="display:none;">
+            <h3>Earnings & Payouts</h3>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem; margin-bottom:1rem;">
+              <div style="background:#111; border:1px solid #22c55e; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#22c55e;" id="sol-admin-gross">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">Gross Revenue</div>
+              </div>
+              <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#00d4ff;" id="sol-admin-platform-fee">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">Platform Fees (15%)</div>
+              </div>
+              <div style="background:#111; border:1px solid #ffd860; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ffd860;" id="sol-admin-dj-payouts">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">DJ Payouts (85%)</div>
+              </div>
+            </div>
+            <h4>DJ Earnings Breakdown</h4>
+            <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-add-dj" style="display:none;">
+            <h3>Add DJ Manually</h3>
+            <form id="sol-admin-add-dj-form" style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem;">
+              <label for="sol-add-dj-name">Stage Name</label>
+              <input id="sol-add-dj-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-email">Email</label>
+              <input id="sol-add-dj-email" type="email" placeholder="dj@example.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-phone">Phone</label>
+              <input id="sol-add-dj-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-city">City</label>
+              <input id="sol-add-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-state">State</label>
+              <input id="sol-add-dj-state" type="text" placeholder="PA" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-genres">Genres (comma separated)</label>
+              <input id="sol-add-dj-genres" type="text" placeholder="Hip-Hop, R&B, Top 40" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-rate">Hourly Rate ($)</label>
+              <input id="sol-add-dj-rate" type="number" min="50" max="1000" placeholder="250" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-bio">Bio</label>
+              <textarea id="sol-add-dj-bio" placeholder="DJ bio..." style="width:100%; min-height:60px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+              <button type="submit" class="submit-btn" style="width:100%;">Add DJ</button>
+            </form>
+          </div>
+
+          <div id="sol-admin-panel-disputes" style="display:none;">
+            <h3>Booking Disputes</h3>
+            <div id="sol-admin-disputes-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <p id="sol-admin-status" class="form-status" aria-live="polite"></p>
+        </div>
+
+      <div id="sol-client-view">
       <h2>Live DJ Map</h2>
       <p>See available DJs near your event location. Search a venue, click the map, or use your current location.</p>
 
-      <div style="position:relative; margin:1rem 0;">
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <input id="sol-location-search" type="text" autocomplete="off" placeholder="Search venue or address..." style="flex:1; min-width:200px; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#111; color:#fff;">
-          <button type="button" id="sol-search-location" class="submit-btn">Find</button>
-        </div>
-        <div id="sol-location-suggestions" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1000; background:#111; border:1px solid #444; border-radius:8px; margin-top:0.25rem; max-height:220px; overflow:auto;"></div>
-      </div>
+      <div class="sol-map-app" style="display:flex; height:500px; border-radius:12px; overflow:hidden; border:1px solid #ff4d8f; margin:1rem 0;">
+        <aside class="sol-map-sidebar" style="width:300px; min-width:240px; background:#1a1a1a; padding:1rem; display:flex; flex-direction:column; gap:0.75rem; overflow-y:auto; border-right:1px solid #333;">
+          <div class="sol-search-box">
+            <label for="sol-location-search" style="display:block; font-size:0.85rem; color:#aaa; margin-bottom:6px;">Where to?</label>
+            <input id="sol-location-search" type="text" autocomplete="off" placeholder="Enter address or place" style="width:100%; padding:0.6rem 0.7rem; border-radius:8px; border:none; background:#2a2a2a; color:#fff; font-size:0.95rem; outline:none;">
+            <div id="sol-location-suggestions" style="display:none; list-style:none; margin:4px 0 0; padding:0; background:#252525; border:1px solid #444; border-radius:8px; max-height:160px; overflow-y:auto; z-index:1000; position:relative;"></div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="button" id="sol-search-location" class="submit-btn" style="flex:1;">Find</button>
+              <button type="button" id="sol-use-location" class="submit-btn" style="flex:1; background:#333;">My Location</button>
+            </div>
+          </div>
 
-      <div id="sol-map" style="height: 400px; width: 100%; border-radius: 12px; margin: 1rem 0; overflow: hidden; border: 1px solid #ff4d8f;"></div>
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
-        <button type="button" id="sol-use-location" class="submit-btn">Use my location</button>
-        <button type="button" id="sol-refresh-djs" class="submit-btn">Show all DJs</button>
+          <div class="sol-my-location" style="background:#2a2a2a; padding:0.75rem; border-radius:8px;">
+            <strong style="font-size:0.9rem; color:#aaa; display:block; margin-bottom:6px;">My Location</strong>
+            <div id="sol-my-location-address" style="color:#fff; font-size:0.85rem; line-height:1.4;">--</div>
+            <div id="sol-my-location-coords" style="font-size:0.75rem; color:#888; margin-top:4px;">--</div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" id="sol-refresh-djs" class="submit-btn" style="flex:1; background:#333;">Show All DJs</button>
+            <button type="button" id="sol-center-me" class="submit-btn" style="flex:1; background:#333;">Center</button>
+          </div>
+
+          <div id="sol-eta-panel" style="display:none; background:#2a2a2a; padding:0.75rem; border-radius:8px; justify-content:space-between; align-items:center;">
+            <div><strong id="sol-eta-text" style="font-size:1.2rem; color:#00d4ff;">-- min</strong></div>
+            <div id="sol-distance-text" style="font-size:0.85rem; color:#aaa;">-- mi</div>
+          </div>
+
+          <p id="sol-map-status" class="form-status" aria-live="polite" style="background:#2a2a2a; padding:0.6rem 0.7rem; border-radius:8px; font-size:0.85rem; color:#ccc; min-height:36px; margin:0;"></p>
+
+          <a id="sol-event-nav" href="#" class="playlist-link" target="_blank" style="display:none; font-size:0.9rem;">Get directions to event</a>
+        </aside>
+
+        <div class="sol-map-wrap" style="position:relative; flex:1; min-width:0;">
+          <div id="sol-map" style="width:100%; height:100%; background:#222;"></div>
+        </div>
       </div>
-      <p><a id="sol-event-nav" href="#" class="playlist-link" target="_blank" style="display:none;">Get directions to event</a></p>
-      <p id="sol-map-status" class="form-status" aria-live="polite"></p>
 
       <h3>Available DJs</h3>
+      <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+        <input id="sol-dj-filter-name" type="text" placeholder="Search DJ name..." style="flex:1; min-width:150px; padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+        <select id="sol-dj-filter-genre" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="">All Genres</option>
+          <option value="Hip-Hop">Hip-Hop</option>
+          <option value="R&B">R&B</option>
+          <option value="Top 40">Top 40</option>
+          <option value="House">House</option>
+          <option value="EDM">EDM</option>
+          <option value="Latin">Latin</option>
+          <option value="Reggae">Reggae</option>
+          <option value="Afrobeats">Afrobeats</option>
+          <option value="Jazz">Jazz</option>
+          <option value="Old School">Old School</option>
+        </select>
+        <select id="sol-dj-filter-price" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="">Any Price</option>
+          <option value="100">Up to $100/hr</option>
+          <option value="200">Up to $200/hr</option>
+          <option value="300">Up to $300/hr</option>
+          <option value="500">Up to $500/hr</option>
+        </select>
+        <select id="sol-dj-filter-sort" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="rating">Top Rated</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="name">Name A-Z</option>
+        </select>
+      </div>
       <div id="sol-dj-carousel" style="position:relative;">
         <button type="button" id="sol-dj-prev" class="submit-btn" style="position:absolute; top:50%; left:0; transform:translateY(-50%); z-index:10; padding:0.5rem 0.75rem; border-radius:8px;">&#10094;</button>
         <div id="sol-dj-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:1rem; padding:0 3rem; scrollbar-width:none; -ms-overflow-style:none;"></div>
@@ -92,9 +851,25 @@
         <div id="sol-dj-dots" style="display:flex; justify-content:center; gap:0.5rem; margin-top:0.75rem;"></div>
       </div>
 
+      <div id="sol-dj-profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:420px; width:90%; max-height:85vh; overflow-y:auto; padding:2rem; position:relative;">
+          <button type="button" id="sol-dj-profile-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+          <div id="sol-dj-profile-content" style="text-align:center;"></div>
+        </div>
+      </div>
+
       <h2>Quick Book a DJ</h2>
       <form id="sol-quick-form">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-multi-dj-toggle" type="checkbox" style="width:18px; height:18px;">
+          <span>Book multiple DJs for this event</span>
+        </label>
+        <div id="sol-multi-dj-count-wrap" style="display:none; margin-bottom:0.75rem;">
+          <label for="sol-multi-dj-count">Number of DJs</label>
+          <input id="sol-multi-dj-count" type="number" min="2" max="5" value="2" style="width:100%; max-width:120px; padding:0.5rem;">
+        </div>
 
         <label for="sol-quick-name">Name</label>
         <input id="sol-quick-name" name="name" type="text" placeholder="Your name" required>
@@ -116,6 +891,14 @@
 
         <label for="sol-quick-date">Event Date</label>
         <input id="sol-quick-date" name="date" type="date" required>
+
+        <label for="sol-quick-recurring" style="margin-top:0.75rem;">Recurring Booking</label>
+        <select id="sol-quick-recurring" name="recurring" style="margin-bottom:0.5rem;">
+          <option value="none">One-time event</option>
+          <option value="weekly">Weekly (same day/time)</option>
+          <option value="biweekly">Bi-weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
 
         <label for="sol-quick-duration">Duration (hours)</label>
         <input id="sol-quick-duration" name="duration" type="number" min="1" max="12" value="4" required>
@@ -171,17 +954,87 @@
           <p style="margin:0.25rem 0; color:#ffd860; font-size:1.1rem;"><strong>Estimated Total:</strong> $<span id="price-total">100</span></p>
         </div>
 
-        <button type="submit" class="submit-btn">Quick Book Now</button>
+        <button type="submit" class="submit-btn">Book Now &amp; Pay</button>
       </form>
       <p id="sol-quick-status" class="form-status" aria-live="polite"></p>
+
+      <h2>My Bookings</h2>
+      <div id="sol-my-bookings" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+      <div id="sol-rate-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:380px; width:90%; padding:2rem; position:relative;">
+          <button type="button" id="sol-rate-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+          <h3 style="margin-top:0;">Rate Your DJ</h3>
+          <div id="sol-rate-stars" style="display:flex; gap:0.5rem; margin:1rem 0;">
+            <span class="sol-star" data-val="1" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="2" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="3" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="4" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="5" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+          </div>
+          <textarea id="sol-rate-text" placeholder="Write a review..." style="width:100%; min-height:80px; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical;"></textarea>
+          <button type="button" id="sol-rate-submit" class="submit-btn" style="width:100%; margin-top:1rem;">Submit Review</button>
+        </div>
+      </div>
+
+      <h2>Promo Code</h2>
+      <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+        <input id="sol-promo-code" type="text" placeholder="Enter promo code..." style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+        <button type="button" id="sol-promo-apply" class="submit-btn">Apply</button>
+      </div>
+      <p id="sol-promo-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Song Requests</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Send your playlist requests to the DJ before your event.</p>
+      <div id="sol-playlist-section" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-playlist-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a booking...</option>
+        </select>
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+          <input id="sol-song-input" type="text" placeholder="Song title - Artist" style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+          <button type="button" id="sol-song-add" class="submit-btn">Add</button>
+        </div>
+        <div id="sol-song-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      </div>
+
+      <h2>File a Dispute</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Have an issue with a booking? File a dispute for admin review.</p>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-dispute-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a booking...</option>
+        </select>
+        <select id="sol-dispute-type" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Dispute type...</option>
+          <option value="no_show">DJ didn't show up</option>
+          <option value="late">DJ was late</option>
+          <option value="equipment">Equipment issues</option>
+          <option value="unprofessional">Unprofessional behavior</option>
+          <option value="refund">Refund request</option>
+          <option value="other">Other</option>
+        </select>
+        <textarea id="sol-dispute-text" placeholder="Describe the issue..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+        <button type="button" id="sol-dispute-submit" class="submit-btn" style="width:100%;">Submit Dispute</button>
+      </div>
+      <p id="sol-dispute-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <div id="sol-chat-box" style="display:none; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1.5rem 0;">
+        <h3 style="margin-top:0;">Message Your DJ</h3>
+        <div id="sol-chat-messages" style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem;"></div>
+        <div style="display:flex; gap:0.5rem;">
+          <input id="sol-chat-input" type="text" placeholder="Type a message..." style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+          <button type="button" id="sol-chat-send" class="submit-btn">Send</button>
+        </div>
+      </div>
 
       <div style="display:block; text-align:center; margin-top:2rem;">
         <img src="sol-logo.png" alt="SOL App" style="max-width:220px; width:100%; display:block; margin:0 auto; border-radius:12px;">
       </div>
+      </div>
+      </div>
     </section>
   </main>
   <footer class="container">
-    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script>
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
@@ -199,6 +1052,1620 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // ---------- Account (Firebase Auth) ----------
+    let authMode = 'signin';
+    const authStatus = document.getElementById('sol-auth-status');
+    const authNameInput = document.getElementById('sol-auth-name');
+    const authEmailInput = document.getElementById('sol-auth-email');
+    const authPasswordInput = document.getElementById('sol-auth-password');
+    const authSubmitBtn = document.getElementById('sol-auth-submit');
+    const solGate = document.getElementById('sol-gate');
+    const solAppContent = document.getElementById('sol-app-content');
+    const accountEmailEl = document.getElementById('sol-account-email');
+
+    const authToggleModeLink = document.getElementById('sol-auth-toggle-mode');
+    authToggleModeLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (authMode === 'signin') {
+        authMode = 'signup';
+        authNameInput.style.display = 'block';
+        authSubmitBtn.textContent = 'Create Account';
+        authToggleModeLink.textContent = 'Already have an account? Sign in';
+      } else {
+        authMode = 'signin';
+        authNameInput.style.display = 'none';
+        authSubmitBtn.textContent = 'Sign In';
+        authToggleModeLink.textContent = 'Need an account? Create one';
+      }
+      authStatus.textContent = '';
+    });
+
+    authSubmitBtn.addEventListener('click', function() {
+      const email = authEmailInput.value.trim();
+      const password = authPasswordInput.value;
+      if (!email || !password) {
+        authStatus.textContent = 'Enter an email and password.';
+        authStatus.style.color = '#ff4d8f';
+        return;
+      }
+      authSubmitBtn.disabled = true;
+      authStatus.textContent = 'Signing in...';
+      authStatus.style.color = '#ffd860';
+      console.log('[AUTH] Attempting sign in for:', email);
+
+      const done = function() { authSubmitBtn.disabled = false; };
+      if (authMode === 'signup') {
+        auth.createUserWithEmailAndPassword(email, password)
+          .then(function(cred) {
+            console.log('[AUTH] Sign up successful:', cred.user.uid);
+            authStatus.textContent = 'Account created!';
+            authStatus.style.color = '#22c55e';
+            const name = authNameInput.value.trim();
+            if (name) return cred.user.updateProfile({ displayName: name });
+          })
+          .catch(function(err) {
+            console.error('[AUTH] Sign up error:', err.code, err.message);
+            authStatus.textContent = err.message;
+            authStatus.style.color = '#ff4d8f';
+          })
+          .finally(done);
+      } else {
+        auth.signInWithEmailAndPassword(email, password)
+          .then(function(cred) {
+            console.log('[AUTH] Sign in successful:', cred.user.uid);
+            authStatus.textContent = '';
+          })
+          .catch(function(err) {
+            console.error('[AUTH] Sign in error:', err.code, err.message);
+            authStatus.textContent = err.message;
+            authStatus.style.color = '#ff4d8f';
+          })
+          .finally(done);
+      }
+    });
+
+    document.getElementById('sol-auth-forgot').addEventListener('click', function(e) {
+      e.preventDefault();
+      const email = authEmailInput.value.trim();
+      if (!email) {
+        authStatus.textContent = 'Enter your email above first, then click "Forgot password?" again.';
+        authStatus.style.color = '#ffd860';
+        return;
+      }
+      auth.sendPasswordResetEmail(email)
+        .then(function() {
+          authStatus.textContent = 'Password reset email sent.';
+          authStatus.style.color = '#22c55e';
+        })
+        .catch(function(err) {
+          authStatus.textContent = err.message;
+          authStatus.style.color = '#ff4d8f';
+        });
+    });
+
+    document.getElementById('sol-account-signout').addEventListener('click', function() {
+      auth.signOut();
+    });
+
+    let solAppInitialized = false;
+    let isVerifiedDJ = false;
+    let djModeActive = false;
+    let djStatusUnsubscribe = null;
+    let djConversationsUnsubscribe = null;
+
+    const djModeToggleBtn = document.getElementById('sol-dj-mode-toggle');
+    const djConsole = document.getElementById('sol-dj-console');
+    const clientView = document.getElementById('sol-client-view');
+    const djOnlineToggle = document.getElementById('sol-dj-online-toggle');
+    const djToggleTrack = document.getElementById('sol-dj-toggle-track');
+    const djToggleKnob = document.getElementById('sol-dj-toggle-knob');
+    const djStatusLabel = document.getElementById('sol-dj-status-label');
+    const djConsoleStatus = document.getElementById('sol-dj-console-status');
+    const djConversationsBox = document.getElementById('sol-dj-conversations');
+
+    function checkDJVerification(user) {
+      db.collection('dj-verifications').doc(user.uid).get()
+        .then(function(doc) {
+          if (doc.exists && doc.data().status === 'approved') {
+            isVerifiedDJ = true;
+            djModeToggleBtn.style.display = 'inline-block';
+            loadDJProfile(user, doc.data());
+          } else {
+            return db.collection('users').doc(user.uid).get();
+          }
+        })
+        .then(function(userDoc) {
+          if (userDoc && userDoc.exists && userDoc.data().isVerifiedDJ === true) {
+            isVerifiedDJ = true;
+            djModeToggleBtn.style.display = 'inline-block';
+            loadDJProfile(user, userDoc.data());
+          }
+        })
+        .catch(function(err) {
+          console.log('DJ verification check skipped:', err.message);
+        });
+    }
+
+    function loadDJProfile(user, profileData) {
+      const name = profileData.stageName || profileData.displayName || profileData.djName || user.displayName || user.email || 'DJ';
+      const avatar = profileData.photoURL || profileData.avatar || '';
+      const city = profileData.city || (profileData.location && profileData.location.city) || '';
+      const state = profileData.state || (profileData.location && profileData.location.state) || '';
+      const rating = profileData.rating || profileData.djRating || null;
+
+      document.getElementById('sol-dj-name').textContent = name;
+      document.getElementById('sol-dj-location').textContent = city ? city + (state ? ', ' + state : '') : '';
+      document.getElementById('sol-dj-verified-badge').style.display = isVerifiedDJ ? 'inline-block' : 'none';
+
+      if (avatar) {
+        const avatarEl = document.getElementById('sol-dj-avatar');
+        avatarEl.src = avatar;
+        avatarEl.style.display = 'block';
+        document.getElementById('sol-dj-avatar-fallback').style.display = 'none';
+      } else {
+        document.getElementById('sol-dj-avatar-fallback').textContent = (name.charAt(0) || 'D').toUpperCase();
+      }
+
+      if (rating) {
+        document.getElementById('sol-dj-stat-rating').textContent = Number(rating).toFixed(1);
+      }
+    }
+
+    function loadDJSetupForm(user) {
+      db.collection('dj-verifications').doc(user.uid).get()
+        .then(function(doc) {
+          var d = doc.exists ? doc.data() : {};
+          var p = d.djProfile || {};
+          document.getElementById('sol-dj-stage-name').value = p.stageName || user.displayName || '';
+          document.getElementById('sol-dj-avatar-url').value = p.photoURL || p.avatar || '';
+          document.getElementById('sol-dj-city').value = p.city || (p.location && p.location.city) || '';
+          document.getElementById('sol-dj-state').value = p.state || (p.location && p.location.state) || '';
+          document.getElementById('sol-dj-genres').value = (p.genres || []).join(', ');
+          document.getElementById('sol-dj-specialties').value = (p.specialties || []).join(', ');
+          document.getElementById('sol-dj-equipment').value = (p.equipment || []).join(', ');
+          document.getElementById('sol-dj-hourly-rate').value = p.hourlyRate || '';
+          document.getElementById('sol-dj-experience').value = p.experience || '';
+          document.getElementById('sol-dj-bio').value = p.bio || '';
+
+          var statusEl = document.getElementById('sol-dj-verify-status');
+          if (d.status === 'approved') {
+            statusEl.textContent = '✅ Verified DJ — Profile is live';
+            statusEl.style.background = '#22c55e33';
+            statusEl.style.color = '#22c55e';
+          } else if (d.status === 'pending') {
+            statusEl.textContent = '⏳ Verification pending — Admin will review soon';
+            statusEl.style.background = '#ffd86033';
+            statusEl.style.color = '#ffd860';
+          } else if (d.status === 'rejected') {
+            statusEl.textContent = '❌ Verification rejected — Update and resubmit';
+            statusEl.style.background = '#ff3b3033';
+            statusEl.style.color = '#ff3b30';
+          } else {
+            statusEl.textContent = '📝 Submit your profile for verification';
+            statusEl.style.background = '#00d4ff33';
+            statusEl.style.color = '#00d4ff';
+          }
+        });
+    }
+
+    document.getElementById('sol-dj-setup-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var user = auth.currentUser;
+      if (!user) return;
+      var statusEl = document.getElementById('sol-dj-setup-status');
+      statusEl.textContent = 'Saving...';
+      statusEl.style.color = '#ffd860';
+
+      var genres = document.getElementById('sol-dj-genres').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      var specialties = document.getElementById('sol-dj-specialties').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      var equipment = document.getElementById('sol-dj-equipment').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+
+      var profileData = {
+        stageName: document.getElementById('sol-dj-stage-name').value.trim(),
+        photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
+        city: document.getElementById('sol-dj-city').value.trim(),
+        state: document.getElementById('sol-dj-state').value.trim(),
+        genres: genres,
+        specialties: specialties,
+        equipment: equipment,
+        hourlyRate: parseFloat(document.getElementById('sol-dj-hourly-rate').value) || 0,
+        experience: parseInt(document.getElementById('sol-dj-experience').value) || 0,
+        bio: document.getElementById('sol-dj-bio').value.trim(),
+        email: user.email,
+        displayName: user.displayName || user.email
+      };
+
+      var verData = {
+        status: 'pending',
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        djProfile: profileData
+      };
+
+      db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
+        .then(function() {
+          db.collection('djs').doc(user.uid).set(profileData, { merge: true });
+          statusEl.textContent = 'Profile saved & submitted for verification!';
+          statusEl.style.color = '#22c55e';
+          loadDJSetupForm(user);
+          setTimeout(function() { statusEl.textContent = ''; }, 4000);
+        })
+        .catch(function(err) {
+          statusEl.textContent = 'Error: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
+    });
+
+    // ---------- DJ Availability Calendar ----------
+    document.getElementById('sol-dj-block-add').addEventListener('click', function() {
+      var date = document.getElementById('sol-dj-block-date').value;
+      var user = auth.currentUser;
+      if (!date || !user) return;
+      db.collection('dj-availability').doc(user.uid).set({
+        blockedDates: firebase.firestore.FieldValue.arrayUnion(date)
+      }, { merge: true }).then(function() {
+        document.getElementById('sol-dj-block-date').value = '';
+        loadBlockedDates(user.uid);
+      });
+    });
+
+    function loadBlockedDates(uid) {
+      db.collection('dj-availability').doc(uid).get().then(function(doc) {
+        var box = document.getElementById('sol-dj-blocked-dates');
+        box.innerHTML = '';
+        if (!doc.exists || !doc.data().blockedDates) return;
+        var dates = doc.data().blockedDates;
+        dates.sort();
+        dates.forEach(function(d) {
+          var chip = document.createElement('div');
+          chip.style.cssText = 'background:#ff3b30; color:#fff; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem; display:flex; align-items:center; gap:0.3rem;';
+          chip.innerHTML = new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
+            ' <button type="button" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;" data-unblock="' + d + '">&times;</button>';
+          box.appendChild(chip);
+        });
+        box.querySelectorAll('button[data-unblock]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('dj-availability').doc(uid).set({
+              blockedDates: firebase.firestore.FieldValue.arrayRemove(btn.getAttribute('data-unblock'))
+            }, { merge: true }).then(function() { loadBlockedDates(uid); });
+          });
+        });
+      });
+    }
+
+    // ---------- DJ Photo Gallery ----------
+    document.getElementById('sol-dj-gallery-add').addEventListener('click', function() {
+      var url = document.getElementById('sol-dj-gallery-url').value.trim();
+      var user = auth.currentUser;
+      if (!url || !user) return;
+      db.collection('dj-galleries').doc(user.uid).set({
+        photos: firebase.firestore.FieldValue.arrayUnion(url)
+      }, { merge: true }).then(function() {
+        document.getElementById('sol-dj-gallery-url').value = '';
+        loadDjGallery(user.uid);
+      });
+    });
+
+    function loadDjGallery(uid) {
+      db.collection('dj-galleries').doc(uid).get().then(function(doc) {
+        var box = document.getElementById('sol-dj-gallery');
+        box.innerHTML = '';
+        if (!doc.exists || !doc.data().photos) return;
+        doc.data().photos.forEach(function(url) {
+          var wrapper = document.createElement('div');
+          wrapper.style.cssText = 'position:relative; width:100px; height:100px;';
+          wrapper.innerHTML = '<img src="' + url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;" onerror="this.style.display=\'none\'">' +
+            '<button type="button" style="position:absolute;top:-4px;right:-4px;background:#ff3b30;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;" data-del-photo="' + url + '">&times;</button>';
+          box.appendChild(wrapper);
+        });
+        box.querySelectorAll('button[data-del-photo]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('dj-galleries').doc(uid).set({
+              photos: firebase.firestore.FieldValue.arrayRemove(btn.getAttribute('data-del-photo'))
+            }, { merge: true }).then(function() { loadDjGallery(uid); });
+          });
+        });
+      });
+    }
+
+    // ---------- DJ Earnings + CSV Export ----------
+    function loadDJEarnings(uid) {
+      db.collection('bookings').where('djId', '==', uid).where('status', '==', 'completed').get()
+        .then(function(snapshot) {
+          var total = 0, gigs = 0;
+          var rows = [['Date','Event','Client','Amount','Platform Fee','DJ Payout']];
+          snapshot.forEach(function(doc) {
+            var b = doc.data();
+            var amount = b.totalAmount || b.total_cost || 0;
+            total += amount;
+            gigs++;
+            rows.push([
+              b.date || b.eventDate || '',
+              b.eventType || b.event_type || '',
+              b.clientName || b.client_name || '',
+              '$' + amount,
+              '$' + Math.round(amount * 0.15),
+              '$' + Math.round(amount * 0.85)
+            ]);
+          });
+          document.getElementById('sol-dj-earnings-total').textContent = '$' + Math.round(total * 0.85).toLocaleString();
+          document.getElementById('sol-dj-earnings-gigs').textContent = gigs;
+          document.getElementById('sol-dj-earnings-fees').textContent = '$' + Math.round(total * 0.15).toLocaleString();
+
+          document.getElementById('sol-dj-export-csv').onclick = function() {
+            var csv = rows.map(function(r) { return r.map(function(c) { return '"' + c + '"'; }).join(','); }).join('\n');
+            var blob = new Blob([csv], { type: 'text/csv' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'dj-earnings.csv';
+            a.click();
+          };
+        });
+    }
+
+    // ---------- DJ Network (DJ-to-DJ messaging) ----------
+    function loadDJNetwork(uid) {
+      db.collection('dj-verifications').where('status', '==', 'approved').get()
+        .then(function(snapshot) {
+          var box = document.getElementById('sol-dj-network');
+          box.innerHTML = '';
+          if (snapshot.empty) { box.innerHTML = '<p style="color:#888;">No other DJs yet.</p>'; return; }
+          snapshot.forEach(function(doc) {
+            if (doc.id === uid) return;
+            var d = doc.data();
+            var p = d.djProfile || {};
+            var name = p.djName || p.stageName || d.displayName || 'DJ';
+            var email = d.email || p.email || '';
+            var card = document.createElement('div');
+            card.style.cssText = 'background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
+            card.innerHTML = '<span><strong>' + name + '</strong><br><span style="font-size:0.8rem; color:#666;">' + email + '</span></span><button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem;" data-dm-dj="' + doc.id + '" data-dm-name="' + encodeURIComponent(name) + '">Message</button>';
+            box.appendChild(card);
+          });
+          box.querySelectorAll('button[data-dm-dj]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var toUid = btn.getAttribute('data-dm-dj');
+              var toName = decodeURIComponent(btn.getAttribute('data-dm-name'));
+              var msg = prompt('Message to ' + toName + ':');
+              if (!msg) return;
+              var user = auth.currentUser;
+              db.collection('dj-messages').add({
+                fromUid: user.uid,
+                fromName: user.displayName || user.email,
+                toUid: toUid,
+                toName: toName,
+                message: msg,
+                read: false,
+                sentAt: firebase.firestore.FieldValue.serverTimestamp()
+              }).then(function() {
+                btn.textContent = 'Sent!';
+                setTimeout(function() { btn.textContent = 'Message'; }, 2000);
+              });
+            });
+          });
+        });
+    }
+
+    // ---------- DJ Waitlist ----------
+    function loadDJWaitlist(uid) {
+      db.collection('waitlist').where('djId', '==', uid).where('status', '==', 'waiting').get()
+        .then(function(snapshot) {
+          var box = document.getElementById('sol-dj-waitlist');
+          box.innerHTML = '';
+          if (snapshot.empty) { box.innerHTML = '<p style="color:#888;">No waitlist entries.</p>'; return; }
+          snapshot.forEach(function(doc) {
+            var w = doc.data();
+            var card = document.createElement('div');
+            card.style.cssText = 'background:#111; border:1px solid #ffd860; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
+            card.innerHTML = '<span><strong>' + (w.clientName || 'Client') + '</strong><br><span style="font-size:0.8rem; color:#aaa;">' + (w.eventType || 'Event') + ' — ' + (w.date || 'TBD') + '</span></span>' +
+              '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#22c55e;" data-waitlist-accept="' + doc.id + '">Accept</button>';
+            box.appendChild(card);
+          });
+          box.querySelectorAll('button[data-waitlist-accept]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              db.collection('waitlist').doc(btn.getAttribute('data-waitlist-accept')).set({
+                status: 'accepted',
+                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true }).then(function() { loadDJWaitlist(uid); });
+            });
+          });
+        });
+    }
+
+    let djBookingsUnsubscribe = null;
+
+    function subscribeDJBookings(user) {
+      if (djBookingsUnsubscribe) djBookingsUnsubscribe();
+      djBookingsUnsubscribe = db.collection('bookings')
+        .where('djId', '==', user.uid)
+        .onSnapshot(function(snapshot) {
+          renderDJBookings(snapshot, user);
+        }, function(err) {
+          console.error('DJ bookings listener error:', err);
+        });
+    }
+
+    function renderDJBookings(snapshot, user) {
+      const bookings = [];
+      snapshot.forEach(function(doc) {
+        bookings.push({ id: doc.id, ...doc.data() });
+      });
+
+      const pending = bookings.filter(function(b) { return b.status === 'pending'; });
+      const confirmed = bookings.filter(function(b) { return b.status === 'confirmed'; });
+      const completed = bookings.filter(function(b) { return b.status === 'completed'; });
+
+      const now = new Date();
+      const upcoming = confirmed.filter(function(b) {
+        try {
+          const d = new Date(b.date || b.eventDate || '');
+          d.setHours(23, 59, 59);
+          return d >= now;
+        } catch { return false; }
+      }).sort(function(a, b) {
+        return new Date(a.date || a.eventDate || '').getTime() - new Date(b.date || b.eventDate || '').getTime();
+      });
+
+      const earnings = completed.reduce(function(sum, b) {
+        return sum + (b.djEarnings || (b.totalAmount || b.total_cost || 0) * 0.85);
+      }, 0);
+
+      document.getElementById('sol-dj-stat-pending').textContent = pending.length;
+      document.getElementById('sol-dj-stat-upcoming').textContent = upcoming.length;
+      document.getElementById('sol-dj-stat-earnings').textContent = '$' + Math.round(earnings).toLocaleString();
+
+      const requestsBox = document.getElementById('sol-dj-booking-requests');
+      requestsBox.innerHTML = '';
+      if (pending.length === 0) {
+        requestsBox.innerHTML = '<p style="color:#888; text-align:center;">No pending booking requests</p>';
+      } else {
+        pending.forEach(function(b) {
+          const card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          const clientName = b.clientName || b.client_name || 'Client';
+          const eventType = b.eventType || b.event_type || 'Event';
+          const date = b.date || b.eventDate || '';
+          const startTime = b.startTime || b.event_time || '';
+          const location = (b.locationData && b.locationData.address) || b.location || b.event_location || '';
+          const amount = b.totalAmount || b.total_cost || 0;
+          const special = b.specialRequests || '';
+
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+            '<strong>' + clientName + '</strong>' +
+            '<span style="background:#ff4d8f; color:#fff; padding:0.15rem 0.5rem; border-radius:8px; font-size:0.75rem;">NEW</span>' +
+            '</div>' +
+            '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
+            '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + startTime : '') + '</div>' +
+            '<div>🎉 ' + eventType + '</div>' +
+            (location ? '<div>📍 ' + location + '</div>' : '') +
+            '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
+            (special ? '<div style="margin-top:0.5rem; color:#ffd860;">📝 ' + special + '</div>' : '') +
+            '</div>' +
+            '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-booking-id="' + b.id + '">Reject</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="accept" data-booking-id="' + b.id + '">Accept</button>' +
+            '</div>';
+
+          requestsBox.appendChild(card);
+        });
+
+        requestsBox.querySelectorAll('button[data-action]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const action = btn.getAttribute('data-action');
+            const bookingId = btn.getAttribute('data-booking-id');
+            handleBookingAction(bookingId, action, user);
+          });
+        });
+      }
+
+      const upcomingBox = document.getElementById('sol-dj-upcoming-events');
+      upcomingBox.innerHTML = '';
+      if (upcoming.length === 0) {
+        upcomingBox.innerHTML = '<p style="color:#888; text-align:center;">No upcoming events</p>';
+      } else {
+        upcoming.forEach(function(b) {
+          const card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          const clientName = b.clientName || b.client_name || 'Client';
+          const eventType = b.eventType || b.event_type || 'Event';
+          const date = b.date || b.eventDate || '';
+          const startTime = b.startTime || b.event_time || '';
+          const location = (b.locationData && b.locationData.address) || b.location || b.event_location || '';
+          const amount = b.totalAmount || b.total_cost || 0;
+          const special = b.specialRequests || '';
+          const clientEmail = b.clientEmail || b.client_email || '';
+          const clientPhone = b.clientPhone || b.client_phone || '';
+          const duration = b.duration || b.event_duration || '';
+          const equipment = b.equipment || b.equipmentList || '';
+          var eqStr = '';
+          if (equipment && typeof equipment === 'object') {
+            var parts = [];
+            for (var k in equipment) { if (equipment[k]) parts.push(k); }
+            eqStr = parts.join(', ');
+          } else if (equipment) {
+            eqStr = String(equipment);
+          }
+          var arrived = b.djArrived === true;
+          var arrivalStatus = b.arrivalStatus || '';
+
+          var countdownId = 'sol-countdown-' + b.id;
+          var detailsId = 'sol-details-' + b.id;
+
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">' +
+            '<div><strong>' + eventType + '</strong><br><span style="color:#aaa; font-size:0.85rem;">' + clientName + '</span></div>' +
+            '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + startTime : '') + '</div>' +
+            '</div>' +
+            '<div id="' + countdownId + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#00d4ff; font-weight:600;"></div>' +
+            (location ? '<div style="color:#ccc; font-size:0.9rem;">📍 ' + location + '</div>' : '') +
+            '<div style="color:#22c55e; font-size:0.9rem; margin-top:0.25rem;">💰 $' + Number(amount).toLocaleString() + '</div>' +
+            (arrived ? '<div style="color:#22c55e; font-size:0.85rem; margin-top:0.5rem;">✅ Arrived' + (arrivalStatus ? ' — ' + arrivalStatus : '') + '</div>' : '') +
+            '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">' +
+            (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + b.id + '">I\'m Here</button>') +
+            '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + detailsId + '">Details</button>' +
+            '</div>' +
+            '<div id="' + detailsId + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
+            (duration ? '<div>⏱️ Duration: ' + duration + ' hrs</div>' : '') +
+            (clientEmail ? '<div>📧 ' + clientEmail + '</div>' : '') +
+            (clientPhone ? '<div>📱 ' + clientPhone + '</div>' : '') +
+            (eqStr ? '<div>🎛️ Equipment: ' + eqStr + '</div>' : '') +
+            (special ? '<div style="color:#ffd860;">📝 ' + special + '</div>' : '') +
+            '</div>';
+
+          upcomingBox.appendChild(card);
+
+          (function(bId, dateStr, timeStr) {
+            var el = document.getElementById('sol-countdown-' + bId);
+            if (!el || !dateStr) return;
+            function tick() {
+              var target = new Date(dateStr);
+              if (timeStr) {
+                var parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+                if (parts) {
+                  var h = parseInt(parts[1]);
+                  var m = parseInt(parts[2]);
+                  if (parts[3] && parts[3].toUpperCase() === 'PM' && h < 12) h += 12;
+                  if (parts[3] && parts[3].toUpperCase() === 'AM' && h === 12) h = 0;
+                  target.setHours(h, m, 0, 0);
+                }
+              } else {
+                target.setHours(20, 0, 0, 0);
+              }
+              var diff = target.getTime() - Date.now();
+              if (diff <= 0) {
+                el.textContent = 'Event time!';
+                el.style.color = '#22c55e';
+                return;
+              }
+              var days = Math.floor(diff / 86400000);
+              var hrs = Math.floor((diff % 86400000) / 3600000);
+              var mins = Math.floor((diff % 3600000) / 60000);
+              var secs = Math.floor((diff % 60000) / 1000);
+              if (days > 0) el.textContent = 'Starts in ' + days + 'd ' + hrs + 'h ' + mins + 'm';
+              else if (hrs > 0) el.textContent = 'Starts in ' + hrs + 'h ' + mins + 'm ' + secs + 's';
+              else el.textContent = 'Starts in ' + mins + 'm ' + secs + 's';
+              setTimeout(tick, 1000);
+            }
+            tick();
+          })(b.id, date, startTime);
+        });
+
+        upcomingBox.querySelectorAll('button[data-im-here]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var bookingId = btn.getAttribute('data-im-here');
+            db.collection('bookings').doc(bookingId).set({
+              djArrived: true,
+              arrivalStatus: 'On site',
+              arrivedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(function() {
+              btn.textContent = 'Arrived!';
+              btn.style.background = '#22c55e';
+              btn.disabled = true;
+              djConsoleStatus.textContent = 'Arrival marked! Client notified.';
+              djConsoleStatus.style.color = '#22c55e';
+              setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
+            }).catch(function(err) {
+              djConsoleStatus.textContent = 'Error: ' + err.message;
+              djConsoleStatus.style.color = '#ff4d8f';
+            });
+          });
+        });
+
+        upcomingBox.querySelectorAll('button[data-expand]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var details = document.getElementById(btn.getAttribute('data-expand'));
+            if (details) {
+              details.style.display = details.style.display === 'none' ? 'block' : 'none';
+              btn.textContent = details.style.display === 'none' ? 'Details' : 'Hide';
+            }
+          });
+        });
+      }
+
+      var autoCompleted = 0;
+      confirmed.forEach(function(b) {
+        try {
+          var d = new Date(b.date || b.eventDate || '');
+          d.setHours(23, 59, 59);
+          if (d < now) {
+            db.collection('bookings').doc(b.id).set({
+              status: 'completed',
+              completedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            autoCompleted++;
+          }
+        } catch(e) {}
+      });
+      if (autoCompleted > 0) {
+        console.log('[DJ] Auto-completed ' + autoCompleted + ' past events');
+      }
+    }
+
+    function handleBookingAction(bookingId, action, user) {
+      const newStatus = action === 'accept' ? 'confirmed' : 'cancelled';
+      const bookingRef = db.collection('bookings').doc(bookingId);
+      bookingRef.set({ status: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), djId: user.uid }, { merge: true })
+        .then(function() {
+          djConsoleStatus.textContent = action === 'accept' ? 'Booking accepted! Client notified.' : 'Booking rejected.';
+          djConsoleStatus.style.color = action === 'accept' ? '#22c55e' : '#ff4d8f';
+          setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
+        })
+        .catch(function(err) {
+          djConsoleStatus.textContent = 'Failed: ' + err.message;
+          djConsoleStatus.style.color = '#ff4d8f';
+        });
+    }
+
+    function updateOnlineToggleUI(online) {
+      djOnlineToggle.checked = online;
+      djToggleTrack.style.background = online ? '#22c55e' : '#444';
+      djToggleKnob.style.transform = online ? 'translateX(24px)' : 'translateX(0)';
+      djStatusLabel.innerHTML = 'You are <strong>' + (online ? 'Online' : 'Offline') + '</strong>';
+    }
+
+    djOnlineToggle.addEventListener('change', function() {
+      const user = auth.currentUser;
+      if (!user) return;
+      const online = djOnlineToggle.checked;
+      updateOnlineToggleUI(online);
+      const statusRef = db.collection('dj-status').doc(user.uid);
+      statusRef.set({
+        isOnline: online,
+        lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+        djName: user.displayName || user.email || 'DJ',
+        djId: user.uid
+      }, { merge: true }).catch(function(err) {
+        djConsoleStatus.textContent = 'Failed to update status: ' + err.message;
+        djConsoleStatus.style.color = '#ff4d8f';
+      });
+    });
+
+    // DJ live location tracking
+    let djLocWatchId = null;
+    const djShareLocBtn = document.getElementById('sol-dj-share-loc');
+    const djLocStatus = document.getElementById('sol-dj-loc-status');
+
+    djShareLocBtn.addEventListener('click', function() {
+      if (djLocWatchId !== null) {
+        navigator.geolocation.clearWatch(djLocWatchId);
+        djLocWatchId = null;
+        djShareLocBtn.textContent = 'Start';
+        djShareLocBtn.style.background = '#333';
+        djLocStatus.textContent = 'Stopped';
+        djLocStatus.style.color = '#888';
+        db.collection('dj-status').doc(auth.currentUser.uid).set({
+          sharingLocation: false
+        }, { merge: true });
+        return;
+      }
+      if (!navigator.geolocation) {
+        djLocStatus.textContent = 'Not supported';
+        djLocStatus.style.color = '#ff4d8f';
+        return;
+      }
+      djShareLocBtn.textContent = 'Stop';
+      djShareLocBtn.style.background = '#ff3b30';
+      djLocStatus.textContent = 'Starting...';
+      djLocStatus.style.color = '#ffd860';
+      djLocWatchId = navigator.geolocation.watchPosition(function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        djLocStatus.textContent = 'Live (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+        djLocStatus.style.color = '#22c55e';
+        db.collection('dj-status').doc(auth.currentUser.uid).set({
+          sharingLocation: true,
+          location: {
+            latitude: lat,
+            longitude: lng,
+            accuracy: pos.coords.accuracy,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }
+        }, { merge: true });
+      }, function(err) {
+        djLocStatus.textContent = 'Error: ' + err.message;
+        djLocStatus.style.color = '#ff4d8f';
+      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 });
+    });
+
+    function subscribeDJStatus(user) {
+      if (djStatusUnsubscribe) djStatusUnsubscribe();
+      djStatusUnsubscribe = db.collection('dj-status').doc(user.uid)
+        .onSnapshot(function(doc) {
+          const online = doc.exists && doc.data().isOnline === true;
+          updateOnlineToggleUI(online);
+        }, function(err) {
+          console.error('DJ status listener error:', err);
+        });
+    }
+
+    function subscribeDJConversations(user) {
+      if (djConversationsUnsubscribe) djConversationsUnsubscribe();
+      djConversationsUnsubscribe = db.collection('conversations')
+        .where('djId', '==', user.uid)
+        .onSnapshot(function(snapshot) {
+          djConversationsBox.innerHTML = '';
+          var totalUnread = 0;
+          if (snapshot.empty) {
+            djConversationsBox.innerHTML = '<p style="color:#888; text-align:center;">No client conversations yet.</p>';
+            updateDjModeBadge(0);
+            return;
+          }
+          snapshot.forEach(function(doc) {
+            const c = doc.data();
+            if (c.unreadCount) totalUnread += c.unreadCount;
+            const item = document.createElement('div');
+            item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
+            item.innerHTML = '<span><strong>' + (c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + (c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff4d8f;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
+            item.addEventListener('click', function() {
+              openChat(doc.id);
+            });
+            djConversationsBox.appendChild(item);
+          });
+          updateDjModeBadge(totalUnread);
+        }, function(err) {
+          console.error('DJ conversations listener error:', err);
+          djConversationsBox.innerHTML = '<p style="color:#ff4d8f;">Could not load conversations: ' + err.message + '</p>';
+        });
+    }
+
+    function updateDjModeBadge(count) {
+      var existing = djModeToggleBtn.querySelector('.sol-badge');
+      if (existing) existing.remove();
+      if (count > 0) {
+        var badge = document.createElement('span');
+        badge.className = 'sol-badge';
+        badge.textContent = count;
+        badge.style.cssText = 'position:absolute; top:-6px; right:-6px; background:#ff3b30; color:#fff; font-size:0.7rem; font-weight:700; min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 4px;';
+        djModeToggleBtn.style.position = 'relative';
+        djModeToggleBtn.appendChild(badge);
+      }
+    }
+
+    djModeToggleBtn.addEventListener('click', function() {
+      djModeActive = !djModeActive;
+      if (djModeActive) {
+        djConsole.style.display = 'block';
+        clientView.style.display = 'none';
+        djModeToggleBtn.textContent = 'Client Mode';
+        const user = auth.currentUser;
+        if (user) {
+          subscribeDJStatus(user);
+          subscribeDJConversations(user);
+          subscribeDJBookings(user);
+          loadDJSetupForm(user);
+          loadBlockedDates(user.uid);
+          loadDjGallery(user.uid);
+          loadDJEarnings(user.uid);
+          loadDJNetwork(user.uid);
+          loadDJWaitlist(user.uid);
+        }
+      } else {
+        djConsole.style.display = 'none';
+        clientView.style.display = 'block';
+        djModeToggleBtn.textContent = 'DJ Mode';
+        if (djStatusUnsubscribe) { djStatusUnsubscribe(); djStatusUnsubscribe = null; }
+        if (djConversationsUnsubscribe) { djConversationsUnsubscribe(); djConversationsUnsubscribe = null; }
+        if (djBookingsUnsubscribe) { djBookingsUnsubscribe(); djBookingsUnsubscribe = null; }
+      }
+    });
+
+    // ---------- Admin Console ----------
+    const ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+    const ADMIN_EMAIL = 'djweirdnasty@gmail.com';
+    let isAdmin = false;
+    let adminModeActive = false;
+    let adminDjsUnsubscribe = null;
+    let adminBookingsUnsubscribe = null;
+    let adminVerificationsUnsubscribe = null;
+    let adminOnlineUnsubscribe = null;
+
+    const adminToggleBtn = document.getElementById('sol-admin-toggle');
+    const adminConsole = document.getElementById('sol-admin-console');
+    const adminStatus = document.getElementById('sol-admin-status');
+
+    function checkAdminStatus(user) {
+      if (user.uid === ADMIN_UID || user.email === ADMIN_EMAIL) {
+        isAdmin = true;
+        adminToggleBtn.style.display = 'inline-block';
+        return;
+      }
+      db.collection('users').doc(user.uid).get()
+        .then(function(doc) {
+          if (doc.exists && doc.data().isAdmin === true) {
+            isAdmin = true;
+            adminToggleBtn.style.display = 'inline-block';
+          }
+        })
+        .catch(function(err) {
+          console.log('Admin check skipped:', err.message);
+        });
+    }
+
+    adminToggleBtn.addEventListener('click', function() {
+      adminModeActive = !adminModeActive;
+      if (adminModeActive) {
+        adminConsole.style.display = 'block';
+        clientView.style.display = 'none';
+        djConsole.style.display = 'none';
+        djModeActive = false;
+        djModeToggleBtn.textContent = 'DJ Mode';
+        adminToggleBtn.textContent = 'Exit Admin';
+        loadAdminData();
+      } else {
+        adminConsole.style.display = 'none';
+        clientView.style.display = 'block';
+        adminToggleBtn.textContent = 'Admin Console';
+        if (adminDjsUnsubscribe) { adminDjsUnsubscribe(); adminDjsUnsubscribe = null; }
+        if (adminBookingsUnsubscribe) { adminBookingsUnsubscribe(); adminBookingsUnsubscribe = null; }
+        if (adminVerificationsUnsubscribe) { adminVerificationsUnsubscribe(); adminVerificationsUnsubscribe = null; }
+        if (adminOnlineUnsubscribe) { adminOnlineUnsubscribe(); adminOnlineUnsubscribe = null; }
+      }
+    });
+
+    function loadAdminData() {
+      loadAdminDJs();
+      loadAdminBookings();
+      loadAdminVerifications();
+      loadAdminOnlineCount();
+      loadAdminDisputes();
+    }
+
+    function loadAdminDJs() {
+      var djsList = document.getElementById('sol-admin-djs-list');
+      djsList.innerHTML = '<p style="color:#888;">Loading DJs...</p>';
+      db.collection('dj-verifications').get()
+        .then(function(snapshot) {
+          var verDocs = [];
+          snapshot.forEach(function(doc) { verDocs.push({ id: doc.id, data: doc.data() }); });
+          var uids = verDocs.map(function(v) { return v.id; });
+          var userMap = {};
+          var promises = uids.map(function(uid) {
+            return db.collection('users').doc(uid).get().then(function(doc) {
+              if (doc.exists) userMap[uid] = doc.data();
+            }).catch(function() {});
+          });
+          return Promise.all(promises).then(function() {
+            djsList.innerHTML = '';
+            var count = 0;
+            if (verDocs.length === 0) {
+              djsList.innerHTML = '<p style="color:#888; text-align:center;">No DJ profiles found.</p>';
+              return;
+            }
+            verDocs.forEach(function(v) {
+              count++;
+              var d = v.data;
+              var p = d.djProfile || {};
+              var u = userMap[v.id] || {};
+              var djName = p.djName || p.stageName || p.displayName || d.displayName || d.stageName || d.name || d.realName || d.djName || u.displayName || u.stageName || u.djName || u.name || 'Unknown DJ';
+              var djEmail = d.email || p.email || u.email || '';
+              var djAvatar = p.photoURL || p.avatar || d.photoURL || d.avatar || u.photoURL || u.avatar || '';
+              var djCity = p.city || (d.location && d.location.city) || (u.location && u.location.city) || u.city || '';
+              var djState = p.state || (d.location && d.location.state) || (u.location && u.location.state) || u.state || '';
+              var djGenres = p.genres || p.specializations || d.genres || u.genres || [];
+              var genresStr = Array.isArray(djGenres) ? djGenres.join(', ') : (djGenres || '');
+              var djRate = p.hourlyRate || d.hourlyRate || u.hourlyRate || 0;
+              var djExp = p.yearsOfExperience || d.experience || u.experience || 0;
+              var uidShort = v.id.substring(0, 10) + '...';
+
+              var card = document.createElement('div');
+              card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
+              var statusColor = d.status === 'approved' ? '#22c55e' : d.status === 'pending' ? '#ffd860' : '#ff3b30';
+              var avatarHtml = djAvatar
+                ? '<img src="' + djAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>'
+                : '<div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>';
+              card.innerHTML = avatarHtml +
+                '<div style="flex:1;"><strong>' + djName + '</strong>' +
+                (djEmail ? '<br><span style="font-size:0.85rem; color:#aaa;">' + djEmail + '</span>' : '<br><span style="font-size:0.8rem; color:#666;">UID: ' + uidShort + '</span>') +
+                (djCity ? '<br><span style="font-size:0.8rem; color:#666;">' + djCity + (djState ? ', ' + djState : '') + '</span>' : '') +
+                (genresStr ? '<br><span style="font-size:0.8rem; color:#666;">' + genresStr + '</span>' : '') +
+                (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + djRate + '/hr</span>' : '') +
+                '</div>' +
+                '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + (d.status || 'unknown') + '</span>' +
+                '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem;" data-delete-dj="' + v.id + '">Delete</button>';
+              djsList.appendChild(card);
+            });
+            document.getElementById('sol-admin-stat-djs').textContent = count;
+          });
+        })
+        .catch(function(err) {
+          djsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        });
+    }
+
+    function loadAdminBookings() {
+      var bookingsList = document.getElementById('sol-admin-bookings-list');
+      bookingsList.innerHTML = '<p style="color:#888;">Loading bookings...</p>';
+      db.collection('bookings').limit(50).onSnapshot(function(snapshot) {
+        bookingsList.innerHTML = '';
+        var count = 0;
+        if (snapshot.empty) {
+          bookingsList.innerHTML = '<p style="color:#888; text-align:center;">No bookings found.</p>';
+          document.getElementById('sol-admin-stat-bookings').textContent = '0';
+          return;
+        }
+        snapshot.forEach(function(doc) {
+          count++;
+          var b = doc.data();
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          var statusColor = b.status === 'confirmed' ? '#22c55e' : b.status === 'pending' ? '#ffd860' : b.status === 'completed' ? '#00d4ff' : '#ff3b30';
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+            '<strong>' + (b.eventType || b.event_type || 'Event') + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (b.status || 'unknown') + '</span>' +
+            '</div>' +
+            '<div style="color:#ccc; font-size:0.85rem; line-height:1.6;">' +
+            '<div>👤 Client: ' + (b.clientName || b.client_name || 'Unknown') + '</div>' +
+            '<div>🎧 DJ: ' + (b.djName || 'Unknown') + '</div>' +
+            '<div>📅 ' + (b.date || b.eventDate || 'TBD') + (b.startTime ? ' at ' + b.startTime : '') + '</div>' +
+            '<div>💰 $' + Number(b.totalAmount || b.total_cost || 0).toLocaleString() + '</div>' +
+            '</div>' +
+            (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + doc.id + '">Cancel Booking</button>' : '');
+          bookingsList.appendChild(card);
+        });
+        document.getElementById('sol-admin-stat-bookings').textContent = count;
+      }, function(err) {
+        bookingsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
+    }
+
+    document.getElementById('sol-admin-djs-list').addEventListener('click', function(e) {
+      if (e.target && e.target.hasAttribute('data-delete-dj')) {
+        var uid = e.target.getAttribute('data-delete-dj');
+        if (!confirm('Delete this DJ profile? This cannot be undone.')) return;
+        db.collection('dj-verifications').doc(uid).delete()
+          .then(function() {
+            db.collection('djs').doc(uid).delete();
+            db.collection('dj-status').doc(uid).delete();
+            adminStatus.textContent = 'DJ deleted.';
+            adminStatus.style.color = '#ff3b30';
+            setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+          })
+          .catch(function(err) { alert('Error: ' + err.message); });
+      }
+    });
+
+    document.getElementById('sol-admin-bookings-list').addEventListener('click', function(e) {
+      if (e.target && e.target.hasAttribute('data-cancel-admin-booking')) {
+        var bid = e.target.getAttribute('data-cancel-admin-booking');
+        if (!confirm('Cancel this booking?')) return;
+        db.collection('bookings').doc(bid).set({
+          status: 'cancelled',
+          cancelledBy: 'admin',
+          cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+          .then(function() {
+            adminStatus.textContent = 'Booking cancelled.';
+            adminStatus.style.color = '#ff3b30';
+            setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+          })
+          .catch(function(err) { alert('Error: ' + err.message); });
+      }
+    });
+
+    function loadAdminVerifications() {
+      var verificationsList = document.getElementById('sol-admin-verifications-list');
+      verificationsList.innerHTML = '<p style="color:#888;">Loading verifications...</p>';
+      db.collection('dj-verifications').onSnapshot(function(snapshot) {
+        verificationsList.innerHTML = '';
+        if (snapshot.empty) {
+          verificationsList.innerHTML = '<p style="color:#888; text-align:center;">No verification requests.</p>';
+          return;
+        }
+        snapshot.forEach(function(doc) {
+          var d = doc.data();
+          if (d.status === 'approved') return;
+          var p = d.djProfile || {};
+          var djName = p.djName || p.stageName || p.displayName || d.displayName || d.stageName || d.name || d.realName || d.djName || 'Unknown';
+          var djEmail = d.email || p.email || '';
+          var djBio = p.bio || d.bio || '';
+          var djGenres = p.genres || p.specializations || d.genres || [];
+          var genresStr = Array.isArray(djGenres) ? djGenres.join(', ') : (djGenres || '');
+          var djRate = p.hourlyRate || d.hourlyRate || 0;
+          var djCity = p.city || (d.location && d.location.city) || '';
+          var djState = p.state || (d.location && d.location.state) || '';
+          var djExp = p.yearsOfExperience || d.experience || 0;
+
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          var statusColor = d.status === 'pending' ? '#ffd860' : '#ff3b30';
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+            '<strong>' + djName + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (d.status || 'unknown') + '</span>' +
+            '</div>' +
+            '<div style="color:#ccc; font-size:0.85rem; margin-bottom:0.75rem;">' +
+            (djEmail ? '<div>📧 ' + djEmail + '</div>' : '') +
+            (djCity ? '<div>📍 ' + djCity + (djState ? ', ' + djState : '') + '</div>' : '') +
+            (djBio ? '<div>📝 ' + djBio + '</div>' : '') +
+            (genresStr ? '<div>🎵 ' + genresStr + '</div>' : '') +
+            (djRate ? '<div>💰 $' + djRate + '/hr</div>' : '') +
+            (djExp ? '<div>⏱️ ' + djExp + ' years experience</div>' : '') +
+            '</div>' +
+            '<div style="display:flex; gap:0.5rem;">' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-uid="' + doc.id + '">Reject</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="approve" data-uid="' + doc.id + '">Approve</button>' +
+            '</div>';
+          verificationsList.appendChild(card);
+        });
+        verificationsList.querySelectorAll('button[data-action]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var action = btn.getAttribute('data-action');
+            var uid = btn.getAttribute('data-uid');
+            var newStatus = action === 'approve' ? 'approved' : 'rejected';
+            db.collection('dj-verifications').doc(uid).set({
+              status: newStatus,
+              reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(function() {
+              if (action === 'approve') {
+                db.collection('users').doc(uid).set({
+                  isVerifiedDJ: true,
+                  verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+              }
+              adminStatus.textContent = 'DJ ' + newStatus + ' successfully.';
+              adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff3b30';
+              setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+            }).catch(function(err) {
+              adminStatus.textContent = 'Error: ' + err.message;
+              adminStatus.style.color = '#ff4d8f';
+            });
+          });
+        });
+      }, function(err) {
+        verificationsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
+    }
+
+    function loadAdminOnlineCount() {
+      db.collection('dj-status').where('isOnline', '==', true).onSnapshot(function(snapshot) {
+        document.getElementById('sol-admin-stat-online').textContent = snapshot.size;
+      }, function(err) {
+        console.error('Admin online count error:', err);
+      });
+    }
+
+    function adminSwitchTab(activeId) {
+      var tabs = ['djs','bookings','verifications','users','earnings','add-dj','disputes'];
+      tabs.forEach(function(t) {
+        var panel = document.getElementById('sol-admin-panel-' + t);
+        var btn = document.getElementById('sol-admin-tab-' + t);
+        if (panel) panel.style.display = (t === activeId) ? 'block' : 'none';
+        if (btn) {
+          if (t === activeId) { btn.style.background = '#00d4ff'; btn.style.color = '#000'; }
+          else { btn.style.background = ''; btn.style.color = ''; }
+        }
+      });
+    }
+
+    document.getElementById('sol-admin-tab-djs').addEventListener('click', function() { adminSwitchTab('djs'); });
+    document.getElementById('sol-admin-tab-bookings').addEventListener('click', function() { adminSwitchTab('bookings'); });
+    document.getElementById('sol-admin-tab-verifications').addEventListener('click', function() { adminSwitchTab('verifications'); });
+    document.getElementById('sol-admin-tab-users').addEventListener('click', function() { adminSwitchTab('users'); loadAdminUsers(); });
+    document.getElementById('sol-admin-tab-earnings').addEventListener('click', function() { adminSwitchTab('earnings'); loadAdminEarnings(); });
+    document.getElementById('sol-admin-tab-add-dj').addEventListener('click', function() { adminSwitchTab('add-dj'); });
+    document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
+
+    function loadAdminUsers() {
+      var usersList = document.getElementById('sol-admin-users-list');
+      usersList.innerHTML = '<p style="color:#888;">Loading users...</p>';
+      db.collection('users').get()
+        .then(function(snapshot) {
+          var users = [];
+          snapshot.forEach(function(doc) { users.push({ id: doc.id, data: doc.data() }); });
+          document.getElementById('sol-admin-stat-users').textContent = users.length;
+          renderAdminUsers(users);
+          var searchEl = document.getElementById('sol-admin-user-search');
+          searchEl.oninput = function() {
+            var q = this.value.toLowerCase();
+            var filtered = users.filter(function(u) {
+              var name = (u.data.displayName || u.data.name || u.data.email || '').toLowerCase();
+              var email = (u.data.email || '').toLowerCase();
+              return name.indexOf(q) >= 0 || email.indexOf(q) >= 0;
+            });
+            renderAdminUsers(filtered);
+          };
+        })
+        .catch(function(err) {
+          usersList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        });
+    }
+
+    function renderAdminUsers(users) {
+      var usersList = document.getElementById('sol-admin-users-list');
+      usersList.innerHTML = '';
+      if (users.length === 0) {
+        usersList.innerHTML = '<p style="color:#888; text-align:center;">No users found.</p>';
+        return;
+      }
+      users.forEach(function(u) {
+        var d = u.data;
+        var name = d.displayName || d.name || d.email || 'Unknown';
+        var email = d.email || '';
+        var isDJ = d.isVerifiedDJ === true;
+        var isAdmin = d.isAdmin === true;
+        var banned = d.banned === true;
+        var avatar = d.photoURL || d.avatar || '';
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
+        var avatarHtml = avatar
+          ? '<img src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>'
+          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>';
+        var badges = '';
+        if (isAdmin) badges += '<span style="background:#00d4ff; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
+        if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
+        if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
+        card.innerHTML = avatarHtml +
+          '<div style="flex:1;"><strong>' + name + '</strong>' +
+          (email ? '<br><span style="font-size:0.85rem; color:#aaa;">' + email + '</span>' : '') +
+          '<br><span style="font-size:0.8rem; color:#666;">UID: ' + u.id.substring(0, 12) + '...</span></div>' +
+          '<div style="display:flex; flex-direction:column; gap:0.25rem; align-items:flex-end;">' +
+          '<div>' + badges + '</div>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + u.id + '" data-banned="' + (banned ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
+          '</div>';
+        usersList.appendChild(card);
+      });
+      usersList.querySelectorAll('button[data-ban-user]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var uid = btn.getAttribute('data-ban-user');
+          var isBanned = btn.getAttribute('data-banned') === '1';
+          db.collection('users').doc(uid).set({
+            banned: !isBanned
+          }, { merge: true }).then(function() {
+            adminStatus.textContent = isBanned ? 'User unbanned.' : 'User banned.';
+            adminStatus.style.color = isBanned ? '#22c55e' : '#ff3b30';
+            setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+            loadAdminUsers();
+          }).catch(function(err) { alert('Error: ' + err.message); });
+        });
+      });
+    }
+
+    function loadAdminEarnings() {
+      var earningsList = document.getElementById('sol-admin-earnings-list');
+      earningsList.innerHTML = '<p style="color:#888;">Loading earnings...</p>';
+      db.collection('bookings').where('status', '==', 'completed').get()
+        .then(function(snapshot) {
+          var gross = 0;
+          var djEarnings = {};
+          snapshot.forEach(function(doc) {
+            var b = doc.data();
+            var amount = b.totalAmount || b.total_cost || 0;
+            gross += amount;
+            var djId = b.djId || 'unknown';
+            var djName = b.djName || 'Unknown DJ';
+            if (!djEarnings[djId]) djEarnings[djId] = { name: djName, total: 0, gigs: 0 };
+            djEarnings[djId].total += amount * 0.85;
+            djEarnings[djId].gigs++;
+          });
+          var platformFee = gross * 0.15;
+          var djPayouts = gross * 0.85;
+          document.getElementById('sol-admin-gross').textContent = '$' + Math.round(gross).toLocaleString();
+          document.getElementById('sol-admin-platform-fee').textContent = '$' + Math.round(platformFee).toLocaleString();
+          document.getElementById('sol-admin-dj-payouts').textContent = '$' + Math.round(djPayouts).toLocaleString();
+          document.getElementById('sol-admin-stat-revenue').textContent = '$' + Math.round(gross).toLocaleString();
+          earningsList.innerHTML = '';
+          var entries = Object.keys(djEarnings).map(function(k) { return { id: k, ...djEarnings[k] }; });
+          entries.sort(function(a, b) { return b.total - a.total; });
+          if (entries.length === 0) {
+            earningsList.innerHTML = '<p style="color:#888; text-align:center;">No completed bookings yet.</p>';
+            return;
+          }
+          entries.forEach(function(e) {
+            var card = document.createElement('div');
+            card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center;';
+            card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
+              '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + Math.round(e.total).toLocaleString() + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span></div>';
+            earningsList.appendChild(card);
+          });
+        })
+        .catch(function(err) {
+          earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        });
+    }
+
+    document.getElementById('sol-admin-add-dj-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var statusEl = document.getElementById('sol-admin-status');
+      statusEl.textContent = 'Adding DJ...';
+      statusEl.style.color = '#ffd860';
+      var genres = document.getElementById('sol-add-dj-genres').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      var djData = {
+        stageName: document.getElementById('sol-add-dj-name').value.trim(),
+        email: document.getElementById('sol-add-dj-email').value.trim(),
+        phone: document.getElementById('sol-add-dj-phone').value.trim(),
+        city: document.getElementById('sol-add-dj-city').value.trim(),
+        state: document.getElementById('sol-add-dj-state').value.trim(),
+        genres: genres,
+        hourlyRate: parseFloat(document.getElementById('sol-add-dj-rate').value) || 0,
+        bio: document.getElementById('sol-add-dj-bio').value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      var newId = db.collection('djs').doc().id;
+      db.collection('dj-verifications').doc(newId).set({
+        status: 'approved',
+        djProfile: djData,
+        email: djData.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        db.collection('djs').doc(newId).set(djData, { merge: true });
+        statusEl.textContent = 'DJ added successfully!';
+        statusEl.style.color = '#22c55e';
+        document.getElementById('sol-admin-add-dj-form').reset();
+        loadAdminDJs();
+        setTimeout(function() { statusEl.textContent = ''; }, 4000);
+      }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
+
+    function loadAdminDisputes() {
+      var list = document.getElementById('sol-admin-disputes-list');
+      list.innerHTML = '<p style="color:#888;">Loading disputes...</p>';
+      db.collection('disputes').orderBy('createdAt', 'desc').limit(50).onSnapshot(function(snapshot) {
+        list.innerHTML = '';
+        if (snapshot.empty) {
+          list.innerHTML = '<p style="color:#888; text-align:center;">No disputes filed.</p>';
+          return;
+        }
+        snapshot.forEach(function(doc) {
+          var d = doc.data();
+          var statusColor = d.status === 'open' ? '#ff3b30' : d.status === 'resolved' ? '#22c55e' : '#ffd860';
+          var typeLabels = {
+            no_show: "DJ didn't show up", late: 'DJ was late',
+            equipment: 'Equipment issues', unprofessional: 'Unprofessional behavior',
+            refund: 'Refund request', other: 'Other'
+          };
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">' +
+            '<strong>' + (typeLabels[d.type] || d.type || 'Unknown') + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (d.status || 'open') + '</span></div>' +
+            '<div style="color:#ccc; font-size:0.85rem; margin-bottom:0.5rem;">' +
+            '<div>From: ' + (d.clientEmail || 'Unknown') + '</div>' +
+            '<div>Booking: ' + (d.bookingId || '').substring(0, 12) + '...</div></div>' +
+            '<p style="color:#aaa; font-size:0.85rem; margin-bottom:0.75rem;">' + (d.description || '') + '</p>' +
+            (d.status === 'open' ?
+              '<div style="display:flex; gap:0.5rem;">' +
+              '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-resolve-dispute="' + doc.id + '" data-resolution="resolved">Resolve</button>' +
+              '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-resolve-dispute="' + doc.id + '" data-resolution="rejected">Reject</button>' +
+              '</div>' : '');
+          list.appendChild(card);
+        });
+        list.querySelectorAll('button[data-resolve-dispute]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var did = btn.getAttribute('data-resolve-dispute');
+            var resolution = btn.getAttribute('data-resolution');
+            db.collection('disputes').doc(did).set({
+              status: resolution,
+              resolvedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).then(function() {
+              adminStatus.textContent = 'Dispute ' + resolution + '.';
+              adminStatus.style.color = resolution === 'resolved' ? '#22c55e' : '#ff3b30';
+              setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+            });
+          });
+        });
+      }, function(err) {
+        list.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
+    }
+
+    // ---------- Client Bookings ----------
+    let clientBookingsUnsubscribe = null;
+    let rateBookingId = null;
+    let rateDjId = null;
+    let selectedRating = 0;
+
+    function subscribeClientBookings(user) {
+      if (clientBookingsUnsubscribe) clientBookingsUnsubscribe();
+      clientBookingsUnsubscribe = db.collection('bookings')
+        .where('clientId', '==', user.uid)
+        .onSnapshot(function(snapshot) {
+          renderClientBookings(snapshot, user);
+        }, function(err) {
+          console.error('Client bookings error:', err);
+        });
+    }
+
+    function renderClientBookings(snapshot, user) {
+      var box = document.getElementById('sol-my-bookings');
+      box.innerHTML = '';
+      if (snapshot.empty) {
+        box.innerHTML = '<p style="color:#888; text-align:center;">No bookings yet. Book a DJ above!</p>';
+        return;
+      }
+      var bookings = [];
+      snapshot.forEach(function(doc) { bookings.push({ id: doc.id, ...doc.data() }); });
+      bookings.sort(function(a, b) {
+        var da = new Date(a.date || a.eventDate || 0).getTime();
+        var db = new Date(b.date || b.eventDate || 0).getTime();
+        return db - da;
+      });
+      populateBookingDropdowns(bookings);
+      bookings.forEach(function(b) {
+        var card = document.createElement('div');
+        card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+        var eventType = b.eventType || b.event_type || 'Event';
+        var date = b.date || b.eventDate || '';
+        var startTime = b.startTime || b.event_time || '';
+        var djName = b.djName || 'DJ';
+        var amount = b.totalAmount || b.total_cost || 0;
+        var status = b.status || 'unknown';
+        var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#00d4ff' : '#ff3b30';
+        var canCancel = status === 'pending' || status === 'confirmed';
+        var canRate = status === 'completed' && !b.clientRated;
+
+        card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+          '<strong>' + eventType + '</strong>' +
+          '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + status + '</span>' +
+          '</div>' +
+          '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
+          '<div>🎧 ' + djName + '</div>' +
+          '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + startTime : '') + '</div>' +
+          '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
+          '</div>' +
+          '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
+          (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + b.id + '">Cancel</button>' : '') +
+          (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + b.id + '" data-rate-dj="' + (b.djId || '') + '">Rate DJ</button>' : '') +
+          '</div>';
+        box.appendChild(card);
+      });
+
+      box.querySelectorAll('button[data-cancel-booking]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var bookingId = btn.getAttribute('data-cancel-booking');
+          if (!confirm('Cancel this booking?')) return;
+          db.collection('bookings').doc(bookingId).set({
+            status: 'cancelled',
+            cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }).catch(function(err) {
+            alert('Error: ' + err.message);
+          });
+        });
+      });
+
+      box.querySelectorAll('button[data-rate-booking]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          rateBookingId = btn.getAttribute('data-rate-booking');
+          rateDjId = btn.getAttribute('data-rate-dj');
+          selectedRating = 0;
+          document.querySelectorAll('.sol-star').forEach(function(s) { s.style.color = '#444'; });
+          document.getElementById('sol-rate-text').value = '';
+          document.getElementById('sol-rate-modal').style.display = 'flex';
+        });
+      });
+    }
+
+    document.querySelectorAll('.sol-star').forEach(function(star) {
+      star.addEventListener('click', function() {
+        selectedRating = parseInt(this.getAttribute('data-val'));
+        document.querySelectorAll('.sol-star').forEach(function(s) {
+          s.style.color = parseInt(s.getAttribute('data-val')) <= selectedRating ? '#ffd860' : '#444';
+        });
+      });
+    });
+
+    document.getElementById('sol-rate-close').addEventListener('click', function() {
+      document.getElementById('sol-rate-modal').style.display = 'none';
+    });
+
+    document.getElementById('sol-rate-modal').addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+
+    document.getElementById('sol-rate-submit').addEventListener('click', function() {
+      if (selectedRating === 0) { alert('Please select a star rating.'); return; }
+      var reviewText = document.getElementById('sol-rate-text').value.trim();
+      var user = auth.currentUser;
+      db.collection('feedback').add({
+        fromUserId: user.uid,
+        fromName: user.displayName || user.email,
+        toUserId: rateDjId,
+        bookingId: rateBookingId,
+        rating: selectedRating,
+        review: reviewText,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        db.collection('bookings').doc(rateBookingId).set({
+          clientRated: true
+        }, { merge: true });
+        document.getElementById('sol-rate-modal').style.display = 'none';
+        var status = document.getElementById('sol-quick-status');
+        status.textContent = 'Review submitted! Thank you.';
+        status.style.color = '#22c55e';
+        setTimeout(function() { status.textContent = ''; }, 3000);
+      }).catch(function(err) {
+        alert('Error: ' + err.message);
+      });
+    });
+
+    // ---------- Promo Codes ----------
+    var activePromo = null;
+    document.getElementById('sol-promo-apply').addEventListener('click', function() {
+      var code = document.getElementById('sol-promo-code').value.trim().toUpperCase();
+      var statusEl = document.getElementById('sol-promo-status');
+      if (!code) { statusEl.textContent = 'Enter a code.'; statusEl.style.color = '#ff4d8f'; return; }
+      db.collection('promo-codes').doc(code).get().then(function(doc) {
+        if (doc.exists) {
+          var p = doc.data();
+          if (p.active === false) { statusEl.textContent = 'This code is no longer active.'; statusEl.style.color = '#ff3b30'; return; }
+          activePromo = { code: code, discount: p.discount || 0, type: p.type || 'percent' };
+          var msg = p.type === 'flat' ? '$' + p.discount + ' off!' : p.discount + '% off!';
+          statusEl.textContent = '✅ Code applied: ' + msg;
+          statusEl.style.color = '#22c55e';
+          calculatePrice();
+        } else {
+          statusEl.textContent = 'Invalid promo code.';
+          statusEl.style.color = '#ff4d8f';
+          activePromo = null;
+        }
+      }).catch(function() {
+        statusEl.textContent = 'Could not verify code.';
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
+
+    // ---------- Song Requests ----------
+    document.getElementById('sol-song-add').addEventListener('click', function() {
+      var song = document.getElementById('sol-song-input').value.trim();
+      var bookingId = document.getElementById('sol-playlist-booking').value;
+      if (!song || !bookingId) { alert('Select a booking and enter a song.'); return; }
+      var user = auth.currentUser;
+      db.collection('playlists').add({
+        bookingId: bookingId,
+        song: song,
+        clientId: user.uid,
+        addedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        document.getElementById('sol-song-input').value = '';
+        loadPlaylist(bookingId);
+      });
+    });
+
+    document.getElementById('sol-playlist-booking').addEventListener('change', function() {
+      loadPlaylist(this.value);
+    });
+
+    function loadPlaylist(bookingId) {
+      var list = document.getElementById('sol-song-list');
+      if (!bookingId) { list.innerHTML = ''; return; }
+      db.collection('playlists').where('bookingId', '==', bookingId).orderBy('addedAt').get()
+        .then(function(snapshot) {
+          list.innerHTML = '';
+          if (snapshot.empty) { list.innerHTML = '<p style="color:#888;">No songs added yet.</p>'; return; }
+          snapshot.forEach(function(doc) {
+            var s = doc.data();
+            var item = document.createElement('div');
+            item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#000; border-radius:6px; padding:0.5rem 0.75rem;';
+            item.innerHTML = '<span style="color:#ccc; font-size:0.9rem;">🎵 ' + s.song + '</span><button type="button" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1.2rem;" data-del-song="' + doc.id + '">&times;</button>';
+            list.appendChild(item);
+          });
+          list.querySelectorAll('button[data-del-song]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              db.collection('playlists').doc(btn.getAttribute('data-del-song')).delete().then(function() {
+                loadPlaylist(bookingId);
+              });
+            });
+          });
+        }).catch(function() { list.innerHTML = ''; });
+    }
+
+    // ---------- Disputes ----------
+    document.getElementById('sol-dispute-submit').addEventListener('click', function() {
+      var bookingId = document.getElementById('sol-dispute-booking').value;
+      var type = document.getElementById('sol-dispute-type').value;
+      var text = document.getElementById('sol-dispute-text').value.trim();
+      var statusEl = document.getElementById('sol-dispute-status');
+      if (!bookingId || !type || !text) { statusEl.textContent = 'Fill all fields.'; statusEl.style.color = '#ff4d8f'; return; }
+      var user = auth.currentUser;
+      statusEl.textContent = 'Submitting...';
+      statusEl.style.color = '#ffd860';
+      db.collection('disputes').add({
+        bookingId: bookingId,
+        clientId: user.uid,
+        clientEmail: user.email,
+        type: type,
+        description: text,
+        status: 'open',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        statusEl.textContent = 'Dispute submitted. Admin will review shortly.';
+        statusEl.style.color = '#22c55e';
+        document.getElementById('sol-dispute-text').value = '';
+        document.getElementById('sol-dispute-type').value = '';
+        document.getElementById('sol-dispute-booking').value = '';
+        setTimeout(function() { statusEl.textContent = ''; }, 4000);
+      }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
+
+    // ---------- Populate booking dropdowns ----------
+    function populateBookingDropdowns(bookings) {
+      var selects = ['sol-playlist-booking', 'sol-dispute-booking'];
+      selects.forEach(function(id) {
+        var sel = document.getElementById(id);
+        var current = sel.value;
+        sel.innerHTML = '<option value="">Select a booking...</option>';
+        bookings.forEach(function(b) {
+          if (b.status === 'cancelled') return;
+          var label = (b.eventType || b.event_type || 'Event') + ' — ' + (b.date || b.eventDate || 'TBD');
+          var opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = label;
+          sel.appendChild(opt);
+        });
+        sel.value = current;
+      });
+    }
+
+    auth.onAuthStateChanged(function(user) {
+      console.log('[AUTH] onAuthStateChanged fired, user:', user ? user.uid : 'null');
+      if (user) {
+        solGate.style.display = 'none';
+        solAppContent.style.display = 'block';
+        accountEmailEl.textContent = user.displayName || user.email;
+        const nameField = document.getElementById('sol-quick-name');
+        const emailField = document.getElementById('sol-quick-email');
+        if (nameField && !nameField.value) nameField.value = user.displayName || '';
+        if (emailField && !emailField.value) emailField.value = user.email || '';
+
+        isVerifiedDJ = false;
+        djModeToggleBtn.style.display = 'none';
+        djModeActive = false;
+        djConsole.style.display = 'none';
+        clientView.style.display = 'block';
+        djModeToggleBtn.textContent = 'DJ Mode';
+        checkDJVerification(user);
+        isAdmin = false;
+        adminToggleBtn.style.display = 'none';
+        adminModeActive = false;
+        adminConsole.style.display = 'none';
+        adminToggleBtn.textContent = 'Admin Console';
+        checkAdminStatus(user);
+
+        if (!solAppInitialized) {
+          solAppInitialized = true;
+          initMap();
+          subscribeToDJs();
+          findDjs();
+          handlePaymentReturn();
+        }
+        subscribeClientBookings(user);
+      } else {
+        solGate.style.display = 'block';
+        solAppContent.style.display = 'none';
+        djModeToggleBtn.style.display = 'none';
+        adminToggleBtn.style.display = 'none';
+        adminConsole.style.display = 'none';
+        adminModeActive = false;
+        isAdmin = false;
+        if (djStatusUnsubscribe) { djStatusUnsubscribe(); djStatusUnsubscribe = null; }
+        if (djConversationsUnsubscribe) { djConversationsUnsubscribe(); djConversationsUnsubscribe = null; }
+        if (djBookingsUnsubscribe) { djBookingsUnsubscribe(); djBookingsUnsubscribe = null; }
+        if (clientBookingsUnsubscribe) { clientBookingsUnsubscribe(); clientBookingsUnsubscribe = null; }
+      }
+    });
 
     // Default to Philadelphia, PA (where the real DJs are)
     let selectedLocation = {
@@ -209,6 +2676,7 @@
       state: 'PA'
     };
     let closestDjDistance = 0;
+    let estimateTimeout = null;
 
     let map, selectedMarker, userMarker, userCircle;
     const djMarkers = {};
@@ -266,6 +2734,25 @@
       findDjs();
     }
 
+    let lastReverseGeocode = 0;
+
+    function reverseGeocode(lat, lng) {
+      const now = Date.now();
+      if (now - lastReverseGeocode < 5000) return;
+      lastReverseGeocode = now;
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const addr = data.display_name || 'Unknown address';
+          document.getElementById('sol-my-location-address').textContent = addr;
+          document.getElementById('sol-my-location-coords').textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        })
+        .catch(function() {
+          document.getElementById('sol-my-location-address').textContent = 'Unknown address';
+          document.getElementById('sol-my-location-coords').textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        });
+    }
+
     function updateUserLocation(lat, lng) {
       if (!userMarker) {
         const icon = L.divIcon({
@@ -282,6 +2769,7 @@
       }
       map.setView([lat, lng], 13);
       selectedMarker.setLatLng([lat, lng]);
+      reverseGeocode(lat, lng);
       updateLocation(lat, lng);
     }
 
@@ -306,9 +2794,14 @@
     }
 
     function renderDJMarker(djId, data, lat, lng) {
-      const popup = '<div style="text-align:center;">' +
-                    (data.djAvatar ? '<img src="' + data.djAvatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;" onerror="this.style.display=\'none\'" />' : '') +
-                    '<strong>' + (data.djName || 'DJ') + '</strong><br>' +
+      var djName = data.djName || 'DJ';
+      var initial = djName.charAt(0).toUpperCase();
+      var avatar = data.djAvatar || data.avatar || data.photoURL || '';
+      var popupAvatar = avatar
+        ? '<img src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
+        : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
+      const popup = '<div style="text-align:center;">' + popupAvatar +
+                    '<strong>' + djName + '</strong><br>' +
                     '<span style="color:#22c55e;font-size:12px;">Online</span>' +
                     '</div>';
 
@@ -316,10 +2809,13 @@
         djMarkers[djId].setLatLng([lat, lng]);
         djMarkers[djId].setPopupContent(popup);
       } else {
+        var markerInner = avatar
+          ? '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#ff4d8f\'; this.parentElement.innerHTML=\'' + initial + '\'" />'
+          : initial;
         const icon = L.divIcon({
           className: 'dj-marker',
-          html: '<div style="position:relative;"><div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#111;">' +
-                (data.djAvatar ? '<img src="' + data.djAvatar + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'" />' : '') +
+          html: '<div style="position:relative;"><div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;">' +
+                markerInner +
                 '</div><div style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;background:#22c55e;border:2px solid #fff;border-radius:50%;"></div></div>',
           iconSize: [40, 40],
           iconAnchor: [20, 20]
@@ -366,15 +2862,28 @@
         mapStatus.style.color = '#ff4d8f';
         return;
       }
+      mapStatus.textContent = 'Locating you...';
+      mapStatus.style.color = '#ffd860';
 
       navigator.geolocation.getCurrentPosition(function(position) {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         updateUserLocation(lat, lng);
+        mapStatus.textContent = 'Located: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
+        mapStatus.style.color = '#22c55e';
       }, function(err) {
         mapStatus.textContent = 'Could not get location: ' + err.message;
         mapStatus.style.color = '#ff4d8f';
       });
+    }
+
+    function centerOnMe() {
+      if (userMarker) {
+        var ll = userMarker.getLatLng();
+        map.setView([ll.lat, ll.lng], 15);
+      } else {
+        useMyLocation();
+      }
     }
 
     function showAllDJs() {
@@ -389,20 +2898,40 @@
 
     document.getElementById('sol-use-location').addEventListener('click', useMyLocation);
     document.getElementById('sol-refresh-djs').addEventListener('click', showAllDJs);
+    document.getElementById('sol-center-me').addEventListener('click', centerOnMe);
+
+    // Multi-DJ toggle
+    document.getElementById('sol-multi-dj-toggle').addEventListener('change', function() {
+      document.getElementById('sol-multi-dj-count-wrap').style.display = this.checked ? 'block' : 'none';
+    });
 
     document.getElementById('sol-quick-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const status = document.getElementById('sol-quick-status');
       const btn = e.target.querySelector('button[type="submit"]');
       const original = btn.textContent;
-      btn.textContent = 'Sending...';
-      btn.disabled = true;
       status.textContent = '';
 
+      if (!auth.currentUser) {
+        status.textContent = 'Please sign in or create an account above before booking.';
+        status.style.color = '#ff4d8f';
+        document.getElementById('sol-account-box').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
       const form = e.target;
-      const clientId = form.email.value.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Date.now();
+      const clientId = auth.currentUser.uid;
 
       const equipment = getEquipment();
+      var recurring = document.getElementById('sol-quick-recurring').value;
+      var promoDiscount = 0;
+      if (activePromo) {
+        if (activePromo.type === 'flat') promoDiscount = activePromo.discount;
+        else promoDiscount = Math.round((parseInt(form.duration.value) * 25 + equipment.total) * activePromo.discount / 100);
+      }
       const payload = {
         client_id: clientId,
         client_email: form.email.value,
@@ -414,7 +2943,11 @@
         equipment: equipment,
         special_requests: '',
         event_type: form.event.value,
-        age_bracket: 'All Ages'
+        age_bracket: 'All Ages',
+        recurring: recurring,
+        promo_code: activePromo ? activePromo.code : '',
+        promo_discount: promoDiscount,
+        dj_count: document.getElementById('sol-multi-dj-toggle').checked ? parseInt(document.getElementById('sol-multi-dj-count').value) || 2 : 1
       };
 
       fetch(BOOKING_URL, {
@@ -428,22 +2961,50 @@
         });
       })
       .then(function(result) {
-        if (result.ok) {
-          status.textContent = 'Quick booking sent! ' + (result.data.message || '') + ' Matched ' + (result.data.matched_djs || '0') + ' DJs.';
-          status.style.color = '#22c55e';
-          form.reset();
-          document.getElementById('sol-quick-duration').value = '4';
-        } else {
+        if (!result.ok) {
           const detail = result.data.detail || result.data.message || 'Error ' + result.status;
           status.textContent = 'SOL quick booking error: ' + detail;
           status.style.color = '#ff4d8f';
+          btn.textContent = original;
+          btn.disabled = false;
+          return;
         }
+
+        const bookingId = result.data.booking_id;
+        const topMatch = (result.data.top_matches || [])[0] || {};
+        localStorage.setItem('sol_pending_booking', JSON.stringify({
+          bookingId: bookingId,
+          djId: topMatch.dj_id || '',
+          djName: topMatch.dj_name || 'DJ'
+        }));
+
+        status.textContent = 'Booking created. Redirecting to payment...';
+        status.style.color = '#ffd860';
+
+        return fetch(API_BASE + '/api/payments/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            booking_id: bookingId,
+            success_url: window.location.origin + window.location.pathname + '?booking_id=' + bookingId + '&paid=1',
+            cancel_url: window.location.origin + window.location.pathname + '?booking_id=' + bookingId + '&paid=0'
+          })
+        })
+        .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, status: res.status, data: data }; }); })
+        .then(function(payResult) {
+          if (payResult.ok && payResult.data.url) {
+            window.location.href = payResult.data.url;
+          } else {
+            status.textContent = 'Booking created, but payment could not start: ' + (payResult.data.detail || 'Unknown error') + '. Matched ' + (result.data.matched_djs || '0') + ' DJs — they will still be notified.';
+            status.style.color = '#ffd860';
+            btn.textContent = original;
+            btn.disabled = false;
+          }
+        });
       })
       .catch(function(err) {
         status.textContent = 'Network error: ' + err.message;
         status.style.color = '#ff4d8f';
-      })
-      .finally(function() {
         btn.textContent = original;
         btn.disabled = false;
       });
@@ -478,16 +3039,61 @@
       equipmentCost += equipment.security_needed ? (equipment.security_armed ? 600 : 300) : 0;
       equipmentCost += equipment.mc_services ? 50 : 0;
 
-      const travelFee = Math.max(0, closestDjDistance - 10) * 1.0;
-      const total = base + equipmentCost + travelFee;
-
       document.getElementById('price-duration').textContent = duration;
       document.getElementById('price-base').textContent = base;
       document.getElementById('price-equipment').textContent = equipmentCost;
-      document.getElementById('price-travel').textContent = travelFee.toFixed(2);
-      document.getElementById('price-total').textContent = total.toFixed(2);
+      document.getElementById('price-travel').textContent = '...';
 
-      return { base, equipmentCost, travelFee, total };
+      updateTravelFee(base, equipmentCost);
+    }
+
+    function updateTravelFee(base, equipmentCost) {
+      clearTimeout(estimateTimeout);
+      estimateTimeout = setTimeout(function() {
+        const payload = {
+          event_location: selectedLocation,
+          duration: parseInt(document.getElementById('sol-quick-duration').value) || 4,
+          equipment: getEquipment(),
+          event_date: document.getElementById('sol-quick-date').value || '',
+          event_type: document.getElementById('sol-quick-event').value || ''
+        };
+
+        fetch(API_BASE + '/api/pricing/estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const travelFee = data.dj_found ? parseFloat(data.travel_fee) : 0;
+          document.getElementById('price-travel').textContent = travelFee.toFixed(2);
+          var subtotal = base + equipmentCost + travelFee;
+          var discount = 0;
+          if (activePromo) {
+            if (activePromo.type === 'flat') discount = activePromo.discount;
+            else discount = Math.round(subtotal * activePromo.discount / 100);
+          }
+          var total = Math.max(0, subtotal - discount);
+          document.getElementById('price-total').textContent = total.toFixed(2);
+          var breakdown = document.getElementById('sol-price-breakdown');
+          var promoLine = document.getElementById('sol-price-promo');
+          if (discount > 0) {
+            if (!promoLine) {
+              promoLine = document.createElement('p');
+              promoLine.id = 'sol-price-promo';
+              promoLine.style.color = '#22c55e';
+              breakdown.insertBefore(promoLine, breakdown.lastElementChild);
+            }
+            promoLine.innerHTML = '<strong>Promo Discount:</strong> -$' + discount.toFixed(2);
+          } else if (promoLine) {
+            promoLine.remove();
+          }
+        })
+        .catch(function() {
+          document.getElementById('price-travel').textContent = '0.00';
+          document.getElementById('price-total').textContent = (base + equipmentCost).toFixed(2);
+        });
+      }, 400);
     }
 
     function updateEventNav() {
@@ -572,6 +3178,8 @@
       });
     }
 
+    let allDjs = [];
+
     function findDjs() {
       const track = document.getElementById('sol-dj-track');
       const dots = document.getElementById('sol-dj-dots');
@@ -587,11 +3195,13 @@
       .then(function(data) {
         if (data.djs && data.djs.length > 0) {
           closestDjDistance = data.djs[0].distance || 0;
-          renderDjCarousel(data.djs);
+          allDjs = data.djs;
+          applyDjFilters();
           calculatePrice();
           mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + (selectedLocation.city || selectedLocation.address);
           mapStatus.style.color = '#22c55e';
         } else {
+          allDjs = [];
           track.innerHTML = '<p style="width:100%; text-align:center;">No verified DJs found near this location.</p>';
           mapStatus.textContent = 'No DJs found near this location.';
           mapStatus.style.color = '#ff4d8f';
@@ -604,28 +3214,78 @@
       });
     }
 
+    function applyDjFilters() {
+      var nameQ = (document.getElementById('sol-dj-filter-name').value || '').toLowerCase();
+      var genreQ = document.getElementById('sol-dj-filter-genre').value;
+      var maxPrice = parseInt(document.getElementById('sol-dj-filter-price').value) || 0;
+      var sortBy = document.getElementById('sol-dj-filter-sort').value;
+
+      var filtered = allDjs.filter(function(dj) {
+        if (nameQ && (dj.name || '').toLowerCase().indexOf(nameQ) < 0) return false;
+        if (genreQ) {
+          var genres = (dj.genres || []).map(function(g) { return g.toLowerCase(); });
+          if (genres.indexOf(genreQ.toLowerCase()) < 0) return false;
+        }
+        if (maxPrice && (dj.hourly_rate || 0) > maxPrice) return false;
+        return true;
+      });
+
+      filtered.sort(function(a, b) {
+        if (sortBy === 'price-low') return (a.hourly_rate || 0) - (b.hourly_rate || 0);
+        if (sortBy === 'price-high') return (b.hourly_rate || 0) - (a.hourly_rate || 0);
+        if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+        return (b.rating || 0) - (a.rating || 0);
+      });
+
+      if (filtered.length === 0) {
+        document.getElementById('sol-dj-track').innerHTML = '<p style="width:100%; text-align:center;">No DJs match your filters.</p>';
+        document.getElementById('sol-dj-dots').innerHTML = '';
+      } else {
+        renderDjCarousel(filtered);
+      }
+    }
+
+    ['sol-dj-filter-name', 'sol-dj-filter-genre', 'sol-dj-filter-price', 'sol-dj-filter-sort'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', applyDjFilters);
+        el.addEventListener('change', applyDjFilters);
+      }
+    });
+
     function renderDjCarousel(djs) {
       const track = document.getElementById('sol-dj-track');
       const dots = document.getElementById('sol-dj-dots');
       track.innerHTML = '';
       dots.innerHTML = '';
+      lastDjList = djs;
 
       djs.forEach(function(dj, index) {
         const div = document.createElement('div');
         div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; text-align:center;';
 
-        const avatar = dj.avatar ? '<img src="' + dj.avatar + '" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" onerror="this.style.display=\'none\'">' : '';
+        var avatarHtml;
+        var initial = (dj.name || 'D').charAt(0).toUpperCase();
+        if (dj.avatar) {
+          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;">' +
+            initial + '<img src="' + dj.avatar + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
+            '</div>';
+        } else {
+          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
+        }
         const verified = dj.is_verified ? '✅ Verified' : '⏳ Unverified';
         const genres = (dj.genres || []).slice(0, 3).join(', ');
         const navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
 
         div.innerHTML =
-          '<div style="margin-bottom:0.75rem;">' + avatar + '</div>' +
+          '<div style="margin-bottom:0.75rem; position:relative;">' + avatarHtml +
+          '<div style="position:absolute; bottom:6px; right:calc(50% - 56px); width:14px; height:14px; background:#22c55e; border:2px solid #111; border-radius:50%;"></div>' +
+          '</div>' +
           '<h3 style="margin:0 0 0.25rem; font-size:1.1rem;">' + (dj.name || 'DJ') + '</h3>' +
           '<p style="margin:0.25rem 0; color:#ffd860; font-size:0.9rem;">⭐ ' + dj.rating + ' (' + dj.review_count + ') · $' + dj.hourly_rate + '/hr</p>' +
           '<p style="margin:0.25rem 0; color:#ccc; font-size:0.8rem;">' + verified + '</p>' +
           '<p style="margin:0.5rem 0; font-size:0.85rem; color:#aaa;">' + genres + '</p>' +
-          '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="font-size:0.9rem;">Get directions</a>';
+          '<button type="button" class="submit-btn" style="font-size:0.9rem; width:100%;" data-dj-index="' + index + '">View Profile</button>';
 
         track.appendChild(div);
 
@@ -648,6 +3308,104 @@
         });
       });
     }
+
+    let lastDjList = [];
+
+    function showDJProfile(dj) {
+      var modal = document.getElementById('sol-dj-profile-modal');
+      var content = document.getElementById('sol-dj-profile-content');
+      var initial = (dj.name || 'D').charAt(0).toUpperCase();
+      var avatar = dj.avatar || '';
+      var avatarHtml = avatar
+        ? '<img src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
+          '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
+        : '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
+
+      var genres = (dj.genres || []).join(', ') || 'Not specified';
+      var specialties = (dj.specialties || []).join(', ') || 'Not specified';
+      var equipment = (dj.equipment || []).join(', ') || 'Not specified';
+      var verified = dj.is_verified ? '✅ Verified DJ' : '⏳ Unverified';
+      var navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
+      var djUid = dj.firebaseUid || dj.id || '';
+
+      content.innerHTML =
+        avatarHtml +
+        '<h2 style="margin:0 0 0.5rem;">' + (dj.name || 'DJ') + '</h2>' +
+        '<p style="color:#ffd860; margin:0.25rem 0;">⭐ ' + dj.rating + ' (' + dj.review_count + ' reviews)</p>' +
+        '<p style="color:#22c55e; margin:0.25rem 0; font-size:0.9rem;">' + verified + '</p>' +
+        '<p style="color:#aaa; margin:0.25rem 0; font-size:0.9rem;">📍 ' + (dj.location.address || dj.location.city + ', ' + dj.location.state) + '</p>' +
+        '<div style="text-align:left; margin:1.5rem 0; display:flex; flex-direction:column; gap:0.75rem;">' +
+        '<div><strong style="color:#ff4d8f;">Genres:</strong> <span style="color:#ccc;">' + genres + '</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Specialties:</strong> <span style="color:#ccc;">' + specialties + '</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Equipment:</strong> <span style="color:#ccc;">' + equipment + '</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Experience:</strong> <span style="color:#ccc;">' + (dj.experience || 0) + ' years</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + dj.hourly_rate + '/hr</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + (dj.total_bookings_completed || 0) + '</span></div>' +
+        '</div>' +
+        '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
+        '<div style="display:flex; gap:0.5rem; margin-top:1rem;">' +
+        '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' +
+        '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '">Share Profile</button>' +
+        '</div>';
+
+      modal.style.display = 'flex';
+
+      if (djUid) {
+        db.collection('feedback').where('toUserId', '==', djUid).limit(10).get()
+          .then(function(snapshot) {
+            var reviewsEl = document.getElementById('sol-dj-reviews');
+            if (snapshot.empty) {
+              reviewsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3><p style="color:#888;">No reviews yet.</p>';
+              return;
+            }
+            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews (' + snapshot.size + ')</h3>';
+            snapshot.forEach(function(doc) {
+              var r = doc.data();
+              var stars = '';
+              for (var i = 1; i <= 5; i++) stars += i <= (r.rating || 0) ? '★' : '☆';
+              html += '<div style="background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:0.5rem;">' +
+                '<div style="display:flex; justify-content:space-between;"><strong>' + (r.fromName || 'Anonymous') + '</strong><span style="color:#ffd860;">' + stars + '</span></div>' +
+                (r.review ? '<p style="color:#ccc; font-size:0.85rem; margin:0.25rem 0 0;">' + r.review + '</p>' : '') +
+                '</div>';
+            });
+            reviewsEl.innerHTML = html;
+          })
+          .catch(function() {
+            var reviewsEl = document.getElementById('sol-dj-reviews');
+            if (reviewsEl) reviewsEl.innerHTML = '';
+          });
+      } else {
+        document.getElementById('sol-dj-reviews').innerHTML = '';
+      }
+    }
+
+    document.getElementById('sol-dj-profile-close').addEventListener('click', function() {
+      document.getElementById('sol-dj-profile-modal').style.display = 'none';
+    });
+
+    document.getElementById('sol-dj-profile-modal').addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+      if (e.target && e.target.hasAttribute('data-share-dj')) {
+        var djName = decodeURIComponent(e.target.getAttribute('data-share-dj'));
+        var shareUrl = window.location.origin + window.location.pathname + '?dj=' + encodeURIComponent(djName);
+        var shareText = 'Check out ' + djName + ' on SOL DJ Booking!';
+        if (navigator.share) {
+          navigator.share({ title: djName + ' — SOL DJ', text: shareText, url: shareUrl });
+        } else {
+          navigator.clipboard.writeText(shareUrl).then(function() {
+            e.target.textContent = 'Link Copied!';
+            setTimeout(function() { e.target.textContent = 'Share Profile'; }, 2000);
+          });
+        }
+      }
+    });
+
+    document.getElementById('sol-dj-track').addEventListener('click', function(e) {
+      if (e.target && e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-dj-index')) {
+        var idx = parseInt(e.target.getAttribute('data-dj-index'));
+        if (lastDjList[idx]) showDJProfile(lastDjList[idx]);
+      }
+    });
 
     document.getElementById('sol-dj-prev').addEventListener('click', function() {
       const track = document.getElementById('sol-dj-track');
@@ -695,9 +3453,128 @@
       calculatePrice();
     });
 
-    initMap();
-    subscribeToDJs();
-    findDjs();
+    // ---------- Messaging (Firestore, interoperable with mobile app) ----------
+    let activeConversationId = null;
+    let chatUnsubscribe = null;
+
+    function openChat(conversationId) {
+      activeConversationId = conversationId;
+      document.getElementById('sol-chat-box').style.display = 'block';
+      const messagesBox = document.getElementById('sol-chat-messages');
+      messagesBox.innerHTML = '';
+
+      if (chatUnsubscribe) chatUnsubscribe();
+      chatUnsubscribe = db.collection('conversations').doc(conversationId).collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot(function(snapshot) {
+          messagesBox.innerHTML = '';
+          snapshot.forEach(function(doc) {
+            const m = doc.data();
+            const mine = auth.currentUser && m.senderId === auth.currentUser.uid;
+            const bubble = document.createElement('div');
+            bubble.style.cssText = 'align-self:' + (mine ? 'flex-end' : 'flex-start') + '; background:' + (mine ? '#ff4d8f' : '#222') + '; color:#fff; padding:0.5rem 0.75rem; border-radius:10px; max-width:80%;';
+            bubble.textContent = (mine ? '' : (m.senderName || 'DJ') + ': ') + (m.text || '');
+            messagesBox.appendChild(bubble);
+          });
+          messagesBox.scrollTop = messagesBox.scrollHeight;
+        }, function(err) {
+          console.error('Chat listener error:', err);
+        });
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('sol-chat-input');
+      const text = input.value.trim();
+      if (!text || !activeConversationId || !auth.currentUser) return;
+
+      const user = auth.currentUser;
+      const messagesRef = db.collection('conversations').doc(activeConversationId).collection('messages');
+      messagesRef.add({
+        senderId: user.uid,
+        senderName: user.displayName || user.email || 'Client',
+        senderAvatar: user.photoURL || '',
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        read: false,
+        type: 'text'
+      }).then(function() {
+        return db.collection('conversations').doc(activeConversationId).update({
+          lastMessage: text,
+          lastMessageTime: Date.now()
+        });
+      }).catch(function(err) {
+        console.error('Send message error:', err);
+      });
+
+      input.value = '';
+    }
+
+    document.getElementById('sol-chat-send').addEventListener('click', sendChatMessage);
+    document.getElementById('sol-chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') sendChatMessage();
+    });
+
+    function createOrOpenConversation(bookingId, djId, djName) {
+      const user = auth.currentUser;
+      if (!user || !djId) return;
+
+      const conversationId = bookingId + '_conversation';
+      const conversationRef = db.collection('conversations').doc(conversationId);
+
+      conversationRef.get().then(function(doc) {
+        if (doc.exists) {
+          openChat(conversationId);
+          return;
+        }
+        const clientAvatar = user.photoURL || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid);
+        conversationRef.set({
+          id: conversationId,
+          bookingId: bookingId,
+          clientId: user.uid,
+          clientName: user.displayName || user.email || 'Client',
+          clientAvatar: clientAvatar,
+          djId: djId,
+          djName: djName || 'DJ',
+          djAvatar: '',
+          unreadCount: 0,
+          lastMessage: '',
+          lastMessageTime: Date.now()
+        }).then(function() {
+          openChat(conversationId);
+        }).catch(function(err) {
+          console.error('Create conversation error:', err);
+          const status = document.getElementById('sol-quick-status');
+          status.textContent = 'Payment successful, but chat could not start: ' + err.message;
+          status.style.color = '#ffd860';
+        });
+      });
+    }
+
+    function handlePaymentReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const paid = params.get('paid');
+      const bookingIdParam = params.get('booking_id');
+      if (!bookingIdParam) return;
+
+      const pendingRaw = localStorage.getItem('sol_pending_booking');
+      const pending = pendingRaw ? JSON.parse(pendingRaw) : null;
+      const status = document.getElementById('sol-quick-status');
+
+      if (paid === '1') {
+        status.textContent = 'Payment successful! Your booking is confirmed.';
+        status.style.color = '#22c55e';
+        if (pending && pending.bookingId === bookingIdParam) {
+          createOrOpenConversation(bookingIdParam, pending.djId, pending.djName);
+        }
+      } else if (paid === '0') {
+        status.textContent = 'Payment was cancelled. Your booking request was still created — you can complete payment later or a DJ may reach out directly.';
+        status.style.color = '#ffd860';
+      }
+
+      localStorage.removeItem('sol_pending_booking');
+      history.replaceState(null, '', window.location.pathname);
+    }
+
   </script>
 </body>
 </html>
