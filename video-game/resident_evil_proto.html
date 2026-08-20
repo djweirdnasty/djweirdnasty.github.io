@@ -1584,7 +1584,7 @@ function draw() {
       sx = dirIndex * frameW;
       sy = 0;
     }
-    const drawW = drawH * (frameW / frameH);
+    const drawW = s * 5.25;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.drawImage(drawSrcImg, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
