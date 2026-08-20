@@ -9,3 +9,9 @@ node_modules/
 # Local SMTP experiment and private keys
 mysmtp/
 ssh-key-*.key
+
+# Raw image sources
+*.tiff
+*.TIFF
+*.heic
+*.HEIC
