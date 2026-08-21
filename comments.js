@@ -512,3 +512,105 @@ if (document.readyState === 'loading') {
 } else {
   injectComments();
 }
+
+// ---------------------------------------------------------------------------
+// Related Articles / Read Next
+// ---------------------------------------------------------------------------
+
+async function injectRelatedArticles() {
+  var article = document.querySelector('article.info, main article');
+  if (!article) return;
+
+  var backLink = article.querySelector('a[href^="news-"]');
+  if (!backLink) return;
+
+  var categoryPage = backLink.getAttribute('href');
+  if (!categoryPage || categoryPage === 'news.html') return;
+
+  var currentSlug = getPostSlug();
+
+  try {
+    var res = await fetch(categoryPage);
+    if (!res.ok) return;
+    var html = await res.text();
+    var doc = new DOMParser().parseFromString(html, 'text/html');
+    var cards = doc.querySelectorAll('article.event-card');
+    if (!cards || cards.length === 0) return;
+
+    var related = [];
+    cards.forEach(function(card) {
+      var link = card.querySelector('a.playlist-link');
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || href === currentSlug || href === window.location.pathname.split('/').pop()) return;
+      var img = card.querySelector('img.event-flyer');
+      var h3 = card.querySelector('h3');
+      var p = card.querySelector('p:not(:first-of-type)');
+      if (!h3) return;
+      related.push({
+        href: href,
+        img: img ? img.getAttribute('src') : null,
+        alt: img ? img.getAttribute('alt') : '',
+        title: h3.textContent,
+        desc: p ? p.textContent : ''
+      });
+    });
+
+    if (related.length === 0) return;
+    var picks = related.slice(0, 3);
+    if (picks.length < 3 && related.length > picks.length) {
+      picks = related.slice(0, Math.min(3, related.length));
+    }
+
+    var section = document.createElement('div');
+    section.className = 'djwn-related';
+    section.style.cssText = 'margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.15);';
+
+    var heading = document.createElement('h3');
+    heading.textContent = 'Read Next';
+    heading.style.cssText = 'color:#ffd860;margin-bottom:1rem;';
+    section.appendChild(heading);
+
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;';
+
+    picks.forEach(function(item) {
+      var card = document.createElement('article');
+      card.className = 'event-card';
+      card.style.cssText = 'background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;';
+      var html_parts = [];
+      if (item.img) {
+        html_parts.push('<img src="' + escapeHtml(item.img) + '" alt="' + escapeHtml(item.alt) + '" class="event-flyer" style="width:100%;height:auto;border-radius:8px 8px 0 0;">');
+      }
+      html_parts.push('<div style="padding:0.75rem;">');
+      html_parts.push('<h4 style="font-size:0.9rem;margin-bottom:0.5rem;line-height:1.3;">' + escapeHtml(item.title) + '</h4>');
+      if (item.desc) {
+        var shortDesc = item.desc.length > 80 ? item.desc.substring(0, 77) + '...' : item.desc;
+        html_parts.push('<p style="font-size:0.8rem;color:rgba(255,255,255,0.6);margin-bottom:0.5rem;">' + escapeHtml(shortDesc) + '</p>');
+      }
+      html_parts.push('<a href="' + escapeHtml(item.href) + '" class="playlist-link" style="font-size:0.85rem;">Read more &rarr;</a>');
+      html_parts.push('</div>');
+      card.innerHTML = html_parts.join('');
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+
+    var shareBtn = article.querySelector('.share-button');
+    if (shareBtn) {
+      shareBtn.parentNode.insertBefore(section, shareBtn);
+    } else {
+      article.appendChild(section);
+    }
+  } catch(e) {
+    // Silently fail - related articles are a nice-to-have
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(injectRelatedArticles, 100);
+  });
+} else {
+  setTimeout(injectRelatedArticles, 100);
+}
