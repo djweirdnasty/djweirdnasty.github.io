@@ -508,9 +508,106 @@ function setupLikeButton(btn, slug) {
 // ---------------------------------------------------------------------------
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectComments);
+  document.addEventListener('DOMContentLoaded', function() {
+    injectComments();
+    injectJsonLd();
+  });
 } else {
   injectComments();
+  injectJsonLd();
+}
+
+// ---------------------------------------------------------------------------
+// JSON-LD Structured Data (NewsArticle)
+// ---------------------------------------------------------------------------
+
+function injectJsonLd() {
+  if (document.getElementById('djwn-jsonld')) return;
+
+  var article = document.querySelector('article.info, main article');
+  if (!article) return;
+
+  var backLink = article.querySelector('a[href^="news-"]');
+  if (!backLink) return;
+
+  var categoryPage = backLink.getAttribute('href');
+  if (!categoryPage || categoryPage === 'news.html') return;
+
+  var categoryMap = {
+    'news-music.html': 'Music News',
+    'news-sports.html': 'Sports News',
+    'news-entertainment.html': 'Entertainment News',
+    'news-national.html': 'National News'
+  };
+  var sectionName = categoryMap[categoryPage] || 'News';
+
+  var h1 = article.querySelector('h1');
+  var headline = h1 ? h1.textContent : document.title;
+
+  var ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) headline = ogTitle.getAttribute('content');
+
+  var ogDesc = document.querySelector('meta[property="og:description"]');
+  var description = ogDesc ? ogDesc.getAttribute('content') : '';
+  if (!description) {
+    var firstP = article.querySelector('p:not(:first-child)');
+    if (firstP) description = firstP.textContent.trim().substring(0, 200);
+  }
+
+  var ogImage = document.querySelector('meta[property="og:image"]');
+  var image = ogImage ? ogImage.getAttribute('content') : '';
+  if (!image) {
+    var articleImg = article.querySelector('img.event-flyer');
+    if (articleImg) image = 'https://djweirdnasty.com/' + articleImg.getAttribute('src');
+  }
+
+  var datePublished = '';
+  var dateEl = article.querySelector('p em');
+  if (dateEl) {
+    var dateText = dateEl.textContent.replace('Published:', '').trim();
+    var parsed = new Date(dateText);
+    if (!isNaN(parsed.getTime())) {
+      datePublished = parsed.toISOString();
+    }
+  }
+  if (!datePublished) datePublished = new Date().toISOString();
+
+  var url = window.location.href;
+
+  var jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": headline,
+    "description": description,
+    "image": image,
+    "datePublished": datePublished,
+    "dateModified": datePublished,
+    "author": {
+      "@type": "Organization",
+      "name": "DJWEIRDNASTY",
+      "url": "https://djweirdnasty.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DJWEIRDNASTY",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://djweirdnasty.com/djweirdnasty-banner.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": url
+    },
+    "articleSection": sectionName,
+    "url": url
+  };
+
+  var script = document.createElement('script');
+  script.id = 'djwn-jsonld';
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(jsonLd);
+  document.head.appendChild(script);
 }
 
 // ---------------------------------------------------------------------------
