@@ -216,28 +216,29 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
-playerImg.src = 'main-character-with-gun.png';
+playerImg.src = 'main-character-with-gun.png?v=6';
 const playerIdleImg = new Image();
-playerIdleImg.src = 'main-character-without-gun.png';
+playerIdleImg.src = 'main-character-without-gun.png?v=6';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'character-walk-cycle.png?v=2';
+playerWalkingImg.src = 'character-walk-cycle.png?v=6';
 const playerPistolWalkingImg = new Image();
-playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=2';
-const WALK_FRAMES = {
-  0: [ { x: 609, y: 538, w: 431, h: 1092 }, { x: 2307, y: 1858, w: 430, h: 1090 } ],
-  1: [ { x: 1141, y: 538, w: 490, h: 1117 }, { x: 1717, y: 1858, w: 491, h: 1117 } ],
-  2: [ { x: 1606, y: 540, w: 599, h: 1094 }, { x: 1144, y: 1859, w: 596, h: 1098 } ],
-  3: [ { x: 2167, y: 543, w: 614, h: 1091 }, { x: 567, y: 1863, w: 612, h: 1092 } ]
-};
-const walkDir2Frame1Img = new Image();
-walkDir2Frame1Img.src = 'walk-dir2-frame1-fixed.png';
-const walkDir3Frame1Img = new Image();
-walkDir3Frame1Img.src = 'walk-dir3-frame1-fixed.png';
-const WALK_FRAME_OVERRIDES = { 2: walkDir2Frame1Img, 3: walkDir3Frame1Img };
+playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=6';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
+let playerSpriteRatio = 0.4;
+playerWalkingImg.onload = function() {
+  const rawW = playerWalkingImg.naturalWidth / 8;
+  const rawH = playerWalkingImg.naturalHeight / 4;
+  if (rawH > 0) playerSpriteRatio = rawW / rawH;
+};
+playerPistolWalkingImg.onload = function() {
+  const rawW = playerPistolWalkingImg.naturalWidth / 8;
+  const rawH = playerPistolWalkingImg.naturalHeight / 4;
+  if (rawH > 0) playerSpriteRatio = rawW / rawH;
+};
+let killCount = 0;
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let levelStates = [];
@@ -581,7 +582,8 @@ function showCutscene(text, cb) {
 }
 
 window.addEventListener('keydown', e => {
-  if (input.hasOwnProperty(e.key)) input[e.key] = true;
+  const key = ['w','a','s','d'].includes(e.key.toLowerCase()) ? e.key.toLowerCase() : e.key;
+  if (input.hasOwnProperty(key)) input[key] = true;
   const n = parseInt(e.key, 10);
   if (n > 0 && n <= player.weapons.length) {
     player.weaponIndex = n - 1;
@@ -591,7 +593,8 @@ window.addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'r' && (!gameStarted || player.dead || player.won)) restart();
 });
 window.addEventListener('keyup', e => {
-  if (input.hasOwnProperty(e.key)) input[e.key] = false;
+  const key = ['w','a','s','d'].includes(e.key.toLowerCase()) ? e.key.toLowerCase() : e.key;
+  if (input.hasOwnProperty(key)) input[key] = false;
 });
 function setAim(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
@@ -760,7 +763,13 @@ function restart() {
   if (cutscene) cutscene.style.display = 'none';
   if (achievement) achievement.style.display = 'none';
   currentLevel = 0;
-  player = {
+  player = gameBeaten ? {
+    x: 80, y: 360, size: 14, speed: 120,
+    health: 100, maxHealth: 100,
+    ammo: 20, keys: 0, greyKeys: 0, masterKeys: 0,
+    weapons: [{ ...rpg }], weaponIndex: 0, weapon: { ...rpg },
+    lastHit: 0, dead: false, won: false
+  } : {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
     ammo: 0, keys: 0, greyKeys: 0, masterKeys: 0,
@@ -768,11 +777,12 @@ function restart() {
     lastHit: 0, dead: false, won: false
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
+  killCount = 0;
   levelStates = [];
   if (introShown) {
-    loadLevel(0);
+    loadLevel(0, gameBeaten);
   } else {
-    showCutscene(introText, function() { loadLevel(0); });
+    showCutscene(introText, function() { loadLevel(0, gameBeaten); });
     introShown = true;
   }
 }
@@ -1217,7 +1227,7 @@ function update(dt) {
         z.vy += b.vy * 0.15;
         remove = true;
         direct = z;
-        if (z.health <= 0) zombies.splice(j, 1);
+        if (z.health <= 0) { zombies.splice(j, 1); killCount++; }
         break;
       }
     }
@@ -1233,7 +1243,7 @@ function update(dt) {
 
   // Clean up splash deaths
   for (let i = zombies.length - 1; i >= 0; i--) {
-    if (zombies[i].health <= 0) zombies.splice(i, 1);
+    if (zombies[i].health <= 0) { zombies.splice(i, 1); killCount++; }
   }
 
   if (now > messageUntil) message = '';
@@ -1559,7 +1569,7 @@ function draw() {
   } else if (moving) {
     img = (alive && player.weapon) ? playerPistolWalkingImg : playerWalkingImg;
   } else {
-    img = playerIdleImg;
+    img = (alive && player.weapon) ? playerImg : playerIdleImg;
   }
   if (img.complete && img.naturalWidth > 0) {
     let dirIndex = 1;
@@ -1573,18 +1583,20 @@ function draw() {
       const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
       const animFrame = moving ? (Math.floor(now / 80) % cols) : 0;
       const row = rowMap[dirIndex];
-      frameW = img.naturalWidth / cols;
-      frameH = img.naturalHeight / rows;
-      sx = animFrame * frameW;
-      sy = row * frameH;
+      const rawW = img.naturalWidth / cols;
+      const rawH = img.naturalHeight / rows;
+      sx = Math.floor(animFrame * rawW);
+      sy = Math.floor(row * rawH);
+      frameW = Math.floor((animFrame + 1) * rawW) - sx;
+      frameH = Math.floor((row + 1) * rawH) - sy;
     } else {
       const frames = 4;
-      frameW = img.naturalWidth / frames;
-      frameH = img.naturalHeight;
+      frameW = Math.floor(img.naturalWidth / frames);
+      sy = Math.round(img.naturalHeight * 0.138);
+      frameH = Math.round(img.naturalHeight * 0.734);
       sx = dirIndex * frameW;
-      sy = 0;
     }
-    const drawW = s * 5.25;
+    const drawW = drawH * playerSpriteRatio;
     ctx.save();
     ctx.translate(cx, cy);
     ctx.drawImage(drawSrcImg, sx, sy, frameW, frameH, -drawW/2, -drawH, drawW, drawH);
@@ -1649,23 +1661,64 @@ function draw() {
     ctx.drawImage(playerPortrait, sx, sy, sw, sh, portraitX, portraitY, portraitSize, portraitSize);
   }
 
-  const barW = 100;
+  const barW = 120;
   const barX = portraitX + portraitSize + 8;
-  const barY = portraitY + portraitSize / 2 - 4;
+  const barY = portraitY + portraitSize / 2 - 8;
   const hpPct = Math.max(0, player.health) / player.maxHealth;
+  ctx.fillStyle = '#333';
+  ctx.fillRect(barX - 2, barY - 2, barW + 4, 24);
   ctx.fillStyle = '#f00';
-  ctx.fillRect(barX, barY, barW, 8);
-  ctx.fillStyle = '#0f0';
-  ctx.fillRect(barX, barY, barW * hpPct, 8);
+  ctx.fillRect(barX, barY, barW, 12);
+  ctx.fillStyle = hpPct > 0.3 ? '#0f0' : '#f80';
+  ctx.fillRect(barX, barY, barW * hpPct, 12);
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(barX, barY, barW, 12);
+  ctx.fillStyle = '#fff';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText(Math.max(0, player.health) + '/' + player.maxHealth, barX + barW/2, barY + 10);
+  ctx.textAlign = 'left';
 
   // HUD
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
   const ammo = player.ammo === Infinity ? '∞' : player.ammo;
-  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
+  const hud = `LV: ${currentLevel + 1}  KILLS: ${killCount}  ZOMBIES: ${zombies.length}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
   ctx.fillText(hud, 10, portraitY + portraitSize + 18);
   if (message) ctx.fillText(message, 10, 460);
+
+  // Minimap
+  const mmScale = 0.12;
+  const mmW = world.w * mmScale;
+  const mmH = world.h * mmScale;
+  const mmX = canvas.width - mmW - 10;
+  const mmY = 10;
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(mmX - 3, mmY - 3, mmW + 6, mmH + 6);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(mmX, mmY, mmW, mmH);
+  ctx.fillStyle = '#555';
+  for (const w of walls) {
+    ctx.fillRect(mmX + w.x * mmScale, mmY + w.y * mmScale, Math.max(1, w.w * mmScale), Math.max(1, w.h * mmScale));
+  }
+  ctx.fillStyle = player.keys >= lvl.keysNeeded ? '#2f2' : '#a60';
+  ctx.fillRect(mmX + door.x * mmScale, mmY + door.y * mmScale, Math.max(2, door.w * mmScale), Math.max(2, door.h * mmScale));
+  for (const it of items) {
+    if (it.taken) continue;
+    ctx.fillStyle = '#ff0';
+    ctx.fillRect(mmX + it.x * mmScale - 1, mmY + it.y * mmScale - 1, 2, 2);
+  }
+  ctx.fillStyle = '#f00';
+  for (const z of zombies) {
+    ctx.fillRect(mmX + z.x * mmScale - 1, mmY + z.y * mmScale - 1, 2, 2);
+  }
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(mmX + (player.x + player.size/2) * mmScale - 2, mmY + (player.y + player.size/2) * mmScale - 2, 4, 4);
+  ctx.strokeStyle = '#0f0';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(mmX - 3, mmY - 3, mmW + 6, mmH + 6);
 }
 
 let last = performance.now();
