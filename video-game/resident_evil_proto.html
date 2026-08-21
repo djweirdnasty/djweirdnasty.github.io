@@ -216,27 +216,29 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
-playerImg.src = 'main-character-with-gun.png?v=7';
+playerImg.src = 'main-character-with-gun.png?v=8';
 const playerIdleImg = new Image();
-playerIdleImg.src = 'main-character-without-gun.png?v=7';
+playerIdleImg.src = 'main-character-without-gun.png?v=8';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'character-walk-cycle.png?v=7';
+playerWalkingImg.src = 'character-walk-cycle.png?v=8';
 const playerPistolWalkingImg = new Image();
-playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=7';
+playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=8';
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
-// Sprite frame boundaries (detected from actual transparent column gaps)
-// Each sprite sheet has a blank first frame that must be skipped
-const walkFrameX = [157, 624, 1080, 1539, 2015, 2472, 2923, 3367];
-const walkFrameW = [467, 456, 459, 476, 457, 451, 444, 518];
-const gunFrameX = [394, 1358, 2293, 3262];
-const gunFrameW = [964, 935, 969, 834];
-const nogunFrameX = [610, 1562, 2430, 3222];
-const nogunFrameW = [952, 868, 792, 874];
-// Direction map: dirIndex 0=up, 1=down, 2=right, 3=left
-// Frame order in sheets is: down, up, right, left
+// Sprite frame boundaries (detected from actual pixel analysis)
+// Standing sprites: 5 cols (blank + 4 dirs), varying widths
+// Frame order: blank, down, up, right, left
+const gunFrameX = [206, 1114, 2183, 3046];
+const gunFrameW = [908, 1069, 863, 1050];
+const gunFrameY = 377;
+const gunFrameH = 2003;
+const nogunFrameX = [462, 1418, 2426, 3210];
+const nogunFrameW = [956, 1008, 784, 886];
+const nogunFrameY = 373;
+const nogunFrameH = 1903;
+// dirIndex 0=up, 1=down, 2=right, 3=left → frame 0=down, 1=up, 2=right, 3=left
 const standDirMap = [1, 0, 2, 3];
 let killCount = 0;
 let mouseHeld = false;
@@ -1578,16 +1580,22 @@ function draw() {
     let sx, sy, frameW, frameH;
     let drawSrcImg = img;
     if (img === playerWalkingImg) {
-      const rows = 4;
+      // 3885x3088, 4 rows x 8 cols, cellW=485.625 (non-integer)
+      // Row 0 (down) has blank col 0, only 7 frames (cols 1-7)
+      // Rows 1-3 have 8 frames (cols 0-7)
+      const cellW = img.naturalWidth / 8;
+      const cellH = img.naturalHeight / 4;
       const rowMap = [1, 0, 2, 3];
-      const animFrame = moving ? (Math.floor(now / 80) % 8) : 0;
+      const animFrame = moving ? (Math.floor(now / 80) % 7) : 0;
       const row = rowMap[dirIndex];
-      const rawH = img.naturalHeight / rows;
-      sx = walkFrameX[animFrame];
-      sy = Math.floor(row * rawH);
-      frameW = walkFrameW[animFrame];
-      frameH = Math.floor(rawH);
+      const colOffset = (row === 0) ? 1 : 0;
+      const col = animFrame + colOffset;
+      sx = Math.floor(col * cellW);
+      sy = Math.floor(row * cellH);
+      frameW = Math.floor((col + 1) * cellW) - sx;
+      frameH = Math.floor(cellH);
     } else if (img === playerPistolWalkingImg) {
+      // 1536x1024, clean 8x4 grid
       const cols = 8;
       const rows = 4;
       const rowMap = [1, 0, 2, 3];
@@ -1603,14 +1611,14 @@ function draw() {
       const fi = standDirMap[dirIndex];
       sx = gunFrameX[fi];
       frameW = gunFrameW[fi];
-      sy = Math.round(img.naturalHeight * 0.138);
-      frameH = Math.round(img.naturalHeight * 0.734);
+      sy = gunFrameY;
+      frameH = gunFrameH;
     } else {
       const fi = standDirMap[dirIndex];
       sx = nogunFrameX[fi];
       frameW = nogunFrameW[fi];
-      sy = Math.round(img.naturalHeight * 0.138);
-      frameH = Math.round(img.naturalHeight * 0.734);
+      sy = nogunFrameY;
+      frameH = nogunFrameH;
     }
     const drawW = drawH * (frameW / frameH);
     ctx.save();
