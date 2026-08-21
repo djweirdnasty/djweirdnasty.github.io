@@ -237,7 +237,7 @@
     }
 
   // ===== Scroll Animations =====
-  var animateElements = document.querySelectorAll('.event-card, .info, .mixtape-card, .featured-video-card');
+  var animateElements = document.querySelectorAll('.event-card, .mixtape-card, .featured-video-card');
   animateElements.forEach(function(el) {
     el.classList.add('scroll-animate');
   });
