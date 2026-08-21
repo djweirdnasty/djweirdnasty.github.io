@@ -932,6 +932,198 @@ footer {
     height: 60px;
   }
 }
+/* ===== Dark Mode Toggle ===== */
+.theme-toggle {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #ffd860;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.theme-toggle:hover {
+  transform: scale(1.1);
+  background: rgba(255, 216, 96, 0.2);
+}
+body.light-mode .theme-toggle {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #333;
+}
+
+/* Light mode overrides */
+body.light-mode {
+  background: #f0f0f5;
+  background-image: none;
+  color: #1a1a1a;
+}
+body.light-mode header {
+  background: #1a1a2e;
+}
+body.light-mode .info {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+body.light-mode .event-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+body.light-mode .event-card h3 {
+  color: #c026d3;
+}
+body.light-mode input,
+body.light-mode textarea {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+body.light-mode .nav-dropdown-content {
+  background: #1a1a2e;
+}
+body.light-mode .video-thumbnail,
+body.light-mode .video-details,
+body.light-mode .video-countdown,
+body.light-mode .audio-player-card {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+body.light-mode .video-meta span {
+  background: #f0f0f5;
+}
+body.light-mode .video-socials a {
+  background: #f0f0f5;
+  color: #1a1a1a;
+}
+body.light-mode .tracklist {
+  background: rgba(0, 0, 0, 0.04);
+}
+body.light-mode .mixtape-card {
+  background: #fff;
+}
+body.light-mode .player-shell {
+  background: #fff;
+}
+body.light-mode footer {
+  color: #666;
+}
+
+/* ===== Reading Progress Bar ===== */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #ff5bd7, #ffd860);
+  z-index: 9998;
+  transition: width 0.1s ease;
+}
+
+/* ===== News Search & Filter ===== */
+.news-controls {
+  margin-bottom: 1.5rem;
+}
+.news-search {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 216, 96, 0.3);
+  color: #f4f4f4;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.news-search:focus {
+  outline: none;
+  border-color: #ffd860;
+  box-shadow: 0 0 0 3px rgba(255, 216, 96, 0.15);
+}
+body.light-mode .news-search {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+.news-filter-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.news-filter-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 91, 215, 0.1);
+  border: 1px solid rgba(255, 91, 215, 0.3);
+  color: #ff5bd7;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin: 0;
+  box-shadow: none;
+}
+.news-filter-btn:hover,
+.news-filter-btn.active {
+  background: rgba(255, 91, 215, 0.25);
+  border-color: #ff5bd7;
+  transform: none;
+  box-shadow: none;
+}
+body.light-mode .news-filter-btn {
+  background: rgba(192, 38, 211, 0.1);
+  color: #c026d3;
+}
+.news-no-results {
+  text-align: center;
+  padding: 2rem;
+  color: #aaa;
+  display: none;
+}
+
+/* ===== Related Articles ===== */
+.related-articles {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.related-articles h2 {
+  color: #ffd860;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+.related-articles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.related-articles-grid .event-card {
+  flex: 1 1 200px;
+  min-width: 200px;
+  max-width: 300px;
+}
+body.light-mode .related-articles {
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
 /* Mixtapes page styles */
 .mixtape-card {
   display: flex;

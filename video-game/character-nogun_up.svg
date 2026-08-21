@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.0.dtd" width="768" height="1024" viewBox="0 0 192 256">
+<defs>
+<style type="text/css">
+.layer-outline { fill: #1a1a1a; }
+.layer-dark_clothes { fill: #4a1a00; }
+.layer-skin { fill: #c06028; }
+.layer-light { fill: #d0d0d0; }
+</style>
+</defs>
+<g class="layer-outline" inkscape:label="outline">
+<path d="M0 1280 l0 -1280 938 0 c515 0 943 4 950 8 7 5 17 24 22 43 6 21 10
+492 10 1271 l0 1238 -960 0 -960 0 0 -1280z" transform="matrix(1,0,0,-1,0,256)"/>
+</g>
+<g class="layer-light" inkscape:label="light">
+<path d="M0 1280 l0 -1280 893 2 892 3 36 73 c20 40 51 86 68 102 l31 30 0
+1175 0 1175 -960 0 -960 0 0 -1280z M1889 50 l-27 -50 29 0 c28 0 29 2 29 50
+0 28 -1 50 -2 50 -2 0 -15 -23 -29 -50z" transform="matrix(1,0,0,-1,0,256)"/>
+</g>
+</svg>
