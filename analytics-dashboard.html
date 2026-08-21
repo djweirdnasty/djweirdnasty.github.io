@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Analytics Dashboard | DJWEIRDNASTY</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=9">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    .analytics-container { max-width: 1000px; margin: 0 auto; padding: 2rem 1rem; }
+    .analytics-header { text-align: center; margin-bottom: 2rem; }
+    .analytics-header h1 { font-family: 'Monoton', cursive; color: #ffd860; font-size: 2rem; margin-bottom: 0.5rem; }
+    .analytics-header p { color: #aaa; font-size: 0.9rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; text-align: center; }
+    .stat-card .stat-value { font-size: 2rem; font-weight: bold; color: #ffd860; }
+    .stat-card .stat-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
+    .chart-container { background: #1a1a2e; border: 1px solid #333; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+    .chart-container h2 { color: #ffd860; font-size: 1.1rem; margin-bottom: 1rem; }
+    .chart-wrapper { position: relative; height: 400px; }
+    .chart-wrapper-small { position: relative; height: 300px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .data-table th { text-align: left; color: #ffd860; padding: 0.75rem; border-bottom: 2px solid #333; font-size: 0.8rem; }
+    .data-table td { padding: 0.75rem; border-bottom: 1px solid #222; font-size: 0.85rem; color: #ccc; }
+    .data-table tr:hover { background: #222; }
+    .rank { color: #ffd860; font-weight: bold; }
+    .bar-cell { position: relative; min-width: 120px; }
+    .bar-bg { background: #333; border-radius: 4px; height: 20px; overflow: hidden; }
+    .bar-fill { background: linear-gradient(90deg, #ffd860, #ff6b35); height: 100%; border-radius: 4px; }
+    .updated-note { text-align: center; color: #666; font-size: 0.75rem; margin-top: 2rem; }
+  </style>
+</head>
+<body style="background: #0f0f1a; color: #fff;">
+  <div class="analytics-container">
+    <div class="analytics-header">
+      <h1>Analytics Dashboard</h1>
+      <p>Week of July 25 &ndash; August 21, 2026 | Source: Google Analytics 4</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">2,230</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">333</div>
+        <div class="stat-label">Active Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">6.70</div>
+        <div class="stat-label">Views / User</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">1m 21s</div>
+        <div class="stat-label">Avg Engagement</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">5,472</div>
+        <div class="stat-label">Event Count</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2>Views by Page (Top 10)</h2>
+      <div class="chart-wrapper">
+        <canvas id="viewsChart"></canvas>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="chart-container">
+        <h2>Active Users by Page</h2>
+        <div class="chart-wrapper-small">
+          <canvas id="usersChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-container">
+        <h2>Avg Engagement Time</h2>
+        <div class="chart-wrapper-small">
+          <canvas id="engagementChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h2>Full Data Table</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Page</th>
+            <th>Views</th>
+            <th>Active Users</th>
+            <th>Views/User</th>
+            <th>Avg Engagement</th>
+            <th>Events</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody"></tbody>
+      </table>
+    </div>
+
+    <p class="updated-note">Dashboard generated August 21, 2026 | Not indexed by search engines</p>
+  </div>
+
+  <script>
+    const pages = [
+      { rank: 1, title: "Ayo Weird Get it popping", views: 850, users: 112, vpu: 7.59, engagement: "1m 21s", events: 2033 },
+      { rank: 2, title: "DJWEIRDNASTY News", views: 421, users: 17, vpu: 24.76, engagement: "4m 56s", events: 904 },
+      { rank: 3, title: "Mixtapes | DJWEIRDNASTY", views: 130, users: 8, vpu: 16.25, engagement: "2m 45s", events: 287 },
+      { rank: 4, title: "SOL | Sounds of Logan DJ Booking", views: 64, users: 5, vpu: 12.80, engagement: "10m 10s", events: 173 },
+      { rank: 5, title: 'Murrdah Season Monday "Ayo Weird meet Skrilla & Ron Murrdah"', views: 61, users: 9, vpu: 6.78, engagement: "1m 45s", events: 166 },
+      { rank: 6, title: "Nelly Miss Everything and Everything Celz", views: 44, users: 33, vpu: 1.33, engagement: "6s", events: 136 },
+      { rank: 7, title: "Fantasy Football 2026: Players to Avoid", views: 36, users: 13, vpu: 2.77, engagement: "37s", events: 106 },
+      { rank: 8, title: "Luigi Mangione Admits Role in Killing of UnitedHealthcare CEO", views: 27, users: 14, vpu: 1.93, engagement: "3s", events: 68 },
+      { rank: 9, title: "KREW NASA: Out of This World Tour 2026", views: 25, users: 8, vpu: 3.13, engagement: "46s", events: 56 },
+      { rank: 10, title: "National News | DJWEIRDNASTY", views: 24, users: 7, vpu: 3.43, engagement: "22s", events: 50 }
+    ];
+
+    const shortTitles = pages.map(p => p.title.length > 35 ? p.title.substring(0, 32) + '...' : p.title);
+    const barColors = ['#ffd860', '#ff6b35', '#e94560', '#0f3460', '#16213e', '#533483', '#e94560', '#ff6b35', '#ffd860', '#0f3460'];
+
+    new Chart(document.getElementById('viewsChart'), {
+      type: 'bar',
+      data: {
+        labels: shortTitles,
+        datasets: [{ label: 'Views', data: pages.map(p => p.views), backgroundColor: barColors, borderRadius: 6 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { color: '#888' }, grid: { color: '#222' } }, y: { ticks: { color: '#ccc', font: { size: 11 } }, grid: { display: false } } }
+      }
+    });
+
+    new Chart(document.getElementById('usersChart'), {
+      type: 'bar',
+      data: {
+        labels: shortTitles.slice(0, 6),
+        datasets: [{ label: 'Active Users', data: pages.slice(0, 6).map(p => p.users), backgroundColor: barColors, borderRadius: 6 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { color: '#888' }, grid: { color: '#222' } }, y: { ticks: { color: '#ccc', font: { size: 10 } }, grid: { display: false } } }
+      }
+    });
+
+    const engagementSeconds = pages.slice(0, 6).map(p => {
+      const s = p.engagement;
+      if (s.includes('m')) { const [m, sec] = s.match(/(\d+)m\s*(\d+)?s?/).slice(1); return parseInt(m) * 60 + (parseInt(sec) || 0); }
+      return parseInt(s) || 0;
+    });
+
+    new Chart(document.getElementById('engagementChart'), {
+      type: 'bar',
+      data: {
+        labels: shortTitles.slice(0, 6),
+        datasets: [{ label: 'Seconds', data: engagementSeconds, backgroundColor: barColors, borderRadius: 6 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { ticks: { color: '#888', callback: v => Math.floor(v/60) + 'm ' + (v%60) + 's' }, grid: { color: '#222' } }, y: { ticks: { color: '#ccc', font: { size: 10 } }, grid: { display: false } } }
+      }
+    });
+
+    const tbody = document.getElementById('dataTableBody');
+    const maxViews = Math.max(...pages.map(p => p.views));
+    pages.forEach(p => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="rank">${p.rank}</td>
+        <td>${p.title}</td>
+        <td>${p.views.toLocaleString()}</td>
+        <td>${p.users}</td>
+        <td>${p.vpu}</td>
+        <td>${p.engagement}</td>
+        <td>${p.events.toLocaleString()}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  </script>
+</body>
+</html>
