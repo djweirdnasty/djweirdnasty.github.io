@@ -1124,6 +1124,185 @@ body.light-mode .related-articles {
   border-top-color: rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Scroll Animations ===== */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== Back to Top Button ===== */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9997;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff5bd7, #ffd860);
+  border: none;
+  color: #111;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  margin: 0;
+}
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+.back-to-top:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 91, 215, 0.4);
+}
+
+/* ===== Social Share Buttons ===== */
+.social-share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  align-items: center;
+}
+.social-share-label {
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-right: 0.25rem;
+}
+.social-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
+.social-share-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
+.social-share-btn.facebook {
+  background: #1877f2;
+  color: #fff;
+}
+.social-share-btn.twitter {
+  background: #000;
+  color: #fff;
+}
+.social-share-btn.whatsapp {
+  background: #25d366;
+  color: #fff;
+}
+.social-share-btn.copy {
+  background: #ffd860;
+  color: #111;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: auto;
+  padding: 0 14px;
+  border-radius: 999px;
+}
+
+/* ===== Cookie Consent Banner ===== */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: #1a1a2e;
+  border-top: 2px solid #ffd860;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transform: translateY(100%);
+  transition: transform 0.4s ease;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+.cookie-banner.visible {
+  transform: translateY(0);
+}
+.cookie-banner-text {
+  color: #ccc;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 250px;
+  text-align: left;
+}
+.cookie-banner-text a {
+  color: #ffd860;
+  text-decoration: underline;
+}
+.cookie-banner-btns {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.cookie-banner-btn {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+  box-shadow: none;
+}
+.cookie-banner-btn.accept {
+  background: #ffd860;
+  color: #111;
+}
+.cookie-banner-btn.accept:hover {
+  background: #ffe080;
+  transform: none;
+}
+.cookie-banner-btn.decline {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.cookie-banner-btn.decline:hover {
+  border-color: #fff;
+  color: #fff;
+  transform: none;
+}
+body.light-mode .cookie-banner {
+  background: #1a1a2e;
+}
+@media (max-width: 600px) {
+  .cookie-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  .cookie-banner-text {
+    text-align: center;
+  }
+}
+
 /* Mixtapes page styles */
 .mixtape-card {
   display: flex;

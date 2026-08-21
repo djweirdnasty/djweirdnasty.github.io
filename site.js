@@ -236,4 +236,120 @@
       }
     }
 
+  // ===== Scroll Animations =====
+  var animateElements = document.querySelectorAll('.event-card, .info, .mixtape-card, .featured-video-card');
+  animateElements.forEach(function(el) {
+    el.classList.add('scroll-animate');
+  });
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    animateElements.forEach(function(el) {
+      observer.observe(el);
+    });
+  } else {
+    animateElements.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  }
+
+  // ===== Back to Top Button =====
+  var backBtn = document.createElement('button');
+  backBtn.className = 'back-to-top';
+  backBtn.setAttribute('aria-label', 'Back to top');
+  backBtn.innerHTML = '&uarr;';
+  document.body.appendChild(backBtn);
+
+  backBtn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      backBtn.classList.add('visible');
+    } else {
+      backBtn.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  // ===== Social Share Buttons =====
+  var existingShare = document.querySelector('.share-button');
+  if (existingShare) {
+    var shareUrl = existingShare.getAttribute('data-url') || window.location.href;
+    var shareTitle = existingShare.getAttribute('data-title') || document.title;
+
+    var socialDiv = document.createElement('div');
+    socialDiv.className = 'social-share';
+    socialDiv.innerHTML =
+      '<span class="social-share-label">Share:</span>' +
+      '<a class="social-share-btn facebook" href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl) + '" target="_blank" rel="noopener" aria-label="Share on Facebook">f</a>' +
+      '<a class="social-share-btn twitter" href="https://twitter.com/intent/tweet?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(shareTitle) + '" target="_blank" rel="noopener" aria-label="Share on X">X</a>' +
+      '<a class="social-share-btn whatsapp" href="https://wa.me/?text=' + encodeURIComponent(shareTitle + ' ' + shareUrl) + '" target="_blank" rel="noopener" aria-label="Share on WhatsApp">W</a>' +
+      '<button class="social-share-btn copy" aria-label="Copy link">Copy</button>';
+
+    existingShare.parentNode.replaceChild(socialDiv, existingShare);
+
+    var copyBtn = socialDiv.querySelector('.copy');
+    copyBtn.addEventListener('click', function() {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareUrl).then(function() {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(function() { copyBtn.textContent = 'Copy'; }, 2000);
+        });
+      } else {
+        var input = document.createElement('input');
+        input.value = shareUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function() { copyBtn.textContent = 'Copy'; }, 2000);
+      }
+    });
+  }
+
+  // ===== Cookie Consent Banner =====
+  var cookieConsent = null;
+  try { cookieConsent = localStorage.getItem('cookieConsent'); } catch(e) {}
+
+  if (!cookieConsent) {
+    var banner = document.createElement('div');
+    banner.className = 'cookie-banner';
+    banner.innerHTML =
+      '<div class="cookie-banner-text">' +
+      'We use cookies to improve your experience and serve relevant ads. By continuing, you agree to our use of cookies. ' +
+      '<a href="privacy-policy.html">Learn more</a>' +
+      '</div>' +
+      '<div class="cookie-banner-btns">' +
+      '<button class="cookie-banner-btn decline">Decline</button>' +
+      '<button class="cookie-banner-btn accept">Accept</button>' +
+      '</div>';
+    document.body.appendChild(banner);
+
+    requestAnimationFrame(function() {
+      banner.classList.add('visible');
+    });
+
+    banner.querySelector('.accept').addEventListener('click', function() {
+      try { localStorage.setItem('cookieConsent', 'accepted'); } catch(e) {}
+      banner.classList.remove('visible');
+      setTimeout(function() { banner.remove(); }, 400);
+    });
+
+    banner.querySelector('.decline').addEventListener('click', function() {
+      try { localStorage.setItem('cookieConsent', 'declined'); } catch(e) {}
+      banner.classList.remove('visible');
+      setTimeout(function() { banner.remove(); }, 400);
+    });
+  }
+
 })();
