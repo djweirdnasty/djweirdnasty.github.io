@@ -250,16 +250,28 @@
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0, rootMargin: '100px 0px 100px 0px' });
 
     animateElements.forEach(function(el) {
-      observer.observe(el);
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add('visible');
+      } else {
+        observer.observe(el);
+      }
     });
   } else {
     animateElements.forEach(function(el) {
       el.classList.add('visible');
     });
   }
+
+  // Fallback: ensure everything is visible after 3 seconds
+  setTimeout(function() {
+    animateElements.forEach(function(el) {
+      el.classList.add('visible');
+    });
+  }, 3000);
 
   // ===== Back to Top Button =====
   var backBtn = document.createElement('button');
