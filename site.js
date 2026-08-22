@@ -236,6 +236,29 @@
       }
     }
 
+  // ===== More News Link Section (all article pages) =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    if (!article.querySelector('.more-news-links')) {
+      var moreNews = document.createElement('p');
+      moreNews.className = 'more-news-links';
+      moreNews.style.cssText = 'margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);';
+      moreNews.innerHTML = '<strong>More from DJWEIRDNASTY News:</strong><br>' +
+        '<a href="news.html" style="color: #ffd860;">All News</a> &bull; ' +
+        '<a href="news-music.html" style="color: #ffd860;">Music</a> &bull; ' +
+        '<a href="news-sports.html" style="color: #ffd860;">Sports</a> &bull; ' +
+        '<a href="news-entertainment.html" style="color: #ffd860;">Entertainment</a> &bull; ' +
+        '<a href="news-national.html" style="color: #ffd860;">National</a> &bull; ' +
+        '<a href="mixtapes.html" style="color: #ffd860;">Mixtapes</a> &bull; ' +
+        '<a href="index.html#events" style="color: #ffd860;">Events</a>';
+      var shareBtn = article.querySelector('.share-button, .social-share');
+      if (shareBtn) {
+        article.insertBefore(moreNews, shareBtn);
+      } else {
+        article.appendChild(moreNews);
+      }
+    }
+  }
+
   // ===== Scroll Animations =====
   var animateElements = document.querySelectorAll('.event-card, .mixtape-card, .featured-video-card');
   animateElements.forEach(function(el) {

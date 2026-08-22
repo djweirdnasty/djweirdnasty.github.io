@@ -80,26 +80,7 @@
   <footer class="container">
     <p>&copy; 2026 Djweirdnastyllc</p>
   </footer>
-  <script>
-    document.querySelectorAll('.share-button').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        const url = this.getAttribute('data-url') || window.location.href;
-        const title = this.getAttribute('data-title') || document.title;
-        if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
-
-        if (navigator.share) {
-          navigator.share({ title: title, url: url }).catch(function() {});
-        } else if (navigator.clipboard) {
-          navigator.clipboard.writeText(url).then(function() {
-            alert('Link copied to clipboard!');
-          });
-        } else {
-          prompt('Copy this link to share:', url);
-        }
-      });
-    });
-  </script>
 <script src="comments.js"></script>
-<script src="site.js?v=4"></script>
+<script src="site.js?v=5"></script>
 </body>
 </html>
