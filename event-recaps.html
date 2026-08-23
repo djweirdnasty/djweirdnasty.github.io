@@ -35,6 +35,73 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=11">
+  <style>
+    .recap-carousel {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+    }
+    .recap-carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-carousel-track img {
+      flex: 0 0 100%;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: 500px;
+      background: #000;
+    }
+    .recap-carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .recap-carousel-btn:hover {
+      background: rgba(255,77,143,0.8);
+    }
+    .recap-carousel-btn.prev { left: 8px; }
+    .recap-carousel-btn.next { right: 8px; }
+    .recap-carousel-counter {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .recap-carousel-dots {
+      text-align: center;
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
+    .recap-carousel-dots button {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: none;
+      background: #333;
+      cursor: pointer;
+      padding: 0;
+    }
+    .recap-carousel-dots button.active {
+      background: #ff4d8f;
+    }
+  </style>
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
 </head>
@@ -64,12 +131,217 @@
       <h2>Event Recaps</h2>
       <p>Highlights, photos, and recaps from past DJWEIRDNASTY events.</p>
       <div class="events-grid">
-        <article class="event-card">
+        <article class="event-card" style="max-width: 600px; width: 100%;">
           <h3>Philly Artist Showcase 2021</h3>
-          <img src="phila-artist-showcase-flyer-1.jpg" alt="Philly Artist Showcase 2021 Flyer" class="event-flyer">
-          <img src="phila-artist-showcase-flyer-2.jpg" alt="Philly Artist Showcase 2021 Flyer 2" class="event-flyer" style="margin-top: 0.5rem;">
           <p><em>Tuesday, June 22, 2021 &mdash; Philadelphia, PA</em></p>
           <p>A night celebrating Philadelphia&rsquo;s finest independent artists, performers, and creatives. DJWEIRDNASTY was in the building keeping the energy going.</p>
+          <div class="recap-carousel" id="phila-showcase-carousel">
+            <button class="recap-carousel-btn prev" onclick="recapCarousel('phila-showcase-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+            <div class="recap-carousel-track">
+              <img src="phila-artist-showcase-2021/photo-001.jpg" alt="Philly Artist Showcase 2021 Photo 1" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-002.jpg" alt="Philly Artist Showcase 2021 Photo 2" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-003.jpg" alt="Philly Artist Showcase 2021 Photo 3" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-004.jpg" alt="Philly Artist Showcase 2021 Photo 4" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-005.jpg" alt="Philly Artist Showcase 2021 Photo 5" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-006.jpg" alt="Philly Artist Showcase 2021 Photo 6" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-007.jpg" alt="Philly Artist Showcase 2021 Photo 7" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-008.jpg" alt="Philly Artist Showcase 2021 Photo 8" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-009.jpg" alt="Philly Artist Showcase 2021 Photo 9" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-010.jpg" alt="Philly Artist Showcase 2021 Photo 10" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-011.jpg" alt="Philly Artist Showcase 2021 Photo 11" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-012.jpg" alt="Philly Artist Showcase 2021 Photo 12" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-013.jpg" alt="Philly Artist Showcase 2021 Photo 13" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-014.jpg" alt="Philly Artist Showcase 2021 Photo 14" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-015.jpg" alt="Philly Artist Showcase 2021 Photo 15" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-016.jpg" alt="Philly Artist Showcase 2021 Photo 16" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-017.jpg" alt="Philly Artist Showcase 2021 Photo 17" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-018.jpg" alt="Philly Artist Showcase 2021 Photo 18" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-019.jpg" alt="Philly Artist Showcase 2021 Photo 19" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-020.jpg" alt="Philly Artist Showcase 2021 Photo 20" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-021.jpg" alt="Philly Artist Showcase 2021 Photo 21" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-022.jpg" alt="Philly Artist Showcase 2021 Photo 22" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-023.jpg" alt="Philly Artist Showcase 2021 Photo 23" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-024.jpg" alt="Philly Artist Showcase 2021 Photo 24" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-025.jpg" alt="Philly Artist Showcase 2021 Photo 25" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-026.jpg" alt="Philly Artist Showcase 2021 Photo 26" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-027.jpg" alt="Philly Artist Showcase 2021 Photo 27" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-028.jpg" alt="Philly Artist Showcase 2021 Photo 28" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-029.jpg" alt="Philly Artist Showcase 2021 Photo 29" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-030.jpg" alt="Philly Artist Showcase 2021 Photo 30" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-031.jpg" alt="Philly Artist Showcase 2021 Photo 31" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-032.jpg" alt="Philly Artist Showcase 2021 Photo 32" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-033.jpg" alt="Philly Artist Showcase 2021 Photo 33" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-034.jpg" alt="Philly Artist Showcase 2021 Photo 34" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-035.jpg" alt="Philly Artist Showcase 2021 Photo 35" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-036.jpg" alt="Philly Artist Showcase 2021 Photo 36" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-037.jpg" alt="Philly Artist Showcase 2021 Photo 37" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-038.jpg" alt="Philly Artist Showcase 2021 Photo 38" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-039.jpg" alt="Philly Artist Showcase 2021 Photo 39" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-040.jpg" alt="Philly Artist Showcase 2021 Photo 40" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-041.jpg" alt="Philly Artist Showcase 2021 Photo 41" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-042.jpg" alt="Philly Artist Showcase 2021 Photo 42" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-043.jpg" alt="Philly Artist Showcase 2021 Photo 43" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-044.jpg" alt="Philly Artist Showcase 2021 Photo 44" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-045.jpg" alt="Philly Artist Showcase 2021 Photo 45" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-046.jpg" alt="Philly Artist Showcase 2021 Photo 46" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-047.jpg" alt="Philly Artist Showcase 2021 Photo 47" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-048.jpg" alt="Philly Artist Showcase 2021 Photo 48" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-049.jpg" alt="Philly Artist Showcase 2021 Photo 49" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-050.jpg" alt="Philly Artist Showcase 2021 Photo 50" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-051.jpg" alt="Philly Artist Showcase 2021 Photo 51" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-052.jpg" alt="Philly Artist Showcase 2021 Photo 52" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-053.jpg" alt="Philly Artist Showcase 2021 Photo 53" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-054.jpg" alt="Philly Artist Showcase 2021 Photo 54" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-055.jpg" alt="Philly Artist Showcase 2021 Photo 55" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-056.jpg" alt="Philly Artist Showcase 2021 Photo 56" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-057.jpg" alt="Philly Artist Showcase 2021 Photo 57" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-058.jpg" alt="Philly Artist Showcase 2021 Photo 58" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-059.jpg" alt="Philly Artist Showcase 2021 Photo 59" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-060.jpg" alt="Philly Artist Showcase 2021 Photo 60" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-061.jpg" alt="Philly Artist Showcase 2021 Photo 61" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-062.jpg" alt="Philly Artist Showcase 2021 Photo 62" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-063.jpg" alt="Philly Artist Showcase 2021 Photo 63" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-064.jpg" alt="Philly Artist Showcase 2021 Photo 64" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-065.jpg" alt="Philly Artist Showcase 2021 Photo 65" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-066.jpg" alt="Philly Artist Showcase 2021 Photo 66" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-067.jpg" alt="Philly Artist Showcase 2021 Photo 67" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-068.jpg" alt="Philly Artist Showcase 2021 Photo 68" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-069.jpg" alt="Philly Artist Showcase 2021 Photo 69" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-070.jpg" alt="Philly Artist Showcase 2021 Photo 70" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-071.jpg" alt="Philly Artist Showcase 2021 Photo 71" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-072.jpg" alt="Philly Artist Showcase 2021 Photo 72" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-073.jpg" alt="Philly Artist Showcase 2021 Photo 73" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-074.jpg" alt="Philly Artist Showcase 2021 Photo 74" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-075.jpg" alt="Philly Artist Showcase 2021 Photo 75" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-076.jpg" alt="Philly Artist Showcase 2021 Photo 76" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-077.jpg" alt="Philly Artist Showcase 2021 Photo 77" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-078.jpg" alt="Philly Artist Showcase 2021 Photo 78" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-079.jpg" alt="Philly Artist Showcase 2021 Photo 79" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-080.jpg" alt="Philly Artist Showcase 2021 Photo 80" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-081.jpg" alt="Philly Artist Showcase 2021 Photo 81" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-082.jpg" alt="Philly Artist Showcase 2021 Photo 82" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-083.jpg" alt="Philly Artist Showcase 2021 Photo 83" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-084.jpg" alt="Philly Artist Showcase 2021 Photo 84" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-085.jpg" alt="Philly Artist Showcase 2021 Photo 85" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-086.jpg" alt="Philly Artist Showcase 2021 Photo 86" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-087.jpg" alt="Philly Artist Showcase 2021 Photo 87" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-088.jpg" alt="Philly Artist Showcase 2021 Photo 88" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-089.jpg" alt="Philly Artist Showcase 2021 Photo 89" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-090.jpg" alt="Philly Artist Showcase 2021 Photo 90" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-091.jpg" alt="Philly Artist Showcase 2021 Photo 91" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-092.jpg" alt="Philly Artist Showcase 2021 Photo 92" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-093.jpg" alt="Philly Artist Showcase 2021 Photo 93" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-094.jpg" alt="Philly Artist Showcase 2021 Photo 94" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-095.jpg" alt="Philly Artist Showcase 2021 Photo 95" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-096.jpg" alt="Philly Artist Showcase 2021 Photo 96" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-097.jpg" alt="Philly Artist Showcase 2021 Photo 97" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-098.jpg" alt="Philly Artist Showcase 2021 Photo 98" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-099.jpg" alt="Philly Artist Showcase 2021 Photo 99" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-100.jpg" alt="Philly Artist Showcase 2021 Photo 100" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-101.jpg" alt="Philly Artist Showcase 2021 Photo 101" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-102.jpg" alt="Philly Artist Showcase 2021 Photo 102" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-103.jpg" alt="Philly Artist Showcase 2021 Photo 103" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-104.jpg" alt="Philly Artist Showcase 2021 Photo 104" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-105.jpg" alt="Philly Artist Showcase 2021 Photo 105" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-106.jpg" alt="Philly Artist Showcase 2021 Photo 106" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-107.jpg" alt="Philly Artist Showcase 2021 Photo 107" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-108.jpg" alt="Philly Artist Showcase 2021 Photo 108" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-109.jpg" alt="Philly Artist Showcase 2021 Photo 109" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-110.jpg" alt="Philly Artist Showcase 2021 Photo 110" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-111.jpg" alt="Philly Artist Showcase 2021 Photo 111" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-112.jpg" alt="Philly Artist Showcase 2021 Photo 112" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-113.jpg" alt="Philly Artist Showcase 2021 Photo 113" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-114.jpg" alt="Philly Artist Showcase 2021 Photo 114" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-115.jpg" alt="Philly Artist Showcase 2021 Photo 115" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-116.jpg" alt="Philly Artist Showcase 2021 Photo 116" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-117.jpg" alt="Philly Artist Showcase 2021 Photo 117" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-118.jpg" alt="Philly Artist Showcase 2021 Photo 118" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-119.jpg" alt="Philly Artist Showcase 2021 Photo 119" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-120.jpg" alt="Philly Artist Showcase 2021 Photo 120" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-121.jpg" alt="Philly Artist Showcase 2021 Photo 121" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-122.jpg" alt="Philly Artist Showcase 2021 Photo 122" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-123.jpg" alt="Philly Artist Showcase 2021 Photo 123" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-124.jpg" alt="Philly Artist Showcase 2021 Photo 124" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-125.jpg" alt="Philly Artist Showcase 2021 Photo 125" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-126.jpg" alt="Philly Artist Showcase 2021 Photo 126" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-127.jpg" alt="Philly Artist Showcase 2021 Photo 127" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-128.jpg" alt="Philly Artist Showcase 2021 Photo 128" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-129.jpg" alt="Philly Artist Showcase 2021 Photo 129" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-130.jpg" alt="Philly Artist Showcase 2021 Photo 130" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-131.jpg" alt="Philly Artist Showcase 2021 Photo 131" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-132.jpg" alt="Philly Artist Showcase 2021 Photo 132" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-133.jpg" alt="Philly Artist Showcase 2021 Photo 133" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-134.jpg" alt="Philly Artist Showcase 2021 Photo 134" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-135.jpg" alt="Philly Artist Showcase 2021 Photo 135" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-136.jpg" alt="Philly Artist Showcase 2021 Photo 136" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-137.jpg" alt="Philly Artist Showcase 2021 Photo 137" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-138.jpg" alt="Philly Artist Showcase 2021 Photo 138" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-139.jpg" alt="Philly Artist Showcase 2021 Photo 139" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-140.jpg" alt="Philly Artist Showcase 2021 Photo 140" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-141.jpg" alt="Philly Artist Showcase 2021 Photo 141" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-142.jpg" alt="Philly Artist Showcase 2021 Photo 142" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-143.jpg" alt="Philly Artist Showcase 2021 Photo 143" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-144.jpg" alt="Philly Artist Showcase 2021 Photo 144" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-145.jpg" alt="Philly Artist Showcase 2021 Photo 145" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-146.jpg" alt="Philly Artist Showcase 2021 Photo 146" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-147.jpg" alt="Philly Artist Showcase 2021 Photo 147" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-148.jpg" alt="Philly Artist Showcase 2021 Photo 148" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-149.jpg" alt="Philly Artist Showcase 2021 Photo 149" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-150.jpg" alt="Philly Artist Showcase 2021 Photo 150" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-151.jpg" alt="Philly Artist Showcase 2021 Photo 151" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-152.jpg" alt="Philly Artist Showcase 2021 Photo 152" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-153.jpg" alt="Philly Artist Showcase 2021 Photo 153" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-154.jpg" alt="Philly Artist Showcase 2021 Photo 154" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-155.jpg" alt="Philly Artist Showcase 2021 Photo 155" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-156.jpg" alt="Philly Artist Showcase 2021 Photo 156" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-157.jpg" alt="Philly Artist Showcase 2021 Photo 157" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-158.jpg" alt="Philly Artist Showcase 2021 Photo 158" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-159.jpg" alt="Philly Artist Showcase 2021 Photo 159" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-160.jpg" alt="Philly Artist Showcase 2021 Photo 160" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-161.jpg" alt="Philly Artist Showcase 2021 Photo 161" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-162.jpg" alt="Philly Artist Showcase 2021 Photo 162" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-163.jpg" alt="Philly Artist Showcase 2021 Photo 163" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-164.jpg" alt="Philly Artist Showcase 2021 Photo 164" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-165.jpg" alt="Philly Artist Showcase 2021 Photo 165" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-166.jpg" alt="Philly Artist Showcase 2021 Photo 166" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-167.jpg" alt="Philly Artist Showcase 2021 Photo 167" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-168.jpg" alt="Philly Artist Showcase 2021 Photo 168" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-169.jpg" alt="Philly Artist Showcase 2021 Photo 169" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-170.jpg" alt="Philly Artist Showcase 2021 Photo 170" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-171.jpg" alt="Philly Artist Showcase 2021 Photo 171" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-172.jpg" alt="Philly Artist Showcase 2021 Photo 172" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-173.jpg" alt="Philly Artist Showcase 2021 Photo 173" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-174.jpg" alt="Philly Artist Showcase 2021 Photo 174" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-175.jpg" alt="Philly Artist Showcase 2021 Photo 175" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-176.jpg" alt="Philly Artist Showcase 2021 Photo 176" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-177.jpg" alt="Philly Artist Showcase 2021 Photo 177" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-178.jpg" alt="Philly Artist Showcase 2021 Photo 178" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-179.jpg" alt="Philly Artist Showcase 2021 Photo 179" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-180.jpg" alt="Philly Artist Showcase 2021 Photo 180" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-181.jpg" alt="Philly Artist Showcase 2021 Photo 181" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-182.jpg" alt="Philly Artist Showcase 2021 Photo 182" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-183.jpg" alt="Philly Artist Showcase 2021 Photo 183" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-184.jpg" alt="Philly Artist Showcase 2021 Photo 184" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-185.jpg" alt="Philly Artist Showcase 2021 Photo 185" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-186.jpg" alt="Philly Artist Showcase 2021 Photo 186" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-187.jpg" alt="Philly Artist Showcase 2021 Photo 187" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-188.jpg" alt="Philly Artist Showcase 2021 Photo 188" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-189.jpg" alt="Philly Artist Showcase 2021 Photo 189" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-190.jpg" alt="Philly Artist Showcase 2021 Photo 190" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-191.jpg" alt="Philly Artist Showcase 2021 Photo 191" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-192.jpg" alt="Philly Artist Showcase 2021 Photo 192" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-193.jpg" alt="Philly Artist Showcase 2021 Photo 193" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-194.jpg" alt="Philly Artist Showcase 2021 Photo 194" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-195.jpg" alt="Philly Artist Showcase 2021 Photo 195" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-196.jpg" alt="Philly Artist Showcase 2021 Photo 196" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-197.jpg" alt="Philly Artist Showcase 2021 Photo 197" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-198.jpg" alt="Philly Artist Showcase 2021 Photo 198" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-199.jpg" alt="Philly Artist Showcase 2021 Photo 199" loading="lazy">
+              <img src="phila-artist-showcase-2021/photo-200.jpg" alt="Philly Artist Showcase 2021 Photo 200" loading="lazy">
+            </div>
+            <button class="recap-carousel-btn next" onclick="recapCarousel('phila-showcase-carousel',1)" aria-label="Next">&rsaquo;</button>
+          </div>
+          <div class="recap-carousel-counter" id="phila-showcase-carousel-counter">1 / 200</div>
         </article>
         <article class="event-card">
           <h3>Welcome 2 Muggatime</h3>
@@ -88,5 +360,25 @@
   </footer>
 <script src="site.js?v=5"></script>
 <script async src="//www.instagram.com/embed.js"></script>
+<script>
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    var total = imgs.length;
+    var current = parseInt(c.dataset.current || '0', 10);
+    current = (current + dir + total) % total;
+    c.dataset.current = current;
+    track.style.transform = 'translateX(-' + current * 100 + '%)';
+    var counter = document.getElementById(id + '-counter');
+    if (counter) counter.textContent = (current + 1) + ' / ' + total;
+  }
+  document.addEventListener('keydown', function(e) {
+    var c = document.getElementById('phila-showcase-carousel');
+    if (!c) return;
+    if (e.key === 'ArrowLeft') recapCarousel('phila-showcase-carousel', -1);
+    if (e.key === 'ArrowRight') recapCarousel('phila-showcase-carousel', 1);
+  });
+</script>
 </body>
 </html>
