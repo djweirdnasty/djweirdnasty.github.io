@@ -466,6 +466,29 @@
 
       /* Footer */
       footer { padding: 1rem 0 2rem !important; font-size: 0.85rem; }
+
+      /* New features mobile */
+      #sol-dj-calendar { padding: 0.75rem !important; }
+      #sol-cal-grid { gap: 1px !important; }
+      #sol-cal-grid > div { padding: 0.25rem !important; font-size: 0.7rem !important; }
+
+      #sol-dj-analytics { padding: 0.75rem !important; }
+      #sol-dj-analytics > div:first-child { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
+      #sol-dj-earnings-chart { height: 70px !important; }
+
+      #sol-setlist-booking,
+      #sol-client-review-booking,
+      #sol-tip-booking { font-size: 0.85rem !important; }
+
+      .sol-tip-btn { padding: 0.4rem 0.7rem !important; font-size: 0.85rem !important; }
+
+      #sol-loyalty-box { padding: 0.75rem !important; }
+
+      #sol-saved-djs > div { min-width: 100% !important; }
+
+      /* Admin settings: stack on mobile */
+      #sol-admin-panel-settings input { font-size: 0.9rem !important; }
+      #sol-admin-panel-settings h4 { font-size: 0.95rem !important; }
     }
 
     /* Extra small phones */
@@ -662,6 +685,72 @@
           <h3 style="margin-top:2rem;">Waitlist</h3>
           <p style="color:#aaa; font-size:0.9rem;">Clients who requested you when you were booked.</p>
           <div id="sol-dj-waitlist" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Booking Calendar</h3>
+          <div id="sol-dj-calendar" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <button type="button" id="sol-cal-prev" class="submit-btn" style="padding:0.4rem 0.8rem;">&#10094;</button>
+              <strong id="sol-cal-month" style="font-size:1.1rem;"></strong>
+              <button type="button" id="sol-cal-next" class="submit-btn" style="padding:0.4rem 0.8rem;">&#10095;</button>
+            </div>
+            <div id="sol-cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Setlist & Timeline Builder</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Plan your set schedule for each event.</p>
+          <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <select id="sol-setlist-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <option value="">Select a booking...</option>
+            </select>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+              <input id="sol-setlist-time" type="time" style="padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <input id="sol-setlist-track" type="text" placeholder="Track name or set description" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <button type="button" id="sol-setlist-add" class="submit-btn">Add</button>
+            </div>
+            <div id="sol-setlist-items" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Analytics Dashboard</h3>
+          <div id="sol-dj-analytics" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem; margin-bottom:1rem;">
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#00d4ff;" id="sol-dj-avg-rating">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Avg Rating</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#22c55e;" id="sol-dj-completion-rate">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Completion Rate</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ffd860;" id="sol-dj-avg-response">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Avg Response Time</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ff4d8f;" id="sol-dj-repeat-clients">0</div>
+                <div style="font-size:0.75rem; color:#aaa;">Repeat Clients</div>
+              </div>
+            </div>
+            <h4 style="font-size:0.9rem; color:#aaa; margin-bottom:0.5rem;">Monthly Earnings (Last 6 Months)</h4>
+            <div id="sol-dj-earnings-chart" style="display:flex; align-items:flex-end; gap:0.5rem; height:100px; padding:0.5rem 0;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Review a Client</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Rate clients you've performed for.</p>
+          <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <select id="sol-client-review-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <option value="">Select a completed booking...</option>
+            </select>
+            <div id="sol-client-review-stars" style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+              <span class="sol-star" data-val="1" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="2" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="3" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="4" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="5" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+            </div>
+            <textarea id="sol-client-review-text" placeholder="Review this client..." style="width:100%; min-height:60px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+            <button type="button" id="sol-client-review-submit" class="submit-btn" style="width:100%;">Submit Client Review</button>
+          </div>
+          <p id="sol-client-review-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
         </div>
 
         <div id="sol-admin-console" style="display:none;">
@@ -698,6 +787,7 @@
             <button type="button" id="sol-admin-tab-earnings" class="submit-btn">Earnings</button>
             <button type="button" id="sol-admin-tab-add-dj" class="submit-btn">Add DJ</button>
             <button type="button" id="sol-admin-tab-disputes" class="submit-btn">Disputes</button>
+            <button type="button" id="sol-admin-tab-settings" class="submit-btn">Settings</button>
           </div>
 
           <div id="sol-admin-panel-djs">
@@ -767,6 +857,64 @@
           <div id="sol-admin-panel-disputes" style="display:none;">
             <h3>Booking Disputes</h3>
             <div id="sol-admin-disputes-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-settings" style="display:none;">
+            <h3>Notification & Email Settings</h3>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+              <h4 style="color:#00d4ff; margin-top:0;">Push Notifications (FCM)</h4>
+              <label for="sol-settings-fcm-key">Firebase Server Key</label>
+              <input id="sol-settings-fcm-key" type="text" placeholder="AAAA..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-fcm-project">Firebase Project ID</label>
+              <input id="sol-settings-fcm-project" type="text" placeholder="your-project-id" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-enabled" type="checkbox" style="width:18px; height:18px;">
+                <span>Enable push notifications globally</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-booking" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Notify on new booking requests</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-message" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Notify on new messages</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-reminder" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Send event reminders (24h before)</span>
+              </label>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+              <h4 style="color:#ffd860; margin-top:0;">Email Notifications</h4>
+              <label for="sol-settings-smtp-host">SMTP Host</label>
+              <input id="sol-settings-smtp-host" type="text" placeholder="smtp.gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-port">SMTP Port</label>
+              <input id="sol-settings-smtp-port" type="number" placeholder="587" style="width:100%; max-width:120px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-user">SMTP Username</label>
+              <input id="sol-settings-smtp-user" type="text" placeholder="your-email@gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-pass">SMTP Password</label>
+              <input id="sol-settings-smtp-pass" type="password" placeholder="App password" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-from-email">From Email</label>
+              <input id="sol-settings-from-email" type="email" placeholder="noreply@djweirdnasty.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-enabled" type="checkbox" style="width:18px; height:18px;">
+                <span>Enable email notifications globally</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-booking" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email clients on booking confirmation</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-reminder" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email event reminders (24h before)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-receipt" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email payment receipts</span>
+              </label>
+            </div>
+            <button type="button" id="sol-settings-save" class="submit-btn" style="width:100%;">Save Settings</button>
+            <p id="sol-settings-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
           </div>
 
           <p id="sol-admin-status" class="form-status" aria-live="polite"></p>
@@ -1016,6 +1164,95 @@
         <button type="button" id="sol-dispute-submit" class="submit-btn" style="width:100%;">Submit Dispute</button>
       </div>
       <p id="sol-dispute-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Saved DJs</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Your bookmarked favorite DJs.</p>
+      <div id="sol-saved-djs" style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+      <h2>Payment Options</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-deposit-toggle" type="checkbox" style="width:18px; height:18px;">
+          <span>Pay deposit only (50% now, balance at event)</span>
+        </label>
+        <p id="sol-deposit-info" style="display:none; color:#ffd860; font-size:0.85rem; padding:0.5rem; background:#1a1a1a; border-radius:8px;"></p>
+      </div>
+
+      <h2>Contract & Waiver</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <h3 style="margin-top:0; font-size:1rem;">Booking Agreement</h3>
+        <div style="max-height:150px; overflow-y:auto; background:#000; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.85rem; color:#ccc; line-height:1.5;">
+          <p><strong>Terms of Service:</strong> By booking a DJ through Sounds of Logan (SOL), you agree to the following terms:</p>
+          <p>1. The client agrees to pay the full amount as specified in the booking confirmation.</p>
+          <p>2. If a deposit is selected, 50% is due at booking and the remaining 50% is due on the day of the event.</p>
+          <p>3. Cancellations made 7+ days before the event receive a 50% refund. Cancellations within 7 days are non-refundable.</p>
+          <p>4. The DJ agrees to arrive at least 30 minutes before the scheduled start time.</p>
+          <p>5. The client is responsible for providing a safe performance area with adequate power outlets.</p>
+          <p>6. SOL is not liable for any damages, injuries, or losses occurring during the event.</p>
+          <p>7. Any disputes must be filed within 48 hours of the event.</p>
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-agree-terms" type="checkbox" style="width:18px; height:18px;">
+          <span>I agree to the booking terms above</span>
+        </label>
+        <h3 style="font-size:1rem;">Liability Waiver</h3>
+        <div style="max-height:100px; overflow-y:auto; background:#000; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.85rem; color:#ccc; line-height:1.5;">
+          <p>I, the undersigned, release SOL, its DJs, and affiliates from any liability for property damage, personal injury, or loss arising from or related to the event. I assume all risk for my guests and venue.</p>
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-agree-waiver" type="checkbox" style="width:18px; height:18px;">
+          <span>I accept the liability waiver</span>
+        </label>
+        <label for="sol-signature">Digital Signature (type your full name)</label>
+        <input id="sol-signature" type="text" placeholder="Your full legal name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+      </div>
+
+      <h2>Tip Your DJ</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Show appreciation for a great performance.</p>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-tip-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a completed booking...</option>
+        </select>
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="10" style="padding:0.5rem 1rem;">$10</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="20" style="padding:0.5rem 1rem;">$20</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="50" style="padding:0.5rem 1rem;">$50</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="custom" style="padding:0.5rem 1rem;">Custom</button>
+        </div>
+        <input id="sol-tip-custom" type="number" placeholder="Custom amount $" style="display:none; width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <button type="button" id="sol-tip-submit" class="submit-btn" style="width:100%;">Send Tip</button>
+      </div>
+      <p id="sol-tip-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Loyalty Rewards</h2>
+      <div id="sol-loyalty-box" style="background:#111; border:1px solid #ffd860; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#ffd860; font-weight:700;">Your Points</span>
+          <strong id="sol-loyalty-points" style="font-size:1.5rem; color:#ffd860;">0</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#aaa; font-size:0.85rem;">Bookings Completed</span>
+          <strong id="sol-loyalty-bookings">0</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#aaa; font-size:0.85rem;">Tier</span>
+          <strong id="sol-loyalty-tier" style="color:#ffd860;">Bronze</strong>
+        </div>
+        <div id="sol-loyalty-perks" style="font-size:0.85rem; color:#ccc; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #333;"></div>
+      </div>
+
+      <h2>Identity Verification</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <div id="sol-verify-status-box" style="margin-bottom:0.75rem; padding:0.6rem; border-radius:8px; text-align:center; background:#1a1a1a; color:#aaa;"></div>
+        <label for="sol-verify-fullname">Full Legal Name</label>
+        <input id="sol-verify-fullname" type="text" placeholder="John Doe" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <label for="sol-verify-phone">Phone Number</label>
+        <input id="sol-verify-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <label for="sol-verify-id-url">ID Document URL (driver's license, passport, etc.)</label>
+        <input id="sol-verify-id-url" type="url" placeholder="https://..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <button type="button" id="sol-verify-submit" class="submit-btn" style="width:100%;">Submit for Verification</button>
+      </div>
+      <p id="sol-verify-client-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
 
       <div id="sol-chat-box" style="display:none; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1.5rem 0;">
         <h3 style="margin-top:0;">Message Your DJ</h3>
@@ -1703,16 +1940,39 @@
     function handleBookingAction(bookingId, action, user) {
       const newStatus = action === 'accept' ? 'confirmed' : 'cancelled';
       const bookingRef = db.collection('bookings').doc(bookingId);
-      bookingRef.set({ status: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), djId: user.uid }, { merge: true })
-        .then(function() {
-          djConsoleStatus.textContent = action === 'accept' ? 'Booking accepted! Client notified.' : 'Booking rejected.';
-          djConsoleStatus.style.color = action === 'accept' ? '#22c55e' : '#ff4d8f';
-          setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
-        })
-        .catch(function(err) {
-          djConsoleStatus.textContent = 'Failed: ' + err.message;
-          djConsoleStatus.style.color = '#ff4d8f';
+      var updateData = { status: newStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), djId: user.uid };
+      if (action === 'accept') {
+        bookingRef.get().then(function(doc) {
+          if (doc.exists) {
+            var b = doc.data();
+            var created = b.createdAt || b.created_at;
+            if (created && created.toMillis) {
+              updateData.responseTimeMs = Date.now() - created.toMillis();
+            }
+          }
+          bookingRef.set(updateData, { merge: true })
+            .then(function() {
+              djConsoleStatus.textContent = 'Booking accepted! Client notified.';
+              djConsoleStatus.style.color = '#22c55e';
+              setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
+            })
+            .catch(function(err) {
+              djConsoleStatus.textContent = 'Failed: ' + err.message;
+              djConsoleStatus.style.color = '#ff4d8f';
+            });
         });
+      } else {
+        bookingRef.set(updateData, { merge: true })
+          .then(function() {
+            djConsoleStatus.textContent = 'Booking rejected.';
+            djConsoleStatus.style.color = '#ff4d8f';
+            setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
+          })
+          .catch(function(err) {
+            djConsoleStatus.textContent = 'Failed: ' + err.message;
+            djConsoleStatus.style.color = '#ff4d8f';
+          });
+      }
     }
 
     function updateOnlineToggleUI(online) {
@@ -1857,6 +2117,8 @@
           loadDJEarnings(user.uid);
           loadDJNetwork(user.uid);
           loadDJWaitlist(user.uid);
+          loadDJCalendarData(user.uid);
+          loadDJAnalytics(user.uid);
         }
       } else {
         djConsole.style.display = 'none';
@@ -2143,7 +2405,7 @@
     }
 
     function adminSwitchTab(activeId) {
-      var tabs = ['djs','bookings','verifications','users','earnings','add-dj','disputes'];
+      var tabs = ['djs','bookings','verifications','users','earnings','add-dj','disputes','settings'];
       tabs.forEach(function(t) {
         var panel = document.getElementById('sol-admin-panel-' + t);
         var btn = document.getElementById('sol-admin-tab-' + t);
@@ -2162,6 +2424,7 @@
     document.getElementById('sol-admin-tab-earnings').addEventListener('click', function() { adminSwitchTab('earnings'); loadAdminEarnings(); });
     document.getElementById('sol-admin-tab-add-dj').addEventListener('click', function() { adminSwitchTab('add-dj'); });
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
+    document.getElementById('sol-admin-tab-settings').addEventListener('click', function() { adminSwitchTab('settings'); loadAdminSettings(); });
 
     function loadAdminUsers() {
       var usersList = document.getElementById('sol-admin-users-list');
@@ -2401,6 +2664,7 @@
         return db - da;
       });
       populateBookingDropdowns(bookings);
+      populateAllBookingDropdowns(bookings);
       bookings.forEach(function(b) {
         var card = document.createElement('div');
         card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
@@ -2424,7 +2688,7 @@
           '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
           '</div>' +
           '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
-          (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + b.id + '">Cancel</button>' : '') +
+          (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + b.id + '" data-booking-date="' + (date || '') + '">Cancel</button>' : '') +
           (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + b.id + '" data-rate-dj="' + (b.djId || '') + '">Rate DJ</button>' : '') +
           '</div>';
         box.appendChild(card);
@@ -2433,10 +2697,19 @@
       box.querySelectorAll('button[data-cancel-booking]').forEach(function(btn) {
         btn.addEventListener('click', function() {
           var bookingId = btn.getAttribute('data-cancel-booking');
-          if (!confirm('Cancel this booking?')) return;
+          var bookingDate = btn.getAttribute('data-booking-date') || '';
+          var daysUntil = 999;
+          if (bookingDate) {
+            var eventDate = new Date(bookingDate);
+            daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
+          }
+          var refundMsg = daysUntil >= 7 ? '50% refund will be processed.' : 'No refund (within 7 days of event).';
+          if (!confirm('Cancel this booking? ' + refundMsg)) return;
           db.collection('bookings').doc(bookingId).set({
             status: 'cancelled',
-            cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+            cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+            refundDue: daysUntil >= 7,
+            refundAmount: daysUntil >= 7 ? 50 : 0
           }, { merge: true }).catch(function(err) {
             alert('Error: ' + err.message);
           });
@@ -2652,6 +2925,9 @@
           handlePaymentReturn();
         }
         subscribeClientBookings(user);
+        loadSavedDjs(user.uid);
+        loadLoyalty(user.uid);
+        loadClientVerifyStatus(user.uid);
       } else {
         solGate.style.display = 'block';
         solAppContent.style.display = 'none';
@@ -2947,7 +3223,11 @@
         recurring: recurring,
         promo_code: activePromo ? activePromo.code : '',
         promo_discount: promoDiscount,
-        dj_count: document.getElementById('sol-multi-dj-toggle').checked ? parseInt(document.getElementById('sol-multi-dj-count').value) || 2 : 1
+        dj_count: document.getElementById('sol-multi-dj-toggle').checked ? parseInt(document.getElementById('sol-multi-dj-count').value) || 2 : 1,
+        deposit_only: document.getElementById('sol-deposit-toggle').checked,
+        agreed_terms: document.getElementById('sol-agree-terms').checked,
+        agreed_waiver: document.getElementById('sol-agree-waiver').checked,
+        signature: document.getElementById('sol-signature').value || ''
       };
 
       fetch(BOOKING_URL, {
@@ -3341,16 +3621,71 @@
         '<div><strong style="color:#ff4d8f;">Experience:</strong> <span style="color:#ccc;">' + (dj.experience || 0) + ' years</span></div>' +
         '<div><strong style="color:#ff4d8f;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + dj.hourly_rate + '/hr</span></div>' +
         '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + (dj.total_bookings_completed || 0) + '</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Match Score:</strong> <span style="color:#00d4ff;" id="sol-dj-match-score">Calculating...</span></div>' +
         '</div>' +
+        '<div id="sol-dj-sound-samples" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading sound samples...</p></div>' +
+        '<div id="sol-dj-video-reel" style="text-align:left; margin:1rem 0;"></div>' +
         '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
-        '<div style="display:flex; gap:0.5rem; margin-top:1rem;">' +
+        '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
         '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' +
         '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '">Share Profile</button>' +
+        '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || '') + '">♥ Save DJ</button>' +
         '</div>';
 
       modal.style.display = 'flex';
 
       if (djUid) {
+        // Fetch sound samples
+        db.collection('dj-samples').doc(djUid).get().then(function(doc) {
+          var samplesEl = document.getElementById('sol-dj-sound-samples');
+          if (!samplesEl) return;
+          if (doc.exists && doc.data().samples && doc.data().samples.length > 0) {
+            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Sound Samples</h3>';
+            doc.data().samples.forEach(function(url) {
+              html += '<audio controls src="' + url + '" style="width:100%; margin-bottom:0.5rem; height:36px;"></audio>';
+            });
+            samplesEl.innerHTML = html;
+          } else {
+            samplesEl.innerHTML = '';
+          }
+        }).catch(function() {
+          var el = document.getElementById('sol-dj-sound-samples');
+          if (el) el.innerHTML = '';
+        });
+
+        // Fetch video reel
+        db.collection('dj-videos').doc(djUid).get().then(function(doc) {
+          var videoEl = document.getElementById('sol-dj-video-reel');
+          if (!videoEl) return;
+          if (doc.exists && doc.data().videos && doc.data().videos.length > 0) {
+            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Video Reel</h3>';
+            doc.data().videos.forEach(function(url) {
+              if (url.includes('youtube') || url.includes('youtu.be')) {
+                var ytId = url.split('v=')[1] || url.split('youtu.be/')[1] || '';
+                if (ytId) html += '<iframe width="100%" height="180" src="https://www.youtube.com/embed/' + ytId + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
+              } else {
+                html += '<video controls src="' + url + '" style="width:100%; border-radius:8px; margin-bottom:0.5rem;"></video>';
+              }
+            });
+            videoEl.innerHTML = html;
+          }
+        }).catch(function() {});
+
+        // Calculate match score
+        var scoreEl = document.getElementById('sol-dj-match-score');
+        if (scoreEl) {
+          var score = 50;
+          if (dj.rating && dj.rating >= 4.5) score += 20;
+          else if (dj.rating && dj.rating >= 4) score += 10;
+          if (dj.total_bookings_completed && dj.total_bookings_completed > 50) score += 15;
+          else if (dj.total_bookings_completed && dj.total_bookings_completed > 20) score += 8;
+          if (dj.is_verified) score += 10;
+          if (dj.experience && dj.experience >= 5) score += 5;
+          score = Math.min(100, score);
+          scoreEl.textContent = score + '%';
+          scoreEl.style.color = score >= 80 ? '#22c55e' : score >= 60 ? '#ffd860' : '#ff4d8f';
+        }
+
         db.collection('feedback').where('toUserId', '==', djUid).limit(10).get()
           .then(function(snapshot) {
             var reviewsEl = document.getElementById('sol-dj-reviews');
@@ -3573,6 +3908,472 @@
 
       localStorage.removeItem('sol_pending_booking');
       history.replaceState(null, '', window.location.pathname);
+    }
+
+    // ===== ADMIN SETTINGS (Push + Email) =====
+    function loadAdminSettings() {
+      db.collection('config').doc('notification-settings').get().then(function(doc) {
+        var s = doc.exists ? doc.data() : {};
+        var p = s.push || {};
+        var e = s.email || {};
+        document.getElementById('sol-settings-fcm-key').value = p.fcmKey || '';
+        document.getElementById('sol-settings-fcm-project').value = p.fcmProject || '';
+        document.getElementById('sol-settings-push-enabled').checked = !!p.enabled;
+        document.getElementById('sol-settings-push-booking').checked = p.booking !== false;
+        document.getElementById('sol-settings-push-message').checked = p.message !== false;
+        document.getElementById('sol-settings-push-reminder').checked = p.reminder !== false;
+        document.getElementById('sol-settings-smtp-host').value = e.smtpHost || '';
+        document.getElementById('sol-settings-smtp-port').value = e.smtpPort || '';
+        document.getElementById('sol-settings-smtp-user').value = e.smtpUser || '';
+        document.getElementById('sol-settings-smtp-pass').value = e.smtpPass || '';
+        document.getElementById('sol-settings-from-email').value = e.fromEmail || '';
+        document.getElementById('sol-settings-email-enabled').checked = !!e.enabled;
+        document.getElementById('sol-settings-email-booking').checked = e.booking !== false;
+        document.getElementById('sol-settings-email-reminder').checked = e.reminder !== false;
+        document.getElementById('sol-settings-email-receipt').checked = e.receipt !== false;
+      }).catch(function() {});
+    }
+    document.getElementById('sol-settings-save').addEventListener('click', function() {
+      var statusEl = document.getElementById('sol-settings-status');
+      statusEl.textContent = 'Saving...';
+      statusEl.style.color = '#ffd860';
+      var data = {
+        push: {
+          fcmKey: document.getElementById('sol-settings-fcm-key').value,
+          fcmProject: document.getElementById('sol-settings-fcm-project').value,
+          enabled: document.getElementById('sol-settings-push-enabled').checked,
+          booking: document.getElementById('sol-settings-push-booking').checked,
+          message: document.getElementById('sol-settings-push-message').checked,
+          reminder: document.getElementById('sol-settings-push-reminder').checked
+        },
+        email: {
+          smtpHost: document.getElementById('sol-settings-smtp-host').value,
+          smtpPort: document.getElementById('sol-settings-smtp-port').value,
+          smtpUser: document.getElementById('sol-settings-smtp-user').value,
+          smtpPass: document.getElementById('sol-settings-smtp-pass').value,
+          fromEmail: document.getElementById('sol-settings-from-email').value,
+          enabled: document.getElementById('sol-settings-email-enabled').checked,
+          booking: document.getElementById('sol-settings-email-booking').checked,
+          reminder: document.getElementById('sol-settings-email-reminder').checked,
+          receipt: document.getElementById('sol-settings-email-receipt').checked
+        },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection('config').doc('notification-settings').set(data, { merge: true })
+        .then(function() {
+          statusEl.textContent = 'Settings saved successfully!';
+          statusEl.style.color = '#22c55e';
+          setTimeout(function() { statusEl.textContent = ''; }, 3000);
+        }).catch(function(err) {
+          statusEl.textContent = 'Error: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
+    });
+
+    // ===== SAVED / FAVORITE DJs =====
+    function loadSavedDjs(uid) {
+      db.collection('saved-djs').where('clientId', '==', uid).onSnapshot(function(snapshot) {
+        var box = document.getElementById('sol-saved-djs');
+        box.innerHTML = '';
+        if (snapshot.empty) {
+          box.innerHTML = '<p style="color:#888;">No saved DJs yet. Click ♥ on a DJ profile to save them.</p>';
+          return;
+        }
+        snapshot.forEach(function(doc) {
+          var d = doc.data();
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; align-items:center; gap:0.75rem; min-width:200px;';
+          var avatar = d.djAvatar ? '<img src="' + d.djAvatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + (d.djName || 'D').charAt(0) + '</div>';
+          card.innerHTML = avatar + '<div style="flex:1;"><strong>' + (d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + doc.id + '">✕</button>';
+          box.appendChild(card);
+        });
+        box.querySelectorAll('button[data-remove-saved]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('saved-djs').doc(btn.getAttribute('data-remove-saved')).delete();
+          });
+        });
+      });
+    }
+
+    // Handle save DJ from profile modal
+    document.getElementById('sol-dj-profile-modal').addEventListener('click', function(e) {
+      if (e.target && e.target.hasAttribute('data-save-dj')) {
+        var djUid = e.target.getAttribute('data-save-dj');
+        var djName = decodeURIComponent(e.target.getAttribute('data-save-dj-name') || '');
+        var djAvatar = decodeURIComponent(e.target.getAttribute('data-save-dj-avatar') || '');
+        if (!auth.currentUser || !djUid) return;
+        db.collection('saved-djs').where('clientId', '==', auth.currentUser.uid).where('djId', '==', djUid).get().then(function(snap) {
+          if (!snap.empty) {
+            e.target.textContent = '♥ Already Saved';
+            return;
+          }
+          db.collection('saved-djs').add({
+            clientId: auth.currentUser.uid,
+            djId: djUid,
+            djName: djName,
+            djAvatar: djAvatar,
+            savedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(function() {
+            e.target.textContent = '♥ Saved!';
+            e.target.style.background = '#22c55e';
+          });
+        });
+      }
+    });
+
+    // ===== DEPOSIT / PARTIAL PAYMENTS =====
+    document.getElementById('sol-deposit-toggle').addEventListener('change', function() {
+      var info = document.getElementById('sol-deposit-info');
+      if (this.checked) {
+        var total = document.getElementById('price-total');
+        var totalVal = parseFloat(total.textContent) || 0;
+        var deposit = Math.round(totalVal * 0.5 * 100) / 100;
+        info.textContent = 'Deposit due now: $' + deposit.toFixed(2) + ' | Balance due at event: $' + (totalVal - deposit).toFixed(2);
+        info.style.display = 'block';
+      } else {
+        info.style.display = 'none';
+      }
+    });
+
+    // ===== TIP / GRATUITY =====
+    var selectedTipAmount = 0;
+    document.querySelectorAll('.sol-tip-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.sol-tip-btn').forEach(function(b) { b.style.background = ''; });
+        btn.style.background = '#ff4d8f';
+        var val = btn.getAttribute('data-tip');
+        if (val === 'custom') {
+          document.getElementById('sol-tip-custom').style.display = 'block';
+          selectedTipAmount = 0;
+        } else {
+          document.getElementById('sol-tip-custom').style.display = 'none';
+          selectedTipAmount = parseInt(val);
+        }
+      });
+    });
+    document.getElementById('sol-tip-submit').addEventListener('click', function() {
+      var bookingId = document.getElementById('sol-tip-booking').value;
+      if (!bookingId) { document.getElementById('sol-tip-status').textContent = 'Select a booking first.'; return; }
+      var amount = selectedTipAmount || parseInt(document.getElementById('sol-tip-custom').value) || 0;
+      if (amount <= 0) { document.getElementById('sol-tip-status').textContent = 'Enter a valid tip amount.'; return; }
+      db.collection('tips').add({
+        bookingId: bookingId,
+        clientId: auth.currentUser.uid,
+        amount: amount,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        document.getElementById('sol-tip-status').textContent = 'Tip of $' + amount + ' submitted! Thank you.';
+        document.getElementById('sol-tip-status').style.color = '#22c55e';
+        setTimeout(function() { document.getElementById('sol-tip-status').textContent = ''; }, 4000);
+      });
+    });
+
+    // ===== LOYALTY / REWARDS =====
+    function loadLoyalty(uid) {
+      db.collection('bookings').where('clientId', '==', uid).where('status', '==', 'completed').get().then(function(snap) {
+        var count = snap.size;
+        var points = count * 100;
+        var tier = 'Bronze';
+        var perks = '5% off your 3rd booking';
+        if (points >= 500) { tier = 'Silver'; perks = '10% off, priority booking'; }
+        if (points >= 1000) { tier = 'Gold'; perks = '15% off, priority booking, free MC add-on'; }
+        if (points >= 2000) { tier = 'Platinum'; perks = '20% off, priority booking, free MC + lighting'; }
+        document.getElementById('sol-loyalty-points').textContent = points;
+        document.getElementById('sol-loyalty-bookings').textContent = count;
+        document.getElementById('sol-loyalty-tier').textContent = tier;
+        document.getElementById('sol-loyalty-perks').textContent = 'Perks: ' + perks;
+      });
+    }
+
+    // ===== CLIENT VERIFICATION =====
+    function loadClientVerifyStatus(uid) {
+      db.collection('client-verifications').doc(uid).get().then(function(doc) {
+        var box = document.getElementById('sol-verify-status-box');
+        if (doc.exists) {
+          var s = doc.data().status || 'pending';
+          if (s === 'approved') { box.textContent = '✅ Verified'; box.style.color = '#22c55e'; }
+          else if (s === 'rejected') { box.textContent = '❌ Verification rejected'; box.style.color = '#ff4d8f'; }
+          else { box.textContent = '⏳ Verification pending review'; box.style.color = '#ffd860'; }
+        } else {
+          box.textContent = 'Not verified yet. Complete the form below.';
+          box.style.color = '#aaa';
+        }
+      });
+    }
+    document.getElementById('sol-verify-submit').addEventListener('click', function() {
+      if (!auth.currentUser) return;
+      var statusEl = document.getElementById('sol-verify-client-status');
+      var uid = auth.currentUser.uid;
+      db.collection('client-verifications').doc(uid).set({
+        fullName: document.getElementById('sol-verify-fullname').value,
+        phone: document.getElementById('sol-verify-phone').value,
+        idUrl: document.getElementById('sol-verify-id-url').value,
+        status: 'pending',
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        statusEl.textContent = 'Verification submitted! We\'ll review it shortly.';
+        statusEl.style.color = '#22c55e';
+        loadClientVerifyStatus(uid);
+      }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
+
+    // ===== DJ BOOKING CALENDAR =====
+    var calDate = new Date();
+    var djCalendarBookings = [];
+    var djCalendarBlocked = [];
+
+    function renderDJCalendar() {
+      var grid = document.getElementById('sol-cal-grid');
+      var monthEl = document.getElementById('sol-cal-month');
+      var year = calDate.getFullYear();
+      var month = calDate.getMonth();
+      var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      monthEl.textContent = monthNames[month] + ' ' + year;
+
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      grid.innerHTML = '';
+      var dayLabels = ['S','M','T','W','T','F','S'];
+      dayLabels.forEach(function(l) {
+        var cell = document.createElement('div');
+        cell.style.cssText = 'padding:0.3rem; font-size:0.75rem; color:#666; font-weight:700;';
+        cell.textContent = l;
+        grid.appendChild(cell);
+      });
+      for (var i = 0; i < firstDay; i++) {
+        var empty = document.createElement('div');
+        grid.appendChild(empty);
+      }
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var cell = document.createElement('div');
+        cell.style.cssText = 'padding:0.4rem; font-size:0.8rem; border-radius:6px; cursor:pointer; position:relative;';
+        cell.textContent = d;
+        var hasBooking = djCalendarBookings.some(function(b) { return (b.event_date || b.date || '').startsWith(dateStr); });
+        var isBlocked = djCalendarBlocked.indexOf(dateStr) >= 0;
+        if (hasBooking) { cell.style.background = 'rgba(255,77,143,0.3)'; cell.style.color = '#ff4d8f'; cell.title = 'Has booking'; }
+        if (isBlocked) { cell.style.background = 'rgba(255,59,48,0.3)'; cell.style.color = '#ff3b30'; cell.title = 'Blocked'; }
+        grid.appendChild(cell);
+      }
+    }
+    document.getElementById('sol-cal-prev').addEventListener('click', function() {
+      calDate.setMonth(calDate.getMonth() - 1);
+      renderDJCalendar();
+    });
+    document.getElementById('sol-cal-next').addEventListener('click', function() {
+      calDate.setMonth(calDate.getMonth() + 1);
+      renderDJCalendar();
+    });
+
+    function loadDJCalendarData(uid) {
+      db.collection('bookings').where('djId', '==', uid).onSnapshot(function(snap) {
+        djCalendarBookings = [];
+        snap.forEach(function(doc) { djCalendarBookings.push(doc.data()); });
+        renderDJCalendar();
+      });
+      db.collection('dj-availability').doc(uid).onSnapshot(function(doc) {
+        djCalendarBlocked = doc.exists ? (doc.data().blockedDates || []) : [];
+        renderDJCalendar();
+      });
+    }
+
+    // ===== DJ SETLIST BUILDER =====
+    document.getElementById('sol-setlist-add').addEventListener('click', function() {
+      if (!auth.currentUser) return;
+      var bookingId = document.getElementById('sol-setlist-booking').value;
+      var time = document.getElementById('sol-setlist-time').value;
+      var track = document.getElementById('sol-setlist-track').value;
+      if (!bookingId || !track) return;
+      db.collection('setlists').add({
+        bookingId: bookingId,
+        djId: auth.currentUser.uid,
+        time: time,
+        track: track,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function() {
+        document.getElementById('sol-setlist-track').value = '';
+        loadSetlist(bookingId);
+      });
+    });
+
+    function loadSetlist(bookingId) {
+      var box = document.getElementById('sol-setlist-items');
+      box.innerHTML = '';
+      db.collection('setlists').where('bookingId', '==', bookingId).orderBy('time').get().then(function(snap) {
+        snap.forEach(function(doc) {
+          var s = doc.data();
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex; align-items:center; gap:0.5rem; background:#1a1a1a; padding:0.5rem; border-radius:8px;';
+          row.innerHTML = '<span style="color:#00d4ff; font-size:0.85rem; min-width:55px;">' + (s.time || '--:--') + '</span><span style="flex:1; color:#ccc; font-size:0.85rem;">' + s.track + '</span><button type="button" class="submit-btn" style="background:#333; padding:0.25rem 0.5rem; font-size:0.75rem;" data-del-setlist="' + doc.id + '">✕</button>';
+          box.appendChild(row);
+        });
+        box.querySelectorAll('button[data-del-setlist]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('setlists').doc(btn.getAttribute('data-del-setlist')).delete().then(function() {
+              loadSetlist(bookingId);
+            });
+          });
+        });
+      });
+    }
+    document.getElementById('sol-setlist-booking').addEventListener('change', function() {
+      if (this.value) loadSetlist(this.value);
+    });
+
+    // ===== DJ ANALYTICS =====
+    function loadDJAnalytics(uid) {
+      db.collection('bookings').where('djId', '==', uid).get().then(function(snap) {
+        var completed = 0, total = snap.size, rated = 0, ratingSum = 0;
+        var responseTimes = [];
+        var clientIds = {};
+        var monthlyEarnings = {};
+        snap.forEach(function(doc) {
+          var b = doc.data();
+          if (b.status === 'completed') {
+            completed++;
+            if (b.rating) { ratingSum += b.rating; rated++; }
+            var amount = b.totalAmount || b.total_cost || 0;
+            var month = '';
+            if (b.event_date) month = b.event_date.substring(0, 7);
+            else if (b.date) month = b.date.substring(0, 7);
+            if (month) monthlyEarnings[month] = (monthlyEarnings[month] || 0) + amount * 0.85;
+          }
+          if (b.clientId) clientIds[b.clientId] = (clientIds[b.clientId] || 0) + 1;
+          if (b.responseTimeMs) responseTimes.push(b.responseTimeMs);
+        });
+        document.getElementById('sol-dj-avg-rating').textContent = rated > 0 ? (ratingSum / rated).toFixed(1) : '-';
+        document.getElementById('sol-dj-completion-rate').textContent = total > 0 ? Math.round(completed / total * 100) + '%' : '-';
+        if (responseTimes.length > 0) {
+          var avgMs = responseTimes.reduce(function(a,b){return a+b;},0) / responseTimes.length;
+          var mins = Math.round(avgMs / 60000);
+          document.getElementById('sol-dj-avg-response').textContent = mins + 'm';
+        } else {
+          document.getElementById('sol-dj-avg-response').textContent = '-';
+        }
+        var repeatCount = Object.values(clientIds).filter(function(c) { return c > 1; }).length;
+        document.getElementById('sol-dj-repeat-clients').textContent = repeatCount;
+
+        // Render earnings chart
+        var chartEl = document.getElementById('sol-dj-earnings-chart');
+        chartEl.innerHTML = '';
+        var now = new Date();
+        var months = [];
+        for (var i = 5; i >= 0; i--) {
+          var d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          var key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+          months.push({ key: key, label: d.toLocaleString('default', { month: 'short' }), value: monthlyEarnings[key] || 0 });
+        }
+        var maxVal = Math.max.apply(null, months.map(function(m) { return m.value; }));
+        if (maxVal === 0) maxVal = 1;
+        months.forEach(function(m) {
+          var bar = document.createElement('div');
+          var h = Math.max(4, (m.value / maxVal) * 80);
+          bar.style.cssText = 'flex:1; background:linear-gradient(180deg,#ff4d8f,#e33471); border-radius:4px 4px 0 0; height:' + h + 'px; position:relative;';
+          bar.title = m.label + ': $' + m.value.toFixed(0);
+          var lbl = document.createElement('div');
+          lbl.style.cssText = 'font-size:0.65rem; color:#888; text-align:center; margin-top:4px;';
+          lbl.textContent = m.label;
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'flex:1; display:flex; flex-direction:column; align-items:center;';
+          wrap.appendChild(bar);
+          wrap.appendChild(lbl);
+          chartEl.appendChild(wrap);
+        });
+      });
+    }
+
+    // ===== DJ REVIEWS CLIENT =====
+    var selectedClientRating = 0;
+    document.querySelectorAll('#sol-client-review-stars .sol-star').forEach(function(star) {
+      star.addEventListener('click', function() {
+        selectedClientRating = parseInt(this.getAttribute('data-val'));
+        document.querySelectorAll('#sol-client-review-stars .sol-star').forEach(function(s) {
+          s.style.color = parseInt(s.getAttribute('data-val')) <= selectedClientRating ? '#ffd860' : '#444';
+        });
+      });
+    });
+    document.getElementById('sol-client-review-submit').addEventListener('click', function() {
+      if (!auth.currentUser) return;
+      var bookingId = document.getElementById('sol-client-review-booking').value;
+      var text = document.getElementById('sol-client-review-text').value;
+      if (!bookingId || !selectedClientRating) {
+        document.getElementById('sol-client-review-status').textContent = 'Select a booking and rating.';
+        return;
+      }
+      db.collection('bookings').doc(bookingId).get().then(function(doc) {
+        if (!doc.exists) return;
+        var b = doc.data();
+        db.collection('feedback').add({
+          toUserId: b.clientId,
+          fromUserId: auth.currentUser.uid,
+          fromName: b.djName || 'DJ',
+          rating: selectedClientRating,
+          review: text,
+          type: 'client',
+          bookingId: bookingId,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function() {
+          document.getElementById('sol-client-review-status').textContent = 'Client review submitted!';
+          document.getElementById('sol-client-review-status').style.color = '#22c55e';
+          document.getElementById('sol-client-review-text').value = '';
+          setTimeout(function() { document.getElementById('sol-client-review-status').textContent = ''; }, 3000);
+        });
+      });
+    });
+
+    // ===== DEPOSIT IN BOOKING FLOW =====
+    // Add deposit info to payload when form is submitted
+    var origSubmitHandler = document.getElementById('sol-quick-form').onsubmit;
+
+    // ===== CANCEL BOOKING WITH REFUND LOGIC =====
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.hasAttribute('data-cancel-booking')) {
+        var bookingId = e.target.getAttribute('data-cancel-booking');
+        var bookingDate = e.target.getAttribute('data-booking-date') || '';
+        var daysUntil = 999;
+        if (bookingDate) {
+          var eventDate = new Date(bookingDate);
+          daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
+        }
+        var refundMsg = daysUntil >= 7 ? '50% refund will be processed.' : 'No refund (within 7 days of event).';
+        if (!confirm('Cancel this booking? ' + refundMsg)) return;
+        db.collection('bookings').doc(bookingId).set({
+          status: 'cancelled',
+          cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+          refundDue: daysUntil >= 7,
+          refundAmount: daysUntil >= 7 ? 50 : 0
+        }, { merge: true });
+      }
+    });
+
+    // ===== MULTI-EVENT / SERIES BOOKING =====
+    // Already handled via recurring + multi-DJ toggle; add series name field
+    // The recurring field handles weekly/biweekly/monthly automatically
+
+    // ===== POPULATE TIP & SETLIST & CLIENT REVIEW DROPDOWNS =====
+    function populateAllBookingDropdowns(bookings) {
+      var tipSelect = document.getElementById('sol-tip-booking');
+      var setlistSelect = document.getElementById('sol-setlist-booking');
+      var clientReviewSelect = document.getElementById('sol-client-review-booking');
+      var tipOpts = '<option value="">Select a completed booking...</option>';
+      var setlistOpts = '<option value="">Select a booking...</option>';
+      var reviewOpts = '<option value="">Select a completed booking...</option>';
+      bookings.forEach(function(b) {
+        var label = (b.event_type || 'Event') + ' — ' + (b.event_date || b.date || 'TBD');
+        if (b.id) label += ' (' + b.id.substring(0, 8) + ')';
+        if (b.status === 'completed') {
+          tipOpts += '<option value="' + b.id + '">' + label + '</option>';
+          reviewOpts += '<option value="' + b.id + '">' + label + '</option>';
+        }
+        setlistOpts += '<option value="' + b.id + '">' + label + '</option>';
+      });
+      if (tipSelect) tipSelect.innerHTML = tipOpts;
+      if (setlistSelect) setlistSelect.innerHTML = setlistOpts;
+      if (clientReviewSelect) clientReviewSelect.innerHTML = reviewOpts;
     }
 
   </script>
