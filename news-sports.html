@@ -13,7 +13,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://audiomack.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://djweirdnasty-api.kurtisctabb.workers.dev; upgrade-insecure-requests">
   <title>Sports News | DJWEIRDNASTY</title>
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -21,6 +21,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="description" content="Latest sports news, highlights, and game-day updates from DJWEIRDNASTY.">
   <meta property="og:title" content="Sports News | DJWEIRDNASTY">
   <meta property="og:description" content="Latest sports news, highlights, and game-day updates from DJWEIRDNASTY.">
   <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
@@ -40,9 +41,9 @@
 <body>
   <header>
     <div class="container">
-      <h1 class="site-banner">
-        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
-      </h1>
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
       <nav>
         <a href="index.html">Home</a>
         <a href="index.html#about">About</a>
@@ -53,7 +54,7 @@
 <a href="sol.html">SOL</a>
 
         <a href="index.html#newsletter">Newsletter</a>
-        <a href="index.html#contact">Contact</a>
+        <a href="contact.html">Contact</a>
         <a href="privacy-policy.html">Privacy</a>
       </nav>
     </div>
@@ -61,7 +62,7 @@
   <main class="container">
     <section class="info">
       <p><a href="news.html" style="color: #ffd860;">← Back to News</a></p>
-      <img src="sports-news.png" alt="Sports" class="sports-banner" style="width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto 1rem; border-radius: 12px;">
+      <img src="sports-news.webp" alt="Sports" class="sports-banner" style="width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto 1rem; border-radius: 12px;">
     </section>
 
     <section id="sports" class="info">
@@ -101,7 +102,7 @@
         <a href="news-russell-westbrook-retirement.html" class="playlist-link">Read more</a>
       </article>
       <article class="event-card">
-        <img src="red-sox-blue-jays.png" alt="Red Sox-Blue Jays confusion" class="event-flyer">
+        <img src="red-sox-blue-jays.webp" alt="Red Sox-Blue Jays confusion" class="event-flyer">
         <h3>Bizarre Rules Confusion Causes 16-Minute Delay in Red Sox-Blue Jays Game</h3>
         <p>A confusing sequence in the seventh inning caused a 16-minute delay during the Boston Red Sox’s 2-1 loss to the Toronto Blue Jays at Rogers Centre.</p>
         <a href="news-red-sox-blue-jays.html" class="playlist-link">Read more</a>
@@ -113,13 +114,13 @@
         <a href="news-phillies-cardinals.html" class="playlist-link">Read more</a>
       </article>
       <article class="event-card">
-        <img src="fantasy-football-2026.png" alt="Fantasy Football 2026" class="event-flyer">
+        <img src="fantasy-football-2026.webp" alt="Fantasy Football 2026" class="event-flyer">
         <h3>Fantasy Football 2026: Players You May Want to Avoid at Their Current Draft Price</h3>
         <p>ESPN has released its latest fantasy football analysis identifying several players who could be overvalued in 2026 drafts...</p>
         <a href="news-fantasy-football-2026.html" class="playlist-link">Read more</a>
       </article>
       <article class="event-card">
-        <img src="don-nelson.png?v=3" alt="Don Nelson" class="event-flyer">
+        <img src="don-nelson.webp" alt="Don Nelson" class="event-flyer">
         <h3>The NBA Loses a Basketball Visionary: Don Nelson Dies at 86</h3>
         <p>The basketball world is mourning the loss of Don Nelson, one of the NBA's most accomplished coaches and most influential innovators. Nelson died Sunday at the age of 86...</p>
         <a href="news-don-nelson.html" class="playlist-link">Read more</a>
@@ -127,7 +128,7 @@
     </section>
   </main>
   <footer class="container">
-    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
 <script src="site.js?v=5"></script>
 </body>

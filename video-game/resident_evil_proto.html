@@ -164,17 +164,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=6">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <link rel="stylesheet" href="/style.css?v=5">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://djweirdnasty-api.kurtisctabb.workers.dev; upgrade-insecure-requests">
 </head>
 <body>
   <header>
     <div class="container">
-      <h1 class="site-banner">
-        <a href="/index.html"><img src="/djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" /></a>
-      </h1>
+      <div class="site-banner">
+        <a href="/index.html"><img src="/djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" /></a>
+      </div>
       <nav>
         <a href="/index.html">Home</a>
         <a href="/index.html#about">About</a>
@@ -183,7 +181,7 @@
         <a href="/mixtapes.html">Mixtapes</a>
         <a href="/content.html">Content</a>
         <a href="/index.html#newsletter">Newsletter</a>
-        <a href="/index.html#contact">Contact</a>
+        <a href="/contact.html">Contact</a>
         <a href="/privacy-policy.html">Privacy</a>
       </nav>
     </div>
@@ -216,31 +214,26 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const playerImg = new Image();
-playerImg.src = 'main-character-with-gun.png?v=8';
+playerImg.src = 'main-character-with-gun.png';
 const playerIdleImg = new Image();
-playerIdleImg.src = 'main-character-without-gun.png?v=8';
+playerIdleImg.src = 'main-character-without-gun.png';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'character-walk-cycle.png?v=8';
-const playerPistolWalkingImg = new Image();
-playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=8';
+playerWalkingImg.src = 'main-character-walking.png';
+const WALK_FRAMES = {
+  0: [ { x: 609, y: 538, w: 431, h: 1092 }, { x: 2307, y: 1858, w: 430, h: 1090 } ],
+  1: [ { x: 1141, y: 538, w: 490, h: 1117 }, { x: 1717, y: 1858, w: 491, h: 1117 } ],
+  2: [ { x: 1606, y: 540, w: 599, h: 1094 }, { x: 1144, y: 1859, w: 596, h: 1098 } ],
+  3: [ { x: 2167, y: 543, w: 614, h: 1091 }, { x: 567, y: 1863, w: 612, h: 1092 } ]
+};
+const walkDir2Frame1Img = new Image();
+walkDir2Frame1Img.src = 'walk-dir2-frame1-fixed.png';
+const walkDir3Frame1Img = new Image();
+walkDir3Frame1Img.src = 'walk-dir3-frame1-fixed.png';
+const WALK_FRAME_OVERRIDES = { 2: walkDir2Frame1Img, 3: walkDir3Frame1Img };
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieImg = new Image();
 zombieImg.src = 'zombie-figure-t.png';
-// Sprite frame boundaries (detected from actual pixel analysis)
-// Standing sprites: 5 cols (blank + 4 dirs), varying widths
-// Frame order: blank, down, up, right, left
-const gunFrameX = [206, 1114, 2183, 3046];
-const gunFrameW = [908, 1069, 863, 1050];
-const gunFrameY = 377;
-const gunFrameH = 2003;
-const nogunFrameX = [462, 1418, 2426, 3210];
-const nogunFrameW = [956, 1008, 784, 886];
-const nogunFrameY = 373;
-const nogunFrameH = 1903;
-// dirIndex 0=up, 1=down, 2=right, 3=left → frame 0=down, 1=up, 2=right, 3=left
-const standDirMap = [1, 0, 2, 3];
-let killCount = 0;
 let mouseHeld = false;
 let facing = { x: 0, y: 1 };
 let levelStates = [];
@@ -584,8 +577,7 @@ function showCutscene(text, cb) {
 }
 
 window.addEventListener('keydown', e => {
-  const key = ['w','a','s','d'].includes(e.key.toLowerCase()) ? e.key.toLowerCase() : e.key;
-  if (input.hasOwnProperty(key)) input[key] = true;
+  if (input.hasOwnProperty(e.key)) input[e.key] = true;
   const n = parseInt(e.key, 10);
   if (n > 0 && n <= player.weapons.length) {
     player.weaponIndex = n - 1;
@@ -595,8 +587,7 @@ window.addEventListener('keydown', e => {
   if (e.key.toLowerCase() === 'r' && (!gameStarted || player.dead || player.won)) restart();
 });
 window.addEventListener('keyup', e => {
-  const key = ['w','a','s','d'].includes(e.key.toLowerCase()) ? e.key.toLowerCase() : e.key;
-  if (input.hasOwnProperty(key)) input[key] = false;
+  if (input.hasOwnProperty(e.key)) input[e.key] = false;
 });
 function setAim(clientX, clientY) {
   const r = canvas.getBoundingClientRect();
@@ -765,13 +756,7 @@ function restart() {
   if (cutscene) cutscene.style.display = 'none';
   if (achievement) achievement.style.display = 'none';
   currentLevel = 0;
-  player = gameBeaten ? {
-    x: 80, y: 360, size: 14, speed: 120,
-    health: 100, maxHealth: 100,
-    ammo: 20, keys: 0, greyKeys: 0, masterKeys: 0,
-    weapons: [{ ...rpg }], weaponIndex: 0, weapon: { ...rpg },
-    lastHit: 0, dead: false, won: false
-  } : {
+  player = {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
     ammo: 0, keys: 0, greyKeys: 0, masterKeys: 0,
@@ -779,12 +764,11 @@ function restart() {
     lastHit: 0, dead: false, won: false
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
-  killCount = 0;
   levelStates = [];
   if (introShown) {
-    loadLevel(0, gameBeaten);
+    loadLevel(0);
   } else {
-    showCutscene(introText, function() { loadLevel(0, gameBeaten); });
+    showCutscene(introText, function() { loadLevel(0); });
     introShown = true;
   }
 }
@@ -1229,7 +1213,7 @@ function update(dt) {
         z.vy += b.vy * 0.15;
         remove = true;
         direct = z;
-        if (z.health <= 0) { zombies.splice(j, 1); killCount++; }
+        if (z.health <= 0) zombies.splice(j, 1);
         break;
       }
     }
@@ -1245,7 +1229,7 @@ function update(dt) {
 
   // Clean up splash deaths
   for (let i = zombies.length - 1; i >= 0; i--) {
-    if (zombies[i].health <= 0) { zombies.splice(i, 1); killCount++; }
+    if (zombies[i].health <= 0) zombies.splice(i, 1);
   }
 
   if (now > messageUntil) message = '';
@@ -1565,14 +1549,7 @@ function draw() {
   const drawH = s * 7;
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
-  let img;
-  if (alive && player.weapon && (fireHeld || mouseHeld)) {
-    img = playerImg;
-  } else if (moving) {
-    img = (alive && player.weapon) ? playerPistolWalkingImg : playerWalkingImg;
-  } else {
-    img = (alive && player.weapon) ? playerImg : playerIdleImg;
-  }
+  const img = (alive && player.weapon && (fireHeld || mouseHeld)) ? playerImg : (moving ? playerWalkingImg : playerIdleImg);
   if (img.complete && img.naturalWidth > 0) {
     let dirIndex = 1;
     if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
@@ -1580,45 +1557,21 @@ function draw() {
     let sx, sy, frameW, frameH;
     let drawSrcImg = img;
     if (img === playerWalkingImg) {
-      // 3885x3088, 4 rows x 8 cols, cellW=485.625 (non-integer)
-      // Row 0 (down) has blank col 0, only 7 frames (cols 1-7)
-      // Rows 1-3 have 8 frames (cols 0-7)
-      const cellW = img.naturalWidth / 8;
-      const cellH = img.naturalHeight / 4;
-      const rowMap = [1, 0, 2, 3];
-      const animFrame = moving ? (Math.floor(now / 80) % 7) : 0;
-      const row = rowMap[dirIndex];
-      const colOffset = (row === 0) ? 1 : 0;
-      const col = animFrame + colOffset;
-      sx = Math.floor(col * cellW);
-      sy = Math.floor(row * cellH);
-      frameW = Math.floor((col + 1) * cellW) - sx;
-      frameH = Math.floor(cellH);
-    } else if (img === playerPistolWalkingImg) {
-      // 1536x1024, clean 8x4 grid
-      const cols = 8;
-      const rows = 4;
-      const rowMap = [1, 0, 2, 3];
-      const animFrame = moving ? (Math.floor(now / 80) % cols) : 0;
-      const row = rowMap[dirIndex];
-      const rawW = img.naturalWidth / cols;
-      const rawH = img.naturalHeight / rows;
-      sx = Math.floor(animFrame * rawW);
-      sy = Math.floor(row * rawH);
-      frameW = Math.floor(rawW);
-      frameH = Math.floor(rawH);
-    } else if (img === playerImg) {
-      const fi = standDirMap[dirIndex];
-      sx = gunFrameX[fi];
-      frameW = gunFrameW[fi];
-      sy = gunFrameY;
-      frameH = gunFrameH;
+      const animFrame = moving ? (Math.floor(now / 150) % 2) : 0;
+      const overrideImg = animFrame === 1 ? WALK_FRAME_OVERRIDES[dirIndex] : null;
+      if (overrideImg && overrideImg.complete && overrideImg.naturalWidth > 0) {
+        drawSrcImg = overrideImg;
+        sx = 0; sy = 0; frameW = overrideImg.naturalWidth; frameH = overrideImg.naturalHeight;
+      } else {
+        const rect = WALK_FRAMES[dirIndex][animFrame];
+        sx = rect.x; sy = rect.y; frameW = rect.w; frameH = rect.h;
+      }
     } else {
-      const fi = standDirMap[dirIndex];
-      sx = nogunFrameX[fi];
-      frameW = nogunFrameW[fi];
-      sy = nogunFrameY;
-      frameH = nogunFrameH;
+      const frames = 4;
+      frameW = img.naturalWidth / frames;
+      frameH = img.naturalHeight;
+      sx = dirIndex * frameW;
+      sy = 0;
     }
     const drawW = drawH * (frameW / frameH);
     ctx.save();
@@ -1685,64 +1638,23 @@ function draw() {
     ctx.drawImage(playerPortrait, sx, sy, sw, sh, portraitX, portraitY, portraitSize, portraitSize);
   }
 
-  const barW = 120;
+  const barW = 100;
   const barX = portraitX + portraitSize + 8;
-  const barY = portraitY + portraitSize / 2 - 8;
+  const barY = portraitY + portraitSize / 2 - 4;
   const hpPct = Math.max(0, player.health) / player.maxHealth;
-  ctx.fillStyle = '#333';
-  ctx.fillRect(barX - 2, barY - 2, barW + 4, 24);
   ctx.fillStyle = '#f00';
-  ctx.fillRect(barX, barY, barW, 12);
-  ctx.fillStyle = hpPct > 0.3 ? '#0f0' : '#f80';
-  ctx.fillRect(barX, barY, barW * hpPct, 12);
-  ctx.strokeStyle = '#0f0';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, barW, 12);
-  ctx.fillStyle = '#fff';
-  ctx.font = '10px Courier New';
-  ctx.textAlign = 'center';
-  ctx.fillText(Math.max(0, player.health) + '/' + player.maxHealth, barX + barW/2, barY + 10);
-  ctx.textAlign = 'left';
+  ctx.fillRect(barX, barY, barW, 8);
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(barX, barY, barW * hpPct, 8);
 
   // HUD
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
   const ammo = player.ammo === Infinity ? '∞' : player.ammo;
-  const hud = `LV: ${currentLevel + 1}  KILLS: ${killCount}  ZOMBIES: ${zombies.length}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
+  const hud = `LV: ${currentLevel + 1}  HP: ${Math.max(0, player.health)}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
   ctx.fillText(hud, 10, portraitY + portraitSize + 18);
   if (message) ctx.fillText(message, 10, 460);
-
-  // Minimap
-  const mmScale = 0.12;
-  const mmW = world.w * mmScale;
-  const mmH = world.h * mmScale;
-  const mmX = canvas.width - mmW - 10;
-  const mmY = 10;
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(mmX - 3, mmY - 3, mmW + 6, mmH + 6);
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fillRect(mmX, mmY, mmW, mmH);
-  ctx.fillStyle = '#555';
-  for (const w of walls) {
-    ctx.fillRect(mmX + w.x * mmScale, mmY + w.y * mmScale, Math.max(1, w.w * mmScale), Math.max(1, w.h * mmScale));
-  }
-  ctx.fillStyle = player.keys >= lvl.keysNeeded ? '#2f2' : '#a60';
-  ctx.fillRect(mmX + door.x * mmScale, mmY + door.y * mmScale, Math.max(2, door.w * mmScale), Math.max(2, door.h * mmScale));
-  for (const it of items) {
-    if (it.taken) continue;
-    ctx.fillStyle = '#ff0';
-    ctx.fillRect(mmX + it.x * mmScale - 1, mmY + it.y * mmScale - 1, 2, 2);
-  }
-  ctx.fillStyle = '#f00';
-  for (const z of zombies) {
-    ctx.fillRect(mmX + z.x * mmScale - 1, mmY + z.y * mmScale - 1, 2, 2);
-  }
-  ctx.fillStyle = '#0f0';
-  ctx.fillRect(mmX + (player.x + player.size/2) * mmScale - 2, mmY + (player.y + player.size/2) * mmScale - 2, 4, 4);
-  ctx.strokeStyle = '#0f0';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(mmX - 3, mmY - 3, mmW + 6, mmH + 6);
 }
 
 let last = performance.now();
@@ -1754,7 +1666,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 const CAROUSEL_EXCLUDE = ['/404.html','/contact.html','/privacy-policy.html','/thank-you.html','/newsletter-confirmed.html','/yandex_cf0ccdb95afad35c.html','/video-game/resident_evil_proto.html','/video-game/index.html'];
-const CAROUSEL_CONTENTS = [{"path":"/content.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.png","updated":1786907536,"published":1786907536},{"path":"/event-ghetto-house-party.html","title":"Ghetto House Party","img":"/Ghetto-house-party.JPEG","updated":1786901179,"published":1786901179},{"path":"/event-krew-nasa.html","title":"KREW NASA: Out of This World Tour 2026","img":"/krew-nasa-cities.jpeg","updated":1786901179,"published":1786901179},{"path":"/event-muggatime.html","title":"Welcome 2 Muggatime presented by Prophit Mugga Maniak","img":"/muggatime.PNG","updated":1786901179,"published":1786901179},{"path":"/event-murrdah-season.html","title":"MURRDAH SEASON MONDAY","img":"/murrdahseasonmonday.png","updated":1786901179,"published":1786901179},{"path":"/event-philly-skate-plex.html","title":"Philly Skate Plex Family Session","img":"/Philly-skate-logo.webp","updated":1786901179,"published":1786901179},{"path":"/event-private-booking.html","title":"Private Event Booking","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786901179},{"path":"/index.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.png","updated":1786908066,"published":1786908066},{"path":"/mixtapes.html","title":"Mixtapes | DJWEIRDNASTY","img":"/helladelphia-mixtapte-vol1.webp","updated":1786901179,"published":1786901179},{"path":"/mud-music-episode-1.html","title":"Episode 1 - MAN BEHIND THE CAMERA (Pilot)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-10.html","title":"Episode 10 - New York Underground (A-TEAM)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-11.html","title":"Episode 11 - Jewstallion Talian (Alex Bate)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-12.html","title":"Episode 12 - 90's Baby (Mya Allure)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-13.html","title":"MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-2.html","title":"Episode 2 - Venomous Effect (MR_SMITH_PHL)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-3.html","title":"Episode 3 - House Get a Cut (Traphouse Terrance)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-4.html","title":"Episode 4 - Don't Take It Personal (DTP Mantana)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-5.html","title":"Episode 5 - We Got Action (MFD)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-6.html","title":"Episode 6 - Ron Murrdah (Flavor Team)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-7.html","title":"MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-8.html","title":"MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-9.html","title":"Episode 9 - I AM H3RSH3Y","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode.html","title":"MUD MUSIC Top 10 Countdown","img":"/mud-music-logo.png","updated":1786901179,"published":1786901179},{"path":"/murrdah-season-monday.html","title":"Murrdah Season Monday \"Ayo Weird meet Skrilla & Ron Murrdah first time using Public Transportation\"","img":"/murrdah-og.jpg","updated":1786901179,"published":1786233600},{"path":"/news-ben-jones.html","title":"Ben Jones, Best Known as Cooter on 'The Dukes of Hazzard,' Dies at 84","img":"/ben-jones.jpg","updated":1786901179,"published":1786320000},{"path":"/news-brittany-boltinhouse.html","title":"Crown Taken Away, Legal Fight May Be Next for Former Miss North Carolina USA","img":"/Brittany-Boltinhouse.webp","updated":1786901179,"published":1786579200},{"path":"/news-colombia-earthquake.html","title":"Powerful 7.4 Quake Rocks Colombia as Rescue Crews Search Collapsed Buildings","img":"/columbia-earthquake.png","updated":1786901179,"published":1786320000},{"path":"/news-concord-mall-demolition.html","title":"Concord Mall Could Face Major Demolition and Redevelopment","img":"/delaware-concord-mall.webp","updated":1786901179,"published":1786665600},{"path":"/news-daycare-worker-arrested.html","title":"Bucks County Preschool Worker Charged After Alleged Assault of 2-Year-Old","img":"/day-care-worker-arrested.webp","updated":1786901179,"published":1786406400},{"path":"/news-deadly-midwest-storm.html","title":"Deadly Midwest Storms Leave 3 Dead and Nearly 800,000 Without Power","img":"/mid-town-storm.jpg","updated":1786901179,"published":1786492800},{"path":"/news-don-nelson.html","title":"The NBA Loses a Basketball Visionary: Don Nelson Dies at 86","img":"/don-nelson.png","updated":1786901179,"published":1786233600},{"path":"/news-entertainment.html","title":"Entertainment News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786579200},{"path":"/news-fantasy-football-2026.html","title":"Fantasy Football 2026: Players You May Want to Avoid at Their Current Draft Price","img":"/fantasy-football-2026.png","updated":1786901179,"published":1786320000},{"path":"/news-fever-stephanie-white.html","title":"Fever Rally Around Stephanie White in Statement Win Over Liberty","img":"/coach-stephanie-white.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-google-pixel-11.html","title":"Google Bets Big on AI as New Pixel 11 Phones Bring Bigger Storage and Camera Upgrades","img":"/google-new-phone.webp","updated":1786901179,"published":1786579200},{"path":"/news-hobbs-giles.html","title":"Hobbs Names Former Mesa Republican Mayor John Giles as Running Mate","img":"/katie-hobbs-john-giles.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-instagram-logo-redesign.html","title":"Instagram Gives Its Logo a Fresh Look \u2014 But Users Are Already Roasting the Redesign","img":"/instagram-new-logo.webp","updated":1786901179,"published":1786579200},{"path":"/news-las-vegas-assault-arrest.html","title":"Man Dies After Downtown Las Vegas Assault; Suspect Arrested","img":"/las-vegas-fight.webp","updated":1786901179,"published":1786665600},{"path":"/news-las-vegas-fentanyl.html","title":"Federal Investigation Leads to Seven Arrests in Alleged Las Vegas Fentanyl Network","img":"/drugs-from-raid.avif","updated":1786901179,"published":1786320000},{"path":"/news-las-vegas-shooting.html","title":"Las Vegas Domestic Disturbance Turns Deadly, Leaving Officer Injured and Two Dead","img":"/lasvegascrimescene.png","updated":1786901179,"published":1786320000},{"path":"/news-lil-durk-pissed-me-off.html","title":"Lil Durk\u2019s \u201cPissed Me Off\u201d Music Video Allowed as Evidence in Federal Trial","img":"/lil-durk-mug-shot.jpg","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-guilty-plea.html","title":"Luigi Mangione Admits Role in Killing of UnitedHealthcare CEO in Federal Guilty Plea","img":"/luigi-mangione-attends-pre-trial-137082044.webp","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-plea.html","title":"Luigi Mangione Could Change His Plea as Federal Case Takes New Turn","img":"/luigi-mangione-case.webp","updated":1786901179,"published":1786579200},{"path":"/news-medicaid-fraud.html","title":"19 Charged in Alleged $4 Million Pennsylvania Medicaid Fraud Scheme","img":"/4-million-fraud.png","updated":1786901179,"published":1786406400},{"path":"/news-meek-mill-shapiro.html","title":"Josh Shapiro Appears Alongside Meek Mill in New Philly Music Video","img":"/meek-mill-gov-josh.jpg","updated":1786901179,"published":1786492800},{"path":"/news-minimum-wage-2026.html","title":"Minimum Wage Across All 50 States in 2026: What Workers Are Earning","img":"/minimum-wage.png","updated":1786901179,"published":1786579200},{"path":"/news-music.html","title":"Music News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786665600},{"path":"/news-national.html","title":"National News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786752000},{"path":"/news-nba-youngboy-south-korea.html","title":"NBA YoungBoy Says He May Never Return to America After South Korea Trip","img":"/nbayoungboy.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-ne-yo.html","title":"Ne-Yo Hit With Lawsuit Over Alleged Dog Attack at Georgia Property","img":"/ne-yo.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-nfl-investment-scam.html","title":"Man at Center of Alleged NFL Investment Scam Dies as Players Seek Millions in Lost Money","img":"/nfl-scammer-found-dead.avif","updated":1786901179,"published":1786492800},{"path":"/news-nolan-wells.html","title":"Nolan Wells\u2019 Final Hours Raise New Questions as Friends and Parents Give Conflicting Accounts","img":"/nolan-wells.webp","updated":1786901179,"published":1786752000},{"path":"/news-philadelphia-father-killed.html","title":"Philadelphia Father Killed After Being Caught in Woodland Avenue Gunfire","img":"/innocemt-bystander-killed.webp","updated":1786901179,"published":1786579200},{"path":"/news-phillies-cardinals.html","title":"Phillies Hold Off Cardinals as Andrew Painter and Alan Rangel Rescue Depleted Bullpen","img":"/Phillies-win.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-prichard-colon-dead.html","title":"Prichard Colon Dies at 33 After Decade-Long Battle From Devastating Boxing Injury","img":"/prichard-colon-dead.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-puerto-rico.html","title":"Puerto Rico Water Shortage Intensifies as Drought Leads to Service Interruptions","img":"/puerto-rico.png","updated":1786901179,"published":1786320000},{"path":"/news-red-sox-blue-jays.html","title":"Bizarre Rules Confusion Causes 16-Minute Delay in Red Sox-Blue Jays Game","img":"/red-sox-blue-jays.png","updated":1786901179,"published":1786406400},{"path":"/news-remy-ma-papoose.html","title":"Remy Ma Defies Papoose\u2019s Legal Warning \u2014 Performs Controversial Diss Track Anyway","img":"/remy-ma.jpg","updated":1786901179,"published":1786579200},{"path":"/news-remy-ma-wanna-go.html","title":"Remy Ma Fires Back at Claressa Shields With Savage \u201cClearance Rack\u201d Diss on \u201cWanna Go\u201d","img":"/remy-claressa-papoose.jpg","updated":1786901179,"published":1786665600},{"path":"/news-russell-westbrook-retirement.html","title":"Russell Westbrook Walks Away From NBA After Legendary 18-Year Run","img":"/russell-westbrook.webp","updated":1786901179,"published":1786579200},{"path":"/news-septa-doylestown-death.html","title":"25-Year-Old Man Dies After Climbing Onto SEPTA Train in Doylestown","img":"/septa-doylestown.png","updated":1786901179,"published":1786579200},{"path":"/news-sports.html","title":"Sports News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786579200},{"path":"/news-statue-of-liberty.html","title":"Boat Captain Arrested After Fatal Capsizing Near Statue of Liberty","img":"/statue-of-liberty-incident.png","updated":1786901179,"published":1786233600},{"path":"/news-surrogate-texas.html","title":"Surrogate Refuses Abortion Request, Gives Birth to Baby With Serious Heart Defect in Texas","img":"/surrogate-texas.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-tasia-fortune.html","title":"Investigation Underway After Mississippi Woman Is Found Dead Hanging From Tree","img":"/tasia-fortune.png","updated":1786901179,"published":1786320000},{"path":"/news-taylor-swift-nashville-hof.html","title":"Taylor Swift and Lyle Lovett Lead Nashville Songwriters Hall of Fame Class","img":"/songwriters-halloffame.png","updated":1786901179,"published":1786492800},{"path":"/news-terrion-arnold-seahawks.html","title":"Terrion Arnold Reportedly Set to Join Seahawks While Facing Serious Felony Charges","img":"/terrion-arnold.jpg","updated":1786901179,"published":1786579200},{"path":"/news-thomas-ryan.html","title":"New York Man Charged After Deadly House Fire Leads to Homicide Investigation","img":"/thomas-ryan.png","updated":1786901179,"published":1786233600},{"path":"/news-three-executions.html","title":"Three Death Row Inmates Set to Die in Rare Same-Day Execution Across 3 States","img":"/three-executions.avif","updated":1786901179,"published":1786579200},{"path":"/news-tiffany-haddish-dui.html","title":"Tiffany Haddish Resolves Georgia DUI Case With Guilty Plea","img":"/tiffany-haddish.webp","updated":1786901179,"published":1786492800},{"path":"/news-timber-fire.html","title":"Timber Fire Nears 3,800 Acres as Big Sur Evacuations and Highway 1 Shutdown Continue","img":"/Timber-Fire2.webp","updated":1786901179,"published":1786492800},{"path":"/news-tupac-trial.html","title":"Tupac Shakur Murder Trial Begins Nearly 30 Years After Rapper's Death","img":"/tupac-trial.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-tyler-boebert-arrested.html","title":"Tyler Boebert Faces New Charges in Colorado Investigation","img":"/tyler-boebert-arrested.jpg","updated":1786901179,"published":1786406400},{"path":"/news-usher-clone.html","title":"Usher Laughs Off Viral Clone Rumors Following New Jersey Concert With Chris Brown","img":"/usher-clone.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-wonder-man.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786901179,"published":1786320000},{"path":"/news-zuckerberg-superyacht-alaska.html","title":"Mark Zuckerberg's Superyacht at Center of Alaska Rescue Controversy","img":"/mark-zuckerberg.jpeg","updated":1786901179,"published":1786492800},{"path":"/news.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786907546,"published":1786579200}];
+const CAROUSEL_CONTENTS = [{"path":"/content.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.webp","updated":1786907536,"published":1786907536},{"path":"/event-ghetto-house-party.html","title":"Ghetto House Party","img":"/Ghetto-house-party.webp","updated":1786901179,"published":1786901179},{"path":"/event-krew-nasa.html","title":"KREW NASA: Out of This World Tour 2026","img":"/krew-nasa-cities.jpeg","updated":1786901179,"published":1786901179},{"path":"/event-muggatime.html","title":"Welcome 2 Muggatime presented by Prophit Mugga Maniak","img":"/muggatime.webp","updated":1786901179,"published":1786901179},{"path":"/event-murrdah-season.html","title":"MURRDAH SEASON MONDAY","img":"/murrdahseasonmonday.webp","updated":1786901179,"published":1786901179},{"path":"/event-philly-skate-plex.html","title":"Philly Skate Plex Family Session","img":"/Philly-skate-logo.webp","updated":1786901179,"published":1786901179},{"path":"/event-private-booking.html","title":"Private Event Booking","img":"/djweirdnasty-banner.webp","updated":1786901179,"published":1786901179},{"path":"/index.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.webp","updated":1786908066,"published":1786908066},{"path":"/mixtapes.html","title":"Mixtapes | DJWEIRDNASTY","img":"/helladelphia-mixtapte-vol1.webp","updated":1786901179,"published":1786901179},{"path":"/mud-music-episode-1.html","title":"Episode 1 - MAN BEHIND THE CAMERA (Pilot)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-10.html","title":"Episode 10 - New York Underground (A-TEAM)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-11.html","title":"Episode 11 - Jewstallion Talian (Alex Bate)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-12.html","title":"Episode 12 - 90's Baby (Mya Allure)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-13.html","title":"MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-2.html","title":"Episode 2 - Venomous Effect (MR_SMITH_PHL)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-3.html","title":"Episode 3 - House Get a Cut (Traphouse Terrance)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-4.html","title":"Episode 4 - Don't Take It Personal (DTP Mantana)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-5.html","title":"Episode 5 - We Got Action (MFD)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-6.html","title":"Episode 6 - Ron Murrdah (Flavor Team)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-7.html","title":"MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-8.html","title":"MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-9.html","title":"Episode 9 - I AM H3RSH3Y","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode.html","title":"MUD MUSIC Top 10 Countdown","img":"/mud-music-logo.webp","updated":1786901179,"published":1786901179},{"path":"/murrdah-season-monday.html","title":"Murrdah Season Monday \"Ayo Weird meet Skrilla & Ron Murrdah first time using Public Transportation\"","img":"/murrdah-og.webp","updated":1786901179,"published":1786233600},{"path":"/news-ben-jones.html","title":"Ben Jones, Best Known as Cooter on 'The Dukes of Hazzard,' Dies at 84","img":"/ben-jones.webp","updated":1786901179,"published":1786320000},{"path":"/news-brittany-boltinhouse.html","title":"Crown Taken Away, Legal Fight May Be Next for Former Miss North Carolina USA","img":"/Brittany-Boltinhouse.webp","updated":1786901179,"published":1786579200},{"path":"/news-colombia-earthquake.html","title":"Powerful 7.4 Quake Rocks Colombia as Rescue Crews Search Collapsed Buildings","img":"/columbia-earthquake.webp","updated":1786901179,"published":1786320000},{"path":"/news-concord-mall-demolition.html","title":"Concord Mall Could Face Major Demolition and Redevelopment","img":"/delaware-concord-mall.webp","updated":1786901179,"published":1786665600},{"path":"/news-daycare-worker-arrested.html","title":"Bucks County Preschool Worker Charged After Alleged Assault of 2-Year-Old","img":"/day-care-worker-arrested.webp","updated":1786901179,"published":1786406400},{"path":"/news-deadly-midwest-storm.html","title":"Deadly Midwest Storms Leave 3 Dead and Nearly 800,000 Without Power","img":"/mid-town-storm.jpg","updated":1786901179,"published":1786492800},{"path":"/news-don-nelson.html","title":"The NBA Loses a Basketball Visionary: Don Nelson Dies at 86","img":"/don-nelson.webp","updated":1786901179,"published":1786233600},{"path":"/news-entertainment.html","title":"Entertainment News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786901179,"published":1786579200},{"path":"/news-fantasy-football-2026.html","title":"Fantasy Football 2026: Players You May Want to Avoid at Their Current Draft Price","img":"/fantasy-football-2026.webp","updated":1786901179,"published":1786320000},{"path":"/news-fever-stephanie-white.html","title":"Fever Rally Around Stephanie White in Statement Win Over Liberty","img":"/coach-stephanie-white.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-google-pixel-11.html","title":"Google Bets Big on AI as New Pixel 11 Phones Bring Bigger Storage and Camera Upgrades","img":"/google-new-phone.webp","updated":1786901179,"published":1786579200},{"path":"/news-hobbs-giles.html","title":"Hobbs Names Former Mesa Republican Mayor John Giles as Running Mate","img":"/katie-hobbs-john-giles.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-instagram-logo-redesign.html","title":"Instagram Gives Its Logo a Fresh Look \u2014 But Users Are Already Roasting the Redesign","img":"/instagram-new-logo.webp","updated":1786901179,"published":1786579200},{"path":"/news-las-vegas-assault-arrest.html","title":"Man Dies After Downtown Las Vegas Assault; Suspect Arrested","img":"/las-vegas-fight.webp","updated":1786901179,"published":1786665600},{"path":"/news-las-vegas-fentanyl.html","title":"Federal Investigation Leads to Seven Arrests in Alleged Las Vegas Fentanyl Network","img":"/drugs-from-raid.avif","updated":1786901179,"published":1786320000},{"path":"/news-las-vegas-shooting.html","title":"Las Vegas Domestic Disturbance Turns Deadly, Leaving Officer Injured and Two Dead","img":"/lasvegascrimescene.webp","updated":1786901179,"published":1786320000},{"path":"/news-lil-durk-pissed-me-off.html","title":"Lil Durk\u2019s \u201cPissed Me Off\u201d Music Video Allowed as Evidence in Federal Trial","img":"/lil-durk-mug-shot.jpg","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-guilty-plea.html","title":"Luigi Mangione Admits Role in Killing of UnitedHealthcare CEO in Federal Guilty Plea","img":"/luigi-mangione-attends-pre-trial-137082044.webp","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-plea.html","title":"Luigi Mangione Could Change His Plea as Federal Case Takes New Turn","img":"/luigi-mangione-case.webp","updated":1786901179,"published":1786579200},{"path":"/news-medicaid-fraud.html","title":"19 Charged in Alleged $4 Million Pennsylvania Medicaid Fraud Scheme","img":"/4-million-fraud.webp","updated":1786901179,"published":1786406400},{"path":"/news-meek-mill-shapiro.html","title":"Josh Shapiro Appears Alongside Meek Mill in New Philly Music Video","img":"/meek-mill-gov-josh.jpg","updated":1786901179,"published":1786492800},{"path":"/news-minimum-wage-2026.html","title":"Minimum Wage Across All 50 States in 2026: What Workers Are Earning","img":"/minimum-wage.webp","updated":1786901179,"published":1786579200},{"path":"/news-music.html","title":"Music News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786901179,"published":1786665600},{"path":"/news-national.html","title":"National News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786901179,"published":1786752000},{"path":"/news-nba-youngboy-south-korea.html","title":"NBA YoungBoy Says He May Never Return to America After South Korea Trip","img":"/nbayoungboy.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-ne-yo.html","title":"Ne-Yo Hit With Lawsuit Over Alleged Dog Attack at Georgia Property","img":"/ne-yo.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-nfl-investment-scam.html","title":"Man at Center of Alleged NFL Investment Scam Dies as Players Seek Millions in Lost Money","img":"/nfl-scammer-found-dead.avif","updated":1786901179,"published":1786492800},{"path":"/news-nolan-wells.html","title":"Nolan Wells\u2019 Final Hours Raise New Questions as Friends and Parents Give Conflicting Accounts","img":"/nolan-wells.webp","updated":1786901179,"published":1786752000},{"path":"/news-philadelphia-father-killed.html","title":"Philadelphia Father Killed After Being Caught in Woodland Avenue Gunfire","img":"/innocemt-bystander-killed.webp","updated":1786901179,"published":1786579200},{"path":"/news-phillies-cardinals.html","title":"Phillies Hold Off Cardinals as Andrew Painter and Alan Rangel Rescue Depleted Bullpen","img":"/Phillies-win.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-prichard-colon-dead.html","title":"Prichard Colon Dies at 33 After Decade-Long Battle From Devastating Boxing Injury","img":"/prichard-colon-dead.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-puerto-rico.html","title":"Puerto Rico Water Shortage Intensifies as Drought Leads to Service Interruptions","img":"/puerto-rico.png","updated":1786901179,"published":1786320000},{"path":"/news-red-sox-blue-jays.html","title":"Bizarre Rules Confusion Causes 16-Minute Delay in Red Sox-Blue Jays Game","img":"/red-sox-blue-jays.webp","updated":1786901179,"published":1786406400},{"path":"/news-remy-ma-papoose.html","title":"Remy Ma Defies Papoose\u2019s Legal Warning \u2014 Performs Controversial Diss Track Anyway","img":"/remy-ma.webp","updated":1786901179,"published":1786579200},{"path":"/news-remy-ma-wanna-go.html","title":"Remy Ma Fires Back at Claressa Shields With Savage \u201cClearance Rack\u201d Diss on \u201cWanna Go\u201d","img":"/remy-claressa-papoose.webp","updated":1786901179,"published":1786665600},{"path":"/news-russell-westbrook-retirement.html","title":"Russell Westbrook Walks Away From NBA After Legendary 18-Year Run","img":"/russell-westbrook.webp","updated":1786901179,"published":1786579200},{"path":"/news-septa-doylestown-death.html","title":"25-Year-Old Man Dies After Climbing Onto SEPTA Train in Doylestown","img":"/septa-doylestown.webp","updated":1786901179,"published":1786579200},{"path":"/news-sports.html","title":"Sports News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786901179,"published":1786579200},{"path":"/news-statue-of-liberty.html","title":"Boat Captain Arrested After Fatal Capsizing Near Statue of Liberty","img":"/statue-of-liberty-incident.png","updated":1786901179,"published":1786233600},{"path":"/news-surrogate-texas.html","title":"Surrogate Refuses Abortion Request, Gives Birth to Baby With Serious Heart Defect in Texas","img":"/surrogate-texas.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-tasia-fortune.html","title":"Investigation Underway After Mississippi Woman Is Found Dead Hanging From Tree","img":"/tasia-fortune.png","updated":1786901179,"published":1786320000},{"path":"/news-taylor-swift-nashville-hof.html","title":"Taylor Swift and Lyle Lovett Lead Nashville Songwriters Hall of Fame Class","img":"/songwriters-halloffame.webp","updated":1786901179,"published":1786492800},{"path":"/news-terrion-arnold-seahawks.html","title":"Terrion Arnold Reportedly Set to Join Seahawks While Facing Serious Felony Charges","img":"/terrion-arnold.jpg","updated":1786901179,"published":1786579200},{"path":"/news-thomas-ryan.html","title":"New York Man Charged After Deadly House Fire Leads to Homicide Investigation","img":"/thomas-ryan.png","updated":1786901179,"published":1786233600},{"path":"/news-three-executions.html","title":"Three Death Row Inmates Set to Die in Rare Same-Day Execution Across 3 States","img":"/three-executions.avif","updated":1786901179,"published":1786579200},{"path":"/news-tiffany-haddish-dui.html","title":"Tiffany Haddish Resolves Georgia DUI Case With Guilty Plea","img":"/tiffany-haddish.webp","updated":1786901179,"published":1786492800},{"path":"/news-timber-fire.html","title":"Timber Fire Nears 3,800 Acres as Big Sur Evacuations and Highway 1 Shutdown Continue","img":"/Timber-Fire2.webp","updated":1786901179,"published":1786492800},{"path":"/news-tupac-trial.html","title":"Tupac Shakur Murder Trial Begins Nearly 30 Years After Rapper's Death","img":"/tupac-trial.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-tyler-boebert-arrested.html","title":"Tyler Boebert Faces New Charges in Colorado Investigation","img":"/tyler-boebert-arrested.jpg","updated":1786901179,"published":1786406400},{"path":"/news-usher-clone.html","title":"Usher Laughs Off Viral Clone Rumors Following New Jersey Concert With Chris Brown","img":"/usher-clone.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-wonder-man.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786901179,"published":1786320000},{"path":"/news-zuckerberg-superyacht-alaska.html","title":"Mark Zuckerberg's Superyacht at Center of Alaska Rescue Controversy","img":"/mark-zuckerberg.jpeg","updated":1786901179,"published":1786492800},{"path":"/news.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786907546,"published":1786579200}];
 
 function renderCarousel(items) {
   const track = document.querySelector('#content-carousel .carousel-track');
@@ -1867,7 +1779,7 @@ requestAnimationFrame(loop);
       <h2>Achievement Unlocked</h2>
       <div id="personal-badge">
         <div class="badge-wrap">
-          <img src="/youie-achievement-badge.png" alt="YOUIE achievement badge">
+          <img src="/youie-achievement-badge.webp" alt="YOUIE achievement badge">
           <span id="badge-player-name"></span>
         </div>
         <img id="badge-player-photo" alt="Player photo">

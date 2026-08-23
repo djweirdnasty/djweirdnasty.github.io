@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://audiomack.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://djweirdnasty-api.kurtisctabb.workers.dev; upgrade-insecure-requests">
   <title>MUD MUSIC Episode | DJWEIRDNASTY</title>
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -12,6 +12,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="description" content="Watch the latest episode of MUD MUSIC Top 10 Countdown.">
   <meta property="og:title" content="MUD MUSIC Top 10 Countdown">
   <meta property="og:description" content="Watch the latest episode of MUD MUSIC Top 10 Countdown.">
   <meta property="og:image" content="https://djweirdnasty.com/mud-music-logo.png">
@@ -31,9 +32,9 @@
 <body>
   <header>
     <div class="container">
-      <h1 class="site-banner">
-        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
-      </h1>
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
       <nav>
         <a href="index.html">Home</a>
         <a href="index.html#about">About</a>
@@ -44,14 +45,14 @@
 <a href="sol.html">SOL</a>
 
         <a href="index.html#newsletter">Newsletter</a>
-        <a href="index.html#contact">Contact</a>
+        <a href="contact.html">Contact</a>
         <a href="privacy-policy.html">Privacy</a>
       </nav>
     </div>
   </header>
   <main class="container">
     <p><a href="content.html" style="color: #ffd860;">← Back to Content</a></p>
-    <img src="mud-music-logo.png" alt="MUD MUSIC Top 10 Countdown" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto 1rem;" />
+    <img src="mud-music-logo.webp" alt="MUD MUSIC Top 10 Countdown" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto 1rem;" />
     <div class="mepisode-layout">
       <div class="mepisode-main">
         <video id="mEpisodePlayer" class="mepisode-player" controls style="width: 100%; border-radius: 12px; display: block;"></video>
@@ -76,7 +77,7 @@
     </div>
   </main>
   <footer class="container">
-    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script src="mud-music-episodes.js"></script>
   <script>
@@ -108,7 +109,7 @@
         const a = document.createElement('a');
         a.className = 'episode-list-item' + (i === activeIndex ? ' active' : '');
         a.href = '#' + ep.slug;
-        a.innerHTML = '<img src="mud-music-logo.png" alt="' + ep.title + '" class="episode-thumb" />' +
+        a.innerHTML = '<img src="mud-music-logo.webp" alt="' + ep.title + '" class="episode-thumb" />' +
           '<span class="episode-title">' + ep.title + '</span>';
         mList.appendChild(a);
       });
