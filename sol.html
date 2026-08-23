@@ -2012,38 +2012,57 @@
         djShareLocBtn.style.background = '#333';
         djLocStatus.textContent = 'Stopped';
         djLocStatus.style.color = '#888';
-        db.collection('dj-status').doc(auth.currentUser.uid).set({
-          sharingLocation: false
-        }, { merge: true });
+        if (auth.currentUser) {
+          db.collection('dj-status').doc(auth.currentUser.uid).set({
+            sharingLocation: false
+          }, { merge: true });
+        }
         return;
       }
       if (!navigator.geolocation) {
-        djLocStatus.textContent = 'Not supported';
+        djLocStatus.textContent = 'Geolocation not supported on this device';
+        djLocStatus.style.color = '#ff4d8f';
+        return;
+      }
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        djLocStatus.textContent = 'HTTPS required for location';
         djLocStatus.style.color = '#ff4d8f';
         return;
       }
       djShareLocBtn.textContent = 'Stop';
       djShareLocBtn.style.background = '#ff3b30';
-      djLocStatus.textContent = 'Starting...';
+      djLocStatus.textContent = 'Requesting permission...';
       djLocStatus.style.color = '#ffd860';
       djLocWatchId = navigator.geolocation.watchPosition(function(pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
         djLocStatus.textContent = 'Live (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
         djLocStatus.style.color = '#22c55e';
-        db.collection('dj-status').doc(auth.currentUser.uid).set({
-          sharingLocation: true,
-          location: {
-            latitude: lat,
-            longitude: lng,
-            accuracy: pos.coords.accuracy,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }
-        }, { merge: true });
+        if (auth.currentUser) {
+          db.collection('dj-status').doc(auth.currentUser.uid).set({
+            sharingLocation: true,
+            location: {
+              latitude: lat,
+              longitude: lng,
+              accuracy: pos.coords.accuracy,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }
+          }, { merge: true });
+        }
       }, function(err) {
-        djLocStatus.textContent = 'Error: ' + err.message;
+        var msg = 'Error: ' + err.message;
+        if (err.code === 1) msg = 'Permission denied. Allow location access in browser settings.';
+        else if (err.code === 2) msg = 'Location unavailable. Check your GPS/network.';
+        else if (err.code === 3) msg = 'Location request timed out. Try again.';
+        djLocStatus.textContent = msg;
         djLocStatus.style.color = '#ff4d8f';
-      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 });
+        djShareLocBtn.textContent = 'Start';
+        djShareLocBtn.style.background = '#333';
+        if (djLocWatchId !== null) {
+          navigator.geolocation.clearWatch(djLocWatchId);
+          djLocWatchId = null;
+        }
+      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     });
 
     function subscribeDJStatus(user) {
@@ -3138,6 +3157,11 @@
         mapStatus.style.color = '#ff4d8f';
         return;
       }
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        mapStatus.textContent = 'HTTPS required for location access.';
+        mapStatus.style.color = '#ff4d8f';
+        return;
+      }
       mapStatus.textContent = 'Locating you...';
       mapStatus.style.color = '#ffd860';
 
@@ -3148,9 +3172,13 @@
         mapStatus.textContent = 'Located: ' + lat.toFixed(4) + ', ' + lng.toFixed(4);
         mapStatus.style.color = '#22c55e';
       }, function(err) {
-        mapStatus.textContent = 'Could not get location: ' + err.message;
+        var msg = 'Could not get location: ' + err.message;
+        if (err.code === 1) msg = 'Permission denied. Allow location access in your browser settings.';
+        else if (err.code === 2) msg = 'Location unavailable. Check your GPS or network connection.';
+        else if (err.code === 3) msg = 'Location request timed out. Try again.';
+        mapStatus.textContent = msg;
         mapStatus.style.color = '#ff4d8f';
-      });
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 });
     }
 
     function centerOnMe() {
