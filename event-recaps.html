@@ -101,6 +101,64 @@
     .recap-carousel-dots button.active {
       background: #ff4d8f;
     }
+    .recap-flyers {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin: 0.5rem 0 1rem;
+    }
+    .recap-flyers img {
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .recap-flyers img:hover {
+      transform: scale(1.05);
+    }
+    .recap-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .recap-lightbox.active {
+      display: flex;
+    }
+    .recap-lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .recap-lightbox-close {
+      position: absolute;
+      top: 16px; right: 24px;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 10000;
+    }
+    .recap-share-btn {
+      background: #ff4d8f;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .recap-share-btn:hover {
+      background: #e63e7a;
+    }
   </style>
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
@@ -133,6 +191,10 @@
       <div class="events-grid">
         <article class="event-card" style="max-width: 600px; width: 100%;">
           <h3>Philly Artist Showcase 2021</h3>
+          <div class="recap-flyers">
+            <img src="phila-artist-showcase-2021/photo-001.jpg" alt="Philly Artist Showcase 2021 Flyer 1" onclick="recapLightbox('phila-artist-showcase-2021/photo-001.jpg')">
+            <img src="phila-artist-showcase-2021/photo-002.jpg" alt="Philly Artist Showcase 2021 Flyer 2" onclick="recapLightbox('phila-artist-showcase-2021/photo-002.jpg')">
+          </div>
           <p><em>Tuesday, June 22, 2021 &mdash; Philadelphia, PA</em></p>
           <p>A night celebrating Philadelphia&rsquo;s finest independent artists, performers, and creatives. DJWEIRDNASTY was in the building keeping the energy going.</p>
           <div class="recap-carousel" id="phila-showcase-carousel">
@@ -342,6 +404,7 @@
             <button class="recap-carousel-btn next" onclick="recapCarousel('phila-showcase-carousel',1)" aria-label="Next">&rsaquo;</button>
           </div>
           <div class="recap-carousel-counter" id="phila-showcase-carousel-counter">1 / 200</div>
+          <button class="recap-share-btn share-button" data-title="Philly Artist Showcase 2021 | DJWEIRDNASTY Event Recap" data-url="https://djweirdnasty.com/event-recaps.html">&#128279; Share</button>
         </article>
         <article class="event-card">
           <h3>Welcome 2 Muggatime</h3>
@@ -355,12 +418,18 @@
       </div>
     </section>
   </main>
+  <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
+    <span class="recap-lightbox-close">&times;</span>
+    <img src="" id="recap-lightbox-img" alt="Enlarged photo">
+  </div>
   <footer class="container">
     <img src="2026djweirdnastyllc.png" alt="&copy; 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
 <script src="site.js?v=5"></script>
 <script async src="//www.instagram.com/embed.js"></script>
 <script>
+  var recapTimers = {};
+
   function recapCarousel(id, dir) {
     var c = document.getElementById(id);
     var track = c.querySelector('.recap-carousel-track');
@@ -373,12 +442,50 @@
     var counter = document.getElementById(id + '-counter');
     if (counter) counter.textContent = (current + 1) + ' / ' + total;
   }
+
+  function recapStartAuto(id, interval) {
+    recapStopAuto(id);
+    recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 4000);
+  }
+
+  function recapStopAuto(id) {
+    if (recapTimers[id]) { clearInterval(recapTimers[id]); delete recapTimers[id]; }
+  }
+
+  function recapLightbox(src) {
+    var lb = document.getElementById('recap-lightbox');
+    var lbImg = document.getElementById('recap-lightbox-img');
+    lbImg.src = src;
+    lb.classList.add('active');
+  }
+
+  function recapCloseLightbox() {
+    document.getElementById('recap-lightbox').classList.remove('active');
+  }
+
   document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') recapCloseLightbox();
     var c = document.getElementById('phila-showcase-carousel');
     if (!c) return;
     if (e.key === 'ArrowLeft') recapCarousel('phila-showcase-carousel', -1);
     if (e.key === 'ArrowRight') recapCarousel('phila-showcase-carousel', 1);
   });
+
+  (function() {
+    var c = document.getElementById('phila-showcase-carousel');
+    if (!c) return;
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    imgs.forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        recapLightbox(img.src);
+      });
+    });
+    c.addEventListener('mouseenter', function() { recapStopAuto('phila-showcase-carousel'); });
+    c.addEventListener('mouseleave', function() { recapStartAuto('phila-showcase-carousel'); });
+    recapStartAuto('phila-showcase-carousel', 4000);
+  })();
 </script>
 </body>
 </html>
