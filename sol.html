@@ -3703,11 +3703,11 @@
         // Upcoming events for DJ Weird Nasty
         var djEvents = [
           { title: 'MURRDAH SEASON MONDAY', date: 'Every Monday', time: '3:00 PM – 4:00 PM EST', location: 'Glocawear Radio (Live Stream)', img: 'murrdahseasonmonday.webp', url: 'event-murrdah-season.html', recurring: true },
-          { title: 'KREW NASA: Out of This World Tour 2026', date: 'Aug 22 – Oct 11, 2026', time: 'Various times', location: '11 Cities (Allentown, Norristown, Lancaster, Baltimore, Philadelphia, Pittsburgh, Brooklyn, Trenton, Ansonia, Emmaculate)', img: 'krew-nasa-cities.jpeg', url: 'event-krew-nasa.html', recurring: false },
-          { title: 'Ghetto House Party', date: 'Saturday, August 29, 2026', time: '9:00 PM – 3:00 AM EDT', location: '476 Riverly Avenue, Collingdale, PA 19023', img: 'Ghetto-house-party.webp', url: 'event-ghetto-house-party.html', recurring: false },
-          { title: 'Halloween Hibachi on Elm Street', date: 'Saturday, October 31, 2026', time: '12:00 PM – 6:00 PM EDT', location: 'Delink Social Club, 4172 Germantown Ave, Philadelphia, PA 19140', img: 'halloween-habachi-on-elm-street.JPG', url: 'event-halloween-hibachi-elm-street.html', recurring: false },
+          { title: 'KREW NASA: Out of This World Tour 2026', date: 'Aug 22 – Oct 11, 2026', time: 'Various times', location: '11 Cities (Allentown, Norristown, Lancaster, Baltimore, Philadelphia, Pittsburgh, Brooklyn, Trenton, Ansonia, Emmaculate)', img: 'krew-nasa-cities.jpeg', url: 'event-krew-nasa.html', recurring: false, endDate: '2026-10-12' },
+          { title: 'Ghetto House Party', date: 'Saturday, August 29, 2026', time: '9:00 PM – 3:00 AM EDT', location: '476 Riverly Avenue, Collingdale, PA 19023', img: 'Ghetto-house-party.webp', url: 'event-ghetto-house-party.html', recurring: false, endDate: '2026-08-30' },
+          { title: 'Halloween Hibachi on Elm Street', date: 'Saturday, October 31, 2026', time: '12:00 PM – 6:00 PM EDT', location: 'Delink Social Club, 4172 Germantown Ave, Philadelphia, PA 19140', img: 'halloween-habachi-on-elm-street.JPG', url: 'event-halloween-hibachi-elm-street.html', recurring: false, endDate: '2026-11-01' },
           { title: 'Philly Skate Plex Family Session', date: 'Recurring Sessions', time: 'Various times', location: 'Philly Skate Plex, Philadelphia, PA', img: 'Philly-skate-logo.webp', url: 'event-philly-skate-plex.html', recurring: true },
-          { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false }
+          { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false, endDate: '2026-08-23' }
         ];
 
         var djNameLower = (dj.name || '').toLowerCase();
@@ -3723,11 +3723,8 @@
           var now = new Date();
           var upcoming = djEvents.filter(function(e) {
             if (e.recurring) return true;
-            if (e.date.indexOf('August 29') >= 0) return new Date('2026-08-29') >= now;
-            if (e.date.indexOf('October 31') >= 0) return new Date('2026-10-31') >= now;
-            if (e.date.indexOf('August 22') >= 0 && e.title.indexOf('Muggatime') >= 0) return new Date('2026-08-22') >= now;
-            if (e.date.indexOf('Aug 22') >= 0) return true; // tour spans months
-            return true;
+            if (!e.endDate) return true;
+            return new Date(e.endDate + 'T23:59:59') >= now;
           });
 
           if (upcoming.length > 0) {
