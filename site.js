@@ -296,6 +296,24 @@
     });
   }, 3000);
 
+  // ===== Book DJWEIRDNASTY CTA =====
+  if (window.location.pathname.indexOf('sol.html') === -1 &&
+      window.location.pathname.indexOf('contact.html') === -1) {
+    var bookCta = document.createElement('a');
+    bookCta.className = 'book-cta';
+    bookCta.href = 'sol.html';
+    bookCta.innerHTML = '\u266B Book DJWEIRDNASTY';
+    document.body.appendChild(bookCta);
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        bookCta.classList.add('visible');
+      } else {
+        bookCta.classList.remove('visible');
+      }
+    }, { passive: true });
+  }
+
   // ===== Back to Top Button =====
   var backBtn = document.createElement('button');
   backBtn.className = 'back-to-top';
