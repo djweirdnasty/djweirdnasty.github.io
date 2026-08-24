@@ -9,8 +9,9 @@ const db = admin.firestore();
 
 setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 
-const TEXTBEE_API_KEY = defineSecret("TEXTBEE_API_KEY");
-const TEXTBEE_DEVICE_ID = defineSecret("TEXTBEE_DEVICE_ID");
+const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 
 function formatPhoneE164(raw) {
   if (!raw) return null;
@@ -21,22 +22,25 @@ function formatPhoneE164(raw) {
   return null;
 }
 
-async function sendSms(apiKey, deviceId, recipients, message) {
-  var body = { recipients: recipients, message: message };
-  if (deviceId) body.deviceId = deviceId;
+async function sendSms(accountSid, authToken, fromNumber, toNumber, message) {
+  var url = "https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json";
+  var params = new URLSearchParams();
+  params.append("To", toNumber);
+  params.append("From", fromNumber);
+  params.append("Body", message);
 
-  var res = await fetch("https://api.textbee.dev/api/v1/gateway/send-sms", {
+  var res = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Authorization": "Basic " + Buffer.from(accountSid + ":" + authToken).toString("base64"),
     },
-    body: JSON.stringify(body),
+    body: params.toString(),
   });
 
   var data = await res.json().catch(function () { return {}; });
   if (!res.ok) {
-    throw new Error("TextBee error " + res.status + ": " + JSON.stringify(data));
+    throw new Error("Twilio error " + res.status + ": " + JSON.stringify(data));
   }
   return data;
 }
@@ -49,7 +53,7 @@ function money(n) {
 exports.notifyDjOnBooking = onDocumentWritten(
   {
     document: "bookings/{bookingId}",
-    secrets: [TEXTBEE_API_KEY, TEXTBEE_DEVICE_ID],
+    secrets: [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER],
   },
   async (event) => {
     var beforeSnap = event.data.before;
@@ -103,9 +107,10 @@ exports.notifyDjOnBooking = onDocumentWritten(
         ". Open the SOL app to accept or decline.";
 
       await sendSms(
-        TEXTBEE_API_KEY.value(),
-        TEXTBEE_DEVICE_ID.value() || undefined,
-        [phone],
+        TWILIO_ACCOUNT_SID.value(),
+        TWILIO_AUTH_TOKEN.value(),
+        TWILIO_FROM_NUMBER.value(),
+        phone,
         message
       );
 
