@@ -11,7 +11,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob: https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob: https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net https://fcm.googleapis.com; upgrade-insecure-requests">
   <title>SOL | Sounds of Logan DJ Booking</title>
   <meta name="description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:title" content="SOL | Sounds of Logan DJ Booking">
@@ -29,6 +29,11 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff4d8f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SOL">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1809,12 +1814,34 @@
     }
 
     let djBookingsUnsubscribe = null;
+    let knownBookingIds = new Set();
 
     function subscribeDJBookings(user) {
       if (djBookingsUnsubscribe) djBookingsUnsubscribe();
       djBookingsUnsubscribe = db.collection('bookings')
         .where('djId', '==', user.uid)
         .onSnapshot(function(snapshot) {
+          // Check for new pending bookings to notify
+          snapshot.docChanges().forEach(function(change) {
+            if (change.type === 'added') {
+              var b = change.doc.data();
+              if (b.status === 'pending' && !knownBookingIds.has(change.doc.id)) {
+                knownBookingIds.add(change.doc.id);
+                if ('Notification' in window && Notification.permission === 'granted') {
+                  var clientName = b.clientName || b.client_name || 'A client';
+                  var eventType = b.eventType || b.event_type || 'an event';
+                  new Notification('New Booking Request!', {
+                    body: clientName + ' requested you for ' + eventType,
+                    icon: '/favicon-192x192.png',
+                    tag: 'booking-' + change.doc.id,
+                    data: { url: '/sol.html' }
+                  });
+                }
+              } else {
+                knownBookingIds.add(change.doc.id);
+              }
+            }
+          });
           renderDJBookings(snapshot, user);
         }, function(err) {
           console.error('DJ bookings listener error:', err);
@@ -2140,6 +2167,12 @@
           db.collection('dj-status').doc(auth.currentUser.uid).set({
             sharingLocation: false
           }, { merge: true });
+          db.collection('bookings').where('djId', '==', auth.currentUser.uid)
+            .where('djSharingLocation', '==', true).get().then(function(snap) {
+              snap.forEach(function(doc) {
+                doc.ref.set({ djSharingLocation: false }, { merge: true });
+              });
+            }).catch(function() {});
         }
         return;
       }
@@ -2173,6 +2206,13 @@
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }
           }, { merge: true });
+          // Mark confirmed bookings as sharing
+          db.collection('bookings').where('djId', '==', auth.currentUser.uid)
+            .where('status', '==', 'confirmed').get().then(function(snap) {
+              snap.forEach(function(doc) {
+                doc.ref.set({ djSharingLocation: true }, { merge: true });
+              });
+            }).catch(function() {});
         }
       }
 
@@ -2262,6 +2302,15 @@
         djLocWatchId = navigator.geolocation.watchPosition(onAutoPos, onAutoErr, {
           enableHighAccuracy: true, maximumAge: 10000, timeout: 20000
         });
+        // Mark all confirmed bookings for this DJ as sharing location
+        if (auth.currentUser) {
+          db.collection('bookings').where('djId', '==', auth.currentUser.uid)
+            .where('status', '==', 'confirmed').get().then(function(snap) {
+              snap.forEach(function(doc) {
+                doc.ref.set({ djSharingLocation: true }, { merge: true });
+              });
+            }).catch(function() {});
+        }
       }, onAutoErr, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     }
 
@@ -3075,16 +3124,70 @@
         var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#00d4ff' : '#ff3b30';
         var canCancel = status === 'pending' || status === 'confirmed';
         var canRate = status === 'completed' && !b.clientRated;
+        var djArrived = b.djArrived === true;
+        var djSharing = b.djSharingLocation === true || (b.djStatus && b.djStatus.sharingLocation === true);
+
+        // Build progress bar
+        var steps = ['Requested', 'Confirmed', 'En Route', 'Arrived', 'Completed'];
+        var currentStep = 0;
+        if (status === 'pending') currentStep = 0;
+        else if (status === 'confirmed') currentStep = djSharing ? 1 : 1;
+        else if (status === 'confirmed' && djSharing) currentStep = 2;
+        else if (djArrived) currentStep = 3;
+        else if (status === 'completed') currentStep = 4;
+        else if (status === 'cancelled') currentStep = -1;
+
+        var progressBar = '';
+        if (currentStep >= 0) {
+          var dots = steps.map(function(label, i) {
+            var isActive = i <= currentStep;
+            var isCurrent = i === currentStep;
+            var color = isActive ? (i === 4 ? '#00d4ff' : i === 3 ? '#22c55e' : i === 2 ? '#ffd860' : '#ff4d8f') : '#333';
+            var size = isCurrent ? '12px' : '10px';
+            return '<div style="display:flex; flex-direction:column; align-items:center; flex:1;">' +
+              '<div style="width:' + size + '; height:' + size + '; border-radius:50%; background:' + color + ';' + (isCurrent ? 'box-shadow:0 0 8px ' + color + ';' : '') + ' transition:all 0.3s;"></div>' +
+              '<span style="font-size:0.65rem; color:' + (isActive ? '#ccc' : '#555') + '; margin-top:4px; text-align:center;">' + label + '</span>' +
+              '</div>';
+          }).join('');
+          var connectors = steps.slice(0, -1).map(function(_, i) {
+            var isDone = i < currentStep;
+            return '<div style="flex:0.5; height:2px; background:' + (isDone ? '#ff4d8f' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
+          }).join('');
+          var dotsRow = '';
+          for (var si = 0; si < steps.length; si++) {
+            dotsRow += dots[si] ? '' : '';
+          }
+          // Interleave dots and connectors
+          var barHtml = '<div style="display:flex; align-items:flex-start; margin:0.75rem 0;">';
+          for (var si2 = 0; si2 < steps.length; si2++) {
+            barHtml += '<div style="display:flex; flex-direction:column; align-items:center; flex:1;">' +
+              '<div style="width:' + (si2 === currentStep ? '12px' : '10px') + '; height:' + (si2 === currentStep ? '12px' : '10px') + '; border-radius:50%; background:' + (si2 <= currentStep ? (si2 === 4 ? '#00d4ff' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff4d8f') : '#333') + ';' + (si2 === currentStep ? 'box-shadow:0 0 8px ' + (si2 === 4 ? '#00d4ff' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff4d8f') + ';' : '') + ' transition:all 0.3s;"></div>' +
+              '<span style="font-size:0.65rem; color:' + (si2 <= currentStep ? '#ccc' : '#555') + '; margin-top:4px; text-align:center;">' + steps[si2] + '</span>' +
+              '</div>';
+            if (si2 < steps.length - 1) {
+              barHtml += '<div style="flex:0.5; height:2px; background:' + (si2 < currentStep ? '#ff4d8f' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
+            }
+          }
+          barHtml += '</div>';
+          progressBar = barHtml;
+        }
+
+        var djLiveLink = '';
+        if (djSharing && status === 'confirmed' && b.djId) {
+          djLiveLink = '<div style="margin-top:0.5rem;"><button type="button" class="submit-btn" style="background:#22c55e; padding:0.4rem 0.8rem; font-size:0.8rem;" data-track-dj="' + b.djId + '">Track DJ Live Location</button></div>';
+        }
 
         card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
           '<strong>' + eventType + '</strong>' +
-          '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + status + '</span>' +
+          '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600; text-transform:capitalize;">' + status + '</span>' +
           '</div>' +
           '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
           '<div>🎧 ' + djName + '</div>' +
           '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + startTime : '') + '</div>' +
           '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
           '</div>' +
+          progressBar +
+          djLiveLink +
           '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
           (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + b.id + '" data-booking-date="' + (date || '') + '">Cancel</button>' : '') +
           (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + b.id + '" data-rate-dj="' + (b.djId || '') + '">Rate DJ</button>' : '') +
@@ -3122,6 +3225,40 @@
           document.querySelectorAll('.sol-star').forEach(function(s) { s.style.color = '#444'; });
           document.getElementById('sol-rate-text').value = '';
           document.getElementById('sol-rate-modal').style.display = 'flex';
+        });
+      });
+
+      box.querySelectorAll('button[data-track-dj]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var djId = btn.getAttribute('data-track-dj');
+          db.collection('dj-status').doc(djId).get().then(function(doc) {
+            if (doc.exists && doc.data().location) {
+              var loc = doc.data().location;
+              var lat = loc.latitude || loc._latitude || null;
+              var lng = loc.longitude || loc._longitude || null;
+              if (lat !== null && lng !== null && map) {
+                map.flyTo({ center: [lng, lat], zoom: 14, essential: true });
+                if (djMarkers[djId]) {
+                  djMarkers[djId].togglePopup();
+                } else {
+                  var el = createSolPin('#22c55e', 14);
+                  var m = new mapboxgl.Marker({ element: el })
+                    .setLngLat([lng, lat])
+                    .setPopup(new mapboxgl.Popup().setHTML('<strong>Your DJ is on the way!</strong><br>Live location tracking'))
+                    .addTo(map)
+                    .togglePopup();
+                  djMarkers[djId] = m;
+                }
+                document.getElementById('sol-map').scrollIntoView({ behavior: 'smooth', block: 'center' });
+              } else {
+                alert('DJ location not available.');
+              }
+            } else {
+              alert('DJ is not currently sharing their location.');
+            }
+          }).catch(function() {
+            alert('Unable to track DJ at this time.');
+          });
         });
       });
     }
@@ -3326,6 +3463,7 @@
         loadSavedDjs(user.uid);
         loadLoyalty(user.uid);
         loadClientVerifyStatus(user.uid);
+        requestNotificationPermission();
       } else {
         solGate.style.display = 'block';
         solAppContent.style.display = 'none';
@@ -4250,20 +4388,39 @@
           scoreEl.style.color = score >= 80 ? '#22c55e' : score >= 60 ? '#ffd860' : '#ff4d8f';
         }
 
-        db.collection('feedback').where('toUserId', '==', djUid).limit(10).get()
+        db.collection('feedback').where('toUserId', '==', djUid).orderBy('createdAt', 'desc').limit(20).get()
           .then(function(snapshot) {
             var reviewsEl = document.getElementById('sol-dj-reviews');
             if (snapshot.empty) {
-              reviewsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3><p style="color:#888;">No reviews yet.</p>';
+              reviewsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3><p style="color:#888;">No reviews yet. Be the first to review after your event!</p>';
               return;
             }
-            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews (' + snapshot.size + ')</h3>';
+            var reviews = [];
+            var totalRating = 0;
             snapshot.forEach(function(doc) {
               var r = doc.data();
+              reviews.push(r);
+              totalRating += (r.rating || 0);
+            });
+            var avgRating = (totalRating / reviews.length).toFixed(1);
+            var avgStars = '';
+            for (var i = 1; i <= 5; i++) avgStars += i <= Math.round(parseFloat(avgRating)) ? '★' : '☆';
+
+            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3>' +
+              '<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">' +
+              '<span style="font-size:1.5rem; color:#ffd860;">' + avgStars + '</span>' +
+              '<span style="color:#ccc; font-size:0.9rem;">' + avgRating + ' out of 5 (' + reviews.length + ' review' + (reviews.length === 1 ? '' : 's') + ')</span>' +
+              '</div>';
+            reviews.forEach(function(r) {
               var stars = '';
               for (var i = 1; i <= 5; i++) stars += i <= (r.rating || 0) ? '★' : '☆';
+              var dateStr = '';
+              if (r.createdAt && r.createdAt.toDate) {
+                dateStr = r.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              }
               html += '<div style="background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:0.5rem;">' +
                 '<div style="display:flex; justify-content:space-between;"><strong>' + (r.fromName || 'Anonymous') + '</strong><span style="color:#ffd860;">' + stars + '</span></div>' +
+                (dateStr ? '<div style="color:#666; font-size:0.75rem; margin-top:2px;">' + dateStr + '</div>' : '') +
                 (r.review ? '<p style="color:#ccc; font-size:0.85rem; margin:0.25rem 0 0;">' + r.review + '</p>' : '') +
                 '</div>';
             });
@@ -4940,6 +5097,81 @@
       if (tipSelect) tipSelect.innerHTML = tipOpts;
       if (setlistSelect) setlistSelect.innerHTML = setlistOpts;
       if (clientReviewSelect) clientReviewSelect.innerHTML = reviewOpts;
+    }
+
+    // ---------- PWA: Service Worker & Push Notifications ----------
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+        }).catch(function(err) {
+          console.error('[PWA] SW registration failed:', err);
+        });
+      });
+    }
+
+    let pushSubscription = null;
+
+    function subscribeToPushNotifications() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+      navigator.serviceWorker.ready.then(function(reg) {
+        reg.pushManager.getSubscription().then(function(sub) {
+          if (sub) {
+            pushSubscription = sub;
+            savePushSubscription(sub);
+            return;
+          }
+          // Use a VAPID public key (needs to be generated and set)
+          var vapidKey = window.VAPID_PUBLIC_KEY;
+          if (!vapidKey) {
+            console.warn('[PUSH] No VAPID key set — push notifications disabled');
+            return;
+          }
+          reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey)
+          }).then(function(newSub) {
+            pushSubscription = newSub;
+            savePushSubscription(newSub);
+            console.log('[PUSH] Subscribed to push notifications');
+          }).catch(function(err) {
+            console.error('[PUSH] Subscription failed:', err);
+          });
+        });
+      });
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+      var padding = '='.repeat((4 - base64String.length % 4) % 4);
+      var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      var rawData = window.atob(base64);
+      var arr = new Uint8Array(rawData.length);
+      for (var i = 0; i < rawData.length; i++) arr[i] = rawData.charCodeAt(i);
+      return arr;
+    }
+
+    function savePushSubscription(sub) {
+      if (!auth.currentUser) return;
+      db.collection('push-subscriptions').doc(auth.currentUser.uid).set({
+        subscription: JSON.parse(JSON.stringify(sub)),
+        uid: auth.currentUser.uid,
+        email: auth.currentUser.email,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
+    // Request notification permission when user logs in
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(function(permission) {
+          if (permission === 'granted') {
+            subscribeToPushNotifications();
+          }
+        });
+      } else if (Notification.permission === 'granted') {
+        subscribeToPushNotifications();
+      }
     }
 
   </script>
