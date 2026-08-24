@@ -78,6 +78,20 @@
   </footer>
 <script src="comments.js"></script>
 <script src="site.js?v=6"></script>
-<script async src="//www.instagram.com/embed.js"></script>
+<script src="https://www.instagram.com/embed.js"></script>
+<script>
+  // Fallback: process Instagram embeds after script loads
+  if (window.instgrm && window.instgrm.Embeds) {
+    window.instgrm.Embeds.process();
+  } else {
+    var checkInstgrm = setInterval(function() {
+      if (window.instgrm && window.instgrm.Embeds) {
+        window.instgrm.Embeds.process();
+        clearInterval(checkInstgrm);
+      }
+    }, 500);
+    setTimeout(function() { clearInterval(checkInstgrm); }, 10000);
+  }
+</script>
 </body>
 </html>
