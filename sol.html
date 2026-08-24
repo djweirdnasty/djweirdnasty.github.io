@@ -2704,7 +2704,7 @@
                 var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.unpaidTotal);
                 payBtnHtml = '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal (manual)</a>';
               } else {
-                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ff4d8f;">No PayPal on file</span>';
+                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ffd860;" title="This DJ has not added a PayPal email or PayPal.me link yet.">🔒 $' + e.unpaidTotal.toFixed(2) + ' held in admin account (djweirdnasty) until DJ adds PayPal</span>';
               }
 
               card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +

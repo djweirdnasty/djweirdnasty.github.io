@@ -248,7 +248,7 @@ exports.sendPaypalPayout = onCall(
     if (!paypalEmail || paypalEmail.indexOf("@") === -1) {
       throw new HttpsError(
         "failed-precondition",
-        "This DJ does not have a valid PayPal email on file. Automated payouts require an email address (not a paypal.me link)."
+        "This DJ has no valid PayPal email on file. Funds are held in the admin PayPal account (djweirdnasty / kurtisctabb@gmail.com) until they add one."
       );
     }
 
