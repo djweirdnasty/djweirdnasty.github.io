@@ -301,6 +301,16 @@
     #sol-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
     #sol-map .mapboxgl-ctrl-icon { filter: invert(1); }
     #sol-map .mapboxgl-canvas { outline: none; }
+    #sol-map .mapboxgl-ctrl-logo { display: none !important; }
+    #sol-map-brand-logo {
+      position: absolute;
+      bottom: 6px;
+      left: 8px;
+      height: 24px;
+      z-index: 2;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+    }
 
     /* Mobile */
     @media (max-width: 720px) {
@@ -981,11 +991,12 @@
 
           <p id="sol-map-status" class="form-status" aria-live="polite" style="background:#2a2a2a; padding:0.6rem 0.7rem; border-radius:8px; font-size:0.85rem; color:#ccc; min-height:36px; margin:0;"></p>
 
-          <a id="sol-event-nav" href="#" class="playlist-link" target="_blank" style="display:none; font-size:0.9rem;">Get directions to event</a>
+          <button type="button" id="sol-event-nav" class="submit-btn" style="display:none; width:100%;">Get directions to event</button>
         </aside>
 
         <div class="sol-map-wrap" style="position:relative; flex:1; min-width:0;">
           <div id="sol-map" style="width:100%; height:100%; background:#222;"></div>
+          <img id="sol-map-brand-logo" src="sol-logo.png" alt="SOL" />
         </div>
       </div>
 
@@ -3076,7 +3087,8 @@
         center: [selectedLocation.longitude, selectedLocation.latitude],
         zoom: 12,
         pitch: 45,
-        bearing: -12.8
+        bearing: -12.8,
+        attributionControl: false
       };
 
       try {
@@ -3094,6 +3106,7 @@
       });
 
       map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.addControl(new mapboxgl.AttributionControl({ compact: true, customAttribution: 'SOL' }), 'bottom-right');
 
       map.on('load', function() {
         var selEl = createSolPin('#ff4d8f', 16);
@@ -3293,6 +3306,7 @@
     document.getElementById('sol-use-location').addEventListener('click', useMyLocation);
     document.getElementById('sol-refresh-djs').addEventListener('click', showAllDJs);
     document.getElementById('sol-center-me').addEventListener('click', centerOnMe);
+    document.getElementById('sol-event-nav').addEventListener('click', getEventRoute);
 
     // Multi-DJ toggle
     document.getElementById('sol-multi-dj-toggle').addEventListener('change', function() {
@@ -3497,9 +3511,74 @@
     function updateEventNav() {
       const link = document.getElementById('sol-event-nav');
       if (link) {
-        link.style.display = 'inline';
-        link.href = 'https://www.google.com/maps/dir/?api=1&destination=' + selectedLocation.latitude + ',' + selectedLocation.longitude;
+        link.style.display = 'inline-block';
       }
+    }
+
+    function getEventRoute() {
+      if (!userMarker) {
+        mapStatus.textContent = 'Set your location first (use "My Location").';
+        mapStatus.style.color = '#ff4d8f';
+        return;
+      }
+      var userLL = userMarker.getLngLat();
+      var origin = [userLL.lng, userLL.lat];
+      var dest = [selectedLocation.longitude, selectedLocation.latitude];
+
+      mapStatus.textContent = 'Calculating route...';
+      mapStatus.style.color = '#ffd860';
+
+      var coords = origin[0] + ',' + origin[1] + ';' + dest[0] + ',' + dest[1];
+      fetch('https://router.project-osrm.org/route/v1/driving/' + coords + '?overview=full&geometries=geojson')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data.routes || !data.routes.length) {
+            mapStatus.textContent = 'No route found.';
+            mapStatus.style.color = '#ff4d8f';
+            return;
+          }
+          var route = data.routes[0];
+          var routeGeoJSON = {
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: route.geometry.coordinates }
+          };
+
+          if (map.getSource('sol-route')) {
+            map.getSource('sol-route').setData(routeGeoJSON);
+          } else {
+            map.addSource('sol-route', { type: 'geojson', data: routeGeoJSON });
+            map.addLayer({
+              id: 'sol-route-line',
+              type: 'line',
+              source: 'sol-route',
+              layout: { 'line-join': 'round', 'line-cap': 'round' },
+              paint: {
+                'line-color': '#00d4ff',
+                'line-width': 6,
+                'line-opacity': 0.9,
+                'line-emissive-strength': 1
+              }
+            });
+          }
+
+          var bounds = route.geometry.coordinates.reduce(function(b, c) {
+            return b.extend(c);
+          }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
+          map.fitBounds(bounds, { padding: 60 });
+
+          var distanceMi = (route.distance / 1609.34).toFixed(1);
+          var durationMin = Math.round(route.duration / 60);
+          document.getElementById('sol-eta-text').textContent = durationMin + ' min';
+          document.getElementById('sol-distance-text').textContent = distanceMi + ' mi';
+          document.getElementById('sol-eta-panel').style.display = 'flex';
+
+          mapStatus.textContent = 'Route ready — ' + durationMin + ' min (' + distanceMi + ' mi)';
+          mapStatus.style.color = '#22c55e';
+        })
+        .catch(function(err) {
+          mapStatus.textContent = 'Routing failed: ' + err.message;
+          mapStatus.style.color = '#ff4d8f';
+        });
     }
 
     function searchLocation() {
