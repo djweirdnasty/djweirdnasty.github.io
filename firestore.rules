@@ -41,21 +41,33 @@ service cloud.firestore {
       return request.resource.data.get(field, null) == resource.data.get(field, null);
     }
 
+    // The site owner's account can never lose admin or be banned.
+    function isProtectedAdmin(uid) {
+      return uid == '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+    }
+
     // ---------- users ----------
     // Owner can manage their own profile, but can never grant themselves
     // admin/verified/unbanned status — those are admin-only fields.
+    // The site owner's admin flag is permanent and cannot be banned.
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow create: if isOwner(uid) &&
         request.resource.data.get('isAdmin', false) == false &&
         request.resource.data.get('banned', false) == false;
-      allow update: if isAdmin() || (
-        isOwner(uid) &&
-        unchanged('isAdmin') &&
-        unchanged('banned') &&
-        unchanged('isVerifiedDJ')
+      allow update: if (
+        isProtectedAdmin(uid) &&
+        request.resource.data.get('isAdmin', false) == true &&
+        request.resource.data.get('banned', false) == false
+      ) || (
+        !isProtectedAdmin(uid) && (isAdmin() || (
+          isOwner(uid) &&
+          unchanged('isAdmin') &&
+          unchanged('banned') &&
+          unchanged('isVerifiedDJ')
+        ))
       );
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() && !isProtectedAdmin(uid);
     }
 
     // ---------- DJ profile & verification ----------

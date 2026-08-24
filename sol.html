@@ -2610,6 +2610,10 @@
         btn.addEventListener('click', function() {
           var uid = btn.getAttribute('data-ban-user');
           var isBanned = btn.getAttribute('data-banned') === '1';
+          if (uid === ADMIN_UID) {
+            alert('This account is the site owner and cannot be banned or removed from admin.');
+            return;
+          }
           db.collection('users').doc(uid).set({
             banned: !isBanned
           }, { merge: true }).then(function() {
