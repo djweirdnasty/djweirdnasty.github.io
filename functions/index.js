@@ -194,6 +194,35 @@ async function sendPaypalPayoutBatch(accessToken, mode, receiverEmail, amount, n
   return data;
 }
 
+// Computes what's currently owed to a DJ for one booking.
+// Deposit share becomes payable as soon as the DJ accepts (status confirmed or later) —
+// this is the DJ's cut of whatever the client already paid to lock in the gig.
+// The remaining balance share only becomes payable once the gig is marked completed.
+function computeBookingPayout(b) {
+  var total = Number(b.totalAmount || b.total_cost || 0);
+  var depositOnly = !!b.deposit_only;
+  var depositAmount = depositOnly ? Math.max(50, Math.round(total * 0.5 * 100) / 100) : 0;
+  var djDepositShare = Math.round(depositAmount * 0.85 * 100) / 100;
+  var djFinalShare = Math.round((total - depositAmount) * 0.85 * 100) / 100;
+
+  var depositEligible = depositOnly && (b.status === "confirmed" || b.status === "completed");
+  var finalEligible = b.status === "completed";
+
+  // Legacy bookings paid in full before per-portion tracking existed.
+  var legacyPaid = !!b.payoutSent;
+  var depositPaid = legacyPaid || !!b.depositPayoutSent;
+  var finalPaid = legacyPaid || !!b.finalPayoutSent;
+
+  var owedDeposit = depositEligible && !depositPaid ? djDepositShare : 0;
+  var owedFinal = finalEligible && !finalPaid ? djFinalShare : 0;
+
+  return {
+    owed: Math.round((owedDeposit + owedFinal) * 100) / 100,
+    payDeposit: owedDeposit > 0,
+    payFinal: owedFinal > 0,
+  };
+}
+
 exports.sendPaypalPayout = onCall(
   {
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
@@ -205,11 +234,8 @@ exports.sendPaypalPayout = onCall(
     }
 
     var djId = request.data && request.data.djId;
-    var amount = Number(request.data && request.data.amount);
-    var bookingIds = (request.data && request.data.bookingIds) || [];
-
-    if (!djId || !amount || amount <= 0) {
-      throw new HttpsError("invalid-argument", "djId and a positive amount are required.");
+    if (!djId) {
+      throw new HttpsError("invalid-argument", "djId is required.");
     }
 
     var djDoc = await db.collection("djs").doc(djId).get();
@@ -226,6 +252,26 @@ exports.sendPaypalPayout = onCall(
       );
     }
 
+    var bookingsSnap = await db.collection("bookings")
+      .where("djId", "==", djId)
+      .where("status", "in", ["confirmed", "completed"])
+      .get();
+
+    var payable = [];
+    var totalOwed = 0;
+    bookingsSnap.forEach(function (doc) {
+      var result = computeBookingPayout(doc.data());
+      if (result.owed > 0) {
+        totalOwed += result.owed;
+        payable.push({ ref: doc.ref, payDeposit: result.payDeposit, payFinal: result.payFinal });
+      }
+    });
+    totalOwed = Math.round(totalOwed * 100) / 100;
+
+    if (totalOwed <= 0) {
+      throw new HttpsError("failed-precondition", "This DJ has no outstanding payout right now.");
+    }
+
     var mode = PAYPAL_MODE.value() || "sandbox";
     var accessToken = await getPaypalAccessToken(
       PAYPAL_CLIENT_ID.value(),
@@ -238,7 +284,7 @@ exports.sendPaypalPayout = onCall(
       accessToken,
       mode,
       paypalEmail,
-      amount,
+      totalOwed,
       "SOL gig payout for " + djName,
       djId
     );
@@ -252,8 +298,8 @@ exports.sendPaypalPayout = onCall(
       djId: djId,
       djName: djName,
       paypalEmail: paypalEmail,
-      amount: amount,
-      bookingIds: bookingIds,
+      amount: totalOwed,
+      bookingIds: payable.map(function (p) { return p.ref.id; }),
       payoutBatchId: payoutBatchId,
       status: batchStatus,
       mode: mode,
@@ -261,19 +307,17 @@ exports.sendPaypalPayout = onCall(
       createdBy: auth.uid,
     });
 
-    bookingIds.forEach(function (bookingId) {
-      var ref = db.collection("bookings").doc(bookingId);
-      batch.set(ref, {
-        payoutSent: true,
-        payoutBatchId: payoutBatchId,
-        payoutAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+    payable.forEach(function (p) {
+      var update = { payoutBatchId: payoutBatchId, payoutAt: admin.firestore.FieldValue.serverTimestamp() };
+      if (p.payDeposit) update.depositPayoutSent = true;
+      if (p.payFinal) update.finalPayoutSent = true;
+      batch.set(p.ref, update, { merge: true });
     });
 
     await batch.commit();
 
-    logger.info("PayPal payout sent to DJ " + djId + " for $" + amount + " (batch " + payoutBatchId + ")");
+    logger.info("PayPal payout sent to DJ " + djId + " for $" + totalOwed + " (batch " + payoutBatchId + ")");
 
-    return { success: true, payoutBatchId: payoutBatchId, status: batchStatus };
+    return { success: true, payoutBatchId: payoutBatchId, status: batchStatus, amount: totalOwed };
   }
 );

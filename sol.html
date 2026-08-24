@@ -2621,27 +2621,49 @@
       return !!paypalInfo && paypalInfo.indexOf('@') !== -1;
     }
 
+    // Mirrors the server-side computeBookingPayout in functions/index.js, for display only.
+    // Deposit share is payable once a DJ accepts (confirmed); remaining balance share once completed.
+    function computeBookingPayoutClient(b) {
+      var total = Number(b.totalAmount || b.total_cost || 0);
+      var depositOnly = !!b.deposit_only;
+      var depositAmount = depositOnly ? Math.max(50, Math.round(total * 0.5 * 100) / 100) : 0;
+      var djDepositShare = Math.round(depositAmount * 0.85 * 100) / 100;
+      var djFinalShare = Math.round((total - depositAmount) * 0.85 * 100) / 100;
+
+      var depositEligible = depositOnly && (b.status === 'confirmed' || b.status === 'completed');
+      var finalEligible = b.status === 'completed';
+
+      var legacyPaid = !!b.payoutSent;
+      var depositPaid = legacyPaid || !!b.depositPayoutSent;
+      var finalPaid = legacyPaid || !!b.finalPayoutSent;
+
+      var owedDeposit = depositEligible && !depositPaid ? djDepositShare : 0;
+      var owedFinal = finalEligible && !finalPaid ? djFinalShare : 0;
+      var earnedTotal = (depositEligible ? djDepositShare : 0) + (finalEligible ? djFinalShare : 0);
+
+      return { owed: owedDeposit + owedFinal, earned: earnedTotal };
+    }
+
     function loadAdminEarnings() {
       var earningsList = document.getElementById('sol-admin-earnings-list');
       earningsList.innerHTML = '<p style="color:#888;">Loading earnings...</p>';
-      db.collection('bookings').where('status', '==', 'completed').get()
+      db.collection('bookings').where('status', 'in', ['confirmed', 'completed']).get()
         .then(function(snapshot) {
           var gross = 0;
           var djEarnings = {};
           snapshot.forEach(function(doc) {
             var b = doc.data();
-            var amount = b.totalAmount || b.total_cost || 0;
-            gross += amount;
-            var djId = b.djId || 'unknown';
+            var djId = b.djId;
+            if (!djId) return;
             var djName = b.djName || 'Unknown DJ';
-            var payoutShare = amount * 0.85;
-            if (!djEarnings[djId]) djEarnings[djId] = { name: djName, total: 0, gigs: 0, unpaidTotal: 0, unpaidBookingIds: [] };
-            djEarnings[djId].total += payoutShare;
-            djEarnings[djId].gigs++;
-            if (!b.payoutSent) {
-              djEarnings[djId].unpaidTotal += payoutShare;
-              djEarnings[djId].unpaidBookingIds.push(doc.id);
-            }
+            var payout = computeBookingPayoutClient(b);
+
+            if (!djEarnings[djId]) djEarnings[djId] = { name: djName, total: 0, gigs: 0, unpaidTotal: 0 };
+            djEarnings[djId].total += payout.earned;
+            djEarnings[djId].unpaidTotal += payout.owed;
+            if (b.status === 'completed') djEarnings[djId].gigs++;
+
+            if (b.status === 'completed') gross += Number(b.totalAmount || b.total_cost || 0);
           });
           var platformFee = gross * 0.15;
           var djPayouts = gross * 0.85;
@@ -2653,11 +2675,11 @@
           var entries = Object.keys(djEarnings).map(function(k) { return { id: k, ...djEarnings[k] }; });
           entries.sort(function(a, b) { return b.total - a.total; });
           if (entries.length === 0) {
-            earningsList.innerHTML = '<p style="color:#888; text-align:center;">No completed bookings yet.</p>';
+            earningsList.innerHTML = '<p style="color:#888; text-align:center;">No confirmed or completed bookings yet.</p>';
             return;
           }
 
-          var djIds = entries.map(function(e) { return e.id; }).filter(function(id) { return id !== 'unknown'; });
+          var djIds = entries.map(function(e) { return e.id; });
           var djLookups = djIds.map(function(id) {
             return db.collection('djs').doc(id).get().then(function(doc) {
               return { id: id, paypal: doc.exists ? (doc.data().paypal || '') : '' };
@@ -2677,7 +2699,7 @@
               if (e.unpaidTotal <= 0) {
                 payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#22c55e;">✅ All paid</span>';
               } else if (isPaypalEmail(paypalInfo)) {
-                payBtnHtml = '<button type="button" class="submit-btn sol-auto-payout-btn" data-dj-id="' + e.id + '" data-amount="' + e.unpaidTotal.toFixed(2) + '" data-booking-ids="' + e.unpaidBookingIds.join(',') + '" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay $' + e.unpaidTotal.toFixed(2) + ' via PayPal</button>';
+                payBtnHtml = '<button type="button" class="submit-btn sol-auto-payout-btn" data-dj-id="' + e.id + '" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay $' + e.unpaidTotal.toFixed(2) + ' via PayPal</button>';
               } else if (paypalInfo) {
                 var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.unpaidTotal);
                 payBtnHtml = '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal (manual)</a>';
@@ -2686,25 +2708,23 @@
               }
 
               card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
-                '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + Math.round(e.total).toLocaleString() + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
+                '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + e.total.toFixed(2) + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
               earningsList.appendChild(card);
             });
 
             earningsList.querySelectorAll('.sol-auto-payout-btn').forEach(function(btn) {
               btn.addEventListener('click', function() {
                 var djId = btn.getAttribute('data-dj-id');
-                var amount = parseFloat(btn.getAttribute('data-amount'));
-                var bookingIds = btn.getAttribute('data-booking-ids').split(',').filter(Boolean);
-                if (!confirm('Send $' + amount.toFixed(2) + ' via PayPal to this DJ now? This cannot be undone.')) return;
+                if (!confirm('Send the outstanding PayPal payout to this DJ now? This cannot be undone.')) return;
 
                 var original = btn.textContent;
                 btn.disabled = true;
                 btn.textContent = 'Sending...';
 
                 var sendPaypalPayout = functions.httpsCallable('sendPaypalPayout');
-                sendPaypalPayout({ djId: djId, amount: amount, bookingIds: bookingIds })
+                sendPaypalPayout({ djId: djId })
                   .then(function(result) {
-                    btn.textContent = '✅ Sent!';
+                    btn.textContent = '✅ Sent $' + (result.data && result.data.amount ? result.data.amount.toFixed(2) : '');
                     btn.style.background = '#22c55e';
                     setTimeout(function() { loadAdminEarnings(); }, 1500);
                   })
