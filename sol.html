@@ -2031,9 +2031,10 @@
       }
       djShareLocBtn.textContent = 'Stop';
       djShareLocBtn.style.background = '#ff3b30';
-      djLocStatus.textContent = 'Requesting permission...';
+      djLocStatus.textContent = 'Getting location...';
       djLocStatus.style.color = '#ffd860';
-      djLocWatchId = navigator.geolocation.watchPosition(function(pos) {
+
+      function onPos(pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
         djLocStatus.textContent = 'Live (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
@@ -2049,11 +2050,28 @@
             }
           }, { merge: true });
         }
-      }, function(err) {
+      }
+
+      function onErr(err, isRetry) {
         var msg = 'Error: ' + err.message;
         if (err.code === 1) msg = 'Permission denied. Allow location access in browser settings.';
         else if (err.code === 2) msg = 'Location unavailable. Check your GPS/network.';
         else if (err.code === 3) msg = 'Location request timed out. Try again.';
+
+        if (!isRetry && (err.code === 2 || err.code === 3)) {
+          djLocStatus.textContent = 'Retrying with lower accuracy...';
+          djLocStatus.style.color = '#ffd860';
+          navigator.geolocation.getCurrentPosition(function(pos) {
+            onPos(pos);
+            djLocWatchId = navigator.geolocation.watchPosition(onPos, function(e2) {
+              onErr(e2, true);
+            }, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
+          }, function(e2) {
+            onErr(e2, true);
+          }, { enableHighAccuracy: false, maximumAge: 60000, timeout: 30000 });
+          return;
+        }
+
         djLocStatus.textContent = msg;
         djLocStatus.style.color = '#ff4d8f';
         djShareLocBtn.textContent = 'Start';
@@ -2062,6 +2080,15 @@
           navigator.geolocation.clearWatch(djLocWatchId);
           djLocWatchId = null;
         }
+      }
+
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        onPos(pos);
+        djLocWatchId = navigator.geolocation.watchPosition(onPos, function(err) {
+          onErr(err, false);
+        }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+      }, function(err) {
+        onErr(err, false);
       }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     });
 
