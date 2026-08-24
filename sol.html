@@ -1499,6 +1499,7 @@
             isVerifiedDJ = true;
             djModeToggleBtn.style.display = 'inline-block';
             loadDJProfile(user, doc.data());
+            db.collection('dj-status').doc(user.uid).set({ isVerified: true }, { merge: true }).catch(function() {});
           } else {
             return db.collection('users').doc(user.uid).get();
           }
@@ -1508,6 +1509,7 @@
             isVerifiedDJ = true;
             djModeToggleBtn.style.display = 'inline-block';
             loadDJProfile(user, userDoc.data());
+            db.collection('dj-status').doc(user.uid).set({ isVerified: true }, { merge: true }).catch(function() {});
           }
         })
         .catch(function(err) {
