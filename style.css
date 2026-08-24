@@ -11,6 +11,11 @@ body {
   text-align: center;
   min-height: 100vh;
   overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html {
@@ -45,14 +50,14 @@ header h1 {
   align-items: center;
 }
 .site-banner img {
-  /* reduce banner height: responsive, shorter on large screens */
   width: 100%;
   max-width: none;
   height: auto;
-  max-height: clamp(120px, 14vh, 240px); /* shorter, responsive cap */
+  max-height: clamp(80px, 12vh, 240px);
   display: block;
   margin: 0 auto;
   object-fit: cover;
+  object-position: center;
 }
 
 nav {
@@ -60,6 +65,7 @@ nav {
   justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
+  padding: 0.25rem 0;
 }
 
 nav a {
@@ -154,6 +160,8 @@ section {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 24px;
   padding: 2rem;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 #events h2,
@@ -215,6 +223,14 @@ section {
   margin: 15px auto;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.compact-player {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  border: none;
 }
 
 .news-carousel {
@@ -818,15 +834,15 @@ footer {
 
 @media (max-width: 640px) {
   header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   nav {
     flex-wrap: nowrap;
-    gap: 10px;
+    gap: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 0.75rem;
+    padding: 0 0.5rem;
     justify-content: flex-start;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -837,14 +853,14 @@ footer {
   }
 
   nav a {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     letter-spacing: 1px;
     white-space: nowrap;
-    padding: 0.35rem 0;
+    padding: 0.3rem 0;
   }
 
   .hero {
-    padding: 90px 0 40px;
+    padding: 60px 0 30px;
   }
 
   .info {
@@ -856,12 +872,12 @@ footer {
     flex: 1 1 100%;
     max-width: 100%;
     min-width: auto;
-    padding: 1rem;
+    padding: 0.85rem;
   }
 
   .event-flyer {
     max-width: 100%;
-    margin: 0.75rem auto;
+    margin: 0.5rem auto;
   }
 
   img,
@@ -874,6 +890,8 @@ footer {
 
   iframe {
     max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
   }
 
   .news-carousel .event-card {
@@ -904,6 +922,123 @@ footer {
   .video-highlight,
   .mepisode-layout {
     grid-template-columns: 1fr;
+  }
+
+  .featured-video-card {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .video-thumbnail {
+    min-height: 180px;
+  }
+
+  .horizontal-card {
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .horizontal-card .event-flyer {
+    width: 100%;
+    height: auto;
+  }
+
+  .player-row {
+    gap: 0.5rem;
+  }
+
+  .player-row img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .mixtape-card {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .mixtape-cover {
+    max-width: 100%;
+  }
+
+  .related-articles-grid .event-card {
+    flex: 1 1 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .container {
+    width: 94%;
+  }
+
+  section {
+    margin: 1.5rem 0;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+  }
+
+  .audio-player-card {
+    padding: 1rem !important;
+  }
+
+  .tracklist ol {
+    padding-left: 1.2rem;
+    font-size: 0.85rem;
+  }
+
+  .booking-card {
+    padding: 0.85rem;
+  }
+
+  .book-cta {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.9rem;
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .back-to-top {
+    bottom: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 380px) {
+  nav a {
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
+  }
+
+  .info {
+    padding: 0.75rem;
+  }
+
+  .event-card {
+    padding: 0.65rem;
+  }
+
+  .container {
+    width: 96%;
+  }
+
+  h2 {
+    font-size: 1.1rem;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+  }
+
+  .site-banner img {
+    max-height: 70px;
   }
 }
 
