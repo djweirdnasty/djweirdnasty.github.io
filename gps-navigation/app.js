@@ -1,40 +1,45 @@
-const map = L.map("map").setView([39.9526, -75.1652], 12);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: "&copy; OpenStreetMap contributors",
-}).addTo(map);
+const MAPBOX_TOKEN = window.MAPBOX_ACCESS_TOKEN || "";
+const STYLE_URL = window.MAPBOX_STYLE_URL || "mapbox://styles/mapbox/standard";
 
-const carIcon = L.divIcon({
-  className: "car-marker",
-  html: "<div style='font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5));'>&#128663;</div>",
-  iconSize: [36, 36],
-  iconAnchor: [18, 34],
+if (!MAPBOX_TOKEN) {
+  console.error("Mapbox token not found. Set window.MAPBOX_ACCESS_TOKEN in config.js");
+}
+
+mapboxgl.accessToken = MAPBOX_TOKEN;
+
+const map = new mapboxgl.Map({
+  container: "map",
+  style: STYLE_URL,
+  center: [-75.1652, 39.9526],
+  zoom: 12,
+  pitch: 45,
+  bearing: -12.8,
 });
 
-const footIcon = L.divIcon({
-  className: "car-marker",
-  html: "<div style='font-size:28px;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.5));'>&#129462;</div>",
-  iconSize: [36, 36],
-  iconAnchor: [18, 34],
-});
+map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-const startIcon = L.divIcon({
-  className: "pin",
-  html: "<div style='width:12px;height:12px;background:#00ff88;border-radius:50%;border:2px solid white;'></div>",
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
+function createDivIcon(html, size) {
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  el.style.fontSize = size + "px";
+  el.style.lineHeight = "1";
+  el.style.filter = "drop-shadow(0 2px 3px rgba(0,0,0,0.5))";
+  return el;
+}
 
-const endIcon = L.divIcon({
-  className: "pin",
-  html: "<div style='width:12px;height:12px;background:#ff4757;border-radius:50%;border:2px solid white;'></div>",
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
+function createPinIcon(color) {
+  const el = document.createElement("div");
+  el.style.width = "14px";
+  el.style.height = "14px";
+  el.style.background = color;
+  el.style.borderRadius = "50%";
+  el.style.border = "2px solid white";
+  el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.5)";
+  return el;
+}
 
 let currentLatLng = null;
 let destLatLng = null;
-let routeLine = null;
 let steps = [];
 let carMarker = null;
 let navInterval = null;
@@ -131,11 +136,14 @@ function onPosition(pos) {
   const lng = pos.coords.longitude;
   currentLatLng = [lat, lng];
   if (!startMarker) {
-    startMarker = L.marker(currentLatLng, { icon: startIcon }).addTo(map).bindPopup("You are here");
+    startMarker = new mapboxgl.Marker(createPinIcon("#00ff88"))
+      .setLngLat([lng, lat])
+      .setPopup(new mapboxgl.Popup().setText("You are here"))
+      .addTo(map);
   } else {
-    startMarker.setLatLng(currentLatLng);
+    startMarker.setLngLat([lng, lat]);
   }
-  if (!isNavigating) startMarker.openPopup();
+  if (!isNavigating) startMarker.togglePopup();
   reverseGeocode(lat, lng);
   setStatus(`Located: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
   $("routeBtn").disabled = !destLatLng;
@@ -203,7 +211,7 @@ function toggleTracking() {
 
 function centerOnMe() {
   if (currentLatLng) {
-    map.setView(currentLatLng, 16);
+    map.flyTo({ center: [currentLatLng[1], currentLatLng[0]], zoom: 16, essential: true });
   } else {
     locateMe();
   }
@@ -226,15 +234,17 @@ function selectDestination(lat, lon, display_name) {
   $("destination").value = display_name;
   $("suggestions").innerHTML = "";
   $("suggestions").hidden = true;
-  if (destMarker) map.removeLayer(destMarker);
-  destMarker = L.marker(destLatLng, { icon: endIcon })
+  if (destMarker) destMarker.remove();
+  destMarker = new mapboxgl.Marker(createPinIcon("#ff4757"))
+    .setLngLat([lon, lat])
+    .setPopup(new mapboxgl.Popup().setHTML(display_name))
     .addTo(map)
-    .bindPopup(display_name)
-    .openPopup();
+    .togglePopup();
   if (currentLatLng) {
-    map.fitBounds([currentLatLng, destLatLng], { padding: [40, 40] });
+    const bounds = [[currentLatLng[1], currentLatLng[0]], [lon, lat]];
+    map.fitBounds(bounds, { padding: 40 });
   } else {
-    map.setView(destLatLng, 15);
+    map.flyTo({ center: [lon, lat], zoom: 15, essential: true });
   }
   setStatus(`Destination: ${display_name}`);
   $("routeBtn").disabled = !currentLatLng;
@@ -304,7 +314,7 @@ async function getRoute() {
     const coords = `${currentLatLng[1]},${currentLatLng[0]};${destLatLng[1]},${destLatLng[0]}`;
     const profile = $("profile").value || "driving";
     activeProfile = profile;
-    if (carMarker) { map.removeLayer(carMarker); carMarker = null; }
+    if (carMarker) { carMarker.remove(); carMarker = null; }
     const res = await fetch(`https://router.project-osrm.org/route/v1/${profile}/${coords}?overview=full&geometries=geojson&steps=true`);
     const data = await res.json();
     if (!data.routes || !data.routes.length) {
@@ -317,12 +327,39 @@ async function getRoute() {
     steps = legs.steps;
     routePoints = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
 
-    if (routeLine) map.removeLayer(routeLine);
-    routeLine = L.polyline(routePoints, { color: "#00d4ff", weight: 6, opacity: 0.9 }).addTo(map);
-    if (carMarker) map.removeLayer(carMarker);
-    const navIcon = activeProfile === "foot" ? footIcon : carIcon;
-    carMarker = L.marker(routePoints[0], { icon: navIcon, zIndexOffset: 1000 }).addTo(map);
-    map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+    const routeGeoJSON = {
+      type: "Feature",
+      geometry: { type: "LineString", coordinates: route.geometry.coordinates }
+    };
+
+    if (map.getSource("route")) {
+      map.getSource("route").setData(routeGeoJSON);
+    } else {
+      map.addSource("route", { type: "geojson", data: routeGeoJSON });
+      map.addLayer({
+        id: "route-line",
+        type: "line",
+        source: "route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#00d4ff",
+          "line-width": 6,
+          "line-opacity": 0.9,
+          "line-emissive-strength": 1
+        }
+      });
+    }
+
+    if (carMarker) carMarker.remove();
+    const navIconEl = activeProfile === "foot" ? createDivIcon("&#129462;", 28) : createDivIcon("&#128663;", 28);
+    carMarker = new mapboxgl.Marker(navIconEl, { zIndexOffset: 1000 })
+      .setLngLat(route.geometry.coordinates[0])
+      .addTo(map);
+
+    const bounds = route.geometry.coordinates.reduce(function(b, coord) {
+      return b.extend(coord);
+    }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
+    map.fitBounds(bounds, { padding: 40 });
 
     const distanceMi = (route.distance / 1609.34).toFixed(1);
     const durationMin = Math.round(route.duration / 60);
@@ -392,13 +429,15 @@ function updateNavigation(lat, lng) {
   if (!routePoints.length) return;
   const idx = nearestRoutePoint(lat, lng);
   const point = routePoints[idx];
-  const navIcon = activeProfile === "foot" ? footIcon : carIcon;
   if (!carMarker) {
-    carMarker = L.marker(point, { icon: navIcon, zIndexOffset: 1000 }).addTo(map);
+    const navIconEl = activeProfile === "foot" ? createDivIcon("&#129462;", 28) : createDivIcon("&#128663;", 28);
+    carMarker = new mapboxgl.Marker(navIconEl, { zIndexOffset: 1000 })
+      .setLngLat([point[1], point[0]])
+      .addTo(map);
   } else {
-    carMarker.setLatLng(point);
+    carMarker.setLngLat([point[1], point[0]]);
   }
-  map.panTo(point);
+  map.panTo([point[1], point[0]], { essential: true });
 
   const stepInfo = findNextStep(idx);
   if (stepInfo && stepInfo.index !== lastNavStepIndex) {
