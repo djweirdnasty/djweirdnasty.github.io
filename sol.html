@@ -1077,6 +1077,10 @@
         <label for="sol-quick-email">Email</label>
         <input id="sol-quick-email" name="email" type="email" placeholder="you@example.com" required>
 
+        <label for="sol-quick-phone">Phone Number</label>
+        <input id="sol-quick-phone" name="phone" type="tel" placeholder="215-555-0123" required>
+        <p style="color:#888; font-size:0.8rem; margin-top:-0.5rem; margin-bottom:0.75rem;">Your DJ will use this to contact you directly about your event.</p>
+
         <label for="sol-quick-event">Event Type</label>
         <select id="sol-quick-event" name="event" required>
           <option value="">Select event type</option>
@@ -1102,6 +1106,9 @@
 
         <label for="sol-quick-duration">Duration (hours)</label>
         <input id="sol-quick-duration" name="duration" type="number" min="1" max="12" value="4" required>
+
+        <label for="sol-quick-notes" style="margin-top:0.75rem;">Event Details</label>
+        <textarea id="sol-quick-notes" name="notes" placeholder="Tell the DJ about your event - theme, must-play songs, timeline, dress code, anything they should know..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
 
         <h3 style="margin-top:1.5rem; margin-bottom:0.75rem;">Equipment & Extras</h3>
 
@@ -1824,7 +1831,7 @@
           const startTime = b.startTime || b.event_time || '';
           const location = (b.locationData && b.locationData.address) || b.location || b.event_location || '';
           const amount = b.totalAmount || b.total_cost || 0;
-          const special = b.specialRequests || '';
+          const special = b.specialRequests || b.special_requests || '';
 
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
             '<strong>' + clientName + '</strong>' +
@@ -1868,7 +1875,7 @@
           const startTime = b.startTime || b.event_time || '';
           const location = (b.locationData && b.locationData.address) || b.location || b.event_location || '';
           const amount = b.totalAmount || b.total_cost || 0;
-          const special = b.specialRequests || '';
+          const special = b.specialRequests || b.special_requests || '';
           const clientEmail = b.clientEmail || b.client_email || '';
           const clientPhone = b.clientPhone || b.client_phone || '';
           const duration = b.duration || b.event_duration || '';
@@ -1901,8 +1908,8 @@
             '</div>' +
             '<div id="' + detailsId + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
             (duration ? '<div>⏱️ Duration: ' + duration + ' hrs</div>' : '') +
-            (clientEmail ? '<div>📧 ' + clientEmail + '</div>' : '') +
-            (clientPhone ? '<div>📱 ' + clientPhone + '</div>' : '') +
+            (clientEmail ? '<div>📧 <a href="mailto:' + clientEmail + '" style="color:#00d4ff;">' + clientEmail + '</a></div>' : '') +
+            (clientPhone ? '<div>📱 <a href="tel:' + clientPhone + '" style="color:#00d4ff;">' + clientPhone + '</a></div>' : '') +
             (eqStr ? '<div>🎛️ Equipment: ' + eqStr + '</div>' : '') +
             (special ? '<div style="color:#ffd860;">📝 ' + special + '</div>' : '') +
             '</div>';
@@ -3459,12 +3466,13 @@
         client_id: clientId,
         client_email: form.email.value,
         client_name: form.name.value,
+        client_phone: form.phone.value.trim(),
         event_location: selectedLocation,
         event_date: form.date.value,
         event_time: '08:00 PM',
         duration: parseInt(form.duration.value) || 4,
         equipment: equipment,
-        special_requests: '',
+        special_requests: form.notes.value.trim(),
         event_type: form.event.value,
         age_bracket: 'All Ages',
         recurring: recurring,
