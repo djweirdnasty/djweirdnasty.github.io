@@ -13,9 +13,10 @@ setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 const ADMIN_UID = "3i7fQdPjN0Qxz3FysVPvnhtxzlJ3";
 const ADMIN_EMAIL = "djweirdnasty@gmail.com";
 
-const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
-const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
-const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
+// TEMP DISABLED: uncomment once these secrets are set via `firebase functions:secrets:set`
+// const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
+// const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+// const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
@@ -58,6 +59,8 @@ function money(n) {
   return "$" + num.toFixed(0);
 }
 
+// TEMP DISABLED: uncomment once TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER secrets are set
+/*
 exports.notifyDjOnBooking = onDocumentWritten(
   {
     document: "bookings/{bookingId}",
@@ -129,6 +132,7 @@ exports.notifyDjOnBooking = onDocumentWritten(
     }
   }
 );
+*/
 
 function paypalBaseUrl(mode) {
   return mode === "live"
