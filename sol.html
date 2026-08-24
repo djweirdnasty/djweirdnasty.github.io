@@ -661,6 +661,9 @@
                 <span style="font-size:0.85rem; color:#ccc;">Text me new booking requests to my phone</span>
               </label>
 
+              <label for="sol-dj-paypal">PayPal Email or PayPal.me Username (for payouts)</label>
+              <input id="sol-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
               <label for="sol-dj-city">City</label>
               <input id="sol-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
@@ -885,6 +888,8 @@
               <input id="sol-add-dj-email" type="email" placeholder="dj@example.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
               <label for="sol-add-dj-phone">Phone</label>
               <input id="sol-add-dj-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-paypal">PayPal Email or PayPal.me Username</label>
+              <input id="sol-add-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
               <label for="sol-add-dj-city">City</label>
               <input id="sol-add-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
               <label for="sol-add-dj-state">State</label>
@@ -1505,6 +1510,7 @@
           document.getElementById('sol-dj-avatar-url').value = p.photoURL || p.avatar || '';
           document.getElementById('sol-dj-phone').value = p.phone || '';
           document.getElementById('sol-dj-sms-optin').checked = p.smsOptIn !== false;
+          document.getElementById('sol-dj-paypal').value = p.paypal || '';
           document.getElementById('sol-dj-city').value = p.city || (p.location && p.location.city) || '';
           document.getElementById('sol-dj-state').value = p.state || (p.location && p.location.state) || '';
           document.getElementById('sol-dj-genres').value = (p.genres || []).join(', ');
@@ -1552,6 +1558,7 @@
         photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
         phone: document.getElementById('sol-dj-phone').value.trim(),
         smsOptIn: document.getElementById('sol-dj-sms-optin').checked,
+        paypal: document.getElementById('sol-dj-paypal').value.trim(),
         city: document.getElementById('sol-dj-city').value.trim(),
         state: document.getElementById('sol-dj-state').value.trim(),
         genres: genres,
@@ -2597,6 +2604,17 @@
       });
     }
 
+    function buildPaypalPayoutUrl(paypalInfo, amount) {
+      if (!paypalInfo) return null;
+      var val = paypalInfo.trim();
+      var amt = amount.toFixed(2);
+      if (val.indexOf('@') !== -1) {
+        return 'https://www.paypal.com/myaccount/transfer/homepage/pay?recipient=' + encodeURIComponent(val) + '&amount=' + amt;
+      }
+      var username = val.replace(/^https?:\/\/(www\.)?paypal\.me\//i, '').replace(/^paypal\.me\//i, '').replace(/^@/, '');
+      return 'https://paypal.me/' + encodeURIComponent(username) + '/' + amt;
+    }
+
     function loadAdminEarnings() {
       var earningsList = document.getElementById('sol-admin-earnings-list');
       earningsList.innerHTML = '<p style="color:#888;">Loading earnings...</p>';
@@ -2627,12 +2645,30 @@
             earningsList.innerHTML = '<p style="color:#888; text-align:center;">No completed bookings yet.</p>';
             return;
           }
-          entries.forEach(function(e) {
-            var card = document.createElement('div');
-            card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center;';
-            card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
-              '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + Math.round(e.total).toLocaleString() + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span></div>';
-            earningsList.appendChild(card);
+
+          var djIds = entries.map(function(e) { return e.id; }).filter(function(id) { return id !== 'unknown'; });
+          var djLookups = djIds.map(function(id) {
+            return db.collection('djs').doc(id).get().then(function(doc) {
+              return { id: id, paypal: doc.exists ? (doc.data().paypal || '') : '' };
+            }).catch(function() { return { id: id, paypal: '' }; });
+          });
+
+          Promise.all(djLookups).then(function(results) {
+            var paypalMap = {};
+            results.forEach(function(r) { paypalMap[r.id] = r.paypal; });
+
+            entries.forEach(function(e) {
+              var card = document.createElement('div');
+              card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;';
+              var paypalInfo = paypalMap[e.id] || '';
+              var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.total);
+              var payBtnHtml = payoutUrl
+                ? '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal</a>'
+                : '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ff4d8f;">No PayPal on file</span>';
+              card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
+                '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + Math.round(e.total).toLocaleString() + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
+              earningsList.appendChild(card);
+            });
           });
         })
         .catch(function(err) {
@@ -2650,6 +2686,7 @@
         stageName: document.getElementById('sol-add-dj-name').value.trim(),
         email: document.getElementById('sol-add-dj-email').value.trim(),
         phone: document.getElementById('sol-add-dj-phone').value.trim(),
+        paypal: document.getElementById('sol-add-dj-paypal').value.trim(),
         city: document.getElementById('sol-add-dj-city').value.trim(),
         state: document.getElementById('sol-add-dj-state').value.trim(),
         genres: genres,
