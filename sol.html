@@ -11,7 +11,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob: https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net; upgrade-insecure-requests">
   <title>SOL | Sounds of Logan DJ Booking</title>
   <meta name="description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:title" content="SOL | Sounds of Logan DJ Booking">
@@ -44,6 +44,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
   <style>
     /* ===== SOL App Styles ===== */
@@ -1341,6 +1342,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    const functions = firebase.functions();
 
     // ---------- Account (Firebase Auth) ----------
     let authMode = 'signin';
@@ -2615,6 +2617,10 @@
       return 'https://paypal.me/' + encodeURIComponent(username) + '/' + amt;
     }
 
+    function isPaypalEmail(paypalInfo) {
+      return !!paypalInfo && paypalInfo.indexOf('@') !== -1;
+    }
+
     function loadAdminEarnings() {
       var earningsList = document.getElementById('sol-admin-earnings-list');
       earningsList.innerHTML = '<p style="color:#888;">Loading earnings...</p>';
@@ -2628,9 +2634,14 @@
             gross += amount;
             var djId = b.djId || 'unknown';
             var djName = b.djName || 'Unknown DJ';
-            if (!djEarnings[djId]) djEarnings[djId] = { name: djName, total: 0, gigs: 0 };
-            djEarnings[djId].total += amount * 0.85;
+            var payoutShare = amount * 0.85;
+            if (!djEarnings[djId]) djEarnings[djId] = { name: djName, total: 0, gigs: 0, unpaidTotal: 0, unpaidBookingIds: [] };
+            djEarnings[djId].total += payoutShare;
             djEarnings[djId].gigs++;
+            if (!b.payoutSent) {
+              djEarnings[djId].unpaidTotal += payoutShare;
+              djEarnings[djId].unpaidBookingIds.push(doc.id);
+            }
           });
           var platformFee = gross * 0.15;
           var djPayouts = gross * 0.85;
@@ -2661,13 +2672,48 @@
               var card = document.createElement('div');
               card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;';
               var paypalInfo = paypalMap[e.id] || '';
-              var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.total);
-              var payBtnHtml = payoutUrl
-                ? '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal</a>'
-                : '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ff4d8f;">No PayPal on file</span>';
+
+              var payBtnHtml;
+              if (e.unpaidTotal <= 0) {
+                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#22c55e;">✅ All paid</span>';
+              } else if (isPaypalEmail(paypalInfo)) {
+                payBtnHtml = '<button type="button" class="submit-btn sol-auto-payout-btn" data-dj-id="' + e.id + '" data-amount="' + e.unpaidTotal.toFixed(2) + '" data-booking-ids="' + e.unpaidBookingIds.join(',') + '" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay $' + e.unpaidTotal.toFixed(2) + ' via PayPal</button>';
+              } else if (paypalInfo) {
+                var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.unpaidTotal);
+                payBtnHtml = '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal (manual)</a>';
+              } else {
+                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ff4d8f;">No PayPal on file</span>';
+              }
+
               card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
                 '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + Math.round(e.total).toLocaleString() + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
               earningsList.appendChild(card);
+            });
+
+            earningsList.querySelectorAll('.sol-auto-payout-btn').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var djId = btn.getAttribute('data-dj-id');
+                var amount = parseFloat(btn.getAttribute('data-amount'));
+                var bookingIds = btn.getAttribute('data-booking-ids').split(',').filter(Boolean);
+                if (!confirm('Send $' + amount.toFixed(2) + ' via PayPal to this DJ now? This cannot be undone.')) return;
+
+                var original = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
+
+                var sendPaypalPayout = functions.httpsCallable('sendPaypalPayout');
+                sendPaypalPayout({ djId: djId, amount: amount, bookingIds: bookingIds })
+                  .then(function(result) {
+                    btn.textContent = '✅ Sent!';
+                    btn.style.background = '#22c55e';
+                    setTimeout(function() { loadAdminEarnings(); }, 1500);
+                  })
+                  .catch(function(err) {
+                    btn.disabled = false;
+                    btn.textContent = original;
+                    alert('Payout failed: ' + (err.message || 'Unknown error'));
+                  });
+              });
             });
           });
         })
