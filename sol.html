@@ -3061,32 +3061,49 @@
 
     function initMap() {
       mapboxgl.accessToken = window.MAPBOX_ACCESS_TOKEN;
-      map = new mapboxgl.Map({
+
+      var mapOptions = {
         container: 'sol-map',
         style: window.MAPBOX_STYLE_URL,
         center: [selectedLocation.longitude, selectedLocation.latitude],
         zoom: 12,
         pitch: 45,
         bearing: -12.8
+      };
+
+      try {
+        map = new mapboxgl.Map(mapOptions);
+      } catch(e) {
+        console.error('Mapbox custom style failed, falling back:', e);
+        mapOptions.style = 'mapbox://styles/mapbox/dark-v11';
+        mapOptions.pitch = 0;
+        mapOptions.bearing = 0;
+        map = new mapboxgl.Map(mapOptions);
+      }
+
+      map.on('error', function(e) {
+        console.error('Mapbox map error:', e);
       });
 
       map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      var selEl = createSolPin('#ff4d8f', 16);
-      selectedMarker = new mapboxgl.Marker({ element: selEl, draggable: true })
-        .setLngLat([selectedLocation.longitude, selectedLocation.latitude])
-        .setPopup(new mapboxgl.Popup().setText('Event location'))
-        .addTo(map)
-        .togglePopup();
+      map.on('load', function() {
+        var selEl = createSolPin('#ff4d8f', 16);
+        selectedMarker = new mapboxgl.Marker({ element: selEl, draggable: true })
+          .setLngLat([selectedLocation.longitude, selectedLocation.latitude])
+          .setPopup(new mapboxgl.Popup().setText('Event location'))
+          .addTo(map)
+          .togglePopup();
 
-      selectedMarker.on('dragend', function() {
-        var lngLat = selectedMarker.getLngLat();
-        updateLocation(lngLat.lat, lngLat.lng);
-      });
+        selectedMarker.on('dragend', function() {
+          var lngLat = selectedMarker.getLngLat();
+          updateLocation(lngLat.lat, lngLat.lng);
+        });
 
-      map.on('click', function(e) {
-        selectedMarker.setLngLat(e.lngLat);
-        updateLocation(e.lngLat.lat, e.lngLat.lng);
+        map.on('click', function(e) {
+          selectedMarker.setLngLat(e.lngLat);
+          updateLocation(e.lngLat.lat, e.lngLat.lng);
+        });
       });
     }
 
@@ -3495,8 +3512,8 @@
           const lat = parseFloat(r.lat);
           const lng = parseFloat(r.lon);
           const address = r.display_name;
-          map.setView([lat, lng], 15);
-          selectedMarker.setLatLng([lat, lng]);
+          map.flyTo({ center: [lng, lat], zoom: 15, essential: true });
+          selectedMarker.setLngLat([lng, lat]);
           updateLocation(lat, lng, address);
           input.value = '';
         } else {
@@ -3536,8 +3553,8 @@
           item.addEventListener('click', function() {
             const lat = parseFloat(r.lat);
             const lng = parseFloat(r.lon);
-            map.setView([lat, lng], 15);
-            selectedMarker.setLatLng([lat, lng]);
+            map.flyTo({ center: [lng, lat], zoom: 15, essential: true });
+            selectedMarker.setLngLat([lng, lat]);
             updateLocation(lat, lng, r.display_name);
             document.getElementById('sol-location-search').value = r.display_name;
             box.style.display = 'none';
