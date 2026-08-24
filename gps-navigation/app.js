@@ -74,15 +74,36 @@ function setStatus(text) {
 function getLocation() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      reject("Geolocation not supported");
+      reject("Geolocation not supported on this device");
+      return;
+    }
+    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      reject("HTTPS required for location access");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
-      (err) => reject(err.message),
-      { enableHighAccuracy: true, timeout: 10000 }
+      (err) => {
+        if (err.code === 2 || err.code === 3) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
+            (err2) => reject(getLocErrorMsg(err2)),
+            { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+          );
+        } else {
+          reject(getLocErrorMsg(err));
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
     );
   });
+}
+
+function getLocErrorMsg(err) {
+  if (err.code === 1) return "Permission denied. Allow location access in your browser settings.";
+  if (err.code === 2) return "Location unavailable. Check your GPS or network connection.";
+  if (err.code === 3) return "Location request timed out. Try again.";
+  return err.message;
 }
 
 function updateMyLocationPanel(address, lat, lng) {
@@ -123,7 +144,7 @@ function onPosition(pos) {
 
 async function locateMe() {
   try {
-    setStatus("Locating you…");
+    setStatus("Getting location...");
     const [lat, lng] = await getLocation();
     onPosition({ coords: { latitude: lat, longitude: lng } });
     centerOnMe();
@@ -138,10 +159,27 @@ function startTracking() {
     setStatus("Geolocation not supported");
     return;
   }
-  watchId = navigator.geolocation.watchPosition(onPosition, (err) => setStatus("Tracking error: " + err.message), {
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    setStatus("HTTPS required for location access");
+    return;
+  }
+  watchId = navigator.geolocation.watchPosition(onPosition, (err) => {
+    if (err.code === 2 || err.code === 3) {
+      setStatus("Retrying with lower accuracy...");
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+      watchId = navigator.geolocation.watchPosition(onPosition, (err2) => setStatus("Tracking error: " + getLocErrorMsg(err2)), {
+        enableHighAccuracy: false,
+        maximumAge: 60000,
+        timeout: 30000,
+      });
+      return;
+    }
+    setStatus("Tracking error: " + getLocErrorMsg(err));
+  }, {
     enableHighAccuracy: true,
     maximumAge: 10000,
-    timeout: 10000,
+    timeout: 15000,
   });
   isTracking = true;
   $("trackToggle").textContent = "Stop Tracking";
