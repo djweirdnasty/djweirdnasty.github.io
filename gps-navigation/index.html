@@ -2,80 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My GPS Navigation</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: blob:; font-src 'self' https:; connect-src 'self' https://nominatim.openstreetmap.org https://router.project-osrm.org https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com; upgrade-insecure-requests">
-  <link href="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.css" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta http-equiv="refresh" content="0; url=https://djweirdnasty.com/sol.html">
+  <title>Redirecting to SOL...</title>
+  <script>window.location.href = "https://djweirdnasty.com/sol.html";</script>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <img src="sol-logo.png" alt="SOL" class="logo" />
-      <p class="logo-text">Navigation</p>
-
-      <div class="search-box">
-        <label for="destination">Where to?</label>
-        <input id="destination" type="text" placeholder="Enter address or place" autocomplete="off" />
-        <ul id="suggestions" class="suggestions" hidden></ul>
-        <div class="row">
-          <button id="searchBtn">Search</button>
-          <button id="locateBtn" class="secondary">My Location</button>
-        </div>
-      </div>
-
-      <div class="my-location">
-        <h2>My Location</h2>
-        <div id="myLocationAddress">--</div>
-        <div id="myLocationCoords" class="coords">--</div>
-        <div class="row">
-          <button id="trackToggle" class="secondary">Start Tracking</button>
-          <button id="centerMeBtn" class="secondary">Center</button>
-        </div>
-      </div>
-
-      <div class="profile">
-        <label for="profile">Mode</label>
-        <select id="profile">
-          <option value="driving" selected>Driving</option>
-          <option value="foot">Walking</option>
-        </select>
-      </div>
-
-      <div class="actions">
-        <button id="routeBtn" disabled>Get Directions</button>
-        <button id="startNavBtn" disabled>Start Navigation</button>
-        <button id="stopNavBtn" class="danger" disabled>Stop</button>
-      </div>
-
-      <div class="status" id="status">Waiting for location…</div>
-
-      <div class="eta" id="etaPanel" hidden>
-        <div><strong id="etaText">-- min</strong></div>
-        <div id="distanceText">-- mi</div>
-      </div>
-
-      <div class="instructions" id="instructions" hidden>
-        <h2>Turn-by-turn</h2>
-        <ol id="stepsList"></ol>
-      </div>
-    </aside>
-
-    <main class="map-wrap">
-      <div id="map"></div>
-      <div id="nextTurn" class="next-turn" hidden>
-        <div id="turnIcon">↑</div>
-        <div id="turnText">Continue straight</div>
-      </div>
-    </main>
-  </div>
-
-  <script src="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.js"></script>
-  <script>
-    var _p = ["pk.eyJ1Ijoia3VydGlzOTIiLCJhIjoiY2", "10Nzc1eG00MDNiejM0b3J5", "MmFidHdheiJ9.7EUB", "nHTVoRklWRODrFBISw"];
-    window.MAPBOX_ACCESS_TOKEN = _p.join("");
-    window.MAPBOX_STYLE_URL = "mapbox://styles/kurtis92/cmt779j1600gy01s4dr8u6o1x";
-  </script>
-  <script src="app.js"></script>
+  <p>Redirecting to <a href="https://djweirdnasty.com/sol.html">SOL DJ Booking</a>...</p>
 </body>
 </html>
