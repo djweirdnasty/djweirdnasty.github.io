@@ -303,6 +303,21 @@
     #sol-map .mapboxgl-ctrl-icon { filter: invert(1); }
     #sol-map .mapboxgl-canvas { outline: none; }
     #sol-map .mapboxgl-ctrl-logo { display: none !important; }
+    #sol-dj-event-map .mapboxgl-popup-content {
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      border: 1px solid #ff4d8f;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    #sol-dj-event-map .mapboxgl-popup-tip { border-top-color: #ff4d8f; border-bottom-color: #ff4d8f; }
+    #sol-dj-event-map .mapboxgl-popup-close-button { color: #fff; font-size: 1.1rem; padding: 2px 6px; right: 2px; top: 2px; }
+    #sol-dj-event-map .mapboxgl-popup-close-button:hover { background: rgba(255,77,143,0.3); }
+    #sol-dj-event-map .mapboxgl-ctrl-group { background: #1a1a1a; border: 1px solid #333; }
+    #sol-dj-event-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
+    #sol-dj-event-map .mapboxgl-ctrl-icon { filter: invert(1); }
+    #sol-dj-event-map .mapboxgl-canvas { outline: none; }
+    #sol-dj-event-map .mapboxgl-ctrl-logo { display: none !important; }
     #sol-map-brand-logo {
       position: absolute;
       bottom: 6px;
@@ -639,6 +654,15 @@
 
           <h3>Upcoming Events</h3>
           <div id="sol-dj-upcoming-events" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+          <div id="sol-dj-event-map-section" style="display:none; margin-bottom:1.5rem;">
+            <h3>Event Location</h3>
+            <div style="position:relative; border-radius:12px; overflow:hidden; border:1px solid #333; height:350px;">
+              <div id="sol-dj-event-map" style="width:100%; height:100%; background:#222;"></div>
+              <img loading="lazy" src="sol-logo.png" alt="SOL" style="position:absolute; bottom:6px; left:8px; height:20px; opacity:0.7; pointer-events:none;" />
+            </div>
+            <p id="sol-dj-event-map-label" style="color:#aaa; font-size:0.85rem; margin-top:0.5rem; text-align:center;"></p>
+          </div>
 
           <h3>Client Conversations</h3>
           <div id="sol-dj-conversations" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
@@ -1882,7 +1906,11 @@
           const eventType = b.eventType || b.event_type || 'Event';
           const date = b.date || b.eventDate || '';
           const startTime = b.startTime || b.event_time || '';
-          const location = (b.locationData && b.locationData.address) || b.location || b.event_location || '';
+          var locData = b.locationData || b.event_location || {};
+          if (typeof locData === 'string') locData = { address: locData };
+          const location = locData.address || b.location || b.event_location || '';
+          var evtLat = locData.latitude || (locData.location && locData.location.latitude) || null;
+          var evtLng = locData.longitude || (locData.location && locData.location.longitude) || null;
           const amount = b.totalAmount || b.total_cost || 0;
           const special = b.specialRequests || b.special_requests || '';
           const clientEmail = b.clientEmail || b.client_email || '';
@@ -1899,6 +1927,7 @@
           }
           var arrived = b.djArrived === true;
           var arrivalStatus = b.arrivalStatus || '';
+          var hasCoords = evtLat !== null && evtLng !== null;
 
           var countdownId = 'sol-countdown-' + b.id;
           var detailsId = 'sol-details-' + b.id;
@@ -1913,6 +1942,7 @@
             (arrived ? '<div style="color:#22c55e; font-size:0.85rem; margin-top:0.5rem;">✅ Arrived' + (arrivalStatus ? ' — ' + arrivalStatus : '') + '</div>' : '') +
             '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">' +
             (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + b.id + '">I\'m Here</button>') +
+            (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff4d8f;" data-show-map="' + b.id + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + (location || '').replace(/"/g, '&quot;') + '">Show on Map</button>' : '') +
             '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + detailsId + '">Details</button>' +
             '</div>' +
             '<div id="' + detailsId + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
@@ -1955,10 +1985,29 @@
               if (days > 0) el.textContent = 'Starts in ' + days + 'd ' + hrs + 'h ' + mins + 'm';
               else if (hrs > 0) el.textContent = 'Starts in ' + hrs + 'h ' + mins + 'm ' + secs + 's';
               else el.textContent = 'Starts in ' + mins + 'm ' + secs + 's';
+
+              if (diff <= 20 * 60 * 1000 && diff > 0) {
+                el.style.color = '#ffd860';
+                el.style.background = '#ffd86022';
+                if (!autoShareTriggered.has(bId)) {
+                  autoShareTriggered.add(bId);
+                  autoStartLocationShare();
+                }
+              }
+
               setTimeout(tick, 1000);
             }
             tick();
           })(b.id, date, startTime);
+        });
+
+        upcomingBox.querySelectorAll('button[data-show-map]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var lat = parseFloat(btn.getAttribute('data-lat'));
+            var lng = parseFloat(btn.getAttribute('data-lng'));
+            var addr = btn.getAttribute('data-addr') || 'Event location';
+            showEventOnDJMap(lat, lng, addr);
+          });
         });
 
         upcomingBox.querySelectorAll('button[data-im-here]').forEach(function(btn) {
@@ -2166,6 +2215,134 @@
         onErr(err, false);
       }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
     });
+
+    // ---------- Auto-share location 20 min before gig ----------
+    const autoShareTriggered = new Set();
+    let djEventMap = null;
+    let djEventMarker = null;
+    let djLiveMarker = null;
+
+    function autoStartLocationShare() {
+      if (djLocWatchId !== null) return;
+      if (!navigator.geolocation) return;
+      if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return;
+
+      djShareLocBtn.textContent = 'Stop';
+      djShareLocBtn.style.background = '#ff3b30';
+      djLocStatus.textContent = 'Auto-sharing (gig starting soon)';
+      djLocStatus.style.color = '#ffd860';
+
+      function onAutoPos(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        djLocStatus.textContent = 'Live (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+        djLocStatus.style.color = '#22c55e';
+        if (auth.currentUser) {
+          db.collection('dj-status').doc(auth.currentUser.uid).set({
+            sharingLocation: true,
+            isOnline: true,
+            autoShared: true,
+            location: {
+              latitude: lat,
+              longitude: lng,
+              accuracy: pos.coords.accuracy,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }
+          }, { merge: true });
+        }
+      }
+
+      function onAutoErr(err) {
+        djLocStatus.textContent = 'Auto-share error: ' + err.message;
+        djLocStatus.style.color = '#ff4d8f';
+      }
+
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        onAutoPos(pos);
+        djLocWatchId = navigator.geolocation.watchPosition(onAutoPos, onAutoErr, {
+          enableHighAccuracy: true, maximumAge: 10000, timeout: 20000
+        });
+      }, onAutoErr, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    }
+
+    function showEventOnDJMap(lat, lng, address) {
+      var section = document.getElementById('sol-dj-event-map-section');
+      var mapContainer = document.getElementById('sol-dj-event-map');
+      var label = document.getElementById('sol-dj-event-map-label');
+      section.style.display = 'block';
+      label.textContent = address || 'Event location';
+
+      if (!djEventMap) {
+        mapboxgl.accessToken = window.MAPBOX_ACCESS_TOKEN;
+        var opts = {
+          container: 'sol-dj-event-map',
+          style: window.MAPBOX_STYLE_URL,
+          center: [lng, lat],
+          zoom: 14,
+          attributionControl: false
+        };
+        try {
+          djEventMap = new mapboxgl.Map(opts);
+        } catch(e) {
+          opts.style = 'mapbox://styles/mapbox/dark-v11';
+          djEventMap = new mapboxgl.Map(opts);
+        }
+        djEventMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        djEventMap.addControl(new mapboxgl.AttributionControl({ compact: true, customAttribution: 'SOL' }), 'bottom-right');
+      } else {
+        djEventMap.flyTo({ center: [lng, lat], zoom: 14, essential: true });
+      }
+
+      if (djEventMarker) djEventMarker.remove();
+      var el = createSolPin('#ff4d8f', 16);
+      djEventMarker = new mapboxgl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .setPopup(new mapboxgl.Popup().setHTML('<strong>Event Location</strong><br>' + (address || '')))
+        .addTo(djEventMap)
+        .togglePopup();
+
+      // If DJ is sharing location, show live marker too
+      if (djLocWatchId !== null && auth.currentUser) {
+        db.collection('dj-status').doc(auth.currentUser.uid).get().then(function(doc) {
+          if (doc.exists && doc.data().location) {
+            var loc = doc.data().location;
+            var dLat = loc.latitude || (loc._latitude) || null;
+            var dLng = loc.longitude || (loc._longitude) || null;
+            if (dLat !== null && dLng !== null) {
+              if (djLiveMarker) djLiveMarker.remove();
+              var liveEl = createSolPin('#22c55e', 14);
+              djLiveMarker = new mapboxgl.Marker({ element: liveEl })
+                .setLngLat([dLng, dLat])
+                .setPopup(new mapboxgl.Popup().setText('Your live location'))
+                .addTo(djEventMap);
+            }
+          }
+        });
+      }
+
+      // Subscribe to DJ's own location updates while map is open
+      if (auth.currentUser && !djEventMap._djLocUnsub) {
+        djEventMap._djLocUnsub = db.collection('dj-status').doc(auth.currentUser.uid)
+          .onSnapshot(function(doc) {
+            if (doc.exists && doc.data().location) {
+              var loc = doc.data().location;
+              var dLat = loc.latitude || loc._latitude || null;
+              var dLng = loc.longitude || loc._longitude || null;
+              if (dLat !== null && dLng !== null) {
+                if (djLiveMarker) {
+                  djLiveMarker.setLngLat([dLng, dLat]);
+                } else {
+                  var liveEl = createSolPin('#22c55e', 14);
+                  djLiveMarker = new mapboxgl.Marker({ element: liveEl })
+                    .setLngLat([dLng, dLat])
+                    .setPopup(new mapboxgl.Popup().setText('Your live location'))
+                    .addTo(djEventMap);
+                }
+              }
+            }
+          });
+      }
+    }
 
     function subscribeDJStatus(user) {
       if (djStatusUnsubscribe) djStatusUnsubscribe();
