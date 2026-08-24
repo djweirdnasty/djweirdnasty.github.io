@@ -1219,7 +1219,7 @@
       <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
         <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
           <input id="sol-deposit-toggle" type="checkbox" style="width:18px; height:18px;">
-          <span>Pay deposit only (50% now, balance at event)</span>
+          <span>Pay deposit only ($50 minimum now, balance at event)</span>
         </label>
         <p id="sol-deposit-info" style="display:none; color:#ffd860; font-size:0.85rem; padding:0.5rem; background:#1a1a1a; border-radius:8px;"></p>
       </div>
@@ -1230,7 +1230,7 @@
         <div style="max-height:150px; overflow-y:auto; background:#000; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.85rem; color:#ccc; line-height:1.5;">
           <p><strong>Terms of Service:</strong> By booking a DJ through Sounds of Logan (SOL), you agree to the following terms:</p>
           <p>1. The client agrees to pay the full amount as specified in the booking confirmation.</p>
-          <p>2. If a deposit is selected, 50% is due at booking and the remaining 50% is due on the day of the event.</p>
+          <p>2. If a deposit is selected, a minimum of $50.00 (or 50% of the total, whichever is greater) is due at booking, and the remaining balance is due on the day of the event.</p>
           <p>3. Cancellations made 7+ days before the event receive a 50% refund. Cancellations within 7 days are non-refundable.</p>
           <p>4. The DJ agrees to arrive at least 30 minutes before the scheduled start time.</p>
           <p>5. The client is responsible for providing a safe performance area with adequate power outlets.</p>
@@ -4288,7 +4288,7 @@
       if (this.checked) {
         var total = document.getElementById('price-total');
         var totalVal = parseFloat(total.textContent) || 0;
-        var deposit = Math.round(totalVal * 0.5 * 100) / 100;
+        var deposit = Math.max(50, Math.round(totalVal * 0.5 * 100) / 100);
         info.textContent = 'Deposit due now: $' + deposit.toFixed(2) + ' | Balance due at event: $' + (totalVal - deposit).toFixed(2);
         info.style.display = 'block';
       } else {
