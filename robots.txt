@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /analytics-dashboard.html
+Disallow: /admin.html
 
 Sitemap: https://djweirdnasty.com/sitemap.xml

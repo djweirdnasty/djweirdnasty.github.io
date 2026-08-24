@@ -198,6 +198,9 @@ async function sendPaypalPayoutBatch(accessToken, mode, receiverEmail, amount, n
 // Deposit share becomes payable as soon as the DJ accepts (status confirmed or later) —
 // this is the DJ's cut of whatever the client already paid to lock in the gig.
 // The remaining balance share only becomes payable once the gig is marked completed.
+// NOTE: this formula is duplicated client-side in sol.html as
+// computeBookingPayoutClient() and the deposit-info display near
+// sol-deposit-toggle — keep all three in sync if the deposit/payout math changes.
 function computeBookingPayout(b) {
   var total = Number(b.totalAmount || b.total_cost || 0);
   var depositOnly = !!b.deposit_only;
@@ -222,6 +225,11 @@ function computeBookingPayout(b) {
     payFinal: owedFinal > 0,
   };
 }
+
+// Exported (not wrapped in onCall/onRequest/etc.) purely for unit testing —
+// Firebase only deploys exports created via its function builders, so this
+// plain export is never treated as a Cloud Function trigger.
+exports.computeBookingPayout = computeBookingPayout;
 
 exports.sendPaypalPayout = onCall(
   {

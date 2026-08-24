@@ -16,13 +16,13 @@
   <meta name="description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:title" content="SOL | Sounds of Logan DJ Booking">
   <meta property="og:description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
-  <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
+  <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.webp">
   <meta property="og:url" content="https://djweirdnasty.com/sol.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SOL | Sounds of Logan DJ Booking">
   <meta name="twitter:description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
-  <meta name="twitter:image" content="https://djweirdnasty.com/djweirdnasty-banner.png">
+  <meta name="twitter:image" content="https://djweirdnasty.com/djweirdnasty-banner.webp">
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
@@ -542,7 +542,7 @@
   <header>
     <div class="container">
       <div class="site-banner">
-        <img src="djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" />
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
       </div>
       <nav>
         <a href="index.html">Home</a>
@@ -594,7 +594,7 @@
           <h2>DJ Console</h2>
 
           <div id="sol-dj-profile" style="display:flex; flex-direction:column; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
-            <img id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;">
+            <img loading="lazy" id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;">
             <div id="sol-dj-avatar-fallback" style="width:72px; height:72px; border-radius:36px; background:#ff4d8f; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#fff; margin-bottom:0.5rem;">DJ</div>
             <strong id="sol-dj-name" style="font-size:1.2rem;"></strong>
             <span id="sol-dj-location" style="color:#aaa; font-size:0.85rem;"></span>
@@ -1010,7 +1010,7 @@
 
         <div class="sol-map-wrap" style="position:relative; flex:1; min-width:0;">
           <div id="sol-map" style="width:100%; height:100%; background:#222;"></div>
-          <img id="sol-map-brand-logo" src="sol-logo.png" alt="SOL" />
+          <img loading="lazy" id="sol-map-brand-logo" src="sol-logo.png" alt="SOL" />
         </div>
       </div>
 
@@ -1324,14 +1324,14 @@
       </div>
 
       <div style="display:block; text-align:center; margin-top:2rem;">
-        <img src="sol-logo.png" alt="SOL App" style="max-width:220px; width:100%; display:block; margin:0 auto; border-radius:12px;">
+        <img loading="lazy" src="sol-logo.png" alt="SOL App" style="max-width:220px; width:100%; display:block; margin:0 auto; border-radius:12px;">
       </div>
       </div>
       </div>
     </section>
   </main>
   <footer class="container">
-    <img src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img loading="lazy" src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script>
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
@@ -1659,7 +1659,7 @@
         doc.data().photos.forEach(function(url) {
           var wrapper = document.createElement('div');
           wrapper.style.cssText = 'position:relative; width:100px; height:100px;';
-          wrapper.innerHTML = '<img src="' + url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;" onerror="this.style.display=\'none\'">' +
+          wrapper.innerHTML = '<img loading="lazy" src="' + url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;" onerror="this.style.display=\'none\'">' +
             '<button type="button" style="position:absolute;top:-4px;right:-4px;background:#ff3b30;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;" data-del-photo="' + url + '">&times;</button>';
           box.appendChild(wrapper);
         });
@@ -2345,7 +2345,7 @@
               card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
               var statusColor = d.status === 'approved' ? '#22c55e' : d.status === 'pending' ? '#ffd860' : '#ff3b30';
               var avatarHtml = djAvatar
-                ? '<img src="' + djAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>'
+                ? '<img loading="lazy" src="' + djAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>'
                 : '<div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>';
               card.innerHTML = avatarHtml +
                 '<div style="flex:1;"><strong>' + djName + '</strong>' +
@@ -2582,7 +2582,7 @@
         var card = document.createElement('div');
         card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
         var avatarHtml = avatar
-          ? '<img src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>'
+          ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>'
           : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>';
         var badges = '';
         if (isAdmin) badges += '<span style="background:#00d4ff; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
@@ -2631,6 +2631,8 @@
 
     // Mirrors the server-side computeBookingPayout in functions/index.js, for display only.
     // Deposit share is payable once a DJ accepts (confirmed); remaining balance share once completed.
+    // NOTE: keep this formula in sync with computeBookingPayout() in
+    // functions/index.js and the deposit-info display near sol-deposit-toggle below.
     function computeBookingPayoutClient(b) {
       var total = Number(b.totalAmount || b.total_cost || 0);
       var depositOnly = !!b.deposit_only;
@@ -3190,7 +3192,7 @@
       var inner = document.createElement('div');
       inner.style.cssText = 'width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;';
       if (avatar) {
-        inner.innerHTML = '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#ff4d8f\'; this.parentElement.innerHTML=\'' + initial + '\'" />';
+        inner.innerHTML = '<img loading="lazy" src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#ff4d8f\'; this.parentElement.innerHTML=\'' + initial + '\'" />';
       } else {
         inner.textContent = initial;
       }
@@ -3325,7 +3327,7 @@
       var initial = djName.charAt(0).toUpperCase();
       var avatar = data.djAvatar || data.avatar || data.photoURL || '';
       var popupAvatar = avatar
-        ? '<img src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
+        ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
         : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
       var popupHtml = '<div style="text-align:center;">' + popupAvatar +
                       '<strong>' + djName + '</strong><br>' +
@@ -3869,7 +3871,7 @@
         var initial = (dj.name || 'D').charAt(0).toUpperCase();
         if (dj.avatar) {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;">' +
-            initial + '<img src="' + dj.avatar + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
+            initial + '<img loading="lazy" src="' + dj.avatar + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
             '</div>';
         } else {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
@@ -3918,7 +3920,7 @@
       var initial = (dj.name || 'D').charAt(0).toUpperCase();
       var avatar = dj.avatar || '';
       var avatarHtml = avatar
-        ? '<img src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
+        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
           '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
         : '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
 
@@ -4025,7 +4027,7 @@
             upcoming.forEach(function(e) {
               eventsHtml += '<a href="' + e.url + '" style="display:block; text-decoration:none; color:inherit; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:0.75rem; transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#ff4d8f\'" onmouseout="this.style.borderColor=\'#333\'">' +
                 '<div style="display:flex; gap:0.75rem; align-items:flex-start;">' +
-                '<img src="' + e.img + '" style="width:60px; height:60px; border-radius:8px; object-fit:cover; flex-shrink:0;" onerror="this.style.display=\'none\'">' +
+                '<img loading="lazy" src="' + e.img + '" style="width:60px; height:60px; border-radius:8px; object-fit:cover; flex-shrink:0;" onerror="this.style.display=\'none\'">' +
                 '<div style="flex:1; min-width:0;">' +
                 '<strong style="color:#fff; font-size:0.9rem; display:block; margin-bottom:0.25rem;">' + e.title + '</strong>' +
                 '<div style="color:#ffd860; font-size:0.8rem; margin-bottom:0.15rem;">📆 ' + e.date + '</div>' +
@@ -4356,7 +4358,7 @@
           var d = doc.data();
           var card = document.createElement('div');
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; align-items:center; gap:0.75rem; min-width:200px;';
-          var avatar = d.djAvatar ? '<img src="' + d.djAvatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + (d.djName || 'D').charAt(0) + '</div>';
+          var avatar = d.djAvatar ? '<img loading="lazy" src="' + d.djAvatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + (d.djName || 'D').charAt(0) + '</div>';
           card.innerHTML = avatar + '<div style="flex:1;"><strong>' + (d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + doc.id + '">✕</button>';
           box.appendChild(card);
         });
@@ -4400,6 +4402,8 @@
       if (this.checked) {
         var total = document.getElementById('price-total');
         var totalVal = parseFloat(total.textContent) || 0;
+        // NOTE: keep in sync with computeBookingPayoutClient() above and
+        // computeBookingPayout() in functions/index.js.
         var deposit = Math.max(50, Math.round(totalVal * 0.5 * 100) / 100);
         info.textContent = 'Deposit due now: $' + deposit.toFixed(2) + ' | Balance due at event: $' + (totalVal - deposit).toFixed(2);
         info.style.display = 'block';

@@ -3,11 +3,12 @@
   "description": "Firebase Cloud Functions for SOL DJ Booking SMS notifications",
   "private": true,
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "index.js",
   "scripts": {
-    "deploy": "firebase deploy --only functions",
+    "deploy": "echo 'Run firebase deploy --only functions:<name> for a specific function. The project has other Cloud Functions (acceptBooking, rejectBooking, adminApproveDJVerification) not in this codebase — a bare functions deploy will prompt to delete them.' && exit 1",
+    "test": "node --test test/*.test.js",
     "logs": "firebase functions:log"
   },
   "dependencies": {

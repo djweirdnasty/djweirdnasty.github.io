@@ -61,11 +61,11 @@
   </header>
   <main class="container">
     <section class="info content-intro">
-      <img src="original-content.webp" alt="Original Content" style="width: 100%; max-width: 600px; display: block; margin: 0 auto;">
+      <img loading="lazy" src="original-content.webp" alt="Original Content" style="width: 100%; max-width: 600px; display: block; margin: 0 auto;">
     </section>
 
     <section class="info content-section">
-      <img src="msm-logo.webp" alt="Murrdah Season Monday" style="width: 100%; max-width: 300px; display: block; margin: 0 auto 1rem; border-radius: 12px;">
+      <img loading="lazy" src="msm-logo.webp" alt="Murrdah Season Monday" style="width: 100%; max-width: 300px; display: block; margin: 0 auto 1rem; border-radius: 12px;">
       <div id="murrdahEpisodeCarousel" class="news-carousel murrdah-carousel"></div>
       <div class="carousel-controls">
         <button class="carousel-btn" id="murrdahPrev" aria-label="Previous">&#10094;</button>
@@ -83,7 +83,7 @@
     </section>
 
     <section class="info content-section mud-music-section">
-      <img src="mud-music-logo.webp" alt="MUD MUSIC Top 10 Countdown" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto 1rem;" />
+      <img loading="lazy" src="mud-music-logo.webp" alt="MUD MUSIC Top 10 Countdown" style="width: 100%; max-width: 300px; height: auto; display: block; margin: 0 auto 1rem;" />
       <p>IN DA CUT STUDIO &amp; Socially Awkward TV presents. Talk Show/Podcast that speaks on trending topics whether news or pop culture and broadcast Top Indie Artist Music Videos.</p>
       <p><strong>Meet the man behind the Camera</strong> Ayo Weird</p>
 
@@ -104,7 +104,7 @@
     </section>
   </main>
   <footer class="container">
-    <img src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img loading="lazy" src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script src="mud-music-episodes.js"></script>
   <script>
@@ -153,7 +153,7 @@
         card.className = 'event-card mud-episode';
         card.setAttribute('data-index', i);
         const episodeUrl = 'mud-music-episode.html#' + ep.slug;
-        card.innerHTML = '<img src="mud-music-logo.webp" alt="' + ep.title + '" class="event-flyer" />' +
+        card.innerHTML = '<img loading="lazy" src="mud-music-logo.webp" alt="' + ep.title + '" class="event-flyer" />' +
           '<h3>' + ep.title + '</h3>' +
           '<a href="' + episodeUrl + '" class="playlist-link mud-play">▶ Play</a>';
         mudCarousel.appendChild(card);
@@ -194,7 +194,7 @@
       murrdahEpisodes.forEach(function(ep, i) {
         const card = document.createElement('article');
         card.className = 'event-card mud-episode';
-        card.innerHTML = '<img src="' + ep.img + '" alt="' + ep.alt + '" class="event-flyer" />' +
+        card.innerHTML = '<img loading="lazy" src="' + ep.img + '" alt="' + ep.alt + '" class="event-flyer" />' +
           '<h3>' + ep.title + '</h3>' +
           '<p>' + ep.description + '</p>' +
           '<a href="' + ep.url + '" class="playlist-link">▶ Watch Now</a>';
