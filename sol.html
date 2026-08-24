@@ -653,6 +653,14 @@
               <label for="sol-dj-avatar-url">Profile Picture URL</label>
               <input id="sol-dj-avatar-url" type="text" placeholder="https://..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
+              <label for="sol-dj-phone">Phone Number (for text alerts)</label>
+              <input id="sol-dj-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-dj-sms-optin" type="checkbox" checked style="width:auto;">
+                <span style="font-size:0.85rem; color:#ccc;">Text me new booking requests to my phone</span>
+              </label>
+
               <label for="sol-dj-city">City</label>
               <input id="sol-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
@@ -1495,6 +1503,8 @@
           var p = d.djProfile || {};
           document.getElementById('sol-dj-stage-name').value = p.stageName || user.displayName || '';
           document.getElementById('sol-dj-avatar-url').value = p.photoURL || p.avatar || '';
+          document.getElementById('sol-dj-phone').value = p.phone || '';
+          document.getElementById('sol-dj-sms-optin').checked = p.smsOptIn !== false;
           document.getElementById('sol-dj-city').value = p.city || (p.location && p.location.city) || '';
           document.getElementById('sol-dj-state').value = p.state || (p.location && p.location.state) || '';
           document.getElementById('sol-dj-genres').value = (p.genres || []).join(', ');
@@ -1540,6 +1550,8 @@
       var profileData = {
         stageName: document.getElementById('sol-dj-stage-name').value.trim(),
         photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
+        phone: document.getElementById('sol-dj-phone').value.trim(),
+        smsOptIn: document.getElementById('sol-dj-sms-optin').checked,
         city: document.getElementById('sol-dj-city').value.trim(),
         state: document.getElementById('sol-dj-state').value.trim(),
         genres: genres,
