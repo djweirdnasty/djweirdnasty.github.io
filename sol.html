@@ -689,7 +689,7 @@
               <label for="sol-dj-bio">Bio</label>
               <textarea id="sol-dj-bio" placeholder="Tell clients about yourself..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
 
-              <button type="submit" class="submit-btn" style="width:100%;">Save Profile & Submit for Verification</button>
+              <button type="submit" id="sol-dj-submit-btn" class="submit-btn" style="width:100%;">Save Profile & Submit for Verification</button>
             </form>
             <p id="sol-dj-setup-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
           </div>
@@ -1511,11 +1511,13 @@
       }
     }
 
+    var currentDjVerificationStatus = null;
     function loadDJSetupForm(user) {
       db.collection('dj-verifications').doc(user.uid).get()
         .then(function(doc) {
           var d = doc.exists ? doc.data() : {};
           var p = d.djProfile || {};
+          currentDjVerificationStatus = d.status || null;
           document.getElementById('sol-dj-stage-name').value = p.stageName || user.displayName || '';
           document.getElementById('sol-dj-avatar-url').value = p.photoURL || p.avatar || '';
           document.getElementById('sol-dj-phone').value = p.phone || '';
@@ -1531,10 +1533,13 @@
           document.getElementById('sol-dj-bio').value = p.bio || '';
 
           var statusEl = document.getElementById('sol-dj-verify-status');
+          var submitBtn = document.getElementById('sol-dj-submit-btn');
+          submitBtn.textContent = 'Save Profile & Submit for Verification';
           if (d.status === 'approved') {
             statusEl.textContent = '✅ Verified DJ — Profile is live';
             statusEl.style.background = '#22c55e33';
             statusEl.style.color = '#22c55e';
+            submitBtn.textContent = 'Save Profile Changes';
           } else if (d.status === 'pending') {
             statusEl.textContent = '⏳ Verification pending — Admin will review soon';
             statusEl.style.background = '#ffd86033';
@@ -1581,16 +1586,19 @@
         displayName: user.displayName || user.email
       };
 
+      var keepApproved = currentDjVerificationStatus === 'approved';
       var verData = {
-        status: 'pending',
-        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        status: keepApproved ? 'approved' : 'pending',
         djProfile: profileData
       };
+      if (!keepApproved) {
+        verData.submittedAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
 
       db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
         .then(function() {
           db.collection('djs').doc(user.uid).set(profileData, { merge: true });
-          statusEl.textContent = 'Profile saved & submitted for verification!';
+          statusEl.textContent = keepApproved ? 'Profile updated!' : 'Profile saved & submitted for verification!';
           statusEl.style.color = '#22c55e';
           loadDJSetupForm(user);
           setTimeout(function() { statusEl.textContent = ''; }, 4000);
