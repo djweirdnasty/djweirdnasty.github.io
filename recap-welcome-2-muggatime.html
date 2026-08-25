@@ -36,6 +36,96 @@
   <link rel="stylesheet" href="style.css?v=13">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
+  <style>
+    .recap-carousel {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+    }
+    .recap-carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-carousel-track img {
+      flex: 0 0 100%;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: 500px;
+      background: #000;
+    }
+    .recap-carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .recap-carousel-btn:hover {
+      background: rgba(255,77,143,0.8);
+    }
+    .recap-carousel-btn.prev { left: 8px; }
+    .recap-carousel-btn.next { right: 8px; }
+    .recap-carousel-counter {
+      text-align: center;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .recap-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .recap-lightbox.active {
+      display: flex;
+    }
+    .recap-lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .recap-lightbox-close {
+      position: absolute;
+      top: 16px; right: 24px;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      z-index: 10000;
+    }
+    .recap-share-btn {
+      background: #ff4d8f;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .recap-share-btn:hover {
+      background: #e63e7a;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -65,6 +155,16 @@
       <img loading="lazy" src="prophet-weird.jpg" alt="Prophit and DJWEIRDNASTY at Muggatime" class="event-flyer" style="margin-top: 0.5rem;">
       <p><em>Saturday, August 22, 2026 &mdash; Crafty&rsquo;s, Springfield, PA</em></p>
       <p>Prophit Mugga Maniak presented a night of real hip hop, good vibes, and dope people. DJWEIRDNASTY was in the building keeping the energy going all night.</p>
+      <div class="recap-carousel" id="welcome-2-muggatime-carousel">
+        <button class="recap-carousel-btn prev" onclick="recapCarousel('welcome-2-muggatime-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+        <div class="recap-carousel-track">
+          <img src="welcome-2-muggatime-2026/photo-001.jpg" alt="Welcome 2 Muggatime Photo 1" loading="lazy">
+          <img src="welcome-2-muggatime-2026/photo-002.jpg" alt="Welcome 2 Muggatime Photo 2" loading="lazy">
+          <img src="welcome-2-muggatime-2026/photo-003.jpg" alt="Welcome 2 Muggatime Photo 3" loading="lazy">
+        </div>
+        <button class="recap-carousel-btn next" onclick="recapCarousel('welcome-2-muggatime-carousel',1)" aria-label="Next">&rsaquo;</button>
+      </div>
+      <div class="recap-carousel-counter" id="welcome-2-muggatime-carousel-counter">1 / 3</div>
       <h3>Instagram Recap</h3>
       <a href="https://www.instagram.com/p/DcZFMshlH8q/" target="_blank" rel="noopener" style="display: block; text-decoration: none; background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; color: #f4f4f4;">
         <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
@@ -82,13 +182,77 @@
         <p style="margin: 0; color: #ccc; font-size: 0.9rem;">&ldquo;Last Night Vibes I really Appreciate @craftys_bar_and_bottle_shop for having Us @fegm_entertainment 4 Putting This together&hellip; Bigg Shoutout to @djweirdnasty For Bringing That DJ Energy I Needed &#128293;&rdquo;</p>
         <span style="display: inline-block; margin-top: 0.75rem; color: #ff5bd7; font-weight: 600;">Watch Reel on Instagram &nearr;</span>
       </a>
-      <button class="share-button" data-title="Welcome 2 Muggatime | DJWEIRDNASTY Event Recap" data-url="https://djweirdnasty.com/recap-welcome-2-muggatime.html" style="background: #ff4d8f; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; margin-top: 1rem;">&#128279; Share</button>
+      <button class="recap-share-btn share-button" data-title="Welcome 2 Muggatime | DJWEIRDNASTY Event Recap" data-url="https://djweirdnasty.com/recap-welcome-2-muggatime.html">&#128279; Share</button>
     </article>
   </main>
+  <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
+    <span class="recap-lightbox-close">&times;</span>
+    <img loading="lazy" src="" id="recap-lightbox-img" alt="Enlarged photo">
+  </div>
   <footer class="container">
     <img loading="lazy" src="2026djweirdnastyllc.png" alt="&copy; 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
 <script src="comments.js"></script>
 <script src="site.js?v=6"></script>
+<script>
+  var recapTimers = {};
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    var total = imgs.length;
+    var current = parseInt(c.dataset.current || '0', 10);
+    current = (current + dir + total) % total;
+    c.dataset.current = current;
+    track.style.transform = 'translateX(-' + current * 100 + '%)';
+    var counter = document.getElementById(id + '-counter');
+    if (counter) counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function recapStartAuto(id, interval) {
+    recapStopAuto(id);
+    recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 4000);
+  }
+
+  function recapStopAuto(id) {
+    if (recapTimers[id]) { clearInterval(recapTimers[id]); delete recapTimers[id]; }
+  }
+
+  function recapLightbox(src) {
+    var lb = document.getElementById('recap-lightbox');
+    var lbImg = document.getElementById('recap-lightbox-img');
+    lbImg.src = src;
+    lb.classList.add('active');
+  }
+
+  function recapCloseLightbox() {
+    document.getElementById('recap-lightbox').classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') recapCloseLightbox();
+    var c = document.getElementById('welcome-2-muggatime-carousel');
+    if (!c) return;
+    if (e.key === 'ArrowLeft') recapCarousel('welcome-2-muggatime-carousel', -1);
+    if (e.key === 'ArrowRight') recapCarousel('welcome-2-muggatime-carousel', 1);
+  });
+
+  (function() {
+    var c = document.getElementById('welcome-2-muggatime-carousel');
+    if (!c) return;
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    imgs.forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        recapLightbox(img.src);
+      });
+    });
+    c.addEventListener('mouseenter', function() { recapStopAuto('welcome-2-muggatime-carousel'); });
+    c.addEventListener('mouseleave', function() { recapStartAuto('welcome-2-muggatime-carousel'); });
+    recapStartAuto('welcome-2-muggatime-carousel', 4000);
+  })();
+</script>
 </body>
 </html>
