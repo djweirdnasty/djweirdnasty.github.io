@@ -1679,7 +1679,7 @@
       statusEl.textContent = 'Uploading...';
       statusEl.style.color = '#ffd860';
       var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      var path = 'dj-avatars/' + user.uid + '/' + Date.now() + '.' + ext;
+      var path = 'public/' + user.uid + '/dj-avatars/' + Date.now() + '.' + ext;
       var ref = storage.ref(path);
       var upload = ref.put(file);
       upload.on('state_changed', function() {}, function(err) {
@@ -1768,7 +1768,7 @@
       statusEl.textContent = 'Uploading...';
       statusEl.style.color = '#ffd860';
       var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      var path = 'dj-galleries/' + user.uid + '/' + Date.now() + '.' + ext;
+      var path = 'public/' + user.uid + '/dj-galleries/' + Date.now() + '.' + ext;
       var ref = storage.ref(path);
       var upload = ref.put(file);
       upload.on('state_changed', function() {}, function(err) {
