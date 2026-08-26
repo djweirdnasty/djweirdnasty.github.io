@@ -2361,7 +2361,7 @@
             var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             var isAndroid = /Android/.test(navigator.userAgent);
             var steps = 'Enable location in your browser or site settings, then reload.';
-            if (isIOS) steps = 'iPhone: Settings → Safari → Location → Allow. Then reload.';
+            if (isIOS) steps = 'iPhone: tap aA in the address bar → Website Settings → Location → Allow. Then reload. If not, go to Settings → Safari → Location → Allow.';
             else if (isAndroid) steps = 'Android: Chrome ⋮ → Settings → Site settings → Location → Allow. Then reload.';
             instructions.innerHTML = steps;
             instructions.style.display = 'block';
@@ -2383,10 +2383,10 @@
         onPos(pos);
         djLocWatchId = navigator.geolocation.watchPosition(onPos, function(err) {
           onErr(err, false);
-        }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
       }, function(err) {
         onErr(err, false);
-      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+      }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
     });
 
     document.addEventListener('visibilitychange', function() {
