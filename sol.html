@@ -2247,6 +2247,7 @@
 
     // DJ live location tracking
     let djLocWatchId = null;
+    let djWakeLock = null;
     const djShareLocBtn = document.getElementById('sol-dj-share-loc');
     const djLocStatus = document.getElementById('sol-dj-loc-status');
 
@@ -2254,6 +2255,7 @@
       if (djLocWatchId !== null) {
         navigator.geolocation.clearWatch(djLocWatchId);
         djLocWatchId = null;
+        if (djWakeLock) { djWakeLock.release().catch(function() {}); djWakeLock = null; }
         djShareLocBtn.textContent = 'Start';
         djShareLocBtn.style.background = '#333';
         djLocStatus.textContent = 'Stopped';
@@ -2287,6 +2289,12 @@
       djLocStatus.style.color = '#ffd860';
       var instructions = document.getElementById('sol-dj-loc-instructions');
       if (instructions) instructions.style.display = 'none';
+      if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then(function(lock) {
+          if (djWakeLock) { djWakeLock.release().catch(function() {}); }
+          djWakeLock = lock;
+        }).catch(function() {});
+      }
 
       function onPos(pos) {
         var lat = pos.coords.latitude;
@@ -2364,6 +2372,7 @@
         djLocStatus.style.color = '#ff4d8f';
         djShareLocBtn.textContent = 'Start';
         djShareLocBtn.style.background = '#333';
+        if (djWakeLock) { djWakeLock.release().catch(function() {}); djWakeLock = null; }
         if (djLocWatchId !== null) {
           navigator.geolocation.clearWatch(djLocWatchId);
           djLocWatchId = null;
@@ -2378,6 +2387,15 @@
       }, function(err) {
         onErr(err, false);
       }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    });
+
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible' && djLocWatchId !== null && 'wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then(function(lock) {
+          if (djWakeLock) { djWakeLock.release().catch(function() {}); }
+          djWakeLock = lock;
+        }).catch(function() {});
+      }
     });
 
     // Manual location fallback
