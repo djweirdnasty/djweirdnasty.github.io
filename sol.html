@@ -641,6 +641,13 @@
           </div>
           <div id="sol-dj-loc-instructions" style="display:none; font-size:0.85rem; color:#ff4d8f; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:1rem; line-height:1.4;">
           </div>
+          <div id="sol-dj-manual-loc" style="background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:1rem;">
+            <p style="font-size:0.85rem; color:#ccc; margin:0 0 0.5rem;">Or set a manual location:</p>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <input id="sol-dj-manual-address" type="text" placeholder="City, address, or venue" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <button type="button" id="sol-dj-set-location" class="submit-btn" style="padding:0.5rem 1rem;">Set Location</button>
+            </div>
+          </div>
 
           <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:1rem;">
             <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
@@ -2371,6 +2378,42 @@
       }, function(err) {
         onErr(err, false);
       }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    });
+
+    // Manual location fallback
+    document.getElementById('sol-dj-set-location').addEventListener('click', function() {
+      var user = auth.currentUser;
+      if (!user) return;
+      var input = document.getElementById('sol-dj-manual-address');
+      var address = input.value.trim();
+      if (!address) return;
+      djLocStatus.textContent = 'Finding location...';
+      djLocStatus.style.color = '#ffd860';
+      var url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address);
+      fetch(url, { headers: { 'Accept-Language': 'en' } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data || data.length === 0) {
+            djLocStatus.textContent = 'Address not found.';
+            djLocStatus.style.color = '#ff4d8f';
+            return;
+          }
+          var lat = parseFloat(data[0].lat);
+          var lon = parseFloat(data[0].lon);
+          db.collection('dj-status').doc(user.uid).set({
+            sharingLocation: true,
+            location: { latitude: lat, longitude: lon, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          }, { merge: true });
+          db.collection('djs').doc(user.uid).set({
+            location: { latitude: lat, longitude: lon, address: address }
+          }, { merge: true });
+          djLocStatus.textContent = 'Manual: ' + lat.toFixed(4) + ', ' + lon.toFixed(4);
+          djLocStatus.style.color = '#22c55e';
+        })
+        .catch(function() {
+          djLocStatus.textContent = 'Location lookup failed.';
+          djLocStatus.style.color = '#ff4d8f';
+        });
     });
 
     // ---------- Auto-share location 20 min before gig ----------
