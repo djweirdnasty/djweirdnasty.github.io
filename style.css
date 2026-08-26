@@ -708,6 +708,52 @@ section {
   transform: translateX(4px);
 }
 
+.quick-links-section {
+  text-align: center;
+}
+
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.quick-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.2), rgba(255, 91, 215, 0.1));
+  border: 1px solid #ff5bd7;
+  border-radius: 12px;
+  color: #ff5bd7;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.quick-link:hover,
+.quick-link:focus {
+  background: linear-gradient(135deg, rgba(255, 91, 215, 0.3), rgba(255, 91, 215, 0.2));
+  transform: translateX(4px);
+}
+
+@media (max-width: 600px) {
+  .quick-links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .quick-link {
+    width: 100%;
+    padding: 0.65rem 0.4rem;
+    font-size: 0.85rem;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}
+
 .player-shell {
   border-radius: 14px;
   overflow: hidden;
@@ -997,10 +1043,7 @@ footer {
   }
 
   .book-cta {
-    font-size: 0.75rem;
-    padding: 0.5rem 0.9rem;
-    bottom: 12px;
-    left: 12px;
+    display: none;
   }
 
   .back-to-top {
