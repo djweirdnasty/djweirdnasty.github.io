@@ -11,7 +11,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob: https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net https://fcm.googleapis.com; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://pagead2.googletagmanager.com https://googleads.g.doubleclick.net https://unpkg.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https:; img-src 'self' data: https: blob:; frame-src https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; worker-src 'self' blob:; child-src 'self' blob:; manifest-src 'self'; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://nominatim.openstreetmap.org https://router.project-osrm.org https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.mapbox.com https://api.mapbox.com wss://*.mapbox.com blob: https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net https://fcm.googleapis.com; upgrade-insecure-requests">
   <title>SOL | Sounds of Logan DJ Booking</title>
   <meta name="description" content="Test the Sounds of Logan DJ booking and payment experience before going live.">
   <meta property="og:title" content="SOL | Sounds of Logan DJ Booking">
@@ -52,6 +52,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
   <style>
     /* ===== SOL App Styles ===== */
@@ -684,7 +685,11 @@
               <label for="sol-dj-stage-name">Stage Name</label>
               <input id="sol-dj-stage-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
-              <label for="sol-dj-avatar-url">Profile Picture URL</label>
+              <label for="sol-dj-avatar-file">Profile Picture</label>
+              <input id="sol-dj-avatar-file" type="file" accept="image/*" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.5rem;">
+              <img id="sol-dj-avatar-preview" src="" alt="Profile preview" style="width:72px; height:72px; border-radius:36px; object-fit:cover; border:2px solid #22c55e; display:none; margin-bottom:0.5rem;">
+              <p id="sol-dj-avatar-upload-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
+              <label for="sol-dj-avatar-url" style="font-size:0.85rem; color:#ccc; display:block; margin-bottom:0.25rem;">Or paste image URL</label>
               <input id="sol-dj-avatar-url" type="text" placeholder="https://..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
               <label for="sol-dj-phone">Phone Number (for text alerts)</label>
@@ -1384,6 +1389,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     const functions = firebase.functions();
+    const storage = firebase.storage();
 
     // ---------- Account (Firebase Auth) ----------
     let authMode = 'signin';
@@ -1554,7 +1560,15 @@
           var p = d.djProfile || {};
           currentDjVerificationStatus = d.status || null;
           document.getElementById('sol-dj-stage-name').value = p.stageName || user.displayName || '';
-          document.getElementById('sol-dj-avatar-url').value = p.photoURL || p.avatar || '';
+          var avatarUrl = p.photoURL || p.avatar || '';
+          document.getElementById('sol-dj-avatar-url').value = avatarUrl;
+          var preview = document.getElementById('sol-dj-avatar-preview');
+          if (avatarUrl && preview) {
+            preview.src = avatarUrl;
+            preview.style.display = 'block';
+          } else if (preview) {
+            preview.style.display = 'none';
+          }
           document.getElementById('sol-dj-phone').value = p.phone || '';
           document.getElementById('sol-dj-sms-optin').checked = p.smsOptIn !== false;
           document.getElementById('sol-dj-paypal').value = p.paypal || '';
@@ -1643,6 +1657,41 @@
           statusEl.textContent = 'Error: ' + err.message;
           statusEl.style.color = '#ff4d8f';
         });
+    });
+
+    // ---------- DJ Profile Picture Upload ----------
+    document.getElementById('sol-dj-avatar-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match('image.*')) {
+        document.getElementById('sol-dj-avatar-upload-status').textContent = 'Please select an image file.';
+        document.getElementById('sol-dj-avatar-upload-status').style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      var statusEl = document.getElementById('sol-dj-avatar-upload-status');
+      var preview = document.getElementById('sol-dj-avatar-preview');
+      statusEl.textContent = 'Uploading...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      var path = 'dj-avatars/' + user.uid + '/' + Date.now() + '.' + ext;
+      var ref = storage.ref(path);
+      var upload = ref.put(file);
+      upload.on('state_changed', function() {}, function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      }, function() {
+        ref.getDownloadURL().then(function(url) {
+          document.getElementById('sol-dj-avatar-url').value = url;
+          if (preview) { preview.src = url; preview.style.display = 'block'; }
+          statusEl.textContent = 'Upload complete.';
+          statusEl.style.color = '#22c55e';
+        }).catch(function(err) {
+          statusEl.textContent = 'Upload failed: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
+      });
     });
 
     // ---------- DJ Availability Calendar ----------
