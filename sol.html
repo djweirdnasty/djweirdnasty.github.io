@@ -685,8 +685,9 @@
               <label for="sol-dj-stage-name">Stage Name</label>
               <input id="sol-dj-stage-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
-              <label for="sol-dj-avatar-file">Profile Picture</label>
-              <input id="sol-dj-avatar-file" type="file" accept="image/*" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.5rem;">
+              <label>Profile Picture</label>
+              <input id="sol-dj-avatar-file" type="file" accept="image/*" style="display:none;">
+              <label for="sol-dj-avatar-file" class="submit-btn" style="display:inline-block; text-align:center; cursor:pointer; margin-bottom:0.5rem; padding:0.6rem 1.2rem;">Upload Profile Photo</label>
               <img id="sol-dj-avatar-preview" src="" alt="Profile preview" style="width:72px; height:72px; border-radius:36px; object-fit:cover; border:2px solid #22c55e; display:none; margin-bottom:0.5rem;">
               <p id="sol-dj-avatar-upload-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
               <label for="sol-dj-avatar-url" style="font-size:0.85rem; color:#ccc; display:block; margin-bottom:0.25rem;">Or paste image URL</label>
@@ -741,11 +742,14 @@
           <div id="sol-dj-blocked-dates" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
 
           <h3 style="margin-top:2rem;">Photo Gallery</h3>
-          <p style="color:#aaa; font-size:0.9rem;">Add image URLs to showcase your past events.</p>
-          <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+          <p style="color:#aaa; font-size:0.9rem;">Add photos from your device or paste an image URL.</p>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
             <input id="sol-dj-gallery-url" type="text" placeholder="https://image-url.jpg" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
-            <button type="button" id="sol-dj-gallery-add" class="submit-btn">Add Photo</button>
+            <button type="button" id="sol-dj-gallery-add" class="submit-btn">Add URL</button>
+            <input id="sol-dj-gallery-file" type="file" accept="image/*" style="display:none;">
+            <label for="sol-dj-gallery-file" class="submit-btn" style="cursor:pointer; padding:0.5rem 1rem;">Upload Photo</label>
           </div>
+          <p id="sol-dj-gallery-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
           <div id="sol-dj-gallery" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
 
           <h3 style="margin-top:2rem;">My Earnings</h3>
@@ -1735,12 +1739,57 @@
     document.getElementById('sol-dj-gallery-add').addEventListener('click', function() {
       var url = document.getElementById('sol-dj-gallery-url').value.trim();
       var user = auth.currentUser;
-      if (!url || !user) return;
+      var statusEl = document.getElementById('sol-dj-gallery-status');
+      if (!user) { if (statusEl) { statusEl.textContent = 'Sign in to add photos.'; statusEl.style.color = '#ff4d8f'; } return; }
+      if (!url) { if (statusEl) { statusEl.textContent = 'Enter an image URL.'; statusEl.style.color = '#ff4d8f'; } return; }
+      if (statusEl) { statusEl.textContent = 'Adding...'; statusEl.style.color = '#ffd860'; }
       db.collection('dj-galleries').doc(user.uid).set({
         photos: firebase.firestore.FieldValue.arrayUnion(url)
       }, { merge: true }).then(function() {
         document.getElementById('sol-dj-gallery-url').value = '';
+        if (statusEl) { statusEl.textContent = 'Added.'; statusEl.style.color = '#22c55e'; }
         loadDjGallery(user.uid);
+      }).catch(function(err) {
+        if (statusEl) { statusEl.textContent = 'Error: ' + err.message; statusEl.style.color = '#ff4d8f'; }
+      });
+    });
+
+    document.getElementById('sol-dj-gallery-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match('image.*')) {
+        document.getElementById('sol-dj-gallery-status').textContent = 'Please select an image file.';
+        document.getElementById('sol-dj-gallery-status').style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      var statusEl = document.getElementById('sol-dj-gallery-status');
+      statusEl.textContent = 'Uploading...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      var path = 'dj-galleries/' + user.uid + '/' + Date.now() + '.' + ext;
+      var ref = storage.ref(path);
+      var upload = ref.put(file);
+      upload.on('state_changed', function() {}, function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      }, function() {
+        ref.getDownloadURL().then(function(url) {
+          db.collection('dj-galleries').doc(user.uid).set({
+            photos: firebase.firestore.FieldValue.arrayUnion(url)
+          }, { merge: true }).then(function() {
+            statusEl.textContent = 'Added.';
+            statusEl.style.color = '#22c55e';
+            loadDjGallery(user.uid);
+          }).catch(function(err) {
+            statusEl.textContent = 'Save failed: ' + err.message;
+            statusEl.style.color = '#ff4d8f';
+          });
+        }).catch(function(err) {
+          statusEl.textContent = 'Upload failed: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
       });
     });
 
