@@ -94,6 +94,22 @@
         </div>
       </div>
     </section>
+    <section id="quick-links" class="info" style="text-align: center;">
+      <h2>Explore DJWEIRDNASTY</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 1rem;">
+        <a href="news.html" class="playlist-link" style="display: inline-block;">All News</a>
+        <a href="news-national.html" class="playlist-link" style="display: inline-block;">National</a>
+        <a href="news-entertainment.html" class="playlist-link" style="display: inline-block;">Entertainment</a>
+        <a href="news-music.html" class="playlist-link" style="display: inline-block;">Music</a>
+        <a href="news-sports.html" class="playlist-link" style="display: inline-block;">Sports</a>
+        <a href="mixtapes.html" class="playlist-link" style="display: inline-block;">Mixtapes</a>
+        <a href="mud-music-episode.html" class="playlist-link" style="display: inline-block;">MUD MUSIC</a>
+        <a href="content.html" class="playlist-link" style="display: inline-block;">Content</a>
+        <a href="sol.html" class="playlist-link" style="display: inline-block;">SOL Booking</a>
+        <a href="event-recaps.html" class="playlist-link" style="display: inline-block;">Event Recaps</a>
+        <a href="contact.html" class="playlist-link" style="display: inline-block;">Contact</a>
+      </div>
+    </section>
     <section id="about" class="info">
       <h2>About DJWEIRDNASTY</h2>
       <p>DJWEIRDNASTY is a professional open-format DJ known for delivering high-energy sets that blend hip hop, R&amp;B, afrobeats, house, club classics, and today's biggest hits. Whether performing at clubs, private events, festivals, community gatherings, or on the radio, every performance is crafted to create an unforgettable experience and keep the crowd moving.</p>
@@ -132,6 +148,9 @@
       </div>
 
       <p style="margin-top: 1.5rem;">Whether you're here to discover new mixes, watch exclusive performances, book DJWEIRDNASTY for your next event, or stay up to date with the latest releases, you're in the right place.</p>
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="contact.html" class="playlist-link" style="display: inline-block; background: #ff4d8f; color: #fff; padding: 0.7rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1.05rem;">Book DJWEIRDNASTY &nearr;</a>
+      </div>
     </section>
 
     <section id="music" class="info">
@@ -318,6 +337,21 @@
           if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path === '/mixtapes.html' ? 'Listen' : 'Read more'); }).join('');
         })
         .catch(function() {});
+    })();
+  </script>
+
+  <a href="contact.html" class="book-cta" id="bookCta">Book DJWEIRDNASTY &nearr;</a>
+  <script>
+    (function() {
+      var cta = document.getElementById('bookCta');
+      if (!cta) return;
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 400) {
+          cta.classList.add('visible');
+        } else {
+          cta.classList.remove('visible');
+        }
+      }, { passive: true });
     })();
   </script>
 </body>
