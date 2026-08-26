@@ -635,9 +635,11 @@
             </label>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem 1rem; margin-bottom:0.5rem;">
             <span style="font-size:0.9rem;">Share Live Location <span id="sol-dj-loc-status" style="color:#888; font-size:0.8rem;"></span></span>
             <button type="button" id="sol-dj-share-loc" class="submit-btn" style="background:#333; padding:0.5rem 1rem;">Start</button>
+          </div>
+          <div id="sol-dj-loc-instructions" style="display:none; font-size:0.85rem; color:#ff4d8f; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:1rem; line-height:1.4;">
           </div>
 
           <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:1rem;">
@@ -2276,12 +2278,16 @@
       djShareLocBtn.style.background = '#ff3b30';
       djLocStatus.textContent = 'Getting location...';
       djLocStatus.style.color = '#ffd860';
+      var instructions = document.getElementById('sol-dj-loc-instructions');
+      if (instructions) instructions.style.display = 'none';
 
       function onPos(pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
         djLocStatus.textContent = 'Live (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
         djLocStatus.style.color = '#22c55e';
+        var instructions = document.getElementById('sol-dj-loc-instructions');
+        if (instructions) instructions.style.display = 'none';
         if (auth.currentUser) {
           db.collection('dj-status').doc(auth.currentUser.uid).set({
             sharingLocation: true,
@@ -2332,7 +2338,22 @@
           return;
         }
 
-        djLocStatus.textContent = msg;
+        var instructions = document.getElementById('sol-dj-loc-instructions');
+        if (instructions) instructions.style.display = 'none';
+        if (err.code === 1) {
+          djLocStatus.textContent = 'Permission denied';
+          if (instructions) {
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            var isAndroid = /Android/.test(navigator.userAgent);
+            var steps = 'Enable location in your browser or site settings, then reload.';
+            if (isIOS) steps = 'iPhone: Settings → Safari → Location → Allow. Then reload.';
+            else if (isAndroid) steps = 'Android: Chrome ⋮ → Settings → Site settings → Location → Allow. Then reload.';
+            instructions.innerHTML = steps;
+            instructions.style.display = 'block';
+          }
+        } else {
+          djLocStatus.textContent = msg;
+        }
         djLocStatus.style.color = '#ff4d8f';
         djShareLocBtn.textContent = 'Start';
         djShareLocBtn.style.background = '#333';
