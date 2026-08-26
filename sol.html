@@ -2275,7 +2275,7 @@
 
       function onErr(err, isRetry) {
         var msg = 'Error: ' + err.message;
-        if (err.code === 1) msg = 'Permission denied. Allow location access in browser settings.';
+        if (err.code === 1) msg = 'Permission denied. Enable location in your browser or site settings, then reload the page.';
         else if (err.code === 2) msg = 'Location unavailable. Check your GPS/network.';
         else if (err.code === 3) msg = 'Location request timed out. Try again.';
 
@@ -3802,7 +3802,7 @@
         mapStatus.style.color = '#22c55e';
       }, function(err) {
         var msg = 'Could not get location: ' + err.message;
-        if (err.code === 1) msg = 'Permission denied. Allow location access in your browser settings.';
+        if (err.code === 1) msg = 'Permission denied. Enable location in your browser or site settings, then reload the page.';
         else if (err.code === 2) msg = 'Location unavailable. Check your GPS or network connection.';
         else if (err.code === 3) msg = 'Location request timed out. Try again.';
         mapStatus.textContent = msg;
