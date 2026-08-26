@@ -1606,6 +1606,7 @@
       var profileData = {
         stageName: document.getElementById('sol-dj-stage-name').value.trim(),
         photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
+        avatar: document.getElementById('sol-dj-avatar-url').value.trim(),
         phone: document.getElementById('sol-dj-phone').value.trim(),
         smsOptIn: document.getElementById('sol-dj-sms-optin').checked,
         paypal: document.getElementById('sol-dj-paypal').value.trim(),
@@ -4229,11 +4230,12 @@
         const div = document.createElement('div');
         div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; text-align:center;';
 
+        var avatarUrl = dj.avatar || dj.photoURL || '';
         var avatarHtml;
         var initial = (dj.name || 'D').charAt(0).toUpperCase();
-        if (dj.avatar) {
-          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;">' +
-            initial + '<img loading="lazy" src="' + dj.avatar + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
+        if (avatarUrl) {
+          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;position:relative;">' +
+            initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
             '</div>';
         } else {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
@@ -4288,7 +4290,7 @@
       var modal = document.getElementById('sol-dj-profile-modal');
       var content = document.getElementById('sol-dj-profile-content');
       var initial = (dj.name || 'D').charAt(0).toUpperCase();
-      var avatar = dj.avatar || '';
+      var avatar = dj.avatar || dj.photoURL || '';
       var avatarHtml = avatar
         ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
           '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
@@ -4323,7 +4325,7 @@
         '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
         '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' +
         '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '">Share Profile</button>' +
-        '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || '') + '">♥ Save DJ</button>' +
+        '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || dj.photoURL || '') + '">♥ Save DJ</button>' +
         '</div>';
 
       modal.style.display = 'flex';
