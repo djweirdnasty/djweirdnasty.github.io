@@ -619,7 +619,7 @@
           <h2>DJ Console</h2>
 
           <div id="sol-dj-profile" style="display:flex; flex-direction:column; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
-            <img loading="lazy" id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;">
+            <img loading="lazy" id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;" onerror="this.style.display='none'; document.getElementById('sol-dj-avatar-fallback').style.display='flex';">
             <div id="sol-dj-avatar-fallback" style="width:72px; height:72px; border-radius:36px; background:#ff4d8f; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#fff; margin-bottom:0.5rem;">DJ</div>
             <strong id="sol-dj-name" style="font-size:1.2rem;"></strong>
             <span id="sol-dj-location" style="color:#aaa; font-size:0.85rem;"></span>
@@ -1529,11 +1529,12 @@
     }
 
     function loadDJProfile(user, profileData) {
-      const name = profileData.stageName || profileData.displayName || profileData.djName || user.displayName || user.email || 'DJ';
-      const avatar = profileData.photoURL || profileData.avatar || '';
-      const city = profileData.city || (profileData.location && profileData.location.city) || '';
-      const state = profileData.state || (profileData.location && profileData.location.state) || '';
-      const rating = profileData.rating || profileData.djRating || null;
+      const p = (profileData && profileData.djProfile) || profileData || {};
+      const name = p.stageName || p.displayName || p.djName || user.displayName || user.email || 'DJ';
+      const avatar = p.photoURL || p.avatar || '';
+      const city = p.city || (p.location && p.location.city) || '';
+      const state = p.state || (p.location && p.location.state) || '';
+      const rating = p.rating || p.djRating || null;
 
       document.getElementById('sol-dj-name').textContent = name;
       document.getElementById('sol-dj-location').textContent = city ? city + (state ? ', ' + state : '') : '';
