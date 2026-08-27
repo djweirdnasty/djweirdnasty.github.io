@@ -210,28 +210,40 @@
       <p>Listen to the latest mixes from DJWEIRDNASTY.</p>
       <div class="events-grid" id="latest-mixtapes-grid">
         <article class="event-card">
-          <h3>Mixtapes</h3>
-          <img loading="lazy" src="/helladelphia-mixtapte-vol1.webp" alt="Mixtapes" class="event-flyer">
-          <p>Check out DJWEIRDNASTY mixtapes.</p>
+          <h3>Murrdah Season Monday Mixtape Vol. 11</h3>
+          <img loading="lazy" src="/msm11.webp" alt="Murrdah Season Monday Mixtape Vol. 11" class="event-flyer">
+          <p>Hosted &amp; Mixed by DJWEIRDNASTY. Powered by Glocawear Radio Station &amp; Flavor Team.</p>
           <a href="mixtapes.html" class="playlist-link">Listen</a>
         </article>
         <article class="event-card">
-          <h3>MUD MUSIC Top 10 Countdown</h3>
-          <img loading="lazy" src="/mud-music-logo.webp" alt="MUD MUSIC" class="event-flyer">
-          <p>Watch the latest episodes.</p>
-          <a href="mud-music-episode.html" class="playlist-link">Watch</a>
+          <h3>OFFTOP TV TAPE</h3>
+          <img loading="lazy" src="/adotupt.webp" alt="OFFTOP TV TAPE" class="event-flyer">
+          <p>Hosted by DJWEIRDNASTY &middot; Presented by Adot-Upt. Exclusive remixes and street anthems.</p>
+          <a href="mixtapes.html" class="playlist-link">Listen</a>
         </article>
         <article class="event-card">
-          <h3>MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)</h3>
-          <img loading="lazy" src="/djweirdnasty-banner.webp" alt="MUD MUSIC Episode 13" class="event-flyer">
-          <p>Latest episode.</p>
-          <a href="mud-music-episode-13.html" class="playlist-link">Watch</a>
+          <h3>Helladelphia Mixtape Vol. 3</h3>
+          <img loading="lazy" src="/helladelphia-vol3.webp" alt="Helladelphia Mixtape Vol. 3" class="event-flyer">
+          <p>Hard-hitting bars, street anthems, club records, and underground heat from Philadelphia.</p>
+          <a href="mixtapes.html" class="playlist-link">Listen</a>
         </article>
         <article class="event-card">
-          <h3>Episode 12 - 90's Baby (Mya Allure)</h3>
-          <img loading="lazy" src="/djweirdnasty-banner.webp" alt="MUD MUSIC Episode 12" class="event-flyer">
-          <p>Previous episode.</p>
-          <a href="mud-music-episode-12.html" class="playlist-link">Watch</a>
+          <h3>Helladelphia Mixtape Vol. 2</h3>
+          <img loading="lazy" src="/helladelphia-vol2.webp" alt="Helladelphia Mixtape Vol. 2" class="event-flyer">
+          <p>Featuring the hottest independent talent from Philadelphia and beyond.</p>
+          <a href="mixtapes.html" class="playlist-link">Listen</a>
+        </article>
+        <article class="event-card">
+          <h3>30 Yo Club Smash</h3>
+          <img loading="lazy" src="/30yo.webp" alt="30 Yo Club Smash" class="event-flyer">
+          <p>Hosted &amp; Mixed by DJWEIRDNASTY.</p>
+          <a href="mixtapes.html" class="playlist-link">Listen</a>
+        </article>
+        <article class="event-card">
+          <h3>Helladelphia Mixtape Vol. 1</h3>
+          <img loading="lazy" src="/helladelphia-mixtapte-vol1.webp" alt="Helladelphia Mixtape Vol. 1" class="event-flyer">
+          <p>Hosted by DJWEIRDNASTY. IN DA CUT Studios + Socially Awkward TV.</p>
+          <a href="mixtapes.html" class="playlist-link">Listen</a>
         </article>
       </div>
     </section>
@@ -340,9 +352,6 @@
           var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
           var ng = document.getElementById('latest-news-grid');
           if (ng) ng.innerHTML = news.map(function(i) { return card(i,'Read more'); }).join('');
-          var mix = items.filter(function(i) { return i.path === '/mixtapes.html' || i.path.indexOf('mud-music') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
-          var mg = document.getElementById('latest-mixtapes-grid');
-          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path === '/mixtapes.html' ? 'Listen' : 'Watch'); }).join('');
           var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,4);
           var mrg = document.getElementById('latest-murrdah-grid');
           if (mrg) mrg.innerHTML = murrdah.map(function(i) { return card(i, 'Read more'); }).join('');
