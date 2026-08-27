@@ -249,8 +249,7 @@
         '<a href="news-entertainment.html" style="color: #ffd860;">Entertainment</a> &bull; ' +
         '<a href="news-national.html" style="color: #ffd860;">National</a> &bull; ' +
         '<a href="mixtapes.html" style="color: #ffd860;">Mixtapes</a> &bull; ' +
-        '<a href="index.html#events" style="color: #ffd860;">Events</a> &bull; ' +
-        '<a href="sol.html" style="color: #ffd860;"><strong>Book a DJ</strong></a>';
+        '<a href="index.html#events" style="color: #ffd860;">Events</a>';
       var shareBtn = article.querySelector('.share-button, .social-share');
       if (shareBtn) {
         article.insertBefore(moreNews, shareBtn);
@@ -303,11 +302,11 @@
     var bookCta = document.createElement('a');
     bookCta.className = 'book-cta';
     bookCta.href = 'sol.html';
-    bookCta.innerHTML = '\u266B Book DJ for Your Event';
+    bookCta.innerHTML = '\u266B Book DJWEIRDNASTY';
     document.body.appendChild(bookCta);
 
     window.addEventListener('scroll', function() {
-      if (window.scrollY > 150) {
+      if (window.scrollY > 300) {
         bookCta.classList.add('visible');
       } else {
         bookCta.classList.remove('visible');
