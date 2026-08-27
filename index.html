@@ -206,8 +206,8 @@
     </section>
 
     <section id="latest-mixtapes" class="info">
-      <h2>Mixtapes &amp; MURRDAH SEASON MONDAY</h2>
-      <p>Listen to the latest mixes and catch up on MURRDAH SEASON MONDAY.</p>
+      <h2>Mixtapes</h2>
+      <p>Listen to the latest mixes from DJWEIRDNASTY.</p>
       <div class="events-grid" id="latest-mixtapes-grid">
         <article class="event-card">
           <h3>Mixtapes</h3>
@@ -233,6 +233,14 @@
           <p>Previous episode.</p>
           <a href="mud-music-episode-12.html" class="playlist-link">Watch</a>
         </article>
+      </div>
+    </section>
+
+    <section id="latest-murrdah" class="info">
+      <h2>MURRDAH SEASON MONDAY</h2>
+      <p>Catch up on MURRDAH SEASON MONDAY every Monday on Glocawear Radio.</p>
+      <div class="events-grid" id="latest-murrdah-grid">
+        <p style="text-align: center; color: #888;">Loading MURRDAH SEASON MONDAY...</p>
       </div>
     </section>
 
@@ -332,9 +340,12 @@
           var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
           var ng = document.getElementById('latest-news-grid');
           if (ng) ng.innerHTML = news.map(function(i) { return card(i,'Read more'); }).join('');
-          var mix = items.filter(function(i) { return i.path === '/mixtapes.html' || i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
+          var mix = items.filter(function(i) { return i.path === '/mixtapes.html'; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
           var mg = document.getElementById('latest-mixtapes-grid');
-          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path === '/mixtapes.html' ? 'Listen' : 'Read more'); }).join('');
+          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, 'Listen'); }).join('');
+          var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
+          var mrg = document.getElementById('latest-murrdah-grid');
+          if (mrg) mrg.innerHTML = murrdah.map(function(i) { return card(i, 'Read more'); }).join('');
         })
         .catch(function() {});
     })();
