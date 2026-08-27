@@ -43,6 +43,7 @@ async function apiGet(path) {
   if (token) headers['Authorization'] = 'Bearer ' + token;
   try {
     const res = await fetch(API_BASE + path, { headers });
+    if (res.status === 401 && token) { handleExpiredToken(); }
     const text = await res.text();
     try { return JSON.parse(text); }
     catch(e) { return { error: 'Unexpected response from server.' }; }
@@ -61,11 +62,29 @@ async function apiPost(path, body) {
       headers,
       body: JSON.stringify(body),
     });
+    if (res.status === 401 && token) { handleExpiredToken(); }
     const text = await res.text();
     try { return JSON.parse(text); }
     catch(e) { return { error: 'Unexpected response from server.' }; }
   } catch(e) {
     return { error: 'Network error. Please check your connection.' };
+  }
+}
+
+// Clear stale token and re-render the auth area so the user can log in again
+function handleExpiredToken() {
+  removeToken();
+  removeUsername();
+  var authArea = document.querySelector('.djwn-auth-area');
+  var formArea = document.querySelector('.djwn-form-area');
+  if (authArea && formArea) {
+    try { renderAuthArea(authArea, formArea); } catch(e) {}
+    // Show a notice that the session expired
+    var notice = document.createElement('div');
+    notice.className = 'djwn-error';
+    notice.style.cssText = 'margin-bottom:1rem;padding:8px 12px;background:rgba(255,107,107,0.1);border-radius:6px;';
+    notice.textContent = 'Your session has expired. Please log in again to comment or like.';
+    authArea.insertBefore(notice, authArea.firstChild);
   }
 }
 
@@ -163,6 +182,34 @@ function injectComments() {
   loadComments(commentsList, slug);
   loadLikes(likeBtn, slug);
   try { setupLikeButton(likeBtn, slug); } catch(e) {}
+
+  // Validate token on load — if expired, switch back to login form
+  validateToken(authArea, formArea);
+}
+
+// Check if the stored token is expired by decoding the JWT payload
+function isTokenExpired(token) {
+  try {
+    var parts = token.split('.');
+    if (parts.length !== 3) return true;
+    var payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return false;
+    // exp may be in seconds or milliseconds — check both
+    var now = Date.now();
+    var expSec = payload.exp < 1e12 ? payload.exp * 1000 : payload.exp;
+    return now > expSec;
+  } catch(e) {
+    return true;
+  }
+}
+
+// Check if the stored token is still valid; if not, clear it and show login
+function validateToken(authArea, formArea) {
+  var token = getToken();
+  if (!token) return;
+  if (isTokenExpired(token)) {
+    handleExpiredToken();
+  }
 }
 
 // ---------------------------------------------------------------------------
