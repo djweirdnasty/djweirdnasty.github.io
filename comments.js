@@ -126,7 +126,7 @@ function injectComments() {
   likeRow.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:1.5rem;';
   var likeBtn = document.createElement('button');
   likeBtn.className = 'djwn-like-btn';
-  likeBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:6px 16px;cursor:pointer;font-size:0.9rem;color:#fff;display:flex;align-items:center;gap:6px;transition:all 0.2s;';
+  likeBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:10px 20px;cursor:pointer;font-size:1rem;color:#fff;display:flex;align-items:center;gap:6px;transition:all 0.2s;min-height:44px;-webkit-tap-highlight-color:rgba(79,168,255,0.3);';
   likeBtn.innerHTML = '<span class="djwn-heart">&#9825;</span> <span class="djwn-like-count">0</span>';
   likeRow.appendChild(likeBtn);
   wrapper.appendChild(likeRow);
@@ -197,6 +197,14 @@ function addWidgetStyles() {
     '.djwn-widget .djwn-auth-tab.active { color:#4fa8ff;border-bottom-color:#4fa8ff; }',
     '.djwn-widget .djwn-logged-in-bar { display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem; }',
     '.djwn-widget .djwn-logged-in-bar span { font-size:0.9rem;color:rgba(255,255,255,0.7); }',
+    // Mobile: 16px font on inputs prevents iOS auto-zoom, larger touch targets
+    '@media (max-width: 600px) {',
+    '  .djwn-widget input, .djwn-widget textarea { font-size:16px; }',
+    '  .djwn-widget .djwn-btn { padding:12px 24px;font-size:1rem; }',
+    '  .djwn-widget .djwn-like-btn { padding:10px 20px;font-size:1rem;min-height:44px; }',
+    '  .djwn-widget .djwn-auth-tab { padding:8px 0;font-size:1rem; }',
+    '  .djwn-widget .djwn-comment-body { font-size:1rem; }',
+    '}',
   ].join('\n');
   document.head.appendChild(style);
 }
