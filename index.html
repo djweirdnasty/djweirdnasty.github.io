@@ -340,10 +340,10 @@
           var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
           var ng = document.getElementById('latest-news-grid');
           if (ng) ng.innerHTML = news.map(function(i) { return card(i,'Read more'); }).join('');
-          var mix = items.filter(function(i) { return i.path === '/mixtapes.html'; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
+          var mix = items.filter(function(i) { return i.path === '/mixtapes.html' || i.path.indexOf('mud-music') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
           var mg = document.getElementById('latest-mixtapes-grid');
-          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, 'Listen'); }).join('');
-          var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return b.updated - a.updated; }).slice(0,4);
+          if (mg) mg.innerHTML = mix.map(function(i) { return card(i, i.path === '/mixtapes.html' ? 'Listen' : 'Watch'); }).join('');
+          var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,4);
           var mrg = document.getElementById('latest-murrdah-grid');
           if (mrg) mrg.innerHTML = murrdah.map(function(i) { return card(i, 'Read more'); }).join('');
         })
