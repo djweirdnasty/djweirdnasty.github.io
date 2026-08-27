@@ -10,27 +10,27 @@ var API_BASE = 'https://djweirdnasty-api.kurtisctabb.workers.dev/api';
 // ---------------------------------------------------------------------------
 
 function getToken() {
-  return localStorage.getItem('djwn_token');
+  try { return localStorage.getItem('djwn_token'); } catch(e) { return null; }
 }
 
 function setToken(token) {
-  localStorage.setItem('djwn_token', token);
+  try { localStorage.setItem('djwn_token', token); } catch(e) {}
 }
 
 function removeToken() {
-  localStorage.removeItem('djwn_token');
+  try { localStorage.removeItem('djwn_token'); } catch(e) {}
 }
 
 function getUsername() {
-  return localStorage.getItem('djwn_username');
+  try { return localStorage.getItem('djwn_username'); } catch(e) { return null; }
 }
 
 function setUsername(username) {
-  localStorage.setItem('djwn_username', username);
+  try { localStorage.setItem('djwn_username', username); } catch(e) {}
 }
 
 function removeUsername() {
-  localStorage.removeItem('djwn_username');
+  try { localStorage.removeItem('djwn_username'); } catch(e) {}
 }
 
 // ---------------------------------------------------------------------------
@@ -41,20 +41,32 @@ async function apiGet(path) {
   const token = getToken();
   const headers = {};
   if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(API_BASE + path, { headers });
-  return res.json();
+  try {
+    const res = await fetch(API_BASE + path, { headers });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch(e) { return { error: 'Unexpected response from server.' }; }
+  } catch(e) {
+    return { error: 'Network error. Please check your connection.' };
+  }
 }
 
 async function apiPost(path, body) {
   const token = getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(API_BASE + path, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  try {
+    const res = await fetch(API_BASE + path, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch(e) { return { error: 'Unexpected response from server.' }; }
+  } catch(e) {
+    return { error: 'Network error. Please check your connection.' };
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -146,11 +158,11 @@ function injectComments() {
   // Add styles
   addWidgetStyles();
 
-  // Initialize
-  renderAuthArea(authArea, formArea);
+  // Initialize — each step wrapped so one failure doesn't block the others
+  try { renderAuthArea(authArea, formArea); } catch(e) {}
   loadComments(commentsList, slug);
   loadLikes(likeBtn, slug);
-  setupLikeButton(likeBtn, slug);
+  try { setupLikeButton(likeBtn, slug); } catch(e) {}
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +301,10 @@ function renderLoginForm(holder, authArea, formArea) {
 
     setToken(res.token);
     setUsername(res.username);
+    if (!getToken()) {
+      errEl.textContent = 'Your browser is blocking local storage (private browsing mode). Please disable it to log in.';
+      return;
+    }
     renderAuthArea(authArea, formArea);
   };
 
@@ -370,6 +386,10 @@ function renderRegisterForm(holder, authArea, formArea) {
 
     setToken(res.token);
     setUsername(res.username);
+    if (!getToken()) {
+      errEl.textContent = 'Your browser is blocking local storage (private browsing mode). Please disable it to sign up.';
+      return;
+    }
     renderAuthArea(authArea, formArea);
   };
 
@@ -400,10 +420,16 @@ function renderCommentForm(formArea) {
   formArea.appendChild(textarea);
   formArea.appendChild(btnRow);
 
+  var errEl = document.createElement('div');
+  errEl.className = 'djwn-error';
+  errEl.style.cssText = 'margin-bottom:8px;';
+  formArea.appendChild(errEl);
+
   submitBtn.onclick = async function () {
     var content = textarea.value.trim();
     if (!content) return;
 
+    errEl.textContent = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Posting...';
 
@@ -414,6 +440,7 @@ function renderCommentForm(formArea) {
     submitBtn.textContent = 'Post Comment';
 
     if (res.error) {
+      errEl.textContent = res.error;
       textarea.style.borderColor = '#ff6b6b';
       setTimeout(function () { textarea.style.borderColor = ''; }, 2000);
       return;
@@ -490,7 +517,20 @@ function setupLikeButton(btn, slug) {
     var res = await apiPost('/likes', { slug: slug });
     btn.disabled = false;
 
-    if (res.error) return;
+    if (res.error) {
+      var widget = btn.closest('.djwn-widget');
+      if (widget) {
+        var existing = widget.querySelector('.djwn-like-error');
+        if (existing) existing.remove();
+        var errEl = document.createElement('div');
+        errEl.className = 'djwn-like-error djwn-error';
+        errEl.textContent = res.error;
+        errEl.style.cssText = 'margin-top:0.5rem;';
+        btn.parentNode.appendChild(errEl);
+        setTimeout(function () { errEl.remove(); }, 4000);
+      }
+      return;
+    }
 
     btn.querySelector('.djwn-like-count').textContent = res.count;
     if (res.liked) {
