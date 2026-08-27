@@ -504,6 +504,12 @@ function renderCommentForm(formArea) {
     textarea.value = '';
     var commentsList = document.querySelector('.djwn-comments-list');
     loadComments(commentsList, slug);
+    if (typeof gtag === 'function') {
+      gtag('event', 'comment_post', {
+        'event_category': 'engagement',
+        'event_label': slug
+      });
+    }
   };
 }
 
@@ -591,6 +597,12 @@ function setupLikeButton(btn, slug) {
     if (res.liked) {
       btn.classList.add('liked');
       btn.querySelector('.djwn-heart').innerHTML = '&#9829;';
+      if (typeof gtag === 'function') {
+        gtag('event', 'article_like', {
+          'event_category': 'engagement',
+          'event_label': slug
+        });
+      }
     } else {
       btn.classList.remove('liked');
       btn.querySelector('.djwn-heart').innerHTML = '&#9825;';

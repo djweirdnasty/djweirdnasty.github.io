@@ -322,6 +322,12 @@
           status.textContent = data.message || 'Subscribed! Check your email to confirm.';
           status.style.color = '#60ff80';
           form.reset();
+          if (typeof gtag === 'function') {
+            gtag('event', 'newsletter_signup', {
+              'event_category': 'engagement',
+              'event_label': 'homepage'
+            });
+          }
         } else {
           status.textContent = data.detail || 'Something went wrong.';
           status.style.color = '#ff5566';
