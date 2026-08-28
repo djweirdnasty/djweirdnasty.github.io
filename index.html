@@ -361,22 +361,20 @@
           var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,12);
           var ng = document.getElementById('latest-news-grid');
           if (ng) {
-            ng.innerHTML = news.map(function(i) {
+            // Duplicate articles for seamless infinite rotation
+            var cards = news.concat(news);
+            ng.innerHTML = cards.map(function(i) {
               var t = esc(i.title.replace(/\s*\|\s*DJWEIRDNASTY.*$/i,''));
               return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start; display: flex; flex-direction: row; gap: 0.6rem; align-items: flex-start; padding: 0.6rem;"><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; flex-shrink: 0;"><div style="flex: 1; min-width: 0;"><h3 style="font-size:0.75rem; line-height:1.2; margin:0 0 0.4rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">' + t + '</h3><a href="' + esc(i.path) + '" class="playlist-link" style="font-size:0.7rem; padding:0.3rem 0.7rem;">Read more</a></div></article>';
             }).join('');
             if (news.length > 4) {
-              var idx = 0;
+              var cardW = ng.querySelector('.event-card').offsetWidth + 16;
+              var halfScroll = news.length * cardW; // total width of first set
               setInterval(function() {
-                var firstCard = ng.querySelector('.event-card');
-                if (!firstCard) return;
-                var cardW = firstCard.offsetWidth + 16;
-                idx++;
-                if (idx >= news.length) {
-                  ng.scrollTo({ left: 0, behavior: 'smooth' });
-                  idx = 0;
-                } else {
-                  ng.scrollBy({ left: cardW, behavior: 'smooth' });
+                ng.scrollBy({ left: cardW, behavior: 'smooth' });
+                // When we've scrolled past the first set, jump back silently
+                if (ng.scrollLeft >= halfScroll) {
+                  ng.scrollTo({ left: ng.scrollLeft - halfScroll, behavior: 'auto' });
                 }
               }, 4000);
             }
