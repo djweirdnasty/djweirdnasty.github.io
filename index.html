@@ -201,8 +201,10 @@
     <section id="latest-news" class="info">
       <h2>Latest News</h2>
       <p>Top stories from DJWEIRDNASTY News.</p>
-      <div class="events-grid" id="latest-news-grid">
-        <p style="text-align: center; color: #888;">Loading latest news...</p>
+      <div class="news-carousel-wrapper" style="position: relative; overflow: hidden;">
+        <div class="news-carousel" id="latest-news-grid" style="display: flex; gap: 1rem; overflow: hidden; scroll-snap-type: x mandatory; padding: 0.5rem 0;">
+          <p style="text-align: center; color: #888;">Loading latest news...</p>
+        </div>
       </div>
     </section>
 
@@ -356,9 +358,29 @@
       fetch('/contents.json?_=' + Date.now())
         .then(function(r) { if (!r.ok) throw new Error('bad'); return r.json(); })
         .then(function(items) {
-          var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,6);
+          var news = items.filter(function(i) { return i.path.indexOf('/news-') === 0 && !i.path.match(/^\/(news-entertainment|news-national|news-sports|news-music)\.html$/); }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,12);
           var ng = document.getElementById('latest-news-grid');
-          if (ng) ng.innerHTML = news.map(function(i) { return card(i,'Read more'); }).join('');
+          if (ng) {
+            ng.innerHTML = news.map(function(i) {
+              var t = esc(i.title.replace(/\s*\|\s*DJWEIRDNASTY.*$/i,''));
+              return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start;"><h3 style="font-size:0.9rem;min-height:2.5rem;">' + t + '</h3><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="height:140px;object-fit:cover;"><a href="' + esc(i.path) + '" class="playlist-link">Read more</a></article>';
+            }).join('');
+            if (news.length > 4) {
+              var idx = 0;
+              setInterval(function() {
+                var firstCard = ng.querySelector('.event-card');
+                if (!firstCard) return;
+                var cardW = firstCard.offsetWidth + 16;
+                idx++;
+                if (idx >= news.length) {
+                  ng.scrollTo({ left: 0, behavior: 'smooth' });
+                  idx = 0;
+                } else {
+                  ng.scrollBy({ left: cardW, behavior: 'smooth' });
+                }
+              }, 4000);
+            }
+          }
           var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,4);
           var mrg = document.getElementById('latest-murrdah-grid');
           if (mrg) mrg.innerHTML = murrdah.map(function(i) { return card(i, 'Read more'); }).join('');

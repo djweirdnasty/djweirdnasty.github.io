@@ -949,6 +949,11 @@ footer {
     height: 160px;
   }
 
+  #latest-news-grid .event-card {
+    flex: 0 0 calc(50% - 0.5rem) !important;
+    min-width: 160px !important;
+  }
+
   .playlist-link,
   .share-button {
     display: inline-block;
