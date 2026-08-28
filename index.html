@@ -381,13 +381,15 @@
             }).join('');
             if (news.length > 4) {
               var cardW = ng.querySelector('.event-card').offsetWidth + 16;
-              var halfScroll = news.length * cardW; // total width of first set
+              var halfScroll = news.length * cardW;
+              var maxPos = 2 * halfScroll - cardW;
+              var currentPos = 0;
               setInterval(function() {
-                ng.scrollBy({ left: cardW, behavior: 'smooth' });
-                // When we've scrolled past the first set, jump back silently
-                if (ng.scrollLeft >= halfScroll) {
-                  ng.scrollTo({ left: ng.scrollLeft - halfScroll, behavior: 'auto' });
+                currentPos += cardW;
+                if (currentPos > maxPos) {
+                  currentPos = 0;
                 }
+                ng.scrollTo({ left: currentPos, behavior: currentPos === 0 ? 'auto' : 'smooth' });
               }, 4000);
             }
           }
