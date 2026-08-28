@@ -411,4 +411,20 @@
   awinTag.src = 'https://www.dwin2.com/pub.3038027.min.js';
   document.body.appendChild(awinTag);
 
+  // ===== AWIN affiliate promo link =====
+  var path = window.location.pathname;
+  var isContent = /\/(news-?|event-?|recap-|murrdah-)/.test(path);
+  if (isContent) {
+    var promo = document.createElement('div');
+    promo.className = 'affiliate-promo';
+    promo.style.cssText = 'text-align:center; padding:1rem; font-size:0.9rem;';
+    promo.innerHTML = '<a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="color:#ff4d8f; text-decoration:underline;">Shop Stand4 Socks</a>';
+    var main = document.querySelector('main');
+    if (main) {
+      main.appendChild(promo);
+    } else {
+      document.body.appendChild(promo);
+    }
+  }
+
 })();
