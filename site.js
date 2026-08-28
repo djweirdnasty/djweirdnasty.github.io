@@ -405,4 +405,10 @@
     });
   }
 
+  // ===== AWIN Publisher MasterTag =====
+  var awinTag = document.createElement('script');
+  awinTag.async = true;
+  awinTag.src = 'https://www.dwin2.com/pub.3038027.min.js';
+  document.body.appendChild(awinTag);
+
 })();
