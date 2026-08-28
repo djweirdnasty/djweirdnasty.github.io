@@ -417,8 +417,8 @@
   if (isContent) {
     var promo = document.createElement('div');
     promo.className = 'affiliate-promo';
-    promo.style.cssText = 'text-align:center; padding:1rem; font-size:0.9rem;';
-    promo.innerHTML = '<a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="color:#ff4d8f; text-decoration:underline;">Shop Stand4 Socks</a>';
+    promo.style.cssText = 'background:#1a1a1a; border:1px solid #ff4d8f; border-radius:12px; padding:1.25rem; margin:1.5rem auto; max-width:600px; text-align:center;';
+    promo.innerHTML = '<p style="margin:0 0 0.5rem; color:#888; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em;">Sponsored</p><a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display:inline-block; background:#ff4d8f; color:#fff; padding:0.6rem 1.25rem; border-radius:8px; text-decoration:none; font-weight:700;">Shop Stand4 Socks</a>';
     var main = document.querySelector('main');
     if (main) {
       main.appendChild(promo);
