@@ -363,7 +363,7 @@
           if (ng) {
             ng.innerHTML = news.map(function(i) {
               var t = esc(i.title.replace(/\s*\|\s*DJWEIRDNASTY.*$/i,''));
-              return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start;"><h3 style="font-size:0.9rem;min-height:2.5rem;">' + t + '</h3><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="height:140px;object-fit:cover;"><a href="' + esc(i.path) + '" class="playlist-link">Read more</a></article>';
+              return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start; display: flex; flex-direction: row; gap: 0.6rem; align-items: flex-start; padding: 0.6rem;"><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; flex-shrink: 0;"><div style="flex: 1; min-width: 0;"><h3 style="font-size:0.75rem; line-height:1.2; margin:0 0 0.4rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">' + t + '</h3><a href="' + esc(i.path) + '" class="playlist-link" style="font-size:0.7rem; padding:0.3rem 0.7rem;">Read more</a></div></article>';
             }).join('');
             if (news.length > 4) {
               var idx = 0;
