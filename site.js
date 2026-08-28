@@ -427,4 +427,33 @@
     }
   }
 
+  // ===== Share This Article Bar =====
+  if (article) {
+    var shareBar = document.createElement('div');
+    shareBar.className = 'share-bar';
+    shareBar.style.cssText = 'margin-top: 2.5rem; padding-top: 1.25rem; border-top: 1px solid #333; text-align: center;';
+    shareBar.innerHTML = '<p style="margin: 0 0 0.75rem; color: #aaa; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Share this</p>' +
+      '<a href="#" class="share-x" target="_blank" rel="noopener" style="display: inline-block; margin: 0 0.4rem; padding: 0.5rem 1rem; background: #000; color: #fff; border: 1px solid #ff5bd7; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">X</a>' +
+      '<a href="#" class="share-fb" target="_blank" rel="noopener" style="display: inline-block; margin: 0 0.4rem; padding: 0.5rem 1rem; background: #000; color: #fff; border: 1px solid #ff5bd7; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Facebook</a>' +
+      '<a href="#" class="share-copy" style="display: inline-block; margin: 0 0.4rem; padding: 0.5rem 1rem; background: #000; color: #fff; border: 1px solid #ff5bd7; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Copy Link</a>';
+
+    article.appendChild(shareBar);
+
+    var pageUrl = encodeURIComponent(window.location.href);
+    var pageTitle = encodeURIComponent(document.title);
+    shareBar.querySelector('.share-x').href = 'https://twitter.com/intent/tweet?url=' + pageUrl + '&text=' + pageTitle;
+    shareBar.querySelector('.share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl;
+    shareBar.querySelector('.share-copy').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+          var btn = shareBar.querySelector('.share-copy');
+          var original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(function() { btn.textContent = original; }, 1500);
+        });
+      }
+    });
+  }
+
 })();
