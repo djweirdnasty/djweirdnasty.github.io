@@ -51,13 +51,15 @@
       will-change: transform;
     }
     .recap-carousel-track img {
-      flex: 0 0 100%;
-      width: 100%;
+      flex: 0 0 33.333%;
+      width: 33.333%;
       height: auto;
       object-fit: contain;
-      max-height: 500px;
+      max-height: 260px;
       background: #000;
       cursor: zoom-in;
+      box-sizing: border-box;
+      padding: 0 3px;
     }
     .recap-carousel-btn {
       position: absolute;
@@ -77,6 +79,34 @@
     .recap-carousel-btn.prev { left: 8px; }
     .recap-carousel-btn.next { right: 8px; }
     .recap-carousel-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
+    .recap-thumbnails {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .recap-thumbnails img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+    .recap-thumbnails img:hover,
+    .recap-thumbnails img.active {
+      opacity: 1;
+      border: 2px solid #ff4d8f;
+    }
     .recap-lightbox {
       display: none;
       position: fixed;
@@ -181,7 +211,34 @@
         </div>
         <button class="recap-carousel-btn next" onclick="recapCarousel('ghetto-house-party-carousel',1)" aria-label="Next">&rsaquo;</button>
       </div>
-      <div class="recap-carousel-counter" id="ghetto-house-party-carousel-counter">1 / 25</div>
+      <div class="recap-carousel-counter" id="ghetto-house-party-carousel-counter">1 – 3 / 25</div>
+      <div class="recap-thumbnails" id="ghetto-house-party-thumbnails">
+        <img src="ghetto%20house%20party/06373047-2213-40AA-A07A-FA572D878F97.JPG" class="recap-thumb" data-index="0" alt="Ghetto House Party Thumbnail 1" loading="lazy">
+        <img src="ghetto%20house%20party/0A0CA44C-0087-4AE9-A0CE-2C0243B29261.JPG" class="recap-thumb" data-index="1" alt="Ghetto House Party Thumbnail 2" loading="lazy">
+        <img src="ghetto%20house%20party/0C081FF8-FBFD-4DF2-AF37-37D4F91AFDD6.JPG" class="recap-thumb" data-index="2" alt="Ghetto House Party Thumbnail 3" loading="lazy">
+        <img src="ghetto%20house%20party/12B6524E-2852-441A-9949-0A2A091A7EBD.JPG" class="recap-thumb" data-index="3" alt="Ghetto House Party Thumbnail 4" loading="lazy">
+        <img src="ghetto%20house%20party/1D1FB1E5-C123-4E6F-B4B0-B9C61163CCA2.JPG" class="recap-thumb" data-index="4" alt="Ghetto House Party Thumbnail 5" loading="lazy">
+        <img src="ghetto%20house%20party/246BD73C-92F8-4FF8-A88A-D6F75262EEFA.JPG" class="recap-thumb" data-index="5" alt="Ghetto House Party Thumbnail 6" loading="lazy">
+        <img src="ghetto%20house%20party/271AACD2-95EB-4D7B-AAA3-6B63327A9412.JPG" class="recap-thumb" data-index="6" alt="Ghetto House Party Thumbnail 7" loading="lazy">
+        <img src="ghetto%20house%20party/3C0F23C0-89EE-4CFC-B5EF-217833476D40.JPG" class="recap-thumb" data-index="7" alt="Ghetto House Party Thumbnail 8" loading="lazy">
+        <img src="ghetto%20house%20party/51A5CBA9-CCDB-4528-B056-C39E271D2C45.JPG" class="recap-thumb" data-index="8" alt="Ghetto House Party Thumbnail 9" loading="lazy">
+        <img src="ghetto%20house%20party/54966CB9-E13E-4B41-8222-C089201A5D13.JPG" class="recap-thumb" data-index="9" alt="Ghetto House Party Thumbnail 10" loading="lazy">
+        <img src="ghetto%20house%20party/757A852E-4E6A-4D06-9B32-9A6C1472938B.JPG" class="recap-thumb" data-index="10" alt="Ghetto House Party Thumbnail 11" loading="lazy">
+        <img src="ghetto%20house%20party/76AD91B6-A2CE-4C92-B2D7-AB706FD65557.JPG" class="recap-thumb" data-index="11" alt="Ghetto House Party Thumbnail 12" loading="lazy">
+        <img src="ghetto%20house%20party/81FA6DB0-03DA-4E97-B4CA-BAE3DCB7CBB0.JPG" class="recap-thumb" data-index="12" alt="Ghetto House Party Thumbnail 13" loading="lazy">
+        <img src="ghetto%20house%20party/83C0C39C-1580-4D3E-8050-338BE7C73844.JPG" class="recap-thumb" data-index="13" alt="Ghetto House Party Thumbnail 14" loading="lazy">
+        <img src="ghetto%20house%20party/8BAB27BE-9D54-4705-A6D2-FD6102A5D333.JPG" class="recap-thumb" data-index="14" alt="Ghetto House Party Thumbnail 15" loading="lazy">
+        <img src="ghetto%20house%20party/9689D3F7-70C0-4D88-A4C8-3C6951B96162.JPG" class="recap-thumb" data-index="15" alt="Ghetto House Party Thumbnail 16" loading="lazy">
+        <img src="ghetto%20house%20party/9A28BA14-58AB-41A2-B49F-F01FA447B1BC.JPG" class="recap-thumb" data-index="16" alt="Ghetto House Party Thumbnail 17" loading="lazy">
+        <img src="ghetto%20house%20party/A40651B7-DF57-430E-8A3E-A854A276FB86.JPG" class="recap-thumb" data-index="17" alt="Ghetto House Party Thumbnail 18" loading="lazy">
+        <img src="ghetto%20house%20party/A5152BAF-C6D5-4C10-8491-5EA85176C365.JPG" class="recap-thumb" data-index="18" alt="Ghetto House Party Thumbnail 19" loading="lazy">
+        <img src="ghetto%20house%20party/A996E4E9-1484-4387-ADC7-465681BCCD1B.JPG" class="recap-thumb" data-index="19" alt="Ghetto House Party Thumbnail 20" loading="lazy">
+        <img src="ghetto%20house%20party/B0C8B779-97A1-4AFE-B908-42D55A43C52A.JPG" class="recap-thumb" data-index="20" alt="Ghetto House Party Thumbnail 21" loading="lazy">
+        <img src="ghetto%20house%20party/B6AE0A57-D360-4721-8E60-8EC75B91CF7C.JPG" class="recap-thumb" data-index="21" alt="Ghetto House Party Thumbnail 22" loading="lazy">
+        <img src="ghetto%20house%20party/C3F29EF0-645B-4D95-8923-0B6B92040333.JPG" class="recap-thumb" data-index="22" alt="Ghetto House Party Thumbnail 23" loading="lazy">
+        <img src="ghetto%20house%20party/F83B75CD-C059-4A43-8034-3D1CF8B5525E.JPG" class="recap-thumb" data-index="23" alt="Ghetto House Party Thumbnail 24" loading="lazy">
+        <img src="ghetto%20house%20party/FC51609B-8861-4C3C-9FC9-C6506717139F.JPG" class="recap-thumb" data-index="24" alt="Ghetto House Party Thumbnail 25" loading="lazy">
+      </div>
     </article>
   </main>
   <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
@@ -202,18 +259,56 @@
 <script src="site.js?v=10"></script>
 <script>
   var recapTimers = {};
+  var RECAP_PER_PAGE = 3;
 
-  function recapCarousel(id, dir) {
-    var c = document.getElementById(id);
+  function recapCarouselState(c) {
     var track = c.querySelector('.recap-carousel-track');
     var imgs = track.querySelectorAll('img');
     var total = imgs.length;
+    var maxStart = Math.max(0, total - RECAP_PER_PAGE);
+    return { total: total, maxStart: maxStart };
+  }
+
+  function recapUpdate(id) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
     var current = parseInt(c.dataset.current || '0', 10);
-    current = (current + dir + total) % total;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
     c.dataset.current = current;
-    track.style.transform = 'translateX(-' + current * 100 + '%)';
+    var track = c.querySelector('.recap-carousel-track');
+    track.style.transform = 'translateX(-' + (current * (100 / RECAP_PER_PAGE)) + '%)';
     var counter = document.getElementById(id + '-counter');
-    if (counter) counter.textContent = (current + 1) + ' / ' + total;
+    if (counter) {
+      var end = Math.min(current + RECAP_PER_PAGE, state.total);
+      counter.textContent = (current + 1) + ' \u2013 ' + end + ' / ' + state.total;
+    }
+    var thumbs = document.querySelectorAll('.recap-thumb');
+    thumbs.forEach(function(t) { t.classList.remove('active'); });
+    var activeThumb = document.querySelector('.recap-thumb[data-index="' + current + '"]');
+    if (activeThumb) activeThumb.classList.add('active');
+    return current;
+  }
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var current = parseInt(c.dataset.current || '0', 10);
+    var state = recapCarouselState(c);
+    current = current + dir;
+    if (current < 0) current = 0;
+    if (current > state.maxStart) current = state.maxStart;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapGoTo(id, index) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = index;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    recapUpdate(id);
   }
 
   function recapStartAuto(id, interval) {
@@ -257,6 +352,19 @@
     });
     c.addEventListener('mouseenter', function() { recapStopAuto('ghetto-house-party-carousel'); });
     c.addEventListener('mouseleave', function() { recapStartAuto('ghetto-house-party-carousel'); });
+
+    var thumbs = document.getElementById('ghetto-house-party-thumbnails');
+    if (thumbs) {
+      thumbs.querySelectorAll('.recap-thumb').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var idx = parseInt(thumb.getAttribute('data-index'), 10);
+          recapGoTo('ghetto-house-party-carousel', idx);
+          recapStopAuto('ghetto-house-party-carousel');
+        });
+      });
+    }
+
+    recapUpdate('ghetto-house-party-carousel');
     recapStartAuto('ghetto-house-party-carousel', 4000);
   })();
 </script>
