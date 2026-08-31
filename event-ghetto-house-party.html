@@ -36,7 +36,62 @@
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
-
+  <style>
+    .recap-carousel {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+    }
+    .recap-carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-carousel-track img {
+      flex: 0 0 100%;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: 500px;
+      background: #000;
+      cursor: zoom-in;
+    }
+    .recap-carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .recap-carousel-btn:hover { background: rgba(255,77,143,0.8); }
+    .recap-carousel-btn.prev { left: 8px; }
+    .recap-carousel-btn.next { right: 8px; }
+    .recap-carousel-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
+    .recap-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .recap-lightbox.active { display: flex; }
+    .recap-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .recap-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 10000; }
+  </style>
 </head>
 <body>
   <header>
@@ -94,8 +149,45 @@
           View the Facebook event
         </a>
       </p>
+      <h3>Photo Recap</h3>
+      <div class="recap-carousel" id="ghetto-house-party-carousel">
+        <button class="recap-carousel-btn prev" onclick="recapCarousel('ghetto-house-party-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+        <div class="recap-carousel-track">
+          <img src="ghetto%20house%20party/06373047-2213-40AA-A07A-FA572D878F97.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/0A0CA44C-0087-4AE9-A0CE-2C0243B29261.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/0C081FF8-FBFD-4DF2-AF37-37D4F91AFDD6.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/12B6524E-2852-441A-9949-0A2A091A7EBD.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/1D1FB1E5-C123-4E6F-B4B0-B9C61163CCA2.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/246BD73C-92F8-4FF8-A88A-D6F75262EEFA.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/271AACD2-95EB-4D7B-AAA3-6B63327A9412.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/3C0F23C0-89EE-4CFC-B5EF-217833476D40.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/51A5CBA9-CCDB-4528-B056-C39E271D2C45.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/54966CB9-E13E-4B41-8222-C089201A5D13.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/757A852E-4E6A-4D06-9B32-9A6C1472938B.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/76AD91B6-A2CE-4C92-B2D7-AB706FD65557.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/81FA6DB0-03DA-4E97-B4CA-BAE3DCB7CBB0.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/83C0C39C-1580-4D3E-8050-338BE7C73844.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/8BAB27BE-9D54-4705-A6D2-FD6102A5D333.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/9689D3F7-70C0-4D88-A4C8-3C6951B96162.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/9A28BA14-58AB-41A2-B49F-F01FA447B1BC.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/A40651B7-DF57-430E-8A3E-A854A276FB86.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/A5152BAF-C6D5-4C10-8491-5EA85176C365.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/A996E4E9-1484-4387-ADC7-465681BCCD1B.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/B0C8B779-97A1-4AFE-B908-42D55A43C52A.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/B6AE0A57-D360-4721-8E60-8EC75B91CF7C.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/C3F29EF0-645B-4D95-8923-0B6B92040333.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/F83B75CD-C059-4A43-8034-3D1CF8B5525E.JPG" alt="Ghetto House Party Photo" loading="lazy">
+          <img src="ghetto%20house%20party/FC51609B-8861-4C3C-9FC9-C6506717139F.JPG" alt="Ghetto House Party Photo" loading="lazy">
+        </div>
+        <button class="recap-carousel-btn next" onclick="recapCarousel('ghetto-house-party-carousel',1)" aria-label="Next">&rsaquo;</button>
+      </div>
+      <div class="recap-carousel-counter" id="ghetto-house-party-carousel-counter">1 / 25</div>
     </article>
   </main>
+  <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
+    <span class="recap-lightbox-close">&times;</span>
+    <img loading="lazy" src="" id="recap-lightbox-img" alt="Enlarged photo">
+  </div>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">
       <img loading="lazy" src="Stand4Socks.png" alt="Shop Stand4 Socks" style="width: 100%; max-width: 960px; height: auto; display: block; margin: 0 auto;">
@@ -108,5 +200,65 @@
     <img loading="lazy" src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
 <script src="site.js?v=10"></script>
+<script>
+  var recapTimers = {};
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    var total = imgs.length;
+    var current = parseInt(c.dataset.current || '0', 10);
+    current = (current + dir + total) % total;
+    c.dataset.current = current;
+    track.style.transform = 'translateX(-' + current * 100 + '%)';
+    var counter = document.getElementById(id + '-counter');
+    if (counter) counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  function recapStartAuto(id, interval) {
+    recapStopAuto(id);
+    recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 4000);
+  }
+
+  function recapStopAuto(id) {
+    if (recapTimers[id]) { clearInterval(recapTimers[id]); delete recapTimers[id]; }
+  }
+
+  function recapLightbox(src) {
+    var lb = document.getElementById('recap-lightbox');
+    var lbImg = document.getElementById('recap-lightbox-img');
+    lbImg.src = src;
+    lb.classList.add('active');
+  }
+
+  function recapCloseLightbox() {
+    document.getElementById('recap-lightbox').classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') recapCloseLightbox();
+    var c = document.getElementById('ghetto-house-party-carousel');
+    if (!c) return;
+    if (e.key === 'ArrowLeft') recapCarousel('ghetto-house-party-carousel', -1);
+    if (e.key === 'ArrowRight') recapCarousel('ghetto-house-party-carousel', 1);
+  });
+
+  (function() {
+    var c = document.getElementById('ghetto-house-party-carousel');
+    if (!c) return;
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    imgs.forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        recapLightbox(img.src);
+      });
+    });
+    c.addEventListener('mouseenter', function() { recapStopAuto('ghetto-house-party-carousel'); });
+    c.addEventListener('mouseleave', function() { recapStartAuto('ghetto-house-party-carousel'); });
+    recapStartAuto('ghetto-house-party-carousel', 4000);
+  })();
+</script>
 </body>
 </html>
