@@ -52,12 +52,15 @@
       will-change: transform;
     }
     .recap-carousel-track img {
-      flex: 0 0 100%;
-      width: 100%;
+      flex: 0 0 33.333%;
+      width: 33.333%;
       height: auto;
       object-fit: contain;
-      max-height: 500px;
+      max-height: 260px;
       background: #000;
+      cursor: zoom-in;
+      box-sizing: border-box;
+      padding: 0 3px;
     }
     .recap-carousel-btn {
       position: absolute;
@@ -83,6 +86,34 @@
       color: #aaa;
       font-size: 0.85rem;
       margin-top: 0.5rem;
+    }
+    .recap-thumbnails {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .recap-thumbnails img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+    .recap-thumbnails img:hover,
+    .recap-thumbnails img.active {
+      opacity: 1;
+      border: 2px solid #ff4d8f;
     }
     .recap-lightbox {
       display: none;
@@ -238,18 +269,56 @@
 <script src="site.js?v=10"></script>
 <script>
   var recapTimers = {};
+  var RECAP_PER_PAGE = 3;
 
-  function recapCarousel(id, dir) {
-    var c = document.getElementById(id);
+  function recapCarouselState(c) {
     var track = c.querySelector('.recap-carousel-track');
     var imgs = track.querySelectorAll('img');
     var total = imgs.length;
+    var maxStart = Math.max(0, total - RECAP_PER_PAGE);
+    return { total: total, maxStart: maxStart };
+  }
+
+  function recapUpdate(id) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
     var current = parseInt(c.dataset.current || '0', 10);
-    current = (current + dir + total) % total;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
     c.dataset.current = current;
-    track.style.transform = 'translateX(-' + current * 100 + '%)';
+    var track = c.querySelector('.recap-carousel-track');
+    track.style.transform = 'translateX(-' + (current * (100 / RECAP_PER_PAGE)) + '%)';
     var counter = document.getElementById(id + '-counter');
-    if (counter) counter.textContent = (current + 1) + ' / ' + total;
+    if (counter) {
+      var end = Math.min(current + RECAP_PER_PAGE, state.total);
+      counter.textContent = (current + 1) + ' - ' + end + ' / ' + state.total;
+    }
+    var thumbs = document.querySelectorAll('.recap-thumb');
+    thumbs.forEach(function(t) { t.classList.remove('active'); });
+    var activeThumb = document.querySelector('.recap-thumb[data-index="' + current + '"]');
+    if (activeThumb) activeThumb.classList.add('active');
+    return current;
+  }
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var current = parseInt(c.dataset.current || '0', 10);
+    var state = recapCarouselState(c);
+    current = current + dir;
+    if (current < 0) current = 0;
+    if (current > state.maxStart) current = state.maxStart;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapGoTo(id, index) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = index;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    recapUpdate(id);
   }
 
   function recapStartAuto(id, interval) {
@@ -274,26 +343,50 @@
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') recapCloseLightbox();
-    var c = document.getElementById('welcome-2-muggatime-carousel');
+    var c = document.querySelector('.recap-carousel');
     if (!c) return;
-    if (e.key === 'ArrowLeft') recapCarousel('welcome-2-muggatime-carousel', -1);
-    if (e.key === 'ArrowRight') recapCarousel('welcome-2-muggatime-carousel', 1);
+    var id = c.id;
+    if (e.key === 'ArrowLeft') recapCarousel(id, -1);
+    if (e.key === 'ArrowRight') recapCarousel(id, 1);
   });
 
   (function() {
-    var c = document.getElementById('welcome-2-muggatime-carousel');
+    var c = document.querySelector('.recap-carousel');
     if (!c) return;
+    var id = c.id;
     var track = c.querySelector('.recap-carousel-track');
     var imgs = track.querySelectorAll('img');
+
+    // Build thumbnails dynamically
+    var counter = document.getElementById(id + '-counter');
+    var thumbs = document.createElement('div');
+    thumbs.className = 'recap-thumbnails';
+    thumbs.id = id + '-thumbnails';
+    imgs.forEach(function(img, idx) {
+      var thumb = document.createElement('img');
+      thumb.src = img.src;
+      thumb.alt = 'Thumbnail ' + (idx + 1);
+      thumb.className = 'recap-thumb';
+      thumb.setAttribute('data-index', idx);
+      thumb.addEventListener('click', function() { recapGoTo(id, idx); recapStopAuto(id); });
+      thumbs.appendChild(thumb);
+    });
+    if (counter && counter.nextSibling) {
+      counter.parentNode.insertBefore(thumbs, counter.nextSibling);
+    } else if (counter) {
+      counter.parentNode.appendChild(thumbs);
+    }
+
     imgs.forEach(function(img) {
       img.style.cursor = 'zoom-in';
       img.addEventListener('click', function() {
         recapLightbox(img.src);
       });
     });
-    c.addEventListener('mouseenter', function() { recapStopAuto('welcome-2-muggatime-carousel'); });
-    c.addEventListener('mouseleave', function() { recapStartAuto('welcome-2-muggatime-carousel'); });
-    recapStartAuto('welcome-2-muggatime-carousel', 4000);
+    c.addEventListener('mouseenter', function() { recapStopAuto(id); });
+    c.addEventListener('mouseleave', function() { recapStartAuto(id); });
+    recapUpdate(id);
+    recapStartAuto(id, 4000);
   })();
 </script>
 </body>
