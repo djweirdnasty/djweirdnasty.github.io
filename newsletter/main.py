@@ -289,6 +289,35 @@ def unsubscribe(token: str, db: Session = Depends(get_db)):
     )
 
 
+@app.get("/api/newsletter/archive")
+def newsletter_archive(db: Session = Depends(get_db)):
+    camps = db.query(Campaign).filter(Campaign.status == "sent").order_by(Campaign.sent_at.desc()).all()
+    return {
+        "issues": [
+            {
+                "id": c.id,
+                "subject": c.subject,
+                "sent_at": c.sent_at.isoformat() if c.sent_at else None,
+            }
+            for c in camps
+        ]
+    }
+
+
+@app.get("/api/newsletter/archive/{camp_id}")
+def newsletter_archive_detail(camp_id: int, db: Session = Depends(get_db)):
+    c = db.query(Campaign).filter(Campaign.id == camp_id, Campaign.status == "sent").first()
+    if not c:
+        raise HTTPException(status_code=404, detail="Issue not found")
+    body = c.body.replace("{{name}}", "there").replace("{{unsubscribe_url}}", "#")
+    return {
+        "id": c.id,
+        "subject": c.subject,
+        "sent_at": c.sent_at.isoformat() if c.sent_at else None,
+        "body": body,
+    }
+
+
 # ─── Admin auth ───
 
 @app.post("/api/admin/login")

@@ -9,7 +9,7 @@ EXCLUDE = {
     '/404.html','/contact.html','/privacy-policy.html','/thank-you.html',
     '/newsletter-confirmed.html','/yandex_cf0ccdb95afad35c.html',
     '/video-game/resident_evil_proto.html','/video-game/index.html',
-    '/submit-tip.html'
+    '/submit-tip.html','/newsletter-archive.html'
 }
 
 class PageParser(HTMLParser):
