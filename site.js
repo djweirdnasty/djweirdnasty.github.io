@@ -249,7 +249,8 @@
         '<a href="news-entertainment.html" style="color: #ffd860;">Entertainment</a> &bull; ' +
         '<a href="news-national.html" style="color: #ffd860;">National</a> &bull; ' +
         '<a href="mixtapes.html" style="color: #ffd860;">Mixtapes</a> &bull; ' +
-        '<a href="index.html#events" style="color: #ffd860;">Events</a>';
+        '<a href="index.html#events" style="color: #ffd860;">Events</a> &bull; ' +
+        '<a href="submit-tip.html" style="color: #ffd860;">Got a Tip?</a>';
       var shareBtn = article.querySelector('.share-button, .social-share');
       if (shareBtn) {
         article.insertBefore(moreNews, shareBtn);

@@ -21,16 +21,16 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <title>Contact | DJWEIRDNASTY</title>
-  <meta name="description" content="Get in touch with DJWEIRDNASTY for bookings, appearances, and performances.">
-  <meta property="og:title" content="Contact | DJWEIRDNASTY">
-  <meta property="og:description" content="Get in touch with DJWEIRDNASTY for bookings, appearances, and performances.">
+  <title>Submit a Story Tip | DJWEIRDNASTY</title>
+  <meta name="description" content="Have a story, scoop, or tip for DJWEIRDNASTY News? Submit it here — all tips are reviewed and kept confidential on request.">
+  <meta property="og:title" content="Submit a Story Tip | DJWEIRDNASTY">
+  <meta property="og:description" content="Have a story, scoop, or tip for DJWEIRDNASTY News? Submit it here — all tips are reviewed and kept confidential on request.">
   <meta property="og:image" content="https://djweirdnasty.com/djweirdnasty-banner.webp">
-  <meta property="og:url" content="https://djweirdnasty.com/contact.html">
+  <meta property="og:url" content="https://djweirdnasty.com/submit-tip.html">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Contact | DJWEIRDNASTY">
-  <meta name="twitter:description" content="Get in touch with DJWEIRDNASTY for bookings, appearances, and performances.">
+  <meta name="twitter:title" content="Submit a Story Tip | DJWEIRDNASTY">
+  <meta name="twitter:description" content="Have a story, scoop, or tip for DJWEIRDNASTY News? Submit it here — all tips are reviewed and kept confidential on request.">
   <meta name="twitter:image" content="https://djweirdnasty.com/djweirdnasty-banner.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,63 +66,33 @@
     <img loading="lazy" src="top-banner-stand4socks.png" alt="This website is sponsored by Stand4 Socks - Shop Now" style="width: 100%; max-width: 1200px; height: auto; display: block; margin: 1.5rem auto;">
   </a>
   <main class="container">
-    <section id="contact" class="info" style="text-align: left;">
-      <h1>Contact &amp; Sponsorship Opportunities</h1>
-      <p><strong>DJWEIRDNASTY</strong> is a Philadelphia-born DJ and digital media brand covering music, events, news, entertainment, sports, and culture. We connect brands to a loyal, engaged audience through the website, live events, social media, and original content.</p>
+    <section id="tip-line" class="info" style="text-align: left;">
+      <h1>Got a Tip? Submit a Story</h1>
+      <p>See something newsworthy — a local incident, a music story, an event, or something we should be covering? Send it our way. You can stay anonymous if you'd prefer; the name and email fields are optional.</p>
 
-      <h2>Audience Overview</h2>
-      <ul>
-        <li><strong>Monthly website views:</strong> 1,900+ and growing</li>
-        <li><strong>Top traffic sources:</strong> Organic Social (41.8%), Direct (25.6%), Organic Search</li>
-        <li><strong>Top markets:</strong> Philadelphia, New York, plus national/international reach</li>
-        <li><strong>Audience interests:</strong> music, DJ culture, events, news, entertainment, sports, streetwear</li>
-        <li><strong>Age demo:</strong> 18&ndash;45, event and lifestyle-focused</li>
-      </ul>
-
-      <h2>What We Offer Brands</h2>
-      <ul>
-        <li><strong>Website banner ads</strong> &mdash; homepage, category pages, and article footers</li>
-        <li><strong>Sponsored articles</strong> &mdash; featured stories and product spotlights</li>
-        <li><strong>Event sponsorship</strong> &mdash; logo placement, stage banners, vendor booths, branded drink specials</li>
-        <li><strong>Mixtape &amp; playlist integration</strong> &mdash; sponsored drops, intro/outro mentions, cover art placement</li>
-        <li><strong>Social media promotion</strong> &mdash; Instagram and Facebook stories, feed posts, and reels</li>
-        <li><strong>Newsletter features</strong> &mdash; dedicated or included placements</li>
-        <li><strong>SOL booking platform</strong> &mdash; sponsor live DJ bookings and event experiences</li>
-      </ul>
-
-      <h2>Sponsorship Packages</h2>
-      <ul>
-        <li><strong>Starter ($150&ndash;$300):</strong> Website banner for 30 days + 1 social post</li>
-        <li><strong>Growth ($500&ndash;$1,000):</strong> Banner + sponsored article + 3 social posts + newsletter mention</li>
-        <li><strong>Event Partner ($1,000+):</strong> Event branding, stage shoutouts, drink/pour sponsorship, social coverage</li>
-        <li><strong>Liquor &amp; Lifestyle ($750+):</strong> Event activation, branded content, 21+ audience targeting, responsible messaging included</li>
-      </ul>
-
-      <h2>Get in Touch</h2>
-      <p>Email me directly at <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a> or use the form below.</p>
-      <p>Have a news tip or story lead instead? <a href="submit-tip.html" style="color: #ffd860;">Submit it here →</a></p>
-
-      <form id="contact-form" action="https://formspree.io/f/mvkpzwzj" method="POST">
+      <form id="tip-form" action="https://formspree.io/f/mvkpzwzj" method="POST">
+        <input type="hidden" name="_subject" value="New Story Tip Submission — DJWEIRDNASTY">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
 
-        <label for="name">Name</label>
-        <input id="name" name="name" type="text" placeholder="Your name" required>
+        <label for="tip-headline">What's the story? (headline or topic)</label>
+        <input id="tip-headline" name="headline" type="text" placeholder="e.g. Fight breaks out at local event" required>
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="you@example.com" required>
+        <label for="tip-details">Details</label>
+        <textarea id="tip-details" name="details" rows="6" placeholder="Who, what, when, where — give us as much detail as you can." required></textarea>
 
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="5" placeholder="Hi! I'd like to talk about..." required></textarea>
+        <label for="tip-source">Source link (optional)</label>
+        <input id="tip-source" name="source_link" type="url" placeholder="https://... (news article, social post, video, etc.)">
 
-        <button type="submit" class="submit-btn">Submit</button>
+        <label for="tip-name">Your name (optional)</label>
+        <input id="tip-name" name="name" type="text" placeholder="Leave blank to stay anonymous">
+
+        <label for="tip-email">Your email (optional — only if you want a follow-up)</label>
+        <input id="tip-email" name="email" type="email" placeholder="you@example.com">
+
+        <button type="submit" class="submit-btn">Submit Tip</button>
       </form>
-      <p id="form-status" class="form-status" aria-live="polite"></p>
-      <p class="email-note">Or email me directly at <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a>.</p>
-      <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-        <h3 style="color: #ffd860; margin-bottom: 0.75rem;">Try booking djweirdnasty on SOL: Sounds of Logan</h3>
-        <p style="color: #ccc; margin-bottom: 1rem;">Book and pay for a DJ instantly with SOL. A Dj booking software that functions like uber.</p>
-        <a href="sol.html" class="playlist-link" style="display: inline-block; background: linear-gradient(135deg, #00d4ff, #ff4d8f); border: none; color: #fff; padding: 14px 28px;">Book on SOL</a>
-      </div>
+      <p id="tip-form-status" class="form-status" aria-live="polite"></p>
+      <p class="email-note">Prefer email? Send tips directly to <a href="mailto:djweirdnasty@gmail.com">djweirdnasty@gmail.com</a>.</p>
     </section>
   </main>
   <footer class="container">
@@ -137,10 +107,10 @@
     <img loading="lazy" src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
   <script>
-    document.getElementById('contact-form').addEventListener('submit', function(e) {
+    document.getElementById('tip-form').addEventListener('submit', function(e) {
       e.preventDefault();
       const form = e.target;
-      const status = document.getElementById('form-status');
+      const status = document.getElementById('tip-form-status');
       const button = form.querySelector('button[type="submit"]');
       const originalText = button.textContent;
       button.textContent = 'Sending...';
@@ -154,17 +124,22 @@
       .then(function(response) {
         if (response.ok) {
           form.reset();
-          window.location.href = 'thank-you.html';
+          status.textContent = 'Thanks! Your tip has been submitted.';
+          status.style.color = '#60ff80';
+          button.textContent = originalText;
+          button.disabled = false;
         } else {
           response.json().then(function(data) {
-            if (status) status.textContent = data.error || 'Oops! Something went wrong. Please try again.';
+            status.textContent = (data.errors && data.errors[0] && data.errors[0].message) || 'Oops! Something went wrong. Please try again.';
+            status.style.color = '#ff5566';
             button.textContent = originalText;
             button.disabled = false;
           });
         }
       })
       .catch(function() {
-        if (status) status.textContent = 'Oops! Something went wrong. Please try again.';
+        status.textContent = 'Oops! Something went wrong. Please try again.';
+        status.style.color = '#ff5566';
         button.textContent = originalText;
         button.disabled = false;
       });
