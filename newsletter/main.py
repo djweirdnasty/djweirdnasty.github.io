@@ -245,14 +245,76 @@ def subscribe(req: SubscribeRequest, db: Session = Depends(get_db)):
     db.commit()
 
     confirm_link = f"{request_base_url()}/api/confirm/{token}"
-    html = f"""
-    <h2>Welcome to DJWEIRDNASTY!</h2>
-    <p>Hi {req.name or 'there'},</p>
-    <p>Confirm your newsletter subscription by clicking the button below:</p>
-    <p><a href="{confirm_link}" style="display:inline-block;padding:12px 28px;background:#4fa8ff;color:#ff4fd8;border-radius:999px;text-decoration:none;font-weight:bold;">Confirm Subscription</a></p>
-    <p>If you didn't sign up, you can ignore this email.</p>
-    """
-    send_email(req.email, "Confirm your DJWEIRDNASTY newsletter subscription", html)
+    subscriber_name = req.name or "there"
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#050508;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#050508;">
+    <tr>
+      <td align="center" style="padding:24px 16px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#0e0e16;border:1px solid rgba(255,91,215,0.25);border-radius:16px;overflow:hidden;">
+
+          <!-- Banner -->
+          <tr>
+            <td style="padding:0;">
+              <img src="{website_url}/djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" style="display:block;width:100%;max-width:600px;height:auto;border-radius:16px 16px 0 0;">
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:32px 32px 8px;">
+              <h1 style="margin:0 0 12px;color:#ff5bd7;font-size:28px;text-align:center;letter-spacing:1px;">Welcome to the family</h1>
+              <p style="margin:0 0 16px;color:#ccc;font-size:16px;line-height:1.6;text-align:center;">Hey <strong style="color:#ffd860;">{subscriber_name}</strong>,</p>
+              <p style="margin:0 0 24px;color:#bbb;font-size:15px;line-height:1.6;text-align:center;">You're one step away from getting the latest on <span style="color:#4fa8ff;">events</span>, <span style="color:#4fa8ff;">news</span>, <span style="color:#4fa8ff;">music drops</span>, and exclusive opportunities straight to your inbox.</p>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td align="center" style="padding:8px 32px 28px;">
+              <a href="{confirm_link}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#4fa8ff,#1a5fd0);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:bold;font-size:17px;letter-spacing:0.5px;">Confirm My Subscription</a>
+            </td>
+          </tr>
+
+          <!-- What to expect -->
+          <tr>
+            <td style="padding:0 32px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:rgba(79,168,255,0.08);border-radius:12px;">
+                <tr><td style="padding:20px 24px;">
+                  <p style="margin:0 0 10px;color:#ffd860;font-size:13px;text-transform:uppercase;letter-spacing:2px;">What you'll get</p>
+                  <p style="margin:0;color:#aaa;font-size:14px;line-height:1.7;">
+                    &bull; Breaking news &amp; exclusive stories<br>
+                    &bull; Event announcements &amp; early access<br>
+                    &bull; New mixtapes &amp; music drops<br>
+                    &bull; Special opportunities &amp; more
+                  </p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:0 32px 28px;border-top:1px solid rgba(255,255,255,0.08);">
+              <p style="margin:20px 0 8px;color:#666;font-size:13px;line-height:1.5;text-align:center;">If you didn't sign up for this newsletter, you can safely ignore this email &mdash; no further action is needed.</p>
+              <p style="margin:0 0 8px;color:#555;font-size:12px;text-align:center;">
+                <a href="{website_url}" style="color:#4fa8ff;text-decoration:none;">djweirdnasty.com</a>
+                &nbsp;&bull;&nbsp;
+                <a href="{website_url}/newsletter-archive.html" style="color:#4fa8ff;text-decoration:none;">Browse Past Issues</a>
+              </p>
+              <p style="margin:0;color:#444;font-size:11px;text-align:center;">&copy; 2026 DJWEIRDNASTY LLC. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+    send_email(req.email, "Welcome to DJWEIRDNASTY — Confirm your subscription", html)
 
     if admin_email:
         admin_html = f"<p>New DJWEIRDNASTY newsletter signup:</p><p><strong>Name:</strong> {req.name or 'Not provided'}<br><strong>Email:</strong> {req.email}</p>"
@@ -283,10 +345,37 @@ def unsubscribe(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invalid unsubscribe link")
     sub.unsubscribed = True
     db.commit()
-    return HTMLResponse(
-        "<h2>Unsubscribed</h2><p>You've been removed from the DJWEIRDNASTY newsletter.</p>"
-        f'<p><a href="{website_url}">Back to site</a></p>'
-    )
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#050508;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#050508;height:100vh;">
+    <tr>
+      <td align="center" valign="middle" style="padding:24px 16px;">
+        <table role="presentation" width="500" cellpadding="0" cellspacing="0" style="max-width:500px;background:#0e0e16;border:1px solid rgba(255,91,215,0.25);border-radius:16px;overflow:hidden;">
+          <tr>
+            <td style="padding:0;">
+              <img src="{website_url}/djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" style="display:block;width:100%;max-width:500px;height:auto;border-radius:16px 16px 0 0;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;text-align:center;">
+              <h1 style="margin:0 0 12px;color:#ff5bd7;font-size:24px;">You're unsubscribed</h1>
+              <p style="margin:0 0 24px;color:#bbb;font-size:15px;line-height:1.6;">You've been removed from the DJWEIRDNASTY newsletter. We hate to see you go, but you can always come back.</p>
+              <a href="{website_url}" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#4fa8ff,#1a5fd0);color:#ffffff;border-radius:999px;text-decoration:none;font-weight:bold;font-size:16px;">Back to Site</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 24px;border-top:1px solid rgba(255,255,255,0.08);">
+              <p style="margin:16px 0 0;color:#444;font-size:11px;text-align:center;">&copy; 2026 DJWEIRDNASTY LLC. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>""")
 
 
 @app.get("/api/newsletter/archive")
