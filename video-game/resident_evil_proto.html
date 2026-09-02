@@ -150,6 +150,11 @@
     #fire-btn {
       width: 100px; height: 100px; font-size: 18px; border-radius: 50%; font-weight: bold;
     }
+    #interact-btn {
+      width: 64px; height: 64px; font-size: 13px; border-radius: 50%; font-weight: bold;
+      border-color: #ffd860; color: #ffd860; margin-left: 8px;
+    }
+    #interact-btn:active { background: #ffd860; color: #000; }
   }
   @media (pointer: coarse) and (orientation: landscape) {
     canvas { max-width: 100vw; max-height: 80vh; }
@@ -164,18 +169,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=13">
+  <link rel="stylesheet" href="/style.css?v=6">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="google-adsense-account" content="ca-pub-9518165099685321">
-
 </head>
 <body>
   <header>
     <div class="container">
       <h1 class="site-banner">
-        <a href="/index.html"><img src="/djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" /></a>
+        <a href="/index.html"><img src="/djweirdnasty-banner.png" alt="DJ WEIRD NA$TY" /></a>
       </h1>
       <nav>
         <a href="/index.html">Home</a>
@@ -185,7 +188,7 @@
         <a href="/mixtapes.html">Mixtapes</a>
         <a href="/content.html">Content</a>
         <a href="/index.html#newsletter">Newsletter</a>
-        <a href="/contact.html">Contact</a>
+        <a href="/index.html#contact">Contact</a>
         <a href="/privacy-policy.html">Privacy</a>
       </nav>
     </div>
@@ -202,7 +205,7 @@
   <p><strong>Mobile:</strong> Press FIRE to start</p>
   <p class="hint">Find keys, fight zombies, escape each level.</p>
 </div>
-<div id="hud">WASD/Arrows: move | Click: shoot | Find keys, reach the door</div>
+<div id="hud">WASD/Arrows: move | Click: shoot | E: interact | Find keys, reach the door</div>
 <div id="mobile-controls">
   <div class="dpad">
     <div></div>
@@ -213,23 +216,79 @@
     <div class="btn" data-key="d">▶</div>
   </div>
   <div class="btn" id="fire-btn">FIRE</div>
+  <div class="btn" id="interact-btn">USE</div>
 </div>
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 const playerImg = new Image();
-playerImg.src = 'main-character-with-gun-fixed.png?v=7';
+playerImg.src = 'main-character-with-gun.png?v=6';
 const playerIdleImg = new Image();
-playerIdleImg.src = 'main-character-without-gun-fixed.png?v=7';
+playerIdleImg.src = 'main-character-without-gun.png?v=6';
 const playerWalkingImg = new Image();
-playerWalkingImg.src = 'character-walk-cycle-fixed.png?v=7';
+playerWalkingImg.src = 'character-walk-cycle.png?v=6';
 const playerPistolWalkingImg = new Image();
-playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol-fixed.png?v=7';
+playerPistolWalkingImg.src = 'character-walk-cycle-with-pistol.png?v=6';
+const playerShotgunImg = new Image();
+playerShotgunImg.src = 'character-holding-shotgun.png?v=2';
+const muzzleFlashImg = new Image();
+muzzleFlashImg.src = 'muzzleflash.png';
+const playerDirImgs = [
+  new Image(), new Image(), new Image(), new Image()
+];
+const playerNoGunDirImgs = [
+  new Image(), new Image(), new Image(), new Image()
+];
+const playerDirNames = ['_up', '_down', '_right', '_left'];
+for (let i = 0; i < 4; i++) {
+  playerDirImgs[i].src = 'character-pistol' + playerDirNames[i] + '.svg';
+  playerNoGunDirImgs[i].src = 'character-nogun' + playerDirNames[i] + '.svg';
+}
+let playerShotgunKeyed = null;
+let playerShotgunFrames = { idle: [], walk: [] };
+// Exact per-frame pixel rects measured from the sprite sheet (frames are not
+// evenly spaced on a uniform grid, and the row labels sit directly above the
+// character art, so cropping requires precise bounds per frame to avoid
+// bleeding label text or adjacent frames into the crop).
+const SHOTGUN_IDLE_RECTS = [
+  { x: 14,  y: 37, w: 111, h: 182 },
+  { x: 144, y: 37, w: 113, h: 182 },
+  { x: 283, y: 37, w: 117, h: 182 },
+  { x: 434, y: 37, w: 116, h: 182 },
+  { x: 574, y: 37, w: 116, h: 182 },
+  { x: 721, y: 37, w: 117, h: 182 },
+];
+const SHOTGUN_WALK_RECTS = [
+  { x: 15,  y: 253, w: 117, h: 146 },
+  { x: 145, y: 253, w: 124, h: 146 },
+  { x: 275, y: 253, w: 125, h: 146 },
+  { x: 409, y: 253, w: 123, h: 146 },
+  { x: 537, y: 253, w: 115, h: 146 },
+  { x: 653, y: 253, w: 123, h: 146 },
+  { x: 784, y: 253, w: 116, h: 146 },
+];
+playerShotgunImg.addEventListener('load', () => {
+  playerShotgunKeyed = chromaKeyBlackBackground(playerShotgunImg);
+  for (const r of SHOTGUN_IDLE_RECTS) {
+    const c = document.createElement('canvas');
+    c.width = r.w; c.height = r.h;
+    c.getContext('2d').drawImage(playerShotgunKeyed, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+    playerShotgunFrames.idle.push(c);
+  }
+  for (const r of SHOTGUN_WALK_RECTS) {
+    const c = document.createElement('canvas');
+    c.width = r.w; c.height = r.h;
+    c.getContext('2d').drawImage(playerShotgunKeyed, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+    playerShotgunFrames.walk.push(c);
+  }
+});
 const playerPortrait = new Image();
 playerPortrait.src = 'main-character.png';
 const zombieWalk4DirImg = new Image();
 zombieWalk4DirImg.src = 'zombie-walk-4dir.png';
+const zombieIdleImg = new Image();
+zombieIdleImg.src = 'zombie-transparent.png';
 const zombieAnimImg = new Image();
 zombieAnimImg.src = 'zombie-animation-sprite.png';
 
@@ -305,6 +364,90 @@ function prepareFeedingFrames() {
 zombieFeedingImg.addEventListener('load', prepareFeedingFrames);
 if (zombieFeedingImg.complete) prepareFeedingFrames();
 
+// --- Paulgaul bigger monster sprites ---
+const paulgaulCycleImg = new Image();
+paulgaulCycleImg.src = 'Paulgaul-monster-regular-cycle-sprite.png';
+const paulgaulStaticImg = new Image();
+paulgaulStaticImg.src = 'Paulgaul-monster-sprite.png';
+const paulgaulMovementImg = new Image();
+paulgaulMovementImg.src = 'Paulgaul-monster-sprite-movement.png';
+let paulgaulCycleKeyed = null;
+let paulgaulStaticKeyed = null;
+let paulgaulMovementKeyed = null;
+let paulgaulWalkFrames = [];
+let paulgaulWalkRows = [];
+let paulgaulAttackFrames = [];
+
+function preparePaulgaulFrames() {
+  // Prefer the new movement sheet for walk frames; it is an 8x4 grid (1536x1024).
+  // Row 0 = front, 1 = back, 2 = side, 3 = side (each 8 frames).
+  if (paulgaulMovementImg.naturalWidth > 0) {
+    paulgaulMovementKeyed = chromaKeyBlackBackground(paulgaulMovementImg);
+    const fw = paulgaulMovementImg.naturalWidth / 8;
+    const fh = paulgaulMovementImg.naturalHeight / 4;
+    paulgaulWalkRows = [];
+    for (let r = 0; r < 4; r++) {
+      const row = [];
+      for (let c = 0; c < 8; c++) {
+        const x = Math.round(c * fw);
+        const y = Math.round(r * fh);
+        const cw = Math.round((c + 1) * fw) - x;
+        const ch = Math.round((r + 1) * fh) - y;
+        const canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext('2d').drawImage(paulgaulMovementKeyed, x, y, cw, ch, 0, 0, cw, ch);
+        row.push(canvas);
+      }
+      paulgaulWalkRows.push(row);
+    }
+    // Keep a flat side-view reference for any legacy code checks
+    paulgaulWalkFrames = paulgaulWalkRows[2];
+  } else if (paulgaulCycleImg.naturalWidth > 0) {
+    paulgaulCycleKeyed = chromaKeyBlackBackground(paulgaulCycleImg);
+    // Walk cycle: row y=71-169, 7 frames on the left side
+    const walkDefs = [
+      { x: 33,  y: 71, w: 78, h: 99 },
+      { x: 132, y: 71, w: 76, h: 99 },
+      { x: 222, y: 71, w: 80, h: 99 },
+      { x: 320, y: 71, w: 74, h: 99 },
+      { x: 408, y: 71, w: 81, h: 99 },
+      { x: 507, y: 71, w: 78, h: 99 },
+      { x: 601, y: 71, w: 78, h: 99 },
+    ];
+    paulgaulWalkFrames = walkDefs.map(r => {
+      const c = document.createElement('canvas');
+      c.width = r.w; c.height = r.h;
+      c.getContext('2d').drawImage(paulgaulCycleKeyed, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+      return c;
+    });
+  }
+  if (paulgaulStaticImg.naturalWidth > 0) {
+    paulgaulStaticKeyed = chromaKeyBlackBackground(paulgaulStaticImg);
+    // Attack/idle poses: row y=54-171, 7 frames on the left side
+    const attackDefs = [
+      { x: 44,  y: 54, w: 89,  h: 118 },
+      { x: 169, y: 54, w: 90,  h: 118 },
+      { x: 293, y: 54, w: 90,  h: 118 },
+      { x: 424, y: 54, w: 90,  h: 118 },
+      { x: 529, y: 54, w: 99,  h: 118 },
+      { x: 647, y: 54, w: 97,  h: 118 },
+      { x: 763, y: 54, w: 104, h: 118 },
+    ];
+    paulgaulAttackFrames = attackDefs.map(r => {
+      const c = document.createElement('canvas');
+      c.width = r.w; c.height = r.h;
+      c.getContext('2d').drawImage(paulgaulStaticKeyed, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
+      return c;
+    });
+  }
+}
+paulgaulCycleImg.addEventListener('load', preparePaulgaulFrames);
+paulgaulStaticImg.addEventListener('load', preparePaulgaulFrames);
+paulgaulMovementImg.addEventListener('load', preparePaulgaulFrames);
+if ((paulgaulCycleImg.complete && paulgaulCycleImg.naturalWidth > 0) ||
+    (paulgaulStaticImg.complete && paulgaulStaticImg.naturalWidth > 0) ||
+    (paulgaulMovementImg.complete && paulgaulMovementImg.naturalWidth > 0)) preparePaulgaulFrames();
+
 // Frame rect (x, y, frameW, frameH, frameCount) measured from
 // zombie-animation-sprite.png, with text labels cropped out. Only the
 // falling/death sequence is used from this sheet (walk animation now uses
@@ -327,6 +470,56 @@ const ZOMBIE_COMBAT_RECTS = {
   ],
 };
 const PLAYER_DEATH_ANIM_MS = 700;
+
+// Player combat animation set from zombie-combat-sprite.png. Frame x-ranges
+// were measured directly from the sheet's real (chroma-keyed) alpha content
+// per frame, since the rows are not uniform-width grids. Helper turns a
+// shared row y/h plus a list of [x0,x1] pixel ranges into frame rects.
+function buildFrames(y, h, ranges) {
+  return ranges.map(([x0, x1]) => ({ x: x0, y, w: x1 - x0 + 1, h }));
+}
+const PLAYER_COMBAT_FRAMES = {
+  idle: buildFrames(36, 152, [[29,82],[121,176],[196,270],[311,379]]),
+  walk: buildFrames(36, 152, [[416,493],[496,577],[582,658],[675,736],[761,835],[876,967]]),
+  aimShoot: buildFrames(36, 152, [[981,1076],[1077,1171],[1172,1266]]),
+  reload: buildFrames(36, 152, [[1358,1426],[1448,1520]]),
+  hurt: buildFrames(210, 128, [[22,90],[102,183],[201,282],[286,369],[379,475],[485,589]]),
+  grab: buildFrames(373, 138, [[33,258],[275,403],[428,585]]),
+  biteNeck: buildFrames(373, 138, [[630,780],[794,914],[933,1056]]),
+  biteArm: buildFrames(373, 138, [[1092,1196],[1208,1350],[1372,1527]]),
+  struggle: buildFrames(557, 123, [[22,157],[158,294],[295,430]]),
+  thrown: buildFrames(557, 123, [[445,538],[565,671],[681,748],[762,848],[859,1000]]),
+  getup: buildFrames(557, 123, [[1028,1125],[1135,1231],[1254,1366],[1395,1458]]),
+  shotImpact: buildFrames(739, 103, [[29,120],[122,205],[206,301],[302,557]]),
+};
+// Timing for the new grapple / knockdown / reload mechanics.
+const GRAB_MS = 500;             // ZOMBIE GRAB animation before the struggle QTE starts
+const STRUGGLE_WINDOW_MS = 1400; // time window to mash the struggle key
+const STRUGGLE_MASH_NEEDED = 6;  // mash presses required to escape
+const BITE_MS = 600;             // BITE (NECK/ARM) animation duration on failed struggle
+const ESCAPE_MS = 450;           // STRUGGLE/ESCAPE animation duration on successful struggle
+const THROWN_MS = 750;           // THROWN falling animation duration (boss attack)
+const GETUP_BASE_MS = 900;       // base GET UP duration, reduced by mashing
+const RELOAD_MS = 900;
+const HURT_MS = 350;
+
+// character-walk-cycle-with-pistol.png row 3 (left-facing walk) has two
+// frames whose gun barrel/hair nearly touch, so the uniform 8-column grid
+// used for the rest of the sheet slices through both characters and bleeds
+// a sliver of the neighboring frame into each crop. These exact bounds were
+// measured directly from the sprite's alpha channel to eliminate that bleed.
+const PISTOL_WALK_LEFT_FRAMES = [
+  { x: 33,   w: 169 },
+  { x: 202,  w: 167 },
+  { x: 381,  w: 177 },
+  { x: 574,  w: 179 },
+  { x: 762,  w: 178 },
+  { x: 945,  w: 174 },
+  { x: 1129, w: 177 },
+  { x: 1310, w: 178 },
+];
+const PISTOL_WALK_LEFT_Y = 782;
+const PISTOL_WALK_LEFT_H = 236;
 
 // Compute per-frame content bounding-box anchors for a sprite sheet so that
 // walk animations don't wobble/drift due to inconsistent frame alignment in
@@ -440,10 +633,10 @@ const doors = {
 
 const returnDoor = { x: 40, y: 160, w: 20, h: 120 };
 
-const pistol = { name: 'Pistol', damage: 1, color: '#ff0', bulletSize: 3 };
-const shotgun = { name: 'Shotgun', damage: 8, color: '#f00', bulletSize: 5 };
-const grenadeLauncher = { name: 'Grenade Launcher', damage: 20, color: '#888', bulletSize: 8, splash: 60 };
-const rpg = { name: 'RPG', damage: 100, color: '#0f0', bulletSize: 14, splash: 120 };
+const pistol = { name: 'Pistol', damage: 1, color: '#ff0', bulletSize: 3, magSize: 12 };
+const shotgun = { name: 'Shotgun', damage: 8, color: '#f00', bulletSize: 5, magSize: 6 };
+const grenadeLauncher = { name: 'Grenade Launcher', damage: 20, color: '#888', bulletSize: 8, splash: 60, magSize: 3 };
+const rpg = { name: 'RPG', damage: 100, color: '#0f0', bulletSize: 14, splash: 120, magSize: 2 };
 
 const levels = [
   {
@@ -790,13 +983,27 @@ let corpseScene = null;
 let corpseBodies = [];
 let greyDoor = null;
 let itemDoors = [];
+let pendingBigMonsters = {};
+
+// Default combat-encounter state shared by every fresh/respawned player
+// object: grapple (grab/struggle/bite/escape), knockdown (thrown/getup) and
+// reload, all driven by the zombie-combat-sprite.png animation set.
+function freshCombatState() {
+  return {
+    grabbedBy: null, grabPhase: null, grabPhaseStart: 0, grabBiteType: null,
+    knockedDown: false, knockPhase: null, knockStart: 0,
+    reloading: false, reloadStart: 0,
+    mashCount: 0,
+  };
+}
 
 let player = {
   x: 80, y: 360, size: 14, speed: 120,
   health: 100, maxHealth: 100,
-  ammo: 6, keys: 0, greyKeys: 0, masterKeys: 0,
+  ammo: 6, ammoReserve: 6, keys: 0, greyKeys: 0, masterKeys: 0,
   weapons: [{ ...pistol }], weaponIndex: 0, weapon: { ...pistol },
-  lastHit: 0, dead: false, won: false
+  lastHit: 0, dead: false, won: false,
+  ...freshCombatState()
 };
 
 const input = { w:false, a:false, s:false, d:false, ArrowUp:false, ArrowLeft:false, ArrowDown:false, ArrowRight:false };
@@ -807,6 +1014,143 @@ let message = '';
 let messageUntil = 0;
 let fireHeld = false;
 let lastShot = 0;
+
+// Interact system: blood/bloodTrail decorations show flavor text, and items
+// linked to a container decoration (locker/crate/desk/filingCabinet/gasCan)
+// must be collected with the interact button instead of walking over them.
+const INTERACT_RANGE = 44;
+const CONTAINER_TYPES = ['locker', 'crate', 'desk', 'filingCabinet', 'gasCan'];
+const CONTAINER_LABELS = { locker: 'Locker', crate: 'Crate', desk: 'Desk', filingCabinet: 'Cabinet', gasCan: 'Gas Can' };
+const BLOOD_FLAVOR_TEXT = [
+  "There's blood on the floor...",
+  "Where did this blood come from?",
+  "This blood looks fresh.",
+  "Something terrible happened here.",
+];
+let currentInteractable = null;
+
+function isContainerLinked(lvl, it) {
+  if (!lvl.decorations) return false;
+  for (const d of lvl.decorations) {
+    if (!CONTAINER_TYPES.includes(d.type)) continue;
+    const dcx = d.x + d.w / 2, dcy = d.y + d.h / 2;
+    if (Math.hypot(it.x - dcx, it.y - dcy) < INTERACT_RANGE) return true;
+  }
+  return false;
+}
+
+function findInteractable(lvl, playerRect) {
+  if (!lvl.decorations) return null;
+  const px = playerRect.x + playerRect.w / 2;
+  const py = playerRect.y + playerRect.h / 2;
+  let best = null, bestD = INTERACT_RANGE;
+  for (const d of lvl.decorations) {
+    const dcx = d.x + d.w / 2, dcy = d.y + d.h / 2;
+    const dist = Math.hypot(px - dcx, py - dcy);
+    if (dist > bestD) continue;
+    if (d.type === 'blood' || d.type === 'bloodTrail') {
+      best = { kind: 'blood', d };
+      bestD = dist;
+    } else if (CONTAINER_TYPES.includes(d.type)) {
+      const nearbyItem = items.find(it => !it.taken && Math.hypot(it.x - dcx, it.y - dcy) < INTERACT_RANGE);
+      if (nearbyItem) {
+        best = { kind: 'container', d, item: nearbyItem };
+        bestD = dist;
+      }
+    }
+  }
+  return best;
+}
+
+function collectItem(it, lvl) {
+  it.taken = true;
+  if (it.type === 'key') {
+    player.keys++;
+    showMessage('Key acquired! (' + player.keys + '/' + lvl.keysNeeded + ')');
+  }
+  if (it.type === 'greyKey') {
+    player.greyKeys++;
+    showMessage('Grey key acquired!');
+  }
+  if (it.type === 'ammo') {
+    player.ammoReserve += it.amount;
+    showMessage('Ammo reserve +' + it.amount);
+  }
+  if (it.type === 'med') {
+    player.health = Math.min(player.maxHealth, player.health + it.amount);
+    const medName = it.amount >= 100 ? 'First Aid Spray' : (it.amount >= 50 ? 'Green Herb' : 'Medkit');
+    showMessage(medName + ' +' + it.amount + ' HP');
+  }
+  if (it.type === 'lootKey') {
+    showMessage('Loot key acquired! Something big is coming...');
+    const target = it.targetLevel;
+    const nextLevel = currentLevel + 1;
+    // Always queue a big monster for the target level (room the loot box was in)
+    if (!pendingBigMonsters[target]) pendingBigMonsters[target] = [];
+    pendingBigMonsters[target].push({ x: 80, y: 200, size: 28, speed: 40, health: 20, maxHealth: 20, damage: 30, attackCooldown: 1500, lastAttack: 0, isBoss: true, isBigMonster: true });
+    // If the target level was already visited, unlock its item door and inject the monster immediately.
+    if (levelStates[target] && levelStates[target].itemDoors && levelStates[target].itemDoors[0]) {
+      levelStates[target].itemDoors[0].locked = false;
+      const d = levelStates[target].itemDoors[0];
+      const bx = d.x + d.w + 20, by = d.y;
+      if (!levelStates[target].zombies) levelStates[target].zombies = [];
+      levelStates[target].zombies.push({ x: bx, y: by, size: 28, speed: 40, health: 20, maxHealth: 20, damage: 30, attackCooldown: 1500, lastAttack: 0, isBoss: true, isBigMonster: true });
+    }
+    // Also spawn a big monster in the next room (currentLevel + 1)
+    if (nextLevel < levels.length) {
+      if (!pendingBigMonsters[nextLevel]) pendingBigMonsters[nextLevel] = [];
+      pendingBigMonsters[nextLevel].push({ x: 300, y: 240, size: 28, speed: 40, health: 20, maxHealth: 20, damage: 30, attackCooldown: 1500, lastAttack: 0, isBoss: true, isBigMonster: true });
+    }
+  }
+  if (it.type === 'lore') {
+    showMessage(it.text, 6000);
+  }
+  if (it.type === 'masterKey') {
+    player.masterKeys++;
+    showMessage('Master key acquired!');
+  }
+  if (it.type === 'weapon') {
+    const idx = player.weapons.findIndex(w => w.name === it.weapon.name);
+    if (idx >= 0) {
+      player.weaponIndex = idx;
+    } else {
+      player.weapons.push({ ...it.weapon });
+      player.weaponIndex = player.weapons.length - 1;
+    }
+    player.weapon = { ...player.weapons[player.weaponIndex] };
+    player.ammoReserve += it.amount || 0;
+    reloadWeapon();
+    showMessage(it.weapon.name + ' acquired!');
+  }
+}
+
+function reloadWeapon() {
+  if (!player.weapon) return;
+  const cap = player.weapon.magSize || 12;
+  const needed = cap - player.ammo;
+  const take = Math.min(needed, player.ammoReserve);
+  player.ammo += take;
+  player.ammoReserve -= take;
+}
+
+function doInteract() {
+  if (!gameStarted || player.dead || player.won) return;
+  if (!currentInteractable) return;
+  if (currentInteractable.kind === 'blood') {
+    const text = BLOOD_FLAVOR_TEXT[Math.floor(Math.random() * BLOOD_FLAVOR_TEXT.length)];
+    showMessage(text, 2500);
+  } else if (currentInteractable.kind === 'container') {
+    collectItem(currentInteractable.item, levels[currentLevel]);
+    currentInteractable = null;
+  }
+}
+
+function interactPromptText() {
+  if (!currentInteractable) return '';
+  if (currentInteractable.kind === 'blood') return '[E] Inspect';
+  const label = CONTAINER_LABELS[currentInteractable.d.type] || 'Container';
+  return '[E] Search ' + label;
+}
 
 function showMessage(text, time=2000) {
   message = text;
@@ -837,6 +1181,17 @@ window.addEventListener('keydown', e => {
     showMessage('Switched to ' + player.weapon.name);
   }
   if (e.key.toLowerCase() === 'r' && (!gameStarted || player.dead || player.won)) restart();
+  if (e.key.toLowerCase() === 'r' && gameStarted && !player.dead && !player.won && player.weapon && !player.reloading && !player.grabbedBy && !player.knockedDown) {
+    player.reloading = true;
+    player.reloadStart = performance.now();
+    showMessage('Reloading...');
+  }
+  if (e.key === ' ' && gameStarted && !player.dead && !player.won) {
+    if (player.grabPhase === 'struggle' || player.knockPhase === 'getup') {
+      player.mashCount++;
+    }
+  }
+  if (e.key.toLowerCase() === 'e') doInteract();
 });
 window.addEventListener('keyup', e => {
   const key = ['w','a','s','d'].includes(e.key.toLowerCase()) ? e.key.toLowerCase() : e.key;
@@ -851,7 +1206,7 @@ function setAim(clientX, clientY) {
 }
 canvas.addEventListener('mousemove', e => setAim(e.clientX, e.clientY));
 canvas.addEventListener('mousedown', () => { mouseHeld = true; shoot(); });
-let shotCooldown = { pistol: 200, shotgun: 600, 'Grenade Launcher': 800, RPG: 1200 };
+let shotCooldown = { 'Pistol': 200, 'Shotgun': 600, 'Grenade Launcher': 800, 'RPG': 1200 };
 canvas.addEventListener('mouseup', () => mouseHeld = false);
 window.addEventListener('mouseup', () => mouseHeld = false);
 
@@ -865,9 +1220,11 @@ dpadBtns.forEach(btn => {
   btn.addEventListener('touchcancel', e => { e.preventDefault(); set(false); }, {passive: false});
 });
 const fireBtn = document.getElementById('fire-btn');
-fireBtn.addEventListener('touchstart', e => { e.preventDefault(); if (!gameStarted || player.dead || player.won) { restart(); return; } fireHeld = true; }, {passive: false});
+fireBtn.addEventListener('touchstart', e => { e.preventDefault(); if (!gameStarted || player.dead || player.won) { restart(); return; } if (player.grabPhase === 'struggle' || player.knockPhase === 'getup') { player.mashCount++; return; } fireHeld = true; }, {passive: false});
 fireBtn.addEventListener('touchend',   e => { e.preventDefault(); fireHeld = false; }, {passive: false});
 fireBtn.addEventListener('touchcancel', e => { e.preventDefault(); fireHeld = false; }, {passive: false});
+const interactBtn = document.getElementById('interact-btn');
+interactBtn.addEventListener('touchstart', e => { e.preventDefault(); doInteract(); }, {passive: false});
 canvas.addEventListener('touchstart', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
 canvas.addEventListener('touchmove', e => { e.preventDefault(); if (e.touches[0]) setAim(e.touches[0].clientX, e.touches[0].clientY); }, {passive: false});
 if (titleScreen) {
@@ -961,11 +1318,19 @@ function loadLevel(n, preserve = false, from = '') {
       size: 12,
       speed: lvl.zombieSpeed,
       health: lvl.zombieHealth,
+      maxHealth: lvl.zombieHealth,
       damage: lvl.zombieDamage,
       lastAttack: 0,
       stagger: 0,
       vx: 0, vy: 0
     })).slice(0, currentLevel === 0 ? 0 : 2 * currentLevel - 1);
+  }
+  // Spawn any pending big monsters for this level
+  if (pendingBigMonsters[currentLevel]) {
+    for (const bm of pendingBigMonsters[currentLevel]) {
+      zombies.push({ ...bm, vx: 0, vy: 0, stagger: 0 });
+    }
+    delete pendingBigMonsters[currentLevel];
   }
   // Set up feeding scene: one zombie starts feeding on a dead NPC.
   corpseScene = null;
@@ -1022,6 +1387,7 @@ function respawn() {
   corpseBodies = [];
   player.health = player.maxHealth;
   player.lastHit = 0;
+  Object.assign(player, freshCombatState());
   saveLevelState(currentLevel);
   currentLevel = 0;
   loadLevel(0, true, '');
@@ -1039,18 +1405,21 @@ function restart() {
   player = gameBeaten ? {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
-    ammo: 20, keys: 0, greyKeys: 0, masterKeys: 0,
+    ammo: 2, ammoReserve: 18, keys: 0, greyKeys: 0, masterKeys: 0,
     weapons: [{ ...rpg }], weaponIndex: 0, weapon: { ...rpg },
-    lastHit: 0, dead: false, won: false
+    lastHit: 0, dead: false, won: false,
+    ...freshCombatState()
   } : {
     x: 80, y: 360, size: 14, speed: 120,
     health: 100, maxHealth: 100,
-    ammo: 0, keys: 0, greyKeys: 0, masterKeys: 0,
+    ammo: 0, ammoReserve: 0, keys: 0, greyKeys: 0, masterKeys: 0,
     weapons: [], weaponIndex: -1, weapon: null,
-    lastHit: 0, dead: false, won: false
+    lastHit: 0, dead: false, won: false,
+    ...freshCombatState()
   };
   if (typeof resetAchievementForm === 'function') resetAchievementForm();
   levelStates = [];
+  pendingBigMonsters = {};
   if (introShown) {
     loadLevel(0, gameBeaten);
   } else {
@@ -1101,6 +1470,7 @@ function autoAim() {
 function shoot() {
   if (!player.weapon) return;
   if (player.dead || player.won) return;
+  if (player.grabbedBy || player.knockedDown || player.reloading) return;
   if (player.ammo <= 0) {
     showMessage('Out of ammo!');
     return;
@@ -1236,6 +1606,84 @@ function hasExited() {
   return false;
 }
 
+function handlePlayerCombatState(now) {
+  // --- Grapple sequence: grab → struggle (QTE) → escape or bite ---
+  if (player.grabbedBy) {
+    const z = player.grabbedBy;
+    const elapsed = now - player.grabPhaseStart;
+
+    if (player.grabPhase === 'grab') {
+      if (elapsed >= GRAB_MS) {
+        player.grabPhase = 'struggle';
+        player.grabPhaseStart = now;
+        player.mashCount = 0;
+      }
+    } else if (player.grabPhase === 'struggle') {
+      if (player.mashCount >= STRUGGLE_MASH_NEEDED) {
+        player.grabPhase = 'escape';
+        player.grabPhaseStart = now;
+      } else if (elapsed >= STRUGGLE_WINDOW_MS) {
+        player.grabBiteType = Math.random() < 0.5 ? 'biteNeck' : 'biteArm';
+        player.grabPhase = player.grabBiteType;
+        player.grabPhaseStart = now;
+      }
+    } else if (player.grabPhase === 'biteNeck' || player.grabPhase === 'biteArm') {
+      if (elapsed >= BITE_MS) {
+        player.health -= z.damage;
+        player.lastHit = now;
+        if (player.health <= 0) {
+          player.dead = true;
+          player.deathStart = now;
+          feedingZombie = z;
+          player.grabbedBy = null;
+          player.grabPhase = null;
+          showMessage(isTouch ? 'YOU DIED. Press FIRE to respawn.' : 'YOU DIED. Press R to respawn.', 5000);
+        } else {
+          player.grabbedBy = null;
+          player.grabPhase = null;
+          z.lastAttack = now;
+        }
+      }
+    } else if (player.grabPhase === 'escape') {
+      if (elapsed >= ESCAPE_MS) {
+        player.grabbedBy = null;
+        player.grabPhase = null;
+        z.lastAttack = now;
+      }
+    }
+  }
+
+  // --- Knockdown sequence: thrown → getup (mash to speed up) ---
+  if (player.knockedDown) {
+    const elapsed = now - player.knockStart;
+
+    if (player.knockPhase === 'thrown') {
+      if (elapsed >= THROWN_MS) {
+        player.knockPhase = 'impact';
+        player.knockStart = now;
+      }
+    } else if (player.knockPhase === 'impact') {
+      if (elapsed >= 300) {
+        player.knockPhase = 'getup';
+        player.knockStart = now;
+        player.mashCount = 0;
+      }
+    } else if (player.knockPhase === 'getup') {
+      const getupDuration = Math.max(300, GETUP_BASE_MS - player.mashCount * 100);
+      if (elapsed >= getupDuration) {
+        player.knockedDown = false;
+        player.knockPhase = null;
+      }
+    }
+  }
+
+  // --- Reload ---
+  if (player.reloading && now - player.reloadStart >= RELOAD_MS) {
+    player.reloading = false;
+    reloadWeapon();
+  }
+}
+
 function update(dt) {
   if (!gameStarted || player.dead || player.won) return;
   const lvl = levels[currentLevel];
@@ -1257,19 +1705,25 @@ function update(dt) {
     camera.y = world.h / 2;
   }
 
-  // Move player
+  // Move player (locked out while grabbed or knocked down)
   let mdx = 0, mdy = 0;
-  if (input.w || input.ArrowUp)    mdy -= 1;
-  if (input.s || input.ArrowDown)  mdy += 1;
-  if (input.a || input.ArrowLeft)  mdx -= 1;
-  if (input.d || input.ArrowRight) mdx += 1;
-  if (mdx !== 0 || mdy !== 0) {
-    facing = { x: mdx, y: mdy };
-    const len = Math.hypot(mdx, mdy);
-    mdx = (mdx / len) * player.speed * dt;
-    mdy = (mdy / len) * player.speed * dt;
-    moveEntity(player, mdx, mdy);
+  const canAct = !player.grabbedBy && !player.knockedDown;
+  if (canAct) {
+    if (input.w || input.ArrowUp)    mdy -= 1;
+    if (input.s || input.ArrowDown)  mdy += 1;
+    if (input.a || input.ArrowLeft)  mdx -= 1;
+    if (input.d || input.ArrowRight) mdx += 1;
+    if (mdx !== 0 || mdy !== 0) {
+      facing = { x: mdx, y: mdy };
+      const len = Math.hypot(mdx, mdy);
+      mdx = (mdx / len) * player.speed * dt;
+      mdy = (mdy / len) * player.speed * dt;
+      moveEntity(player, mdx, mdy);
+    }
   }
+
+  const now = performance.now();
+  handlePlayerCombatState(now);
 
   const playerRect = { x: player.x, y: player.y, w: player.size, h: player.size };
 
@@ -1328,65 +1782,15 @@ function update(dt) {
   // Items
   for (const it of items) {
     if (it.taken) continue;
+    if (isContainerLinked(lvl, it)) continue; // requires interact button instead of walk-over
     const itemRect = { x: it.x - it.size, y: it.y - it.size, w: it.size * 2, h: it.size * 2 };
-    if (rectHit(playerRect, itemRect)) {
-      it.taken = true;
-      if (it.type === 'key') {
-        player.keys++;
-        showMessage('Key acquired! (' + player.keys + '/' + lvl.keysNeeded + ')');
-      }
-      if (it.type === 'greyKey') {
-        player.greyKeys++;
-        showMessage('Grey key acquired!');
-      }
-      if (it.type === 'ammo') {
-        player.ammo += it.amount;
-        showMessage('Ammo + ' + it.amount);
-      }
-      if (it.type === 'med') {
-        player.health = Math.min(player.maxHealth, player.health + it.amount);
-        const medName = it.amount >= 100 ? 'First Aid Spray' : (it.amount >= 50 ? 'Green Herb' : 'Medkit');
-        showMessage(medName + ' +' + it.amount + ' HP');
-      }
-      if (it.type === 'lootKey') {
-        showMessage('Loot key acquired!');
-        const target = it.targetLevel;
-        if (levelStates[target]) {
-          if (levelStates[target].itemDoors && levelStates[target].itemDoors[0]) levelStates[target].itemDoors[0].locked = false;
-          const d = levelStates[target] && levelStates[target].itemDoors ? levelStates[target].itemDoors[0] : null;
-          const targetLvl = levels[target];
-          if (d && targetLvl) {
-            const bx = d.x + d.w + 20, by = d.y;
-            const boss = { x: bx, y: by, size: 24, speed: targetLvl.zombieSpeed * 1.2, health: targetLvl.zombieHealth * 3, damage: targetLvl.zombieDamage * 2, lastAttack: 0 };
-            if (!levelStates[target].zombies) levelStates[target].zombies = [];
-            levelStates[target].zombies.push(boss);
-          }
-        }
-      }
-      if (it.type === 'lore') {
-        showMessage(it.text, 6000);
-      }
-      if (it.type === 'masterKey') {
-        player.masterKeys++;
-        showMessage('Master key acquired!');
-      }
-      if (it.type === 'weapon') {
-        const idx = player.weapons.findIndex(w => w.name === it.weapon.name);
-        if (idx >= 0) {
-          player.weaponIndex = idx;
-        } else {
-          player.weapons.push({ ...it.weapon });
-          player.weaponIndex = player.weapons.length - 1;
-        }
-        player.weapon = { ...player.weapons[player.weaponIndex] };
-        player.ammo += it.amount || 0;
-        showMessage(it.weapon.name + ' acquired!');
-      }
-    }
+    if (rectHit(playerRect, itemRect)) collectItem(it, lvl);
   }
 
+  // Interact prompt (blood decorations to inspect, container items to search)
+  currentInteractable = findInteractable(lvl, playerRect);
+
   // Zombies
-  const now = performance.now();
   const px = player.x + player.size/2, py = player.y + player.size/2;
   const pFlow = getFlow(px, py);
 
@@ -1498,16 +1902,31 @@ function update(dt) {
 
     moveEntity(z, z.vx * dt, z.vy * dt);
 
-    // Attack
-    if (!player.dead && dist < player.size/2 + z.size/2 + 4 && now - z.lastAttack > 900) {
-      player.health -= z.damage;
-      player.lastHit = now;
+    // Attack: normal zombies grab the player into a struggle QTE (see
+    // handlePlayerCombatState), boss zombies throw the player down instead.
+    if (!player.dead && !player.grabbedBy && !player.knockedDown &&
+        dist < player.size/2 + z.size/2 + 4 && now - z.lastAttack > (z.attackCooldown || 900)) {
       z.lastAttack = now;
-      if (player.health <= 0) {
-        player.dead = true;
-        player.deathStart = now;
-        feedingZombie = z;
-        showMessage(isTouch ? 'YOU DIED. Press FIRE to respawn.' : 'YOU DIED. Press R to respawn.', 5000);
+      if (z.isBoss) {
+        player.knockedDown = true;
+        player.knockPhase = 'thrown';
+        player.knockStart = now;
+        player.health -= z.damage;
+        player.lastHit = now;
+        if (player.health <= 0) {
+          player.dead = true;
+          player.deathStart = now;
+          feedingZombie = z;
+          player.knockedDown = false;
+          player.knockPhase = null;
+          showMessage(isTouch ? 'YOU DIED. Press FIRE to respawn.' : 'YOU DIED. Press R to respawn.', 5000);
+        }
+      } else {
+        player.grabbedBy = z;
+        player.grabPhase = 'grab';
+        player.grabPhaseStart = now;
+        player.mashCount = 0;
+        showMessage(isTouch ? 'Tap FIRE to break free!' : 'Mash SPACE to break free!', STRUGGLE_WINDOW_MS + GRAB_MS);
       }
     }
   }
@@ -1561,7 +1980,12 @@ function update(dt) {
       for (const oz of zombies) {
         if (oz === direct || oz.dying) continue;
         const dx = oz.x + oz.size/2 - b.x, dy = oz.y + oz.size/2 - b.y;
-        if (Math.hypot(dx, dy) < b.splash) oz.health -= b.damage;
+        const d = Math.hypot(dx, dy);
+        if (d < b.splash) {
+          oz.health -= b.damage;
+          oz.stagger = now + 300;
+          if (d > 0) { oz.vx += (dx / d) * 60; oz.vy += (dy / d) * 60; }
+        }
       }
     }
     if (remove) bullets.splice(i, 1);
@@ -2142,6 +2566,21 @@ function draw() {
     const isStaggered = now < z.stagger;
     const facingLeft = dx < 0;
 
+    if (z.dying && z.isBigMonster && paulgaulAttackFrames.length > 0) {
+      const t = Math.min(1, (now - z.deathStart) / ZOMBIE_DEATH_ANIM_MS);
+      const frame = paulgaulAttackFrames[paulgaulAttackFrames.length - 1];
+      const bmDeathH = z.size * 7;
+      const bmDeathW = bmDeathH * (frame.width / frame.height);
+      ctx.save();
+      ctx.translate(z.x + z.size/2, z.y + z.size/2);
+      if (facingLeft) ctx.scale(-1, 1);
+      ctx.globalAlpha = 1 - t;
+      ctx.drawImage(frame, -bmDeathW/2, -bmDeathH, bmDeathW, bmDeathH);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      continue;
+    }
+
     if (z.dying && zombieAnimKeyed) {
       const r = ZOMBIE_ANIM_RECTS.falling;
       const t = Math.min(1, (now - z.deathStart) / ZOMBIE_DEATH_ANIM_MS);
@@ -2158,45 +2597,104 @@ function draw() {
       continue;
     }
 
-    const isAttacking = !player.dead && zombieCombatKeyed && (now - z.lastAttack) < ZOMBIE_ATTACK_ANIM_MS;
+    // Skip the grabbing zombie — it's drawn as part of the combined
+    // player+zombie interaction sprite in the Player section below.
+    if (z === player.grabbedBy) continue;
+
+    // Legacy: if a zombie recently attacked but isn't in a grab state
+    // (e.g. boss throw), still skip combined-sprite rendering.
+    // Big monsters have their own attack animation, so skip this check for them.
+    const isAttacking = !player.dead && zombieCombatKeyed && !z.isBigMonster && (now - z.lastAttack) < ZOMBIE_ATTACK_ANIM_MS && !player.grabbedBy;
     if (isAttacking) {
-      // Draw the combined player+zombie interaction sprite instead of the
-      // two characters separately, so the player visibly reacts to being
-      // grabbed/bitten. The normal player draw is skipped for this frame
-      // (see activeBiteZombie check in the Player section below).
       activeBiteZombie = z;
-      const r = ZOMBIE_COMBAT_RECTS.biteNeck;
-      const t = Math.min(1, (now - z.lastAttack) / ZOMBIE_ATTACK_ANIM_MS);
-      const frame = Math.min(r.frames - 1, Math.floor(t * r.frames));
-      const rawFw = r.w / r.frames;
-      const sx = Math.round(r.x + frame * rawFw);
-      const frameW = Math.round(r.x + (frame + 1) * rawFw) - sx;
-      const combinedDrawH = player.size * 7;
-      const combinedDrawW = combinedDrawH * (frameW / r.h);
-      const midX = (player.x + player.size/2 + z.x + z.size/2) / 2;
-      const midY = (player.y + player.size/2 + z.y + z.size/2) / 2;
+      continue;
+    }
+
+    // Big monster (Paulgaul) rendering — uses pre-cropped walk/attack frames
+    if (z.isBigMonster && paulgaulWalkRows.length > 0) {
+      const vSpeedBM = Math.hypot(z.vx, z.vy);
+      const bmMoving = vSpeedBM > 2;
+      const bmDrawH = Math.min(z.size * 7, ctx.canvas.height * 0.3);
+      const isAttackingBM = !player.dead && (now - z.lastAttack) < 600;
+      let frames, frameIdx, flip = false, rowIdx = 0;
+      if (isAttackingBM && paulgaulAttackFrames.length > 0) {
+        frames = paulgaulAttackFrames;
+        const t = Math.min(1, (now - z.lastAttack) / 600);
+        frameIdx = Math.min(frames.length - 1, Math.floor(t * frames.length));
+        flip = facingLeft;
+      } else {
+        // Pick row based on direction to player: 0 = front, 1 = back,
+        // 2 = side right, 3 = side left
+        rowIdx = facingLeft ? 3 : 2;
+        if (Math.abs(dy) > Math.abs(dx)) rowIdx = dy > 0 ? 0 : 1;
+        frames = paulgaulWalkRows[rowIdx];
+        frameIdx = bmMoving ? (Math.floor(now / 120) % frames.length) : 0;
+      }
+      const bmFrame = frames[frameIdx];
+      const bmDrawW = bmDrawH * (bmFrame.width / bmFrame.height);
       ctx.save();
-      ctx.translate(midX, midY);
-      if (!facingLeft) ctx.scale(-1, 1);
-      ctx.drawImage(zombieCombatKeyed, sx, r.y, frameW, r.h, -combinedDrawW/2, -combinedDrawH, combinedDrawW, combinedDrawH);
+      ctx.translate(z.x + z.size/2, z.y + z.size/2);
+      if (flip) ctx.scale(-1, 1);
+      if (isStaggered) ctx.rotate(Math.sin(now * 0.03) * 0.15);
+      ctx.drawImage(bmFrame, -bmDrawW/2, -bmDrawH, bmDrawW, bmDrawH);
+      if (isStaggered) {
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = '#f00';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(-bmDrawW/2, -bmDrawH, bmDrawW, bmDrawH);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
       ctx.restore();
+      // Health bar above big monster
+      if (z.maxHealth === undefined) z.maxHealth = z.health;
+      const hpPct = Math.max(0, z.health) / z.maxHealth;
+      const barW = z.size * 2.5, barH = 4;
+      const barX = z.x + z.size/2 - barW/2, barY = z.y - 8;
+      ctx.fillStyle = '#300';
+      ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+      ctx.fillStyle = hpPct > 0.5 ? '#c00' : (hpPct > 0.25 ? '#f80' : '#f00');
+      ctx.fillRect(barX, barY, barW * hpPct, barH);
       continue;
     }
 
     const vSpeed = Math.hypot(z.vx, z.vy);
     const zMoving = vSpeed > 2;
-    if (zombieWalk4DirImg.complete && zombieWalk4DirImg.naturalWidth > 0) {
-      // Direction faces the actual movement heading while walking (so a
-      // zombie wandering off-path visibly turns that way), and faces the
-      // player while idle/attacking-range, matching the player sprite's
-      // own dirIndex convention (0=up,1=down,2=right,3=left) and rowMap.
-      const mdx = zMoving ? z.vx : dx;
-      const mdy = zMoving ? z.vy : dy;
+    const mdx = zMoving ? z.vx : dx;
+    const mdy = zMoving ? z.vy : dy;
+    let dirIndex = 1;
+    if (Math.abs(mdx) > Math.abs(mdy)) dirIndex = mdx < 0 ? 3 : 2;
+    else dirIndex = mdy < 0 ? 0 : 1;
+
+    if (!zMoving && zombieIdleImg.complete && zombieIdleImg.naturalWidth > 0) {
+      // Idle/attack pose from zombie-transparent.png: 4 frames (back, front, right, left)
+      const idleCols = 4;
+      const idleFrameMap = [0, 1, 2, 3]; // 0=up, 1=down, 2=right, 3=left
+      const idleFrame = idleFrameMap[dirIndex];
+      const rawW = zombieIdleImg.naturalWidth / idleCols;
+      const rawH = zombieIdleImg.naturalHeight;
+      const sx = Math.round(idleFrame * rawW);
+      const frameW = Math.round((idleFrame + 1) * rawW) - sx;
+      const drawW = drawH * (frameW / rawH);
+      ctx.save();
+      ctx.translate(z.x + z.size/2, z.y + z.size/2);
+      if (isStaggered) {
+        ctx.rotate(Math.sin(now * 0.03) * 0.15);
+      }
+      ctx.drawImage(zombieIdleImg, sx, 0, frameW, rawH, -drawW/2, -drawH, drawW, drawH);
+      if (isStaggered) {
+        ctx.globalCompositeOperation = 'source-atop';
+        ctx.fillStyle = '#f00';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'source-over';
+      }
+      ctx.restore();
+    } else if (zombieWalk4DirImg.complete && zombieWalk4DirImg.naturalWidth > 0) {
+      // Walk cycle: 8 frames x 4 rows. Keep for moving zombies and as fallback.
       const cols = 8, rows = 4;
       const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
-      let dirIndex = 1;
-      if (Math.abs(mdx) > Math.abs(mdy)) dirIndex = mdx < 0 ? 3 : 2;
-      else dirIndex = mdy < 0 ? 0 : 1;
       const row = rowMap[dirIndex];
       const animFrame = zMoving ? (Math.floor(now / 100) % cols) : 0;
       const rawW = zombieWalk4DirImg.naturalWidth / cols;
@@ -2234,16 +2732,25 @@ function draw() {
   const dx = mouse.x - cx;
   const dy = mouse.y - cy;
   const s = player.size;
-  const drawH = s * 7;
+  const drawH = Math.min(s * 7, ctx.canvas.height * 0.4);
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
+
+  // Brief recoil kick opposite the aim direction right after firing.
+  const RECOIL_MS = 90;
+  let rcx = cx, rcy = cy;
+  if (alive && player.weapon && now - lastShot < RECOIL_MS) {
+    const recoilT = 1 - (now - lastShot) / RECOIL_MS;
+    const aimAng = Math.atan2(dy, dx);
+    const kick = s * 0.18 * recoilT;
+    rcx -= Math.cos(aimAng) * kick;
+    rcy -= Math.sin(aimAng) * kick;
+  }
 
   if (player.dead && zombieCombatKeyed) {
     const deathElapsed = now - (player.deathStart || now);
     const deathDone = deathElapsed > PLAYER_DEATH_ANIM_MS;
     if (deathDone && feedingZombie && zombieFeedingFrames.length > 0) {
-      // Zombie feeding on the downed player — loops through neck, torso,
-      // and head biting frames from the dedicated feeding sprite.
       const feedT = ((now - player.deathStart - PLAYER_DEATH_ANIM_MS) / 1800) % 1;
       const frameIdx = Math.floor(feedT * zombieFeedingFrames.length);
       const frame = zombieFeedingFrames[frameIdx];
@@ -2254,7 +2761,6 @@ function draw() {
       ctx.drawImage(frame, -feedDrawW/2, -feedDrawH, feedDrawW, feedDrawH);
       ctx.restore();
     } else {
-      // Death falling animation (or last frame if no zombie nearby).
       const r = ZOMBIE_COMBAT_RECTS.playerDeathFalling;
       const t = Math.min(1, deathElapsed / PLAYER_DEATH_ANIM_MS);
       const frame = Math.min(r.frames - 1, Math.floor(t * r.frames));
@@ -2268,81 +2774,237 @@ function draw() {
       ctx.restore();
     }
   } else {
-    let img;
-    if (activeBiteZombie) {
-      // Player is already rendered as part of the combined bite/grab overlay
-      // drawn in the Zombies section above.
-    } else if (alive && player.weapon && (fireHeld || mouseHeld)) {
-      img = playerImg;
-    } else if (moving) {
-      img = (alive && player.weapon) ? playerPistolWalkingImg : playerWalkingImg;
-    } else {
-      img = (alive && player.weapon) ? playerImg : playerIdleImg;
-    }
-    if (img && img.complete && img.naturalWidth > 0) {
-      let dirIndex = 1;
-      if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
-      else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
-      let sx, sy, frameW, frameH;
-      let drawSrcImg = img;
-      let anchorDeltaX = 0;
-      if (img === playerWalkingImg || img === playerPistolWalkingImg) {
-        const cols = 8;
-        const rows = 4;
-        const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
-        const animFrame = moving ? (Math.floor(now / 80) % cols) : 0;
-        const row = rowMap[dirIndex];
-        const rawW = img.naturalWidth / cols;
-        const rawH = img.naturalHeight / rows;
-        sx = Math.round(animFrame * rawW);
-        sy = Math.round(row * rawH);
-        frameW = Math.round((animFrame + 1) * rawW) - sx;
-        frameH = Math.round((row + 1) * rawH) - sy;
-        const anchors = spriteFrameAnchors.get(img);
-        if (anchors) anchorDeltaX = anchors[row][animFrame].deltaX;
-      } else {
-        const frames = 4;
-        frameW = img.naturalWidth / frames;
-        sy = Math.round(img.naturalHeight * 0.138);
-        frameH = Math.round(img.naturalHeight * 0.734);
-        sx = dirIndex * frameW;
+    // --- Combat state animations from zombie-combat-sprite.png ---
+    let combatDrawn = false;
+    if (zombieCombatKeyed && !player.dead) {
+      let frames = null, duration = 0, elapsed = 0;
+      let drawX = rcx, drawY = rcy, combined = false, flipLeft = facing.x < 0;
+
+      if (player.grabbedBy) {
+        const z = player.grabbedBy;
+        const zdx = (player.x + player.size/2) - (z.x + z.size/2);
+        combined = true;
+        flipLeft = zdx < 0;
+        drawX = (player.x + player.size/2 + z.x + z.size/2) / 2;
+        drawY = (player.y + player.size/2 + z.y + z.size/2) / 2;
+
+        if (player.grabPhase === 'grab') {
+          frames = PLAYER_COMBAT_FRAMES.grab;
+          duration = GRAB_MS;
+          elapsed = now - player.grabPhaseStart;
+        } else if (player.grabPhase === 'struggle') {
+          frames = PLAYER_COMBAT_FRAMES.struggle;
+          duration = 300;
+          elapsed = now - player.grabPhaseStart;
+        } else if (player.grabPhase === 'escape') {
+          frames = PLAYER_COMBAT_FRAMES.struggle;
+          duration = ESCAPE_MS;
+          elapsed = now - player.grabPhaseStart;
+        } else if (player.grabPhase === 'biteNeck') {
+          frames = PLAYER_COMBAT_FRAMES.biteNeck;
+          duration = BITE_MS;
+          elapsed = now - player.grabPhaseStart;
+        } else if (player.grabPhase === 'biteArm') {
+          frames = PLAYER_COMBAT_FRAMES.biteArm;
+          duration = BITE_MS;
+          elapsed = now - player.grabPhaseStart;
+        }
+      } else if (player.knockedDown) {
+        drawX = cx; drawY = cy;
+        if (player.knockPhase === 'thrown') {
+          frames = PLAYER_COMBAT_FRAMES.thrown;
+          duration = THROWN_MS;
+          elapsed = now - player.knockStart;
+        } else if (player.knockPhase === 'impact') {
+          frames = PLAYER_COMBAT_FRAMES.shotImpact;
+          duration = 300;
+          elapsed = now - player.knockStart;
+        } else if (player.knockPhase === 'getup') {
+          frames = PLAYER_COMBAT_FRAMES.getup;
+          duration = Math.max(300, GETUP_BASE_MS - player.mashCount * 100);
+          elapsed = now - player.knockStart;
+        }
+      } else if (player.reloading) {
+        frames = PLAYER_COMBAT_FRAMES.reload;
+        duration = RELOAD_MS;
+        elapsed = now - player.reloadStart;
+      } else if (alive && player.weapon && now - lastShot < 200) {
+        frames = PLAYER_COMBAT_FRAMES.aimShoot;
+        duration = 200;
+        elapsed = now - lastShot;
+      } else if (alive && now - player.lastHit < HURT_MS) {
+        frames = PLAYER_COMBAT_FRAMES.hurt;
+        duration = HURT_MS;
+        elapsed = now - player.lastHit;
       }
-      const drawW = drawH * (frameW / frameH);
-      const anchorDeltaXScaled = anchorDeltaX * (drawW / frameW);
+
+      if (frames) {
+        const t = Math.min(1, elapsed / duration);
+        const frameIdx = Math.min(frames.length - 1, Math.floor(t * frames.length));
+        const frame = frames[frameIdx];
+        const combatDrawH = s * 7;
+        const combatDrawW = combatDrawH * (frame.w / frame.h);
+        ctx.save();
+        ctx.translate(drawX, drawY);
+        if (combined) { if (!flipLeft) ctx.scale(-1, 1); }
+        else { if (flipLeft) ctx.scale(-1, 1); }
+        ctx.drawImage(zombieCombatKeyed, frame.x, frame.y, frame.w, frame.h, -combatDrawW/2, -combatDrawH, combatDrawW, combatDrawH);
+        if (hitFlash) {
+          ctx.globalCompositeOperation = 'source-atop';
+          ctx.fillStyle = '#f00';
+          ctx.globalAlpha = 0.5;
+          ctx.fillRect(-combatDrawW/2, -combatDrawH, combatDrawW, combatDrawH);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        ctx.restore();
+        combatDrawn = true;
+      }
+    }
+
+    if (!combatDrawn) {
+    const hasShotgun = player.weapon && player.weapon.name === 'Shotgun';
+    if (activeBiteZombie) {
+      // Player is already rendered as part of the combined bite/grab overlay.
+    } else if (hasShotgun && playerShotgunFrames.idle.length > 0) {
+      const frames = moving && playerShotgunFrames.walk.length > 0 ? playerShotgunFrames.walk : playerShotgunFrames.idle;
+      const animFrame = moving ? (Math.floor(now / 120) % frames.length) : 0;
+      const frame = frames[animFrame];
+      const sgDrawH = s * 6;
+      const sgDrawW = sgDrawH * (frame.width / frame.height);
+      const facingLeft = facing.x < 0;
       ctx.save();
-      ctx.translate(cx, cy);
-      ctx.drawImage(drawSrcImg, sx, sy, frameW, frameH, -drawW/2 + anchorDeltaXScaled, -drawH, drawW, drawH);
+      ctx.translate(rcx, rcy);
+      if (facingLeft) ctx.scale(-1, 1);
+      ctx.drawImage(frame, -sgDrawW/2, -sgDrawH, sgDrawW, sgDrawH);
       if (hitFlash) {
         ctx.globalCompositeOperation = 'source-atop';
         ctx.fillStyle = '#f00';
         ctx.globalAlpha = 0.5;
-        ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
+        ctx.fillRect(-sgDrawW/2, -sgDrawH, sgDrawW, sgDrawH);
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
       }
       ctx.restore();
-    } else if (!activeBiteZombie) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.fillStyle = player.dead ? '#555' : (hitFlash ? '#f00' : '#3a3');
-      ctx.fillRect(-s*0.3, -s*0.3, s*0.6, s*0.6);
-      ctx.fillStyle = '#ffcc99';
-      ctx.beginPath();
-      ctx.arc(s*0.35, 0, s*0.2, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.arc(s*0.45, -s*0.07, s*0.04, 0, Math.PI*2);
-      ctx.arc(s*0.45, s*0.07, s*0.04, 0, Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle = '#222';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(s*0.25, 0);
-      ctx.lineTo(s*0.9, 0);
-      ctx.stroke();
-      ctx.restore();
+    } else {
+      let dirIndex = 1;
+      if (Math.abs(dx) > Math.abs(dy)) dirIndex = dx < 0 ? 3 : 2;
+      else dirIndex = dy < 0 ? 0 : 1;
+      let img;
+      if (alive && player.weapon && (fireHeld || mouseHeld)) {
+        img = playerImg;
+      } else if (moving) {
+        img = (alive && player.weapon) ? playerPistolWalkingImg : playerWalkingImg;
+      } else {
+        img = (alive && player.weapon) ? playerImg : playerIdleImg;
+      }
+      if (img && img.complete && img.naturalWidth > 0) {
+        if (img === playerImg) {
+          // Static aim pose already captured by dirIndex above
+        } else if (facing.x !== 0) dirIndex = facing.x < 0 ? 3 : 2;
+        else if (facing.y !== 0) dirIndex = facing.y < 0 ? 0 : 1;
+        let sx, sy, frameW, frameH;
+        let drawSrcImg = img;
+        let anchorDeltaX = 0;
+        if (img === playerWalkingImg || img === playerPistolWalkingImg) {
+          const cols = 8;
+          const rows = 4;
+          const rowMap = [1, 0, 2, 3]; // up/back, down/front, right, left
+          const animFrame = moving ? (Math.floor(now / 80) % cols) : 0;
+          const row = rowMap[dirIndex];
+          if (img === playerPistolWalkingImg && row === 3) {
+            const f = PISTOL_WALK_LEFT_FRAMES[animFrame];
+            sx = f.x;
+            sy = PISTOL_WALK_LEFT_Y;
+            frameW = f.w;
+            frameH = PISTOL_WALK_LEFT_H;
+          } else {
+            const rawW = img.naturalWidth / cols;
+            const rawH = img.naturalHeight / rows;
+            sx = Math.round(animFrame * rawW);
+            sy = Math.round(row * rawH);
+            frameW = Math.round((animFrame + 1) * rawW) - sx;
+            frameH = Math.round((row + 1) * rawH) - sy;
+            const anchors = spriteFrameAnchors.get(img);
+            if (anchors) anchorDeltaX = anchors[row][animFrame].deltaX;
+          }
+        } else {
+          const frames = 4;
+          frameW = img.naturalWidth / frames;
+          sy = Math.round(img.naturalHeight * 0.138);
+          frameH = Math.round(img.naturalHeight * 0.734);
+          sx = dirIndex * frameW;
+        }
+        const drawW = drawH * (frameW / frameH);
+        const anchorDeltaXScaled = anchorDeltaX * (drawW / frameW);
+        ctx.save();
+        ctx.translate(rcx, rcy);
+        ctx.drawImage(drawSrcImg, sx, sy, frameW, frameH, -drawW/2 + anchorDeltaXScaled, -drawH, drawW, drawH);
+        if (hitFlash) {
+          ctx.globalCompositeOperation = 'source-atop';
+          ctx.fillStyle = '#f00';
+          ctx.globalAlpha = 0.5;
+          ctx.fillRect(-drawW/2, -drawH, drawW, drawH);
+          ctx.globalAlpha = 1;
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        ctx.restore();
+      } else if (!activeBiteZombie) {
+        ctx.save();
+        ctx.translate(rcx, rcy);
+        ctx.fillStyle = player.dead ? '#555' : (hitFlash ? '#f00' : '#3a3');
+        ctx.fillRect(-s*0.3, -s*0.3, s*0.6, s*0.6);
+        ctx.fillStyle = '#ffcc99';
+        ctx.beginPath();
+        ctx.arc(s*0.35, 0, s*0.2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(s*0.45, -s*0.07, s*0.04, 0, Math.PI*2);
+        ctx.arc(s*0.45, s*0.07, s*0.04, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(s*0.25, 0);
+        ctx.lineTo(s*0.9, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
+    }
+  }
+
+  // Muzzle flash: brief bright flare at the gun tip when a shot was just fired.
+  const MUZZLE_FLASH_MS = 70;
+  if (alive && player.weapon && now - lastShot < MUZZLE_FLASH_MS) {
+    const t = now - lastShot;
+    const flashAlpha = 1 - (t / MUZZLE_FLASH_MS);
+    const aimAng = Math.atan2(dy, dx);
+    const muzzleDist = s * (player.weapon.name === 'Shotgun' ? 2.6 : 2.1);
+    const fx = rcx + Math.cos(aimAng) * muzzleDist;
+    const fy = rcy - drawH * 0.55 + Math.sin(aimAng) * muzzleDist * 0.35;
+    const flen = s * (0.9 + Math.random() * 0.4);
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.rotate(aimAng);
+    ctx.globalAlpha = flashAlpha;
+    if (muzzleFlashImg.complete && muzzleFlashImg.naturalWidth > 0) {
+      const mw = flen * 2;
+      const mh = mw * (muzzleFlashImg.naturalHeight / muzzleFlashImg.naturalWidth);
+      ctx.drawImage(muzzleFlashImg, -mw * 0.3, -mh * 0.5, mw, mh);
+    } else {
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, flen);
+      grad.addColorStop(0, '#fffbe0');
+      grad.addColorStop(0.4, '#ffd860');
+      grad.addColorStop(1, 'rgba(255,120,0,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(flen * 0.3, 0, flen * 0.65, flen * 0.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   // Crosshair
@@ -2397,10 +3059,51 @@ function draw() {
   ctx.fillStyle = '#0f0';
   ctx.font = '14px Courier New';
   const keyText = 'KEYS: ' + player.keys + '/' + lvl.keysNeeded;
-  const ammo = player.ammo === Infinity ? '∞' : player.ammo;
-  const hud = `LV: ${currentLevel + 1} [${lvl.name}]  HP: ${Math.max(0, player.health)}  AMMO: ${ammo}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
+  const ammoMag = player.ammo === Infinity ? '∞' : player.ammo;
+  const ammoRes = player.ammoReserve === Infinity ? '∞' : player.ammoReserve;
+  const ammoText = player.weapon ? `${ammoMag}/${ammoRes}` : '0/0';
+  const hud = `LV: ${currentLevel + 1} [${lvl.name}]  HP: ${Math.max(0, player.health)}  AMMO: ${ammoText}  ${keyText}  GUN: ${player.weapon ? player.weapon.name : 'NONE'}`;
   ctx.fillText(hud, 10, portraitY + portraitSize + 18);
+  if (currentInteractable) {
+    ctx.fillStyle = '#ffd860';
+    ctx.font = 'bold 14px Courier New';
+    ctx.fillText(interactPromptText(), 10, 440);
+  }
   if (message) ctx.fillText(message, 10, 460);
+
+  // QTE prompts for struggle / getup phases
+  if (player.grabPhase === 'struggle') {
+    const mashPct = Math.min(1, player.mashCount / STRUGGLE_MASH_NEEDED);
+    const timePct = 1 - Math.min(1, (now - player.grabPhaseStart) / STRUGGLE_WINDOW_MS);
+    ctx.fillStyle = '#ff4040';
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillText(isTouch ? 'TAP FIRE TO ESCAPE!' : 'MASH SPACE TO ESCAPE!', 10, 480);
+    ctx.fillStyle = '#330';
+    ctx.fillRect(10, 486, 200, 10);
+    ctx.fillStyle = '#20ff40';
+    ctx.fillRect(10, 486, 200 * mashPct, 10);
+    ctx.fillStyle = '#ff8800';
+    ctx.fillRect(10, 498, 200 * timePct, 4);
+  } else if (player.knockPhase === 'getup') {
+    ctx.fillStyle = '#ffaa00';
+    ctx.font = 'bold 16px Courier New';
+    ctx.fillText(isTouch ? 'TAP FIRE TO GET UP!' : 'MASH SPACE TO GET UP!', 10, 480);
+    const getupDur = Math.max(300, GETUP_BASE_MS - player.mashCount * 100);
+    const getupPct = 1 - Math.min(1, (now - player.knockStart) / getupDur);
+    ctx.fillStyle = '#330';
+    ctx.fillRect(10, 486, 200, 10);
+    ctx.fillStyle = '#ffaa00';
+    ctx.fillRect(10, 486, 200 * getupPct, 10);
+  } else if (player.reloading) {
+    const reloadPct = Math.min(1, (now - player.reloadStart) / RELOAD_MS);
+    ctx.fillStyle = '#88ccff';
+    ctx.font = 'bold 14px Courier New';
+    ctx.fillText('RELOADING...', 10, 480);
+    ctx.fillStyle = '#330';
+    ctx.fillRect(10, 486, 200, 8);
+    ctx.fillStyle = '#88ccff';
+    ctx.fillRect(10, 486, 200 * reloadPct, 8);
+  }
 }
 
 let last = performance.now();
@@ -2412,7 +3115,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 const CAROUSEL_EXCLUDE = ['/404.html','/contact.html','/privacy-policy.html','/thank-you.html','/newsletter-confirmed.html','/yandex_cf0ccdb95afad35c.html','/video-game/resident_evil_proto.html','/video-game/index.html'];
-const CAROUSEL_CONTENTS = [{"path":"/content.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.webp","updated":1786951151,"published":1786951151},{"path":"/event-halloween-hibachi-elm-street.html","title":"Halloween Hibachi on Elm Street","img":"/halloween-habachi-on-elm-street.JPG","updated":1787414400,"published":1787414400},{"path":"/event-ghetto-house-party.html","title":"Ghetto House Party","img":"/Ghetto-house-party.webp","updated":1786951151,"published":1786951151},{"path":"/event-krew-nasa.html","title":"KREW NASA: Out of This World Tour 2026","img":"/krew-nasa-cities.jpeg","updated":1786951151,"published":1786951151},{"path":"/event-muggatime.html","title":"Welcome 2 Muggatime presented by Prophit Mugga Maniak","img":"/muggatime.webp","updated":1786951151,"published":1786951151},{"path":"/event-murrdah-season.html","title":"MURRDAH SEASON MONDAY","img":"/murrdahseasonmonday.webp","updated":1786951151,"published":1786951151},{"path":"/event-philly-skate-plex.html","title":"Philly Skate Plex Family Session","img":"/Philly-skate-logo.webp","updated":1786951151,"published":1786951151},{"path":"/event-private-booking.html","title":"Private Event Booking","img":"/djweirdnasty-banner.webp","updated":1786951151,"published":1786951151},{"path":"/index.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.webp","updated":1786951151,"published":1786951151},{"path":"/mixtapes.html","title":"Mixtapes | DJWEIRDNASTY","img":"/helladelphia-mixtapte-vol1.webp","updated":1786951151,"published":1786951151},{"path":"/mud-music-episode-1.html","title":"Episode 1 - MAN BEHIND THE CAMERA (Pilot)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-10.html","title":"Episode 10 - New York Underground (A-TEAM)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-11.html","title":"Episode 11 - Jewstallion Talian (Alex Bate)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-12.html","title":"Episode 12 - 90's Baby (Mya Allure)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-13.html","title":"MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-2.html","title":"Episode 2 - Venomous Effect (MR_SMITH_PHL)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-3.html","title":"Episode 3 - House Get a Cut (Traphouse Terrance)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-4.html","title":"Episode 4 - Don't Take It Personal (DTP Mantana)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-5.html","title":"Episode 5 - We Got Action (MFD)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-6.html","title":"Episode 6 - Ron Murrdah (Flavor Team)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-7.html","title":"MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-8.html","title":"MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-9.html","title":"Episode 9 - I AM H3RSH3Y","img":"/djweirdnasty-banner.webp","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode.html","title":"MUD MUSIC Top 10 Countdown","img":"/mud-music-logo.webp","updated":1786951151,"published":1786951151},{"path":"/murrdah-season-monday-3.html","title":"Murrdah Season Monday: Karmelo Anthony Trial, Fox29 Feature, SOL Sounds & Flavor Team Earrings","img":"/murrdah-season-monday-thumbnail%203-24-26.png","updated":1787643451,"published":1787643451},{"path":"/murrdah-season-monday-2.html","title":"Murrdah Season Monday: Viral Instagram Drama, Trivia Battles, Ghetto House Party & A New Video Game","img":"/Murrdah-season-monday-thumbnail.webp","updated":1787061890,"published":1787061890},{"path":"/murrdah-season-monday.html","title":"Murrdah Season Monday \"Ayo Weird meet Skrilla & Ron Murrdah first time using Public Transportation\"","img":"/murrdah-og.webp","updated":1786951151,"published":1786233600},{"path":"/news-berlin-high-rise-fire.html","title":"Berlin High-Rise Fire Turns Into Dramatic Midair Rescue","img":"/hair-raising-moment-woman-hangs-1101458080.webp","updated":1786951972,"published":1786665600},{"path":"/news-ben-jones.html","title":"Ben Jones, Best Known as Cooter on 'The Dukes of Hazzard,' Dies at 84","img":"/ben-jones.webp","updated":1786951151,"published":1786320000},{"path":"/news-brittany-boltinhouse.html","title":"Crown Taken Away, Legal Fight May Be Next for Former Miss North Carolina USA","img":"/Brittany-Boltinhouse.webp","updated":1786951151,"published":1786579200},{"path":"/news-colombia-earthquake.html","title":"Powerful 7.4 Quake Rocks Colombia as Rescue Crews Search Collapsed Buildings","img":"/columbia-earthquake.webp","updated":1786951151,"published":1786320000},{"path":"/news-concord-mall-demolition.html","title":"Concord Mall Could Face Major Demolition and Redevelopment","img":"/delaware-concord-mall.webp","updated":1786951151,"published":1786665600},{"path":"/news-daycare-worker-arrested.html","title":"Bucks County Preschool Worker Charged After Alleged Assault of 2-Year-Old","img":"/day-care-worker-arrested.webp","updated":1786951151,"published":1786406400},{"path":"/news-deadly-midwest-storm.html","title":"Deadly Midwest Storms Leave 3 Dead and Nearly 800,000 Without Power","img":"/mid-town-storm.jpg","updated":1786951151,"published":1786492800},{"path":"/news-don-nelson.html","title":"The NBA Loses a Basketball Visionary: Don Nelson Dies at 86","img":"/don-nelson.webp","updated":1786951151,"published":1786233600},{"path":"/news-entertainment.html","title":"Entertainment News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786955116,"published":1786838400},{"path":"/news-fantasy-football-2026.html","title":"Fantasy Football 2026: Players You May Want to Avoid at Their Current Draft Price","img":"/fantasy-football-2026.webp","updated":1786951151,"published":1786320000},{"path":"/news-fever-stephanie-white.html","title":"Fever Rally Around Stephanie White in Statement Win Over Liberty","img":"/coach-stephanie-white.jpeg","updated":1786951151,"published":1786492800},{"path":"/news-hayden-panettiere.html","title":"Hayden Panettiere Dies at 36: \u2018Heroes\u2019 and \u2018Nashville\u2019 Star Remembered","img":"/hayden.avif","updated":1786955107,"published":1786838400},{"path":"/news-google-pixel-11.html","title":"Google Bets Big on AI as New Pixel 11 Phones Bring Bigger Storage and Camera Upgrades","img":"/google-new-phone.webp","updated":1786951151,"published":1786579200},{"path":"/news-hobbs-giles.html","title":"Hobbs Names Former Mesa Republican Mayor John Giles as Running Mate","img":"/katie-hobbs-john-giles.jpeg","updated":1786951151,"published":1786406400},{"path":"/news-instagram-logo-redesign.html","title":"Instagram Gives Its Logo a Fresh Look \u2014 But Users Are Already Roasting the Redesign","img":"/instagram-new-logo.webp","updated":1786951151,"published":1786579200},{"path":"/news-las-vegas-assault-arrest.html","title":"Man Dies After Downtown Las Vegas Assault; Suspect Arrested","img":"/las-vegas-fight.webp","updated":1786951151,"published":1786665600},{"path":"/news-las-vegas-fentanyl.html","title":"Federal Investigation Leads to Seven Arrests in Alleged Las Vegas Fentanyl Network","img":"/drugs-from-raid.avif","updated":1786951151,"published":1786320000},{"path":"/news-las-vegas-shooting.html","title":"Las Vegas Domestic Disturbance Turns Deadly, Leaving Officer Injured and Two Dead","img":"/lasvegascrimescene.webp","updated":1786951151,"published":1786320000},{"path":"/news-lil-durk-pissed-me-off.html","title":"Lil Durk\u2019s \u201cPissed Me Off\u201d Music Video Allowed as Evidence in Federal Trial","img":"/lil-durk-mug-shot.jpg","updated":1786951151,"published":1786665600},{"path":"/news-luigi-mangione-guilty-plea.html","title":"Luigi Mangione Admits Role in Killing of UnitedHealthcare CEO in Federal Guilty Plea","img":"/luigi-mangione-attends-pre-trial-137082044.webp","updated":1786951151,"published":1786665600},{"path":"/news-luigi-mangione-plea.html","title":"Luigi Mangione Could Change His Plea as Federal Case Takes New Turn","img":"/luigi-mangione-case.webp","updated":1786951151,"published":1786579200},{"path":"/news-medicaid-fraud.html","title":"19 Charged in Alleged $4 Million Pennsylvania Medicaid Fraud Scheme","img":"/4-million-fraud.webp","updated":1786951151,"published":1786406400},{"path":"/news-meek-mill-shapiro.html","title":"Josh Shapiro Appears Alongside Meek Mill in New Philly Music Video","img":"/meek-mill-gov-josh.jpg","updated":1786951151,"published":1786492800},{"path":"/news-minimum-wage-2026.html","title":"Minimum Wage Across All 50 States in 2026: What Workers Are Earning","img":"/minimum-wage.webp","updated":1786951151,"published":1786579200},{"path":"/news-music.html","title":"Music News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786952508,"published":1786924800},{"path":"/news-national.html","title":"National News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786951978,"published":1786665600},{"path":"/news-nba-youngboy-south-korea.html","title":"NBA YoungBoy Says He May Never Return to America After South Korea Trip","img":"/nbayoungboy.jpeg","updated":1786951152,"published":1786492800},{"path":"/news-pop-smoke-murder-convict.html","title":"Pop Smoke Murder Convict Gets 4 More Years in Fentanyl Case","img":"/pop-smoke-Corey-Walker.jpg","updated":1786952497,"published":1786924800},{"path":"/news-ne-yo.html","title":"Ne-Yo Hit With Lawsuit Over Alleged Dog Attack at Georgia Property","img":"/ne-yo.jpeg","updated":1786951152,"published":1786406400},{"path":"/news-nfl-investment-scam.html","title":"Man at Center of Alleged NFL Investment Scam Dies as Players Seek Millions in Lost Money","img":"/nfl-scammer-found-dead.avif","updated":1786951152,"published":1786492800},{"path":"/news-penn-state-cocaine-fraternities.html","title":"14 Charged in Alleged Cocaine Operation Connected to Penn State Fraternities","img":"/college-student-drug-lords.jpeg","updated":1787059951,"published":1787011200},{"path":"/news-trina-seventh-album.html","title":"Trina Teases Seventh Album as Potential Final Chapter of Her Rap Career","img":"/trina-rapper.jpeg","updated":1787057332,"published":1787011200},{"path":"/news-philadelphia-chucky-mask-suspect.html","title":"Masked Suspect Sought After Allegedly Threatening People in Center City Philadelphia","img":"/creepy-mask-guy.webp","updated":1787053431,"published":1787011200},{"path":"/news-nolan-wells.html","title":"Nolan Wells\u2019 Final Hours Raise New Questions as Friends and Parents Give Conflicting Accounts","img":"/nolan-wells.webp","updated":1786951152,"published":1786752000},{"path":"/news-philadelphia-father-killed.html","title":"Philadelphia Father Killed After Being Caught in Woodland Avenue Gunfire","img":"/innocemt-bystander-killed.webp","updated":1786951152,"published":1786579200},{"path":"/news-phillies-cardinals.html","title":"Phillies Hold Off Cardinals as Andrew Painter and Alan Rangel Rescue Depleted Bullpen","img":"/Phillies-win.jpeg","updated":1786951152,"published":1786406400},{"path":"/news-prichard-colon-dead.html","title":"Prichard Colon Dies at 33 After Decade-Long Battle From Devastating Boxing Injury","img":"/prichard-colon-dead.jpeg","updated":1786951152,"published":1786579200},{"path":"/news-puerto-rico.html","title":"Puerto Rico Water Shortage Intensifies as Drought Leads to Service Interruptions","img":"/puerto-rico.png","updated":1786951152,"published":1786320000},{"path":"/news-red-sox-blue-jays.html","title":"Bizarre Rules Confusion Causes 16-Minute Delay in Red Sox-Blue Jays Game","img":"/red-sox-blue-jays.webp","updated":1786951152,"published":1786406400},{"path":"/news-remy-ma-papoose.html","title":"Remy Ma Defies Papoose\u2019s Legal Warning \u2014 Performs Controversial Diss Track Anyway","img":"/remy-ma.webp","updated":1786951152,"published":1786579200},{"path":"/news-remy-ma-wanna-go.html","title":"Remy Ma Fires Back at Claressa Shields With Savage \u201cClearance Rack\u201d Diss on \u201cWanna Go\u201d","img":"/remy-claressa-papoose.webp","updated":1786951152,"published":1786665600},{"path":"/news-russell-westbrook-retirement.html","title":"Russell Westbrook Walks Away From NBA After Legendary 18-Year Run","img":"/russell-westbrook.webp","updated":1786951152,"published":1786579200},{"path":"/news-septa-doylestown-death.html","title":"25-Year-Old Man Dies After Climbing Onto SEPTA Train in Doylestown","img":"/septa-doylestown.webp","updated":1786951152,"published":1786579200},{"path":"/news-sports.html","title":"Sports News | DJWEIRDNASTY","img":"/djweirdnasty-banner.webp","updated":1786951152,"published":1786579200},{"path":"/news-statue-of-liberty.html","title":"Boat Captain Arrested After Fatal Capsizing Near Statue of Liberty","img":"/statue-of-liberty-incident.png","updated":1786951152,"published":1786233600},{"path":"/news-surrogate-texas.html","title":"Surrogate Refuses Abortion Request, Gives Birth to Baby With Serious Heart Defect in Texas","img":"/surrogate-texas.jpeg","updated":1786951152,"published":1786579200},{"path":"/news-tasia-fortune.html","title":"Investigation Underway After Mississippi Woman Is Found Dead Hanging From Tree","img":"/tasia-fortune.png","updated":1786951152,"published":1786320000},{"path":"/news-taylor-swift-nashville-hof.html","title":"Taylor Swift and Lyle Lovett Lead Nashville Songwriters Hall of Fame Class","img":"/songwriters-halloffame.webp","updated":1786951152,"published":1786492800},{"path":"/news-terrion-arnold-seahawks.html","title":"Terrion Arnold Reportedly Set to Join Seahawks While Facing Serious Felony Charges","img":"/terrion-arnold.jpg","updated":1786951152,"published":1786579200},{"path":"/news-thomas-ryan.html","title":"New York Man Charged After Deadly House Fire Leads to Homicide Investigation","img":"/thomas-ryan.png","updated":1786951152,"published":1786233600},{"path":"/news-three-executions.html","title":"Three Death Row Inmates Set to Die in Rare Same-Day Execution Across 3 States","img":"/three-executions.avif","updated":1786951152,"published":1786579200},{"path":"/news-tiffany-haddish-dui.html","title":"Tiffany Haddish Resolves Georgia DUI Case With Guilty Plea","img":"/tiffany-haddish.webp","updated":1786951152,"published":1786492800},{"path":"/news-timber-fire.html","title":"Timber Fire Nears 3,800 Acres as Big Sur Evacuations and Highway 1 Shutdown Continue","img":"/Timber-Fire2.webp","updated":1786951152,"published":1786492800},{"path":"/news-tupac-shakur-murder-trial.html","title":"Tupac Shakur Murder Trial Begins: Keefe D Case Brings Nearly 30 Years of Questions Back to Court","img":"/tupac-murder-trial.webp","updated":1786951152,"published":1786924800},{"path":"/news-tupac-trial.html","title":"Tupac Shakur Murder Trial Begins Nearly 30 Years After Rapper's Death","img":"/tupac-trial.jpeg","updated":1786951152,"published":1786320000},{"path":"/news-tyler-boebert-arrested.html","title":"Tyler Boebert Faces New Charges in Colorado Investigation","img":"/tyler-boebert-arrested.jpg","updated":1786951152,"published":1786406400},{"path":"/news-usher-clone.html","title":"Usher Laughs Off Viral Clone Rumors Following New Jersey Concert With Chris Brown","img":"/usher-clone.jpeg","updated":1786951152,"published":1786320000},{"path":"/news-wonder-man.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786951152,"published":1786320000},{"path":"/news-zuckerberg-superyacht-alaska.html","title":"Mark Zuckerberg's Superyacht at Center of Alaska Rescue Controversy","img":"/mark-zuckerberg.jpeg","updated":1786951152,"published":1786492800},{"path":"/news.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786951152,"published":1786579200},{"path":"/sol.html","title":"SOL | Sounds of Logan DJ Booking","img":"/djweirdnasty-banner.webp","updated":1786951152,"published":1786951152},{"path":"/news-kansas-family-tragedy.html","title":"Kansas Family Tragedy: Authorities Reveal Man's Criminal History and Alleged Family Murder-Suicide Plan","img":"/kansas-homicides.jpeg?v=1","updated":1787068281,"published":1787068281},{"path":"/news-outshine-fruit-bar-recall.html","title":"Check Your Freezer: Outshine Fruit Bars Pulled From Stores Over Possible Glass Contamination","img":"/outshine-fruit-bar-recall.webp","updated":1787071044,"published":1787071044},{"path":"/news-david-banner-where-you-from.html","title":"David Banner Connects Southern Rap Generations on \u201cWHERE YOU FROM?\u201d","img":"/david-banner-where-you-from.jpeg","updated":1787071908,"published":1787071908},{"path":"/news-frawst-1-million-streams.html","title":"Frawst Celebrates 1 Million Spotify Streams With \u201cBroken\u201d","img":"/frawst.jpg","updated":1787072619,"published":1787072619},{"path":"/news-ykc-dohtty-viral-altercation.html","title":"Yung Kash Capre and Dohtty Address Viral Philadelphia Altercation","img":"/ykc-vs-dohtty.jpeg","updated":1787074405,"published":1787074405},{"path":"/news-fast-forever-2028.html","title":"Fast Forever Set to Arrive in 2028 as Fast & Furious Saga Nears Its End","img":"/fast-forever.jpeg","updated":1787094689,"published":1787094689},{"path":"/news-brock-rechsteiner-takedown.html","title":"NFL Practice Erupts as Saints Receiver Brock Rechsteiner Brings Wrestling Family Legacy to the Field","img":"/scott-steiner-son.avif","updated":1787109243,"published":1787109243},{"path":"/news-indiana-power-outage.html","title":"Northwest Indiana Battles Prolonged Blackouts as Crews Work Through Massive Storm Damage","img":"/indiana-power-outage.webp","updated":1787109903,"published":1787109903},{"path":"/news-nelly-miss-everything-celz.html","title":"Nelly Miss Everything and Everything Celz Keep Philadelphia Laughing","img":"/Everything-celz.png","updated":1787227706,"published":1787227706},{"path":"/news-cj-wallace-voletta-estate.html","title":"CJ Wallace Takes Legal Action Over Changes to Voletta Wallace's Estate","img":"/biggie-son.jpeg","updated":1787328000,"published":1787328000},{"path":"/news-california-tire-rules.html","title":"California Approves New Tire Rules That Will Change Replacement Options for Drivers","img":"/tires.jpg","updated":1787328000,"published":1787328000},{"path":"/news-lil-yachty-wwe-debut-baron-corbin.html","title":"Lil Yachty's WWE Debut Draws Fan Backlash as Rapper Prepares for Five-Minute Match With Baron Corbin","img":"/lil-yachty.jpeg","updated":1787587200,"published":1787587200},{"path":"/news-kensington-shooting-35-year-old-killed.html","title":"35-Year-Old Man Killed in Early-Morning Kensington Shooting as Philadelphia Police Search for Suspect","img":"/35-year-old-killed.jpeg","updated":1787587200,"published":1787587200},{"path":"/news-karmelo-anthony-trial-denied.html","title":"Judge Denies Karmelo Anthony's Request for New Trial in Austin Metcalf Stabbing Case","img":"/karmelo-anthony.jpeg","updated":1787673600,"published":1787673600},{"path":"/event-recaps.html","title":"Event Recaps | DJWEIRDNASTY","img":"/muggatime.PNG","updated":1787587200,"published":1787587200},{"path":"/recap-philly-artist-showcase-2021.html","title":"Philly Artist Showcase 2021 | DJWEIRDNASTY Event Recap","img":"/phila-showcase-flyer-1.jpg","updated":1787587200,"published":1624320000},{"path":"/recap-welcome-2-muggatime.html","title":"Welcome 2 Muggatime | DJWEIRDNASTY Event Recap","img":"/muggatime.PNG","updated":1787587200,"published":1787587200},{"path":"/recap-halloween-trendsetters-2024.html","title":"Halloween at Trendsetters 2024 | DJWEIRDNASTY Event Recap","img":"/halloween-trendsetters-flyer.jpg","updated":1787587200,"published":1729728000},{"path":"/recap-reid-family-barbecue-2017.html","title":"Reid Family Barbecue 2017 | DJWEIRDNASTY Event Recap","img":"/reid-family-barbecue-flyer.jpg","updated":1787673600,"published":1499472000},{"path":"/news-ohio-doctor-adolescent-homicide-killed.html","title":"Ohio Doctor Who Studied Adolescent Homicide Killed in Alleged Plot Involving Her Daughter","img":"/homicidal-adolescent.webp","updated":1787587200,"published":1787587200},{"path":"/news-connecticut-lottery-ticket-too-late.html","title":"Connecticut Man Missed $5.8 Million Lottery Jackpot After Discovering Winning Ticket Too Late","img":"/clearence-jackson.avif","updated":1787587200,"published":1787587200},{"path":"/news-arkansas-woman-sentenced-20-years.html","title":"Arkansas Woman Sentenced to 20 Years After Shooting Ex-Boyfriend 17 Times","img":"/rebecca-jane.webp","updated":1787587200,"published":1787587200},{"path":"/news-bunny-levine-dead-at-97.html","title":"Bunny Levine Dead at 97: Remembering the 'Gilmore Girls' and 'Everybody Loves Raymond' Actress","img":"/bunny-levine.jpg","updated":1787500800,"published":1787500800},{"path":"/news-demon-hunter-sues-netflix.html","title":"Demon Hunter Sues Netflix Over 'KPop Demon Hunters' Branding, Alleging Trademark Confusion | DJWEIRDNASTY News","img":"/netflix-sued.jpg","updated":1787760000,"published":1787760000},{"path":"/news-tim-curry-dies-at-80.html","title":"Tim Curry, 'Rocky Horror Picture Show' and 'It' Icon, Dies at 80 | DJWEIRDNASTY News","img":"/tim-curry.jpeg","updated":1787760000,"published":1787760000},{"path":"/news-texas-drag-show-law-struck-down.html","title":"Federal Judge Strikes Down Texas Drag Show Law Again, Citing First Amendment Concerns | DJWEIRDNASTY News","img":"/drag-queen-texs-ban.webp","updated":1787760000,"published":1787760000},{"path":"/news-meta-17-billion-settlement.html","title":"Meta Agrees to $17 Billion Settlement With States Over Alleged Harm to Children | DJWEIRDNASTY News","img":"/meta-settlement-17billion.jpg","updated":1787760000,"published":1787760000},{"path":"/news-fbi-takes-down-chinese-hacker-network.html","title":"FBI Takes Down Network Accused of Helping Chinese Hackers Target U.S. Systems | DJWEIRDNASTY News","img":"/fbi-disrupt-proxy.webp","updated":1787760000,"published":1787760000},{"path":"/news-michael-wright-five-heartbeats-dies.html","title":"Michael Wright, \u2018The Five Heartbeats\u2019 Star, Dies at 70","img":"/Michael-wright.webp","updated":1787414400,"published":1787414400},{"path":"/news-pierre-thomas-quality-control-heart-attack.html","title":"Quality Control Co-Founder Pierre \u201cP\u201d Thomas Hospitalized After Reported Heart Attack","img":"/qcp.jpeg","updated":1787328000,"published":1787328000},{"path":"/news-solomon-beebe-animal-cruelty.html","title":"Virginia Running Back Solomon Beebe Faces Animal Cruelty Charges Ahead of Season Opener","img":"/solomon-beebe.jpg","updated":1787328000,"published":1787328000},{"path":"/news-chris-brown-tour-income-13-million-judgment.html","title":"Chris Brown Faces $13.8M Judgment Fight as Former Housekeeper Targets Tour Income","img":"/chris-brown-legal-fees.webp","updated":1787328000,"published":1787328000},{"path":"/news-navy-doris-miller-carrier.html","title":"Navy Considers Renaming Carrier Named for Pearl Harbor Hero Doris Miller","img":"/navy-black-guy.avif","updated":1787328000,"published":1787328000},{"path":"/news-florida-officer-tracking-estranged-wife.html","title":"Florida Officer Accused of Repeatedly Tracking Estranged Wife Through License Plate Cameras","img":"/florida-police-officer-recording-wife.jpeg","updated":1787644291,"published":1787644291}];
+const CAROUSEL_CONTENTS = [{"path":"/content.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.png","updated":1786907536,"published":1786907536},{"path":"/event-ghetto-house-party.html","title":"Ghetto House Party","img":"/Ghetto-house-party.JPEG","updated":1786901179,"published":1786901179},{"path":"/event-krew-nasa.html","title":"KREW NASA: Out of This World Tour 2026","img":"/krew-nasa-cities.jpeg","updated":1786901179,"published":1786901179},{"path":"/event-muggatime.html","title":"Welcome 2 Muggatime presented by Prophit Mugga Maniak","img":"/muggatime.PNG","updated":1786901179,"published":1786901179},{"path":"/event-murrdah-season.html","title":"MURRDAH SEASON MONDAY","img":"/murrdahseasonmonday.png","updated":1786901179,"published":1786901179},{"path":"/event-philly-skate-plex.html","title":"Philly Skate Plex Family Session","img":"/Philly-skate-logo.webp","updated":1786901179,"published":1786901179},{"path":"/event-private-booking.html","title":"Private Event Booking","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786901179},{"path":"/index.html","title":"Ayo Weird Get it popping","img":"/djweirdnasty-banner.png","updated":1786908066,"published":1786908066},{"path":"/mixtapes.html","title":"Mixtapes | DJWEIRDNASTY","img":"/helladelphia-mixtapte-vol1.webp","updated":1786901179,"published":1786901179},{"path":"/mud-music-episode-1.html","title":"Episode 1 - MAN BEHIND THE CAMERA (Pilot)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-10.html","title":"Episode 10 - New York Underground (A-TEAM)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-11.html","title":"Episode 11 - Jewstallion Talian (Alex Bate)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-12.html","title":"Episode 12 - 90's Baby (Mya Allure)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-13.html","title":"MUD MUSIC Top 10 Countdown ep 13: Not The Radio Guy (Kerv Swerve)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-2.html","title":"Episode 2 - Venomous Effect (MR_SMITH_PHL)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-3.html","title":"Episode 3 - House Get a Cut (Traphouse Terrance)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-4.html","title":"Episode 4 - Don't Take It Personal (DTP Mantana)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-5.html","title":"Episode 5 - We Got Action (MFD)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-6.html","title":"Episode 6 - Ron Murrdah (Flavor Team)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-7.html","title":"MUD MUSIC Top 10 Countdown ep 7: GA2PA (DASHMANODB)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-8.html","title":"MUD MUSIC Top 10 Countdown ep 8: LOVE TRUMPS ALL (Onarres Serrano)","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode-9.html","title":"Episode 9 - I AM H3RSH3Y","img":"/djweirdnasty-banner.png","updated":1786723849,"published":1786723849},{"path":"/mud-music-episode.html","title":"MUD MUSIC Top 10 Countdown","img":"/mud-music-logo.png","updated":1786901179,"published":1786901179},{"path":"/murrdah-season-monday.html","title":"Murrdah Season Monday \"Ayo Weird meet Skrilla & Ron Murrdah first time using Public Transportation\"","img":"/murrdah-og.jpg","updated":1786901179,"published":1786233600},{"path":"/news-ben-jones.html","title":"Ben Jones, Best Known as Cooter on 'The Dukes of Hazzard,' Dies at 84","img":"/ben-jones.jpg","updated":1786901179,"published":1786320000},{"path":"/news-brittany-boltinhouse.html","title":"Crown Taken Away, Legal Fight May Be Next for Former Miss North Carolina USA","img":"/Brittany-Boltinhouse.webp","updated":1786901179,"published":1786579200},{"path":"/news-colombia-earthquake.html","title":"Powerful 7.4 Quake Rocks Colombia as Rescue Crews Search Collapsed Buildings","img":"/columbia-earthquake.png","updated":1786901179,"published":1786320000},{"path":"/news-concord-mall-demolition.html","title":"Concord Mall Could Face Major Demolition and Redevelopment","img":"/delaware-concord-mall.webp","updated":1786901179,"published":1786665600},{"path":"/news-daycare-worker-arrested.html","title":"Bucks County Preschool Worker Charged After Alleged Assault of 2-Year-Old","img":"/day-care-worker-arrested.webp","updated":1786901179,"published":1786406400},{"path":"/news-deadly-midwest-storm.html","title":"Deadly Midwest Storms Leave 3 Dead and Nearly 800,000 Without Power","img":"/mid-town-storm.jpg","updated":1786901179,"published":1786492800},{"path":"/news-don-nelson.html","title":"The NBA Loses a Basketball Visionary: Don Nelson Dies at 86","img":"/don-nelson.png","updated":1786901179,"published":1786233600},{"path":"/news-entertainment.html","title":"Entertainment News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786579200},{"path":"/news-fantasy-football-2026.html","title":"Fantasy Football 2026: Players You May Want to Avoid at Their Current Draft Price","img":"/fantasy-football-2026.png","updated":1786901179,"published":1786320000},{"path":"/news-fever-stephanie-white.html","title":"Fever Rally Around Stephanie White in Statement Win Over Liberty","img":"/coach-stephanie-white.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-google-pixel-11.html","title":"Google Bets Big on AI as New Pixel 11 Phones Bring Bigger Storage and Camera Upgrades","img":"/google-new-phone.webp","updated":1786901179,"published":1786579200},{"path":"/news-hobbs-giles.html","title":"Hobbs Names Former Mesa Republican Mayor John Giles as Running Mate","img":"/katie-hobbs-john-giles.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-instagram-logo-redesign.html","title":"Instagram Gives Its Logo a Fresh Look \u2014 But Users Are Already Roasting the Redesign","img":"/instagram-new-logo.webp","updated":1786901179,"published":1786579200},{"path":"/news-las-vegas-assault-arrest.html","title":"Man Dies After Downtown Las Vegas Assault; Suspect Arrested","img":"/las-vegas-fight.webp","updated":1786901179,"published":1786665600},{"path":"/news-las-vegas-fentanyl.html","title":"Federal Investigation Leads to Seven Arrests in Alleged Las Vegas Fentanyl Network","img":"/drugs-from-raid.avif","updated":1786901179,"published":1786320000},{"path":"/news-las-vegas-shooting.html","title":"Las Vegas Domestic Disturbance Turns Deadly, Leaving Officer Injured and Two Dead","img":"/lasvegascrimescene.png","updated":1786901179,"published":1786320000},{"path":"/news-lil-durk-pissed-me-off.html","title":"Lil Durk\u2019s \u201cPissed Me Off\u201d Music Video Allowed as Evidence in Federal Trial","img":"/lil-durk-mug-shot.jpg","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-guilty-plea.html","title":"Luigi Mangione Admits Role in Killing of UnitedHealthcare CEO in Federal Guilty Plea","img":"/luigi-mangione-attends-pre-trial-137082044.webp","updated":1786901179,"published":1786665600},{"path":"/news-luigi-mangione-plea.html","title":"Luigi Mangione Could Change His Plea as Federal Case Takes New Turn","img":"/luigi-mangione-case.webp","updated":1786901179,"published":1786579200},{"path":"/news-medicaid-fraud.html","title":"19 Charged in Alleged $4 Million Pennsylvania Medicaid Fraud Scheme","img":"/4-million-fraud.png","updated":1786901179,"published":1786406400},{"path":"/news-meek-mill-shapiro.html","title":"Josh Shapiro Appears Alongside Meek Mill in New Philly Music Video","img":"/meek-mill-gov-josh.jpg","updated":1786901179,"published":1786492800},{"path":"/news-minimum-wage-2026.html","title":"Minimum Wage Across All 50 States in 2026: What Workers Are Earning","img":"/minimum-wage.png","updated":1786901179,"published":1786579200},{"path":"/news-music.html","title":"Music News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786665600},{"path":"/news-national.html","title":"National News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786752000},{"path":"/news-nba-youngboy-south-korea.html","title":"NBA YoungBoy Says He May Never Return to America After South Korea Trip","img":"/nbayoungboy.jpeg","updated":1786901179,"published":1786492800},{"path":"/news-ne-yo.html","title":"Ne-Yo Hit With Lawsuit Over Alleged Dog Attack at Georgia Property","img":"/ne-yo.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-nfl-investment-scam.html","title":"Man at Center of Alleged NFL Investment Scam Dies as Players Seek Millions in Lost Money","img":"/nfl-scammer-found-dead.avif","updated":1786901179,"published":1786492800},{"path":"/news-nolan-wells.html","title":"Nolan Wells\u2019 Final Hours Raise New Questions as Friends and Parents Give Conflicting Accounts","img":"/nolan-wells.webp","updated":1786901179,"published":1786752000},{"path":"/news-philadelphia-father-killed.html","title":"Philadelphia Father Killed After Being Caught in Woodland Avenue Gunfire","img":"/innocemt-bystander-killed.webp","updated":1786901179,"published":1786579200},{"path":"/news-phillies-cardinals.html","title":"Phillies Hold Off Cardinals as Andrew Painter and Alan Rangel Rescue Depleted Bullpen","img":"/Phillies-win.jpeg","updated":1786901179,"published":1786406400},{"path":"/news-prichard-colon-dead.html","title":"Prichard Colon Dies at 33 After Decade-Long Battle From Devastating Boxing Injury","img":"/prichard-colon-dead.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-puerto-rico.html","title":"Puerto Rico Water Shortage Intensifies as Drought Leads to Service Interruptions","img":"/puerto-rico.png","updated":1786901179,"published":1786320000},{"path":"/news-red-sox-blue-jays.html","title":"Bizarre Rules Confusion Causes 16-Minute Delay in Red Sox-Blue Jays Game","img":"/red-sox-blue-jays.png","updated":1786901179,"published":1786406400},{"path":"/news-remy-ma-papoose.html","title":"Remy Ma Defies Papoose\u2019s Legal Warning \u2014 Performs Controversial Diss Track Anyway","img":"/remy-ma.jpg","updated":1786901179,"published":1786579200},{"path":"/news-remy-ma-wanna-go.html","title":"Remy Ma Fires Back at Claressa Shields With Savage \u201cClearance Rack\u201d Diss on \u201cWanna Go\u201d","img":"/remy-claressa-papoose.jpg","updated":1786901179,"published":1786665600},{"path":"/news-russell-westbrook-retirement.html","title":"Russell Westbrook Walks Away From NBA After Legendary 18-Year Run","img":"/russell-westbrook.webp","updated":1786901179,"published":1786579200},{"path":"/news-septa-doylestown-death.html","title":"25-Year-Old Man Dies After Climbing Onto SEPTA Train in Doylestown","img":"/septa-doylestown.png","updated":1786901179,"published":1786579200},{"path":"/news-sports.html","title":"Sports News | DJWEIRDNASTY","img":"/djweirdnasty-banner.png","updated":1786901179,"published":1786579200},{"path":"/news-statue-of-liberty.html","title":"Boat Captain Arrested After Fatal Capsizing Near Statue of Liberty","img":"/statue-of-liberty-incident.png","updated":1786901179,"published":1786233600},{"path":"/news-surrogate-texas.html","title":"Surrogate Refuses Abortion Request, Gives Birth to Baby With Serious Heart Defect in Texas","img":"/surrogate-texas.jpeg","updated":1786901179,"published":1786579200},{"path":"/news-tasia-fortune.html","title":"Investigation Underway After Mississippi Woman Is Found Dead Hanging From Tree","img":"/tasia-fortune.png","updated":1786901179,"published":1786320000},{"path":"/news-taylor-swift-nashville-hof.html","title":"Taylor Swift and Lyle Lovett Lead Nashville Songwriters Hall of Fame Class","img":"/songwriters-halloffame.png","updated":1786901179,"published":1786492800},{"path":"/news-terrion-arnold-seahawks.html","title":"Terrion Arnold Reportedly Set to Join Seahawks While Facing Serious Felony Charges","img":"/terrion-arnold.jpg","updated":1786901179,"published":1786579200},{"path":"/news-thomas-ryan.html","title":"New York Man Charged After Deadly House Fire Leads to Homicide Investigation","img":"/thomas-ryan.png","updated":1786901179,"published":1786233600},{"path":"/news-three-executions.html","title":"Three Death Row Inmates Set to Die in Rare Same-Day Execution Across 3 States","img":"/three-executions.avif","updated":1786901179,"published":1786579200},{"path":"/news-tiffany-haddish-dui.html","title":"Tiffany Haddish Resolves Georgia DUI Case With Guilty Plea","img":"/tiffany-haddish.webp","updated":1786901179,"published":1786492800},{"path":"/news-timber-fire.html","title":"Timber Fire Nears 3,800 Acres as Big Sur Evacuations and Highway 1 Shutdown Continue","img":"/Timber-Fire2.webp","updated":1786901179,"published":1786492800},{"path":"/news-tupac-trial.html","title":"Tupac Shakur Murder Trial Begins Nearly 30 Years After Rapper's Death","img":"/tupac-trial.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-tyler-boebert-arrested.html","title":"Tyler Boebert Faces New Charges in Colorado Investigation","img":"/tyler-boebert-arrested.jpg","updated":1786901179,"published":1786406400},{"path":"/news-usher-clone.html","title":"Usher Laughs Off Viral Clone Rumors Following New Jersey Concert With Chris Brown","img":"/usher-clone.jpeg","updated":1786901179,"published":1786320000},{"path":"/news-wonder-man.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786901179,"published":1786320000},{"path":"/news-zuckerberg-superyacht-alaska.html","title":"Mark Zuckerberg's Superyacht at Center of Alaska Rescue Controversy","img":"/mark-zuckerberg.jpeg","updated":1786901179,"published":1786492800},{"path":"/news.html","title":"Disney+ Cancels Marvel Series 'Wonder Man' After One Season","img":"/wonder-man-marvel.jpg","updated":1786907546,"published":1786579200}];
 
 function renderCarousel(items) {
   const track = document.querySelector('#content-carousel .carousel-track');
