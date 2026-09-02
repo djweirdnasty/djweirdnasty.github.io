@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; upgrade-insecure-requests">
   <title>Newsletter Admin | DJWEIRDNASTY</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -89,10 +89,39 @@
     .preview-frame { width: 100%; min-height: 400px; border: 1px solid #2a2a3a; border-radius: 8px; background: #fff; }
 
     a { color: #4fa8ff; }
+
+    /* Site nav bar */
+    .site-header { background: #000; padding: 0; border-bottom: 1px solid rgba(255,91,215,0.2); }
+    .site-header .inner { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+    .site-banner img { display: block; max-height: 80px; width: auto; margin: 8px auto; }
+    .site-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0; padding: 0 0 10px; }
+    .site-nav a { color: #ccc; text-decoration: none; font-size: 0.8rem; padding: 6px 12px; border-radius: 6px; transition: color .15s, background .15s; }
+    .site-nav a:hover { color: #ff5bd7; background: rgba(255,91,215,0.08); }
   </style>
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 </head>
 <body>
+  <!-- Site nav bar -->
+  <header class="site-header">
+    <div class="inner">
+      <div class="site-banner">
+        <img src="{{ website_url }}/djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY">
+      </div>
+      <nav class="site-nav">
+        <a href="{{ website_url }}/">Home</a>
+        <a href="{{ website_url }}/index.html#about">About</a>
+        <a href="{{ website_url }}/index.html#events">Events</a>
+        <a href="{{ website_url }}/news.html">News</a>
+        <a href="{{ website_url }}/mixtapes.html">Mixtapes</a>
+        <a href="{{ website_url }}/content.html">Content</a>
+        <a href="{{ website_url }}/sol.html">SOL</a>
+        <a href="{{ website_url }}/index.html#newsletter">Newsletter</a>
+        <a href="{{ website_url }}/contact.html">Contact</a>
+        <a href="{{ website_url }}/privacy-policy.html">Privacy</a>
+      </nav>
+    </div>
+  </header>
+
   <div class="container">
     <h1>Newsletter Admin</h1>
 
