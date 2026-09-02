@@ -4063,6 +4063,13 @@
 
         status.textContent = 'Booking created. Redirecting to payment...';
         status.style.color = '#ffd860';
+        if (typeof gtag === 'function') {
+          gtag('event', 'booking_created', {
+            'event_category': 'engagement',
+            'event_label': payload.event_type,
+            'booking_id': bookingId
+          });
+        }
 
         return fetch(API_BASE + '/api/payments/create-checkout-session', {
           method: 'POST',
@@ -4856,6 +4863,12 @@
       if (paid === '1') {
         status.textContent = 'Payment successful! Your booking is confirmed.';
         status.style.color = '#22c55e';
+        if (typeof gtag === 'function') {
+          gtag('event', 'booking_completed', {
+            'event_category': 'engagement',
+            'booking_id': bookingIdParam
+          });
+        }
         if (pending && pending.bookingId === bookingIdParam) {
           createOrOpenConversation(bookingIdParam, pending.djId, pending.djName);
         }
