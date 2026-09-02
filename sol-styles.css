@@ -1,0 +1,504 @@
+    /* ===== SOL App Styles ===== */
+    #sol-app-content { max-width: 100%; }
+
+    /* All .submit-btn buttons get consistent styling */
+    .submit-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ff4d8f 0%, #e33471 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(255, 77, 143, 0.3);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .submit-btn:hover, .submit-btn:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(255, 77, 143, 0.45);
+      filter: brightness(1.1);
+    }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Inputs & selects inside SOL */
+    #sol-app-content input[type="text"],
+    #sol-app-content input[type="email"],
+    #sol-app-content input[type="password"],
+    #sol-app-content input[type="number"],
+    #sol-app-content input[type="tel"],
+    #sol-app-content input[type="date"],
+    #sol-app-content input[type="url"],
+    #sol-app-content select,
+    #sol-app-content textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.5);
+      color: #f4f4f4;
+      font: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #sol-app-content input:focus,
+    #sol-app-content select:focus,
+    #sol-app-content textarea:focus {
+      outline: none;
+      border-color: #ff4d8f;
+      box-shadow: 0 0 0 3px rgba(255, 77, 143, 0.15);
+    }
+    #sol-app-content select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ff4d8f' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.85rem center;
+      padding-right: 2rem;
+    }
+    #sol-app-content label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ccc;
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section headings */
+    #sol-app-content h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ff4d8f;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(255, 77, 143, 0.2);
+    }
+    #sol-app-content h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffd860;
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    /* Cards */
+    #sol-app-content div[style*="background:#111"] {
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* Account bar */
+    #sol-account-bar {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Auth gate */
+    #sol-gate {
+      max-width: 440px;
+    }
+    #sol-account-box {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.25) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 77, 143, 0.08);
+    }
+
+    /* Admin stats cards */
+    #sol-admin-console > div:first-child > div {
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #sol-admin-console > div:first-child > div:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+    }
+
+    /* Admin tab buttons */
+    #sol-admin-console .submit-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      background: rgba(30, 30, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+    #sol-admin-console .submit-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+      border-color: rgba(255, 77, 143, 0.3);
+    }
+
+    /* DJ Console sections */
+    #sol-dj-console > div[style*="background:#111"],
+    #sol-dj-console form[style*="background:#111"] {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.15) !important;
+    }
+
+    /* DJ profile header */
+    #sol-dj-profile {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.25) !important;
+    }
+
+    /* DJ status pills */
+    #sol-dj-console > div[style*="grid-template-columns:repeat(2"] > div {
+      border-radius: 12px !important;
+      transition: transform 0.2s;
+    }
+    #sol-dj-console > div[style*="grid-template-columns:repeat(2"] > div:hover {
+      transform: translateY(-1px);
+    }
+
+    /* DJ carousel cards */
+    #sol-dj-track > div {
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    #sol-dj-track > div:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(255, 77, 143, 0.2);
+      border-color: rgba(255, 77, 143, 0.5) !important;
+    }
+
+    /* Carousel nav buttons */
+    #sol-dj-prev, #sol-dj-next {
+      background: rgba(20, 20, 20, 0.9) !important;
+      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+      min-width: 40px;
+    }
+    #sol-dj-prev:hover, #sol-dj-next:hover {
+      background: rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Filter bar */
+    #sol-dj-filter-name,
+    #sol-dj-filter-genre,
+    #sol-dj-filter-price,
+    #sol-dj-filter-sort {
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Price breakdown */
+    #sol-price-breakdown {
+      background: linear-gradient(135deg, rgba(255, 77, 143, 0.06) 0%, rgba(0, 0, 0, 0.4) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Modals */
+    #sol-dj-profile-modal > div,
+    #sol-rate-modal > div {
+      background: linear-gradient(135deg, #161616 0%, #0a0a0a 100%) !important;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 77, 143, 0.1);
+    }
+
+    /* Star rating */
+    .sol-star:hover, .sol-star.sol-star-active {
+      color: #ffd860 !important;
+      transform: scale(1.15);
+      transition: all 0.15s;
+    }
+
+    /* Chat box */
+    #sol-chat-box {
+      background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
+      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+    }
+
+    /* Blocked date chips */
+    #sol-dj-blocked-dates > div {
+      transition: transform 0.15s;
+    }
+    #sol-dj-blocked-dates > div:hover {
+      transform: scale(1.03);
+    }
+
+    /* Gallery thumbnails */
+    #sol-dj-gallery > div {
+      transition: transform 0.2s;
+    }
+    #sol-dj-gallery > div:hover {
+      transform: scale(1.05);
+    }
+
+    /* Scrollbar styling for SOL */
+    #sol-dj-track::-webkit-scrollbar { display: none; }
+    #sol-app-content ::-webkit-scrollbar { width: 6px; }
+    #sol-app-content ::-webkit-scrollbar-track { background: transparent; }
+    #sol-app-content ::-webkit-scrollbar-thumb { background: rgba(255, 77, 143, 0.3); border-radius: 3px; }
+    #sol-app-content ::-webkit-scrollbar-thumb:hover { background: rgba(255, 77, 143, 0.5); }
+
+    /* Mapbox GL JS dark theme overrides */
+    #sol-map .mapboxgl-popup-content {
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      border: 1px solid #ff4d8f;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    #sol-map .mapboxgl-popup-tip { border-top-color: #ff4d8f; border-bottom-color: #ff4d8f; }
+    #sol-map .mapboxgl-popup-close-button {
+      color: #fff;
+      font-size: 1.1rem;
+      padding: 2px 6px;
+      right: 2px;
+      top: 2px;
+    }
+    #sol-map .mapboxgl-popup-close-button:hover { background: rgba(255,77,143,0.3); }
+    #sol-map .mapboxgl-ctrl-group { background: #1a1a1a; border: 1px solid #333; }
+    #sol-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
+    #sol-map .mapboxgl-ctrl-icon { filter: invert(1); }
+    #sol-map .mapboxgl-canvas { outline: none; }
+    #sol-map .mapboxgl-ctrl-logo { display: none !important; }
+    #sol-dj-event-map .mapboxgl-popup-content {
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      border: 1px solid #ff4d8f;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    #sol-dj-event-map .mapboxgl-popup-tip { border-top-color: #ff4d8f; border-bottom-color: #ff4d8f; }
+    #sol-dj-event-map .mapboxgl-popup-close-button { color: #fff; font-size: 1.1rem; padding: 2px 6px; right: 2px; top: 2px; }
+    #sol-dj-event-map .mapboxgl-popup-close-button:hover { background: rgba(255,77,143,0.3); }
+    #sol-dj-event-map .mapboxgl-ctrl-group { background: #1a1a1a; border: 1px solid #333; }
+    #sol-dj-event-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
+    #sol-dj-event-map .mapboxgl-ctrl-icon { filter: invert(1); }
+    #sol-dj-event-map .mapboxgl-canvas { outline: none; }
+    #sol-dj-event-map .mapboxgl-ctrl-logo { display: none !important; }
+    #sol-map-brand-logo {
+      position: absolute;
+      bottom: 6px;
+      left: 8px;
+      height: 24px;
+      z-index: 2;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+    }
+
+    /* Mobile */
+    @media (max-width: 720px) {
+      .sol-map-app { flex-direction: column !important; height: 600px !important; }
+      .sol-map-sidebar { width: 100% !important; min-width: 0 !important; max-height: 280px; border-right: none !important; border-bottom: 1px solid #333; }
+      .sol-map-wrap { height: 320px; }
+
+      /* Admin stats: 2-col on mobile */
+      #sol-admin-console > div:first-child { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+      #sol-admin-console > div:first-child > div { padding: 0.6rem !important; }
+      #sol-admin-console > div:first-child > div > div:first-child { font-size: 1.1rem !important; }
+
+      /* Admin tab buttons: scrollable row */
+      #sol-admin-console > div[style*="flex-wrap:wrap"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+      }
+      #sol-admin-console > div[style*="flex-wrap:wrap"] .submit-btn {
+        flex-shrink: 0;
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+      }
+
+      /* Admin earnings summary: stack */
+      #sol-admin-panel-earnings > div[style*="grid-template-columns:repeat(3"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* Headings */
+      #sol-app-content h2 { font-size: 1.25rem; }
+      #sol-app-content h3 { font-size: 1rem; }
+
+      /* Account bar: stack */
+      #sol-account-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      #sol-account-bar > div { justify-content: center; flex-wrap: wrap; }
+      #sol-account-bar .submit-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+
+      /* Auth gate */
+      #sol-gate { margin: 1rem auto; }
+      #sol-account-box { padding: 1rem !important; }
+
+      /* DJ Console: stack status grid */
+      #sol-dj-console > div[style*="grid-template-columns:repeat(2"] {
+        grid-template-columns: 1fr !important;
+      }
+
+      /* DJ Console: full width on mobile */
+      #sol-dj-console { padding: 0; }
+      #sol-dj-console > div,
+      #sol-dj-console > form {
+        padding: 1rem !important;
+      }
+
+      /* DJ profile header: smaller avatar */
+      #sol-dj-profile img,
+      #sol-dj-profile > div[style*="border-radius:36px"] {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 28px !important;
+        font-size: 22px !important;
+      }
+
+      /* DJ carousel: smaller cards */
+      #sol-dj-track > div {
+        flex: 0 0 220px !important;
+        min-width: 220px !important;
+        padding: 0.75rem !important;
+      }
+      #sol-dj-track > div img,
+      #sol-dj-track > div > div[style*="100px"] {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 28px !important;
+      }
+
+      /* Filter bar: stack */
+      #sol-app-content > div > div[style*="gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap"] {
+        flex-direction: column;
+      }
+      #sol-app-content > div > div[style*="gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap"] > * {
+        width: 100% !important;
+      }
+
+      /* Quick form: full width inputs */
+      #sol-quick-form { padding: 0; }
+      #sol-quick-form input,
+      #sol-quick-form select,
+      #sol-quick-form textarea {
+        max-width: 100% !important;
+      }
+      #sol-quick-form input[style*="max-width:120px"] {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Equipment section: stack */
+      #sol-quick-form > div[style*="flex-direction:column"] > div > input[style*="max-width:120px"] {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      /* Price breakdown: smaller text */
+      #sol-price-breakdown { padding: 0.75rem !important; }
+      #sol-price-breakdown p { font-size: 0.9rem !important; }
+
+      /* Modals: full width on mobile */
+      #sol-dj-profile-modal > div,
+      #sol-rate-modal > div {
+        max-width: 95% !important;
+        width: 95% !important;
+        max-height: 90vh !important;
+        padding: 1.25rem !important;
+      }
+      #sol-dj-profile-modal > div > div[style*="text-align:center"] img,
+      #sol-dj-profile-modal > div > div[style*="text-align:center"] > div[style*="120px"] {
+        width: 90px !important;
+        height: 90px !important;
+        font-size: 36px !important;
+      }
+
+      /* My Bookings cards: stack */
+      #sol-my-bookings > div[style*="flex-direction:row"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+
+      /* Promo/dispute/playlist sections: full width */
+      #sol-playlist-section,
+      #sol-app-content > div[style*="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem"] {
+        padding: 0.75rem !important;
+      }
+
+      /* Chat box: full width */
+      #sol-chat-box { padding: 0.75rem !important; }
+      #sol-chat-messages { max-height: 200px !important; }
+
+      /* DJ gallery: smaller thumbnails */
+      #sol-dj-gallery > div {
+        width: 80px !important;
+        height: 80px !important;
+      }
+      #sol-dj-gallery > div > img {
+        width: 80px !important;
+        height: 80px !important;
+      }
+
+      /* DJ earnings: smaller text */
+      #sol-dj-earnings { padding: 0.75rem !important; }
+
+      /* Admin DJ/user/booking cards: stack */
+      #sol-admin-djs-list > div[style*="display:flex"],
+      #sol-admin-users-list > div[style*="display:flex"],
+      #sol-admin-bookings-list > div[style*="display:flex"],
+      #sol-admin-earnings-list > div[style*="display:flex"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+      }
+      #sol-admin-djs-list > div img,
+      #sol-admin-users-list > div img,
+      #sol-admin-djs-list > div > div[style*="border-radius:50%"],
+      #sol-admin-users-list > div > div[style*="border-radius:50%"] {
+        width: 40px !important;
+        height: 40px !important;
+        align-self: center !important;
+      }
+      #sol-admin-djs-list > div .submit-btn,
+      #sol-admin-users-list > div .submit-btn,
+      #sol-admin-bookings-list > div .submit-btn {
+        width: 100% !important;
+        text-align: center !important;
+      }
+
+      /* Admin add DJ form: full width */
+      #sol-admin-add-dj-form { padding: 1rem !important; }
+
+      /* Admin verifications: stack buttons */
+      #sol-admin-verifications-list .submit-btn { width: 100% !important; }
+      #sol-admin-verifications-list > div[style*="display:flex; gap:0.5rem"] {
+        flex-direction: column !important;
+      }
+
+      /* Info section padding */
+      .info { padding: 1rem !important; border-radius: 16px !important; }
+
+      /* Container narrower on mobile */
+      .container { width: 92% !important; }
+
+      /* Footer */
+      footer { padding: 1rem 0 2rem !important; font-size: 0.85rem; }
+
+      /* New features mobile */
+      #sol-dj-calendar { padding: 0.75rem !important; }
+      #sol-cal-grid { gap: 1px !important; }
+      #sol-cal-grid > div { padding: 0.25rem !important; font-size: 0.7rem !important; }
+
+      #sol-dj-analytics { padding: 0.75rem !important; }
+      #sol-dj-analytics > div:first-child { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
+      #sol-dj-earnings-chart { height: 70px !important; }
+
+      #sol-setlist-booking,
+      #sol-client-review-booking,
+      #sol-tip-booking { font-size: 0.85rem !important; }
+
+      .sol-tip-btn { padding: 0.4rem 0.7rem !important; font-size: 0.85rem !important; }
+
+      #sol-loyalty-box { padding: 0.75rem !important; }
+
+      #sol-saved-djs > div { min-width: 100% !important; }
+
+      /* Admin settings: stack on mobile */
+      #sol-admin-panel-settings input { font-size: 0.9rem !important; }
+      #sol-admin-panel-settings h4 { font-size: 0.95rem !important; }
+    }
+
+    /* Extra small phones */
+    @media (max-width: 400px) {
+      #sol-admin-console > div:first-child { grid-template-columns: 1fr !important; }
+      #sol-dj-track > div { flex: 0 0 180px !important; min-width: 180px !important; }
+      #sol-app-content h2 { font-size: 1.1rem; }
+      .submit-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    }

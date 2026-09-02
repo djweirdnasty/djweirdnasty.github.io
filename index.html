@@ -13,7 +13,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://embed.music.apple.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://djweirdnasty-newsletter.onrender.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.gstatic.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://embed.music.apple.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://djweirdnasty-newsletter.onrender.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.firebaseio.com https://firestore.googleapis.com https://rork-dj-booking-payment-app.onrender.com https://api.mapbox.com https://events.mapbox.com https://nominatim.openstreetmap.org https://router.project-osrm.org; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -22,6 +22,8 @@
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff4d8f">
   <link rel="alternate" type="application/rss+xml" title="DJWEIRDNASTY News RSS Feed" href="/rss.xml">
   <title>DJWEIRDNASTY | Official Site - Mixtapes, Events &amp; Booking</title>
   <meta name="description" content="Official site of DJWEIRDNASTY: mixtapes, live events, MUD MUSIC Top 10 Countdown, Murrdah Season Monday, DJ booking, and the latest entertainment, music, and news.">
@@ -38,6 +40,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=14">
+  <link href="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="sol-styles.css?v=1">
+  <script src="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.js"></script>
+  <script>
+    var _p = ["pk.eyJ1Ijoia3VydGlzOTIiLCJhIjoiY2", "10Nzc1eG00MDNiejM0b3J5", "MmFidHdheiJ9.7EUB", "nHTVoRklWRODrFBISw"];
+    window.MAPBOX_ACCESS_TOKEN = _p.join("");
+    window.MAPBOX_STYLE_URL = "mapbox://styles/kurtis92/cmt779j1600gy01s4dr8u6o1x";
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
   <style>
@@ -140,7 +155,7 @@
         <a href="news.html">News</a>
         <a href="mixtapes.html">Mixtapes</a>
         <a href="content.html">Content</a>
-        <a href="sol.html">SOL</a>
+        <a href="#sol">SOL</a>
 
         <a href="#newsletter">Newsletter</a>
         <a href="contact.html">Contact</a>
@@ -320,6 +335,800 @@
         <a href="event-recaps.html" class="playlist-link" style="display: inline-block; background: #ff4d8f; color: #fff; padding: 0.7rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold;">Event Recaps &nearr;</a>
       </div>
     </section>
+
+    <section id="sol" class="info" style="text-align: left;">
+      <h1>Sounds of Logan (SOL)</h1>
+
+      <div id="sol-gate" style="max-width:420px; margin:2rem auto; text-align:center;">
+        <p>Sign in to book a DJ, message them, and pay securely — all in one place.</p>
+        <div id="sol-account-box" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin:1rem 0; text-align:left;">
+          <div id="sol-auth-forms">
+            <input id="sol-auth-name" type="text" placeholder="Your name" autocomplete="name" style="display:none; width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <input id="sol-auth-email" type="email" placeholder="Email" autocomplete="email" style="width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <input id="sol-auth-password" type="password" placeholder="Password" autocomplete="current-password" style="width:100%; margin-bottom:0.5rem; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <button type="button" id="sol-auth-submit" class="submit-btn" style="width:100%;">Sign In</button>
+            <p style="margin-top:0.75rem; font-size:0.85rem; text-align:center;">
+              <a href="#" id="sol-auth-toggle-mode" class="playlist-link">Need an account? Create one</a>
+            </p>
+            <p style="margin-top:0.35rem; font-size:0.85rem; text-align:center;"><a href="#" id="sol-auth-forgot" class="playlist-link">Forgot password?</a></p>
+          </div>
+          <p id="sol-auth-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
+        </div>
+      </div>
+
+      <div id="sol-app-content" style="display:none;">
+        <div id="sol-account-bar" style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:0.75rem 1rem; margin-bottom:1rem;">
+          <span>Signed in as <strong id="sol-account-email"></strong></span>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" id="sol-admin-toggle" class="submit-btn" style="display:none; background:#00d4ff; color:#000;">Admin Console</button>
+            <button type="button" id="sol-dj-mode-toggle" class="submit-btn" style="display:none;">DJ Mode</button>
+            <button type="button" id="sol-account-signout" class="submit-btn">Sign Out</button>
+          </div>
+        </div>
+
+        <div id="sol-dj-console" style="display:none;">
+          <h2>DJ Console</h2>
+
+          <div id="sol-dj-profile" style="display:flex; flex-direction:column; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+            <img loading="lazy" id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;" onerror="this.style.display='none'; document.getElementById('sol-dj-avatar-fallback').style.display='flex';">
+            <div id="sol-dj-avatar-fallback" style="width:72px; height:72px; border-radius:36px; background:#ff4d8f; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#fff; margin-bottom:0.5rem;">DJ</div>
+            <strong id="sol-dj-name" style="font-size:1.2rem;"></strong>
+            <span id="sol-dj-location" style="color:#aaa; font-size:0.85rem;"></span>
+            <div id="sol-dj-verified-badge" style="display:none; margin-top:0.5rem; background:#22c55e; color:#fff; padding:0.25rem 0.75rem; border-radius:12px; font-size:0.8rem;">Verified DJ</div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <span id="sol-dj-status-label">You are <strong>Offline</strong></span>
+            <label style="position:relative; display:inline-block; width:52px; height:28px;">
+              <input type="checkbox" id="sol-dj-online-toggle" style="opacity:0; width:0; height:0;">
+              <span id="sol-dj-toggle-track" style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#444; border-radius:28px; transition:0.2s;"></span>
+              <span id="sol-dj-toggle-knob" style="position:absolute; height:22px; width:22px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.2s;"></span>
+            </label>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem 1rem; margin-bottom:0.5rem;">
+            <span style="font-size:0.9rem;">Share Live Location <span id="sol-dj-loc-status" style="color:#888; font-size:0.8rem;"></span></span>
+            <button type="button" id="sol-dj-share-loc" class="submit-btn" style="background:#333; padding:0.5rem 1rem;">Start</button>
+          </div>
+          <div id="sol-dj-loc-instructions" style="display:none; font-size:0.85rem; color:#ff4d8f; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:1rem; line-height:1.4;">
+          </div>
+          <div id="sol-dj-manual-loc" style="background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:1rem;">
+            <p style="font-size:0.85rem; color:#ccc; margin:0 0 0.5rem;">Or set a manual location:</p>
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+              <input id="sol-dj-manual-address" type="text" placeholder="City, address, or venue" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <button type="button" id="sol-dj-set-location" class="submit-btn" style="padding:0.5rem 1rem;">Set Location</button>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; margin-bottom:1rem;">
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-pending">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Pending Requests</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-upcoming">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Upcoming Events</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-dj-stat-earnings">$0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Earnings</div>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700;" id="sol-dj-stat-rating">-</div>
+              <div style="font-size:0.8rem; color:#aaa;">Rating</div>
+            </div>
+          </div>
+
+          <h3>Booking Requests</h3>
+          <div id="sol-dj-booking-requests" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+          <h3>Upcoming Events</h3>
+          <div id="sol-dj-upcoming-events" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+          <div id="sol-dj-event-map-section" style="display:none; margin-bottom:1.5rem;">
+            <h3>Event Location</h3>
+            <div style="position:relative; border-radius:12px; overflow:hidden; border:1px solid #333; height:350px;">
+              <div id="sol-dj-event-map" style="width:100%; height:100%; background:#222;"></div>
+              <img loading="lazy" src="sol-logo.png" alt="SOL" style="position:absolute; bottom:6px; left:8px; height:20px; opacity:0.7; pointer-events:none;" />
+            </div>
+            <p id="sol-dj-event-map-label" style="color:#aaa; font-size:0.85rem; margin-top:0.5rem; text-align:center;"></p>
+          </div>
+
+          <h3>Client Conversations</h3>
+          <div id="sol-dj-conversations" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+          <p id="sol-dj-console-status" class="form-status" aria-live="polite"></p>
+
+          <h3 style="margin-top:2rem;">DJ Profile & Verification</h3>
+          <div id="sol-dj-setup" style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-top:0.75rem;">
+            <div id="sol-dj-verify-status" style="margin-bottom:1rem; padding:0.75rem; border-radius:8px; text-align:center;"></div>
+            <form id="sol-dj-setup-form">
+              <label for="sol-dj-stage-name">Stage Name</label>
+              <input id="sol-dj-stage-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label>Profile Picture</label>
+              <input id="sol-dj-avatar-file" type="file" accept="image/*" style="display:none;">
+              <label for="sol-dj-avatar-file" class="submit-btn" style="display:inline-block; text-align:center; cursor:pointer; margin-bottom:0.5rem; padding:0.6rem 1.2rem;">Upload Profile Photo</label>
+              <img id="sol-dj-avatar-preview" src="" alt="Profile preview" style="width:72px; height:72px; border-radius:36px; object-fit:cover; border:2px solid #22c55e; display:none; margin-bottom:0.5rem;">
+              <p id="sol-dj-avatar-upload-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
+              <input id="sol-dj-avatar-url" type="hidden">
+
+              <label for="sol-dj-phone">Phone Number (for text alerts)</label>
+              <input id="sol-dj-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-dj-sms-optin" type="checkbox" checked style="width:auto;">
+                <span style="font-size:0.85rem; color:#ccc;">Text me new booking requests to my phone</span>
+              </label>
+
+              <label for="sol-dj-paypal">PayPal Email or PayPal.me Username (for payouts)</label>
+              <input id="sol-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-city">City</label>
+              <input id="sol-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-state">State</label>
+              <input id="sol-dj-state" type="text" placeholder="PA" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-genres">Genres (comma separated)</label>
+              <input id="sol-dj-genres" type="text" placeholder="Hip-Hop, R&B, Top 40" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-specialties">Specialties (comma separated)</label>
+              <input id="sol-dj-specialties" type="text" placeholder="Weddings, Clubs, Corporate" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-equipment">Equipment (comma separated)</label>
+              <input id="sol-dj-equipment" type="text" placeholder="Pioneer DDJ-SX3, Speakers, Lighting" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-hourly-rate">Hourly Rate ($)</label>
+              <input id="sol-dj-hourly-rate" type="number" min="50" max="1000" placeholder="250" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-experience">Years of Experience</label>
+              <input id="sol-dj-experience" type="number" min="0" max="50" placeholder="5" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+
+              <label for="sol-dj-bio">Bio</label>
+              <textarea id="sol-dj-bio" placeholder="Tell clients about yourself..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+
+              <button type="submit" id="sol-dj-submit-btn" class="submit-btn" style="width:100%;">Save Profile & Submit for Verification</button>
+            </form>
+            <p id="sol-dj-setup-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
+          </div>
+
+          <h3 style="margin-top:2rem;">Availability Calendar</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Block off dates you're unavailable.</p>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+            <input id="sol-dj-block-date" type="date" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+            <button type="button" id="sol-dj-block-add" class="submit-btn">Block Date</button>
+          </div>
+          <div id="sol-dj-blocked-dates" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Photo Gallery</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Upload photos from your device to showcase your past events.</p>
+          <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+            <input id="sol-dj-gallery-file" type="file" accept="image/*" style="display:none;">
+            <label for="sol-dj-gallery-file" class="submit-btn" style="cursor:pointer; padding:0.5rem 1rem;">Upload Photo</label>
+          </div>
+          <p id="sol-dj-gallery-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
+          <div id="sol-dj-gallery" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">My Earnings</h3>
+          <div id="sol-dj-earnings" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Total Earnings:</span>
+              <strong id="sol-dj-earnings-total" style="color:#22c55e;">$0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Completed Gigs:</span>
+              <strong id="sol-dj-earnings-gigs" style="color:#fff;">0</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="color:#aaa;">Platform Fees:</span>
+              <strong id="sol-dj-earnings-fees" style="color:#ff4d8f;">$0</strong>
+            </div>
+            <button type="button" id="sol-dj-export-csv" class="submit-btn" style="width:100%; margin-top:0.5rem;">Export Earnings (CSV)</button>
+          </div>
+
+          <h3 style="margin-top:2rem;">DJ Network</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Message other verified DJs for collabs.</p>
+          <div id="sol-dj-network" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Waitlist</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Clients who requested you when you were booked.</p>
+          <div id="sol-dj-waitlist" style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+          <h3 style="margin-top:2rem;">Booking Calendar</h3>
+          <div id="sol-dj-calendar" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <button type="button" id="sol-cal-prev" class="submit-btn" style="padding:0.4rem 0.8rem;">&#10094;</button>
+              <strong id="sol-cal-month" style="font-size:1.1rem;"></strong>
+              <button type="button" id="sol-cal-next" class="submit-btn" style="padding:0.4rem 0.8rem;">&#10095;</button>
+            </div>
+            <div id="sol-cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Setlist & Timeline Builder</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Plan your set schedule for each event.</p>
+          <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <select id="sol-setlist-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <option value="">Select a booking...</option>
+            </select>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+              <input id="sol-setlist-time" type="time" style="padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <input id="sol-setlist-track" type="text" placeholder="Track name or set description" style="flex:1; padding:0.5rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+              <button type="button" id="sol-setlist-add" class="submit-btn">Add</button>
+            </div>
+            <div id="sol-setlist-items" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Analytics Dashboard</h3>
+          <div id="sol-dj-analytics" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.75rem; margin-bottom:1rem;">
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#00d4ff;" id="sol-dj-avg-rating">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Avg Rating</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#22c55e;" id="sol-dj-completion-rate">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Completion Rate</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ffd860;" id="sol-dj-avg-response">-</div>
+                <div style="font-size:0.75rem; color:#aaa;">Avg Response Time</div>
+              </div>
+              <div style="text-align:center; padding:0.75rem; background:#1a1a1a; border-radius:8px;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ff4d8f;" id="sol-dj-repeat-clients">0</div>
+                <div style="font-size:0.75rem; color:#aaa;">Repeat Clients</div>
+              </div>
+            </div>
+            <h4 style="font-size:0.9rem; color:#aaa; margin-bottom:0.5rem;">Monthly Earnings (Last 6 Months)</h4>
+            <div id="sol-dj-earnings-chart" style="display:flex; align-items:flex-end; gap:0.5rem; height:100px; padding:0.5rem 0;"></div>
+          </div>
+
+          <h3 style="margin-top:2rem;">Review a Client</h3>
+          <p style="color:#aaa; font-size:0.9rem;">Rate clients you've performed for.</p>
+          <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+            <select id="sol-client-review-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <option value="">Select a completed booking...</option>
+            </select>
+            <div id="sol-client-review-stars" style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+              <span class="sol-star" data-val="1" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="2" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="3" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="4" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+              <span class="sol-star" data-val="5" style="font-size:1.5rem; cursor:pointer; color:#444;">★</span>
+            </div>
+            <textarea id="sol-client-review-text" placeholder="Review this client..." style="width:100%; min-height:60px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+            <button type="button" id="sol-client-review-submit" class="submit-btn" style="width:100%;">Submit Client Review</button>
+          </div>
+          <p id="sol-client-review-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+        </div>
+
+        <div id="sol-admin-console" style="display:none;">
+          <h2>Admin Console</h2>
+
+          <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.75rem; margin-bottom:1rem;">
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#00d4ff;" id="sol-admin-stat-djs">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total DJs</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-admin-stat-online">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Online Now</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#ffd860;" id="sol-admin-stat-bookings">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Bookings</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#ff4d8f;" id="sol-admin-stat-users">0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Total Users</div>
+            </div>
+            <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+              <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-admin-stat-revenue">$0</div>
+              <div style="font-size:0.8rem; color:#aaa;">Revenue</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+            <button type="button" id="sol-admin-tab-djs" class="submit-btn" style="background:#00d4ff; color:#000;">Manage DJs</button>
+            <button type="button" id="sol-admin-tab-bookings" class="submit-btn">All Bookings</button>
+            <button type="button" id="sol-admin-tab-verifications" class="submit-btn">DJ Verifications</button>
+            <button type="button" id="sol-admin-tab-users" class="submit-btn">Users</button>
+            <button type="button" id="sol-admin-tab-earnings" class="submit-btn">Earnings</button>
+            <button type="button" id="sol-admin-tab-add-dj" class="submit-btn">Add DJ</button>
+            <button type="button" id="sol-admin-tab-disputes" class="submit-btn">Disputes</button>
+            <button type="button" id="sol-admin-tab-settings" class="submit-btn">Settings</button>
+          </div>
+
+          <div id="sol-admin-panel-djs">
+            <h3>Registered DJs</h3>
+            <div id="sol-admin-djs-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-bookings" style="display:none;">
+            <h3>All Bookings</h3>
+            <div id="sol-admin-bookings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-verifications" style="display:none;">
+            <h3>DJ Verification Requests</h3>
+            <div id="sol-admin-verifications-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-users" style="display:none;">
+            <h3>Registered Users</h3>
+            <input id="sol-admin-user-search" type="text" placeholder="Search by name or email..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:1rem;">
+            <div id="sol-admin-users-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-earnings" style="display:none;">
+            <h3>Earnings & Payouts</h3>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem; margin-bottom:1rem;">
+              <div style="background:#111; border:1px solid #22c55e; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#22c55e;" id="sol-admin-gross">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">Gross Revenue</div>
+              </div>
+              <div style="background:#111; border:1px solid #00d4ff; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#00d4ff;" id="sol-admin-platform-fee">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">Platform Fees (15%)</div>
+              </div>
+              <div style="background:#111; border:1px solid #ffd860; border-radius:12px; padding:1rem; text-align:center;">
+                <div style="font-size:1.3rem; font-weight:700; color:#ffd860;" id="sol-admin-dj-payouts">$0</div>
+                <div style="font-size:0.8rem; color:#aaa;">DJ Payouts (85%)</div>
+              </div>
+            </div>
+            <h4>DJ Earnings Breakdown</h4>
+            <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-add-dj" style="display:none;">
+            <h3>Add DJ Manually</h3>
+            <form id="sol-admin-add-dj-form" style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem;">
+              <label for="sol-add-dj-name">Stage Name</label>
+              <input id="sol-add-dj-name" type="text" placeholder="DJ Name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-email">Email</label>
+              <input id="sol-add-dj-email" type="email" placeholder="dj@example.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-phone">Phone</label>
+              <input id="sol-add-dj-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-paypal">PayPal Email or PayPal.me Username</label>
+              <input id="sol-add-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-city">City</label>
+              <input id="sol-add-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-state">State</label>
+              <input id="sol-add-dj-state" type="text" placeholder="PA" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-genres">Genres (comma separated)</label>
+              <input id="sol-add-dj-genres" type="text" placeholder="Hip-Hop, R&B, Top 40" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-rate">Hourly Rate ($)</label>
+              <input id="sol-add-dj-rate" type="number" min="50" max="1000" placeholder="250" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-add-dj-bio">Bio</label>
+              <textarea id="sol-add-dj-bio" placeholder="DJ bio..." style="width:100%; min-height:60px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+              <button type="submit" class="submit-btn" style="width:100%;">Add DJ</button>
+            </form>
+          </div>
+
+          <div id="sol-admin-panel-disputes" style="display:none;">
+            <h3>Booking Disputes</h3>
+            <div id="sol-admin-disputes-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+          </div>
+
+          <div id="sol-admin-panel-settings" style="display:none;">
+            <h3>Notification & Email Settings</h3>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+              <h4 style="color:#00d4ff; margin-top:0;">Push Notifications (FCM)</h4>
+              <label for="sol-settings-fcm-key">Firebase Server Key</label>
+              <input id="sol-settings-fcm-key" type="text" placeholder="AAAA..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-fcm-project">Firebase Project ID</label>
+              <input id="sol-settings-fcm-project" type="text" placeholder="your-project-id" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-enabled" type="checkbox" style="width:18px; height:18px;">
+                <span>Enable push notifications globally</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-booking" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Notify on new booking requests</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-message" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Notify on new messages</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-push-reminder" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Send event reminders (24h before)</span>
+              </label>
+            </div>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
+              <h4 style="color:#ffd860; margin-top:0;">Email Notifications</h4>
+              <label for="sol-settings-smtp-host">SMTP Host</label>
+              <input id="sol-settings-smtp-host" type="text" placeholder="smtp.gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-port">SMTP Port</label>
+              <input id="sol-settings-smtp-port" type="number" placeholder="587" style="width:100%; max-width:120px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-user">SMTP Username</label>
+              <input id="sol-settings-smtp-user" type="text" placeholder="your-email@gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-smtp-pass">SMTP Password</label>
+              <input id="sol-settings-smtp-pass" type="password" placeholder="App password" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-settings-from-email">From Email</label>
+              <input id="sol-settings-from-email" type="email" placeholder="noreply@djweirdnasty.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-enabled" type="checkbox" style="width:18px; height:18px;">
+                <span>Enable email notifications globally</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-booking" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email clients on booking confirmation</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-reminder" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email event reminders (24h before)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+                <input id="sol-settings-email-receipt" type="checkbox" style="width:18px; height:18px;" checked>
+                <span>Email payment receipts</span>
+              </label>
+            </div>
+            <button type="button" id="sol-settings-save" class="submit-btn" style="width:100%;">Save Settings</button>
+            <p id="sol-settings-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
+          </div>
+
+          <p id="sol-admin-status" class="form-status" aria-live="polite"></p>
+        </div>
+
+      <div id="sol-client-view">
+      <h2>Live DJ Map</h2>
+      <p>See available DJs near your event location. Search a venue, click the map, or use your current location.</p>
+
+      <div class="sol-map-app" style="display:flex; height:500px; border-radius:12px; overflow:hidden; border:1px solid #ff4d8f; margin:1rem 0;">
+        <aside class="sol-map-sidebar" style="width:300px; min-width:240px; background:#1a1a1a; padding:1rem; display:flex; flex-direction:column; gap:0.75rem; overflow-y:auto; border-right:1px solid #333;">
+          <div class="sol-search-box">
+            <label for="sol-location-search" style="display:block; font-size:0.85rem; color:#aaa; margin-bottom:6px;">Where to?</label>
+            <input id="sol-location-search" type="text" autocomplete="off" placeholder="Enter address or place" style="width:100%; padding:0.6rem 0.7rem; border-radius:8px; border:none; background:#2a2a2a; color:#fff; font-size:0.95rem; outline:none;">
+            <div id="sol-location-suggestions" style="display:none; list-style:none; margin:4px 0 0; padding:0; background:#252525; border:1px solid #444; border-radius:8px; max-height:160px; overflow-y:auto; z-index:1000; position:relative;"></div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button type="button" id="sol-search-location" class="submit-btn" style="flex:1;">Find</button>
+              <button type="button" id="sol-use-location" class="submit-btn" style="flex:1; background:#333;">My Location</button>
+            </div>
+          </div>
+
+          <div class="sol-my-location" style="background:#2a2a2a; padding:0.75rem; border-radius:8px;">
+            <strong style="font-size:0.9rem; color:#aaa; display:block; margin-bottom:6px;">My Location</strong>
+            <div id="sol-my-location-address" style="color:#fff; font-size:0.85rem; line-height:1.4;">--</div>
+            <div id="sol-my-location-coords" style="font-size:0.75rem; color:#888; margin-top:4px;">--</div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" id="sol-refresh-djs" class="submit-btn" style="flex:1; background:#333;">Show All DJs</button>
+            <button type="button" id="sol-center-me" class="submit-btn" style="flex:1; background:#333;">Center</button>
+          </div>
+
+          <div id="sol-eta-panel" style="display:none; background:#2a2a2a; padding:0.75rem; border-radius:8px; justify-content:space-between; align-items:center;">
+            <div><strong id="sol-eta-text" style="font-size:1.2rem; color:#00d4ff;">-- min</strong></div>
+            <div id="sol-distance-text" style="font-size:0.85rem; color:#aaa;">-- mi</div>
+          </div>
+
+          <p id="sol-map-status" class="form-status" aria-live="polite" style="background:#2a2a2a; padding:0.6rem 0.7rem; border-radius:8px; font-size:0.85rem; color:#ccc; min-height:36px; margin:0;"></p>
+
+          <button type="button" id="sol-event-nav" class="submit-btn" style="display:none; width:100%;">Get directions to event</button>
+        </aside>
+
+        <div class="sol-map-wrap" style="position:relative; flex:1; min-width:0;">
+          <div id="sol-map" style="width:100%; height:100%; background:#222;"></div>
+          <img loading="lazy" id="sol-map-brand-logo" src="sol-logo.png" alt="SOL" />
+        </div>
+      </div>
+
+      <h3>Available DJs</h3>
+      <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; align-items:center;">
+        <input id="sol-dj-filter-name" type="text" placeholder="Search DJ name..." style="flex:1; min-width:150px; padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+        <select id="sol-dj-filter-genre" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="">All Genres</option>
+          <option value="Hip-Hop">Hip-Hop</option>
+          <option value="R&B">R&B</option>
+          <option value="Top 40">Top 40</option>
+          <option value="House">House</option>
+          <option value="EDM">EDM</option>
+          <option value="Latin">Latin</option>
+          <option value="Reggae">Reggae</option>
+          <option value="Afrobeats">Afrobeats</option>
+          <option value="Jazz">Jazz</option>
+          <option value="Old School">Old School</option>
+        </select>
+        <select id="sol-dj-filter-price" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="">Any Price</option>
+          <option value="100">Up to $100/hr</option>
+          <option value="200">Up to $200/hr</option>
+          <option value="300">Up to $300/hr</option>
+          <option value="500">Up to $500/hr</option>
+        </select>
+        <select id="sol-dj-filter-sort" style="padding:0.5rem 0.7rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; font-size:0.9rem;">
+          <option value="rating">Top Rated</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="name">Name A-Z</option>
+        </select>
+      </div>
+      <div id="sol-dj-carousel" style="position:relative;">
+        <button type="button" id="sol-dj-prev" class="submit-btn" style="position:absolute; top:50%; left:0; transform:translateY(-50%); z-index:10; padding:0.5rem 0.75rem; border-radius:8px;">&#10094;</button>
+        <div id="sol-dj-track" style="display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:1rem; padding:0 3rem; scrollbar-width:none; -ms-overflow-style:none;"></div>
+        <button type="button" id="sol-dj-next" class="submit-btn" style="position:absolute; top:50%; right:0; transform:translateY(-50%); z-index:10; padding:0.5rem 0.75rem; border-radius:8px;">&#10095;</button>
+        <div id="sol-dj-dots" style="display:flex; justify-content:center; gap:0.5rem; margin-top:0.75rem;"></div>
+      </div>
+
+      <div id="sol-dj-profile-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:420px; width:90%; max-height:85vh; overflow-y:auto; padding:2rem; position:relative;">
+          <button type="button" id="sol-dj-profile-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+          <div id="sol-dj-profile-content" style="text-align:center;"></div>
+        </div>
+      </div>
+
+      <h2>Quick Book a DJ</h2>
+      <form id="sol-quick-form">
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-multi-dj-toggle" type="checkbox" style="width:18px; height:18px;">
+          <span>Book multiple DJs for this event</span>
+        </label>
+        <div id="sol-multi-dj-count-wrap" style="display:none; margin-bottom:0.75rem;">
+          <label for="sol-multi-dj-count">Number of DJs</label>
+          <input id="sol-multi-dj-count" type="number" min="2" max="5" value="2" style="width:100%; max-width:120px; padding:0.5rem;">
+        </div>
+
+        <label for="sol-quick-name">Name</label>
+        <input id="sol-quick-name" name="name" type="text" placeholder="Your name" required>
+
+        <label for="sol-quick-email">Email</label>
+        <input id="sol-quick-email" name="email" type="email" placeholder="you@example.com" required>
+
+        <label for="sol-quick-phone">Phone Number</label>
+        <input id="sol-quick-phone" name="phone" type="tel" placeholder="215-555-0123" required>
+        <p style="color:#888; font-size:0.8rem; margin-top:-0.5rem; margin-bottom:0.75rem;">Your DJ will use this to contact you directly about your event.</p>
+
+        <label for="sol-quick-event">Event Type</label>
+        <select id="sol-quick-event" name="event" required>
+          <option value="">Select event type</option>
+          <option value="Wedding">Wedding</option>
+          <option value="Birthday Party">Birthday Party</option>
+          <option value="Corporate Event">Corporate Event</option>
+          <option value="Club Event">Club Event</option>
+          <option value="Festival">Festival</option>
+          <option value="Private Party">Private Party</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label for="sol-quick-date">Event Date</label>
+        <input id="sol-quick-date" name="date" type="date" required>
+
+        <label for="sol-quick-recurring" style="margin-top:0.75rem;">Recurring Booking</label>
+        <select id="sol-quick-recurring" name="recurring" style="margin-bottom:0.5rem;">
+          <option value="none">One-time event</option>
+          <option value="weekly">Weekly (same day/time)</option>
+          <option value="biweekly">Bi-weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+
+        <label for="sol-quick-duration">Duration (hours)</label>
+        <input id="sol-quick-duration" name="duration" type="number" min="1" max="12" value="4" required>
+
+        <label for="sol-quick-notes" style="margin-top:0.75rem;">Event Details</label>
+        <textarea id="sol-quick-notes" name="notes" placeholder="Tell the DJ about your event - theme, must-play songs, timeline, dress code, anything they should know..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.5rem;"></textarea>
+        <p style="color:#ffd860; font-size:0.8rem; margin-top:0; margin-bottom:0.75rem;">📞 Strongly suggested: include your phone number in the description above so your DJ can contact you directly.</p>
+
+        <h3 style="margin-top:1.5rem; margin-bottom:0.75rem;">Equipment & Extras</h3>
+
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <div>
+            <label for="sol-speakers" style="display:block; font-weight:600; margin-bottom:0.25rem;">Speakers — $50 each</label>
+            <input id="sol-speakers" name="speakers" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
+
+          <div>
+            <label for="sol-microphones" style="display:block; font-weight:600; margin-bottom:0.25rem;">Microphones — $25 each</label>
+            <input id="sol-microphones" name="microphones" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
+
+          <div>
+            <label for="sol-strobes" style="display:block; font-weight:600; margin-bottom:0.25rem;">Strobe Lights — $50 each</label>
+            <input id="sol-strobes" name="strobe_lights" type="number" min="0" max="10" value="0" style="width:100%; max-width:120px; padding:0.5rem;">
+          </div>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-projector" type="checkbox" style="width:18px; height:18px;">
+            <span>Projector — $50</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-photographer" type="checkbox" style="width:18px; height:18px;">
+            <span>Photographer — $200</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-security" type="checkbox" style="width:18px; height:18px;">
+            <span>Security — $300 unarmed / $600 armed</span>
+          </label>
+
+          <label id="sol-security-armed-label" style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer; opacity:0.4;">
+            <input id="sol-security-armed" type="checkbox" disabled style="width:18px; height:18px;">
+            <span>Armed security</span>
+          </label>
+
+          <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#111; border-radius:8px; cursor:pointer;">
+            <input id="sol-mc" type="checkbox" style="width:18px; height:18px;">
+            <span>MC Services — $50</span>
+          </label>
+        </div>
+
+        <div id="sol-price-breakdown" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1rem 0;">
+          <p style="margin:0.25rem 0;"><strong>Base:</strong> $25/hr × <span id="price-duration">4</span> hrs = $<span id="price-base">100</span></p>
+          <p style="margin:0.25rem 0;"><strong>Equipment:</strong> $<span id="price-equipment">0</span></p>
+          <p style="margin:0.25rem 0;"><strong>Travel Fee:</strong> $<span id="price-travel">0</span></p>
+          <p style="margin:0.25rem 0; color:#ffd860; font-size:1.1rem;"><strong>Estimated Total:</strong> $<span id="price-total">100</span></p>
+        </div>
+
+        <button type="submit" class="submit-btn">Book Now &amp; Pay</button>
+      </form>
+      <p id="sol-quick-status" class="form-status" aria-live="polite"></p>
+
+      <h2>My Bookings</h2>
+      <div id="sol-my-bookings" style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+      <div id="sol-rate-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:380px; width:90%; padding:2rem; position:relative;">
+          <button type="button" id="sol-rate-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+          <h3 style="margin-top:0;">Rate Your DJ</h3>
+          <div id="sol-rate-stars" style="display:flex; gap:0.5rem; margin:1rem 0;">
+            <span class="sol-star" data-val="1" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="2" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="3" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="4" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+            <span class="sol-star" data-val="5" style="font-size:2rem; cursor:pointer; color:#444;">★</span>
+          </div>
+          <textarea id="sol-rate-text" placeholder="Write a review..." style="width:100%; min-height:80px; padding:0.75rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical;"></textarea>
+          <button type="button" id="sol-rate-submit" class="submit-btn" style="width:100%; margin-top:1rem;">Submit Review</button>
+        </div>
+      </div>
+
+      <h2>Promo Code</h2>
+      <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+        <input id="sol-promo-code" type="text" placeholder="Enter promo code..." style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+        <button type="button" id="sol-promo-apply" class="submit-btn">Apply</button>
+      </div>
+      <p id="sol-promo-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Song Requests</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Send your playlist requests to the DJ before your event.</p>
+      <div id="sol-playlist-section" style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-playlist-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a booking...</option>
+        </select>
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+          <input id="sol-song-input" type="text" placeholder="Song title - Artist" style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+          <button type="button" id="sol-song-add" class="submit-btn">Add</button>
+        </div>
+        <div id="sol-song-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      </div>
+
+      <h2>File a Dispute</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Have an issue with a booking? File a dispute for admin review.</p>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-dispute-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a booking...</option>
+        </select>
+        <select id="sol-dispute-type" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Dispute type...</option>
+          <option value="no_show">DJ didn't show up</option>
+          <option value="late">DJ was late</option>
+          <option value="equipment">Equipment issues</option>
+          <option value="unprofessional">Unprofessional behavior</option>
+          <option value="refund">Refund request</option>
+          <option value="other">Other</option>
+        </select>
+        <textarea id="sol-dispute-text" placeholder="Describe the issue..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
+        <button type="button" id="sol-dispute-submit" class="submit-btn" style="width:100%;">Submit Dispute</button>
+      </div>
+      <p id="sol-dispute-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Saved DJs</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Your bookmarked favorite DJs.</p>
+      <div id="sol-saved-djs" style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem;"></div>
+
+      <h2>Payment Options</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-deposit-toggle" type="checkbox" style="width:18px; height:18px;">
+          <span>Pay deposit only ($50 minimum now, balance at event)</span>
+        </label>
+        <p id="sol-deposit-info" style="display:none; color:#ffd860; font-size:0.85rem; padding:0.5rem; background:#1a1a1a; border-radius:8px;"></p>
+      </div>
+
+      <h2>Contract & Waiver</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <h3 style="margin-top:0; font-size:1rem;">Booking Agreement</h3>
+        <div style="max-height:150px; overflow-y:auto; background:#000; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.85rem; color:#ccc; line-height:1.5;">
+          <p><strong>Terms of Service:</strong> By booking a DJ through Sounds of Logan (SOL), you agree to the following terms:</p>
+          <p>1. The client agrees to pay the full amount as specified in the booking confirmation.</p>
+          <p>2. If a deposit is selected, a minimum of $50.00 (or 50% of the total, whichever is greater) is due at booking, and the remaining balance is due on the day of the event.</p>
+          <p>3. Cancellations made 7+ days before the event receive a 50% refund. Cancellations within 7 days are non-refundable.</p>
+          <p>4. The DJ agrees to arrive at least 30 minutes before the scheduled start time.</p>
+          <p>5. The client is responsible for providing a safe performance area with adequate power outlets.</p>
+          <p>6. SOL is not liable for any damages, injuries, or losses occurring during the event.</p>
+          <p>7. Any disputes must be filed within 48 hours of the event.</p>
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-agree-terms" type="checkbox" style="width:18px; height:18px;">
+          <span>I agree to the booking terms above</span>
+        </label>
+        <h3 style="font-size:1rem;">Liability Waiver</h3>
+        <div style="max-height:100px; overflow-y:auto; background:#000; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; font-size:0.85rem; color:#ccc; line-height:1.5;">
+          <p>I, the undersigned, release SOL, its DJs, and affiliates from any liability for property damage, personal injury, or loss arising from or related to the event. I assume all risk for my guests and venue.</p>
+        </div>
+        <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
+          <input id="sol-agree-waiver" type="checkbox" style="width:18px; height:18px;">
+          <span>I accept the liability waiver</span>
+        </label>
+        <label for="sol-signature">Digital Signature (type your full name)</label>
+        <input id="sol-signature" type="text" placeholder="Your full legal name" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+      </div>
+
+      <h2>Tip Your DJ</h2>
+      <p style="color:#aaa; font-size:0.9rem;">Show appreciation for a great performance.</p>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <select id="sol-tip-booking" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+          <option value="">Select a completed booking...</option>
+        </select>
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap;">
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="10" style="padding:0.5rem 1rem;">$10</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="20" style="padding:0.5rem 1rem;">$20</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="50" style="padding:0.5rem 1rem;">$50</button>
+          <button type="button" class="submit-btn sol-tip-btn" data-tip="custom" style="padding:0.5rem 1rem;">Custom</button>
+        </div>
+        <input id="sol-tip-custom" type="number" placeholder="Custom amount $" style="display:none; width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <button type="button" id="sol-tip-submit" class="submit-btn" style="width:100%;">Send Tip</button>
+      </div>
+      <p id="sol-tip-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <h2>Loyalty Rewards</h2>
+      <div id="sol-loyalty-box" style="background:#111; border:1px solid #ffd860; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#ffd860; font-weight:700;">Your Points</span>
+          <strong id="sol-loyalty-points" style="font-size:1.5rem; color:#ffd860;">0</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#aaa; font-size:0.85rem;">Bookings Completed</span>
+          <strong id="sol-loyalty-bookings">0</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span style="color:#aaa; font-size:0.85rem;">Tier</span>
+          <strong id="sol-loyalty-tier" style="color:#ffd860;">Bronze</strong>
+        </div>
+        <div id="sol-loyalty-perks" style="font-size:0.85rem; color:#ccc; margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid #333;"></div>
+      </div>
+
+      <h2>Identity Verification</h2>
+      <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+        <div id="sol-verify-status-box" style="margin-bottom:0.75rem; padding:0.6rem; border-radius:8px; text-align:center; background:#1a1a1a; color:#aaa;"></div>
+        <label for="sol-verify-fullname">Full Legal Name</label>
+        <input id="sol-verify-fullname" type="text" placeholder="John Doe" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <label for="sol-verify-phone">Phone Number</label>
+        <input id="sol-verify-phone" type="tel" placeholder="215-555-0123" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <label for="sol-verify-id-url">ID Document URL (driver's license, passport, etc.)</label>
+        <input id="sol-verify-id-url" type="url" placeholder="https://..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+        <button type="button" id="sol-verify-submit" class="submit-btn" style="width:100%;">Submit for Verification</button>
+      </div>
+      <p id="sol-verify-client-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+
+      <div id="sol-chat-box" style="display:none; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1.5rem 0;">
+        <h3 style="margin-top:0;">Message Your DJ</h3>
+        <div id="sol-chat-messages" style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem;"></div>
+        <div style="display:flex; gap:0.5rem;">
+          <input id="sol-chat-input" type="text" placeholder="Type a message..." style="flex:1; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+          <button type="button" id="sol-chat-send" class="submit-btn">Send</button>
+        </div>
+      </div>
+
+      <div style="display:block; text-align:center; margin-top:2rem;">
+        <img loading="lazy" src="sol-logo.png" alt="SOL App" style="max-width:220px; width:100%; display:block; margin:0 auto; border-radius:12px;">
+      </div>
+      </div>
+      </div>
+    </section>
+
 
     <section id="latest-news" class="info">
       <h2>Latest News</h2>
@@ -658,5 +1467,7 @@
       recapStartAuto(id, 4000);
     })();
   </script>
+  <script src="sol-app.js?v=1"></script>
+  <script src="site.js?v=14"></script>
 </body>
 </html>
