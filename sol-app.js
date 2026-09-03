@@ -1,3 +1,5 @@
+    console.log('[SOL APP] loaded v7');
+
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
     const BOOKING_URL = API_BASE + '/api/bookings/request';
     const SEARCH_URL = API_BASE + '/api/djs/search';
@@ -1611,6 +1613,7 @@
     function loadAdminUsers() {
       var usersList = document.getElementById('sol-admin-users-list');
       usersList.innerHTML = '<p style="color:#888;">Loading users...</p>';
+      console.log('[ADMIN USERS] Fetching users collection...');
       db.collection('users').get()
         .then(function(snapshot) {
           var users = [];
@@ -1620,6 +1623,7 @@
             var tb = b.data.createdAt && typeof b.data.createdAt.toMillis === 'function' ? b.data.createdAt.toMillis() : 0;
             return tb - ta;
           });
+          console.log('[ADMIN USERS] Found', users.length, 'users');
           document.getElementById('sol-admin-stat-users').textContent = users.length;
           renderAdminUsers(users);
           var searchEl = document.getElementById('sol-admin-user-search');
@@ -2775,7 +2779,9 @@
     function syncUserDoc(user) {
       if (!user) return;
       var uid = user.uid;
+      console.log('[USER DOC SYNC] Starting for', uid, user.email);
       db.collection('users').doc(uid).get().then(function(doc) {
+        console.log('[USER DOC SYNC] Got doc, exists=', doc.exists);
         var data = {
           email: user.email || '',
           displayName: user.displayName || '',
@@ -2787,7 +2793,10 @@
           data.isVerifiedDJ = false;
           data.banned = false;
         }
-        return db.collection('users').doc(uid).set(data, { merge: true });
+        console.log('[USER DOC SYNC] Setting data', data);
+        return db.collection('users').doc(uid).set(data, { merge: true }).then(function() {
+          console.log('[USER DOC SYNC] Success for', uid);
+        });
       }).catch(function(err) {
         console.error('[USER DOC SYNC] Error for', uid, err);
       });
