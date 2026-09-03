@@ -1617,14 +1617,22 @@
         if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
         if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
         card.innerHTML = avatarHtml +
-          '<div style="flex:1;"><strong>' + name + '</strong>' +
+          '<div style="flex:1; cursor:pointer;" data-view-user="' + u.id + '"><strong>' + name + '</strong>' +
           (email ? '<br><span style="font-size:0.85rem; color:#aaa;">' + email + '</span>' : '') +
           '<br><span style="font-size:0.8rem; color:#666;">UID: ' + u.id.substring(0, 12) + '...</span></div>' +
           '<div style="display:flex; flex-direction:column; gap:0.25rem; align-items:flex-end;">' +
           '<div>' + badges + '</div>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + u.id + '">View</button>' +
           '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + u.id + '" data-banned="' + (banned ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
           '</div>';
         usersList.appendChild(card);
+      });
+      usersList.querySelectorAll('[data-view-user]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          if (e.target.getAttribute('data-ban-user')) return;
+          var uid = el.getAttribute('data-view-user');
+          if (uid) openAdminUserModal(uid);
+        });
       });
       usersList.querySelectorAll('button[data-ban-user]').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -1644,6 +1652,275 @@
           }).catch(function(err) { alert('Error: ' + err.message); });
         });
       });
+    }
+
+    // ---------- Admin User Profile Modal ----------
+    function createAdminUserModal() {
+      if (document.getElementById('sol-user-modal')) return;
+      var modal = document.createElement('div');
+      modal.id = 'sol-user-modal';
+      modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;';
+      modal.innerHTML =
+        '<div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative;">' +
+        '<button type="button" id="sol-user-modal-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>' +
+        '<h3 style="margin-top:0; color:#ff4d8f;">User Profile</h3>' +
+        '<div id="sol-user-modal-content" style="color:#ccc; font-size:0.9rem; line-height:1.5;">Loading...</div>' +
+        '</div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeAdminUserModal();
+      });
+      document.getElementById('sol-user-modal-close').addEventListener('click', closeAdminUserModal);
+    }
+
+    function closeAdminUserModal() {
+      var modal = document.getElementById('sol-user-modal');
+      if (modal) { modal.style.display = 'none'; }
+    }
+
+    function openAdminUserModal(uid) {
+      createAdminUserModal();
+      var modal = document.getElementById('sol-user-modal');
+      var content = document.getElementById('sol-user-modal-content');
+      modal.style.display = 'flex';
+      content.innerHTML = '<p style="color:#888;">Loading user data...</p>';
+
+      Promise.all([
+        db.collection('users').doc(uid).get(),
+        db.collection('bookings').where('clientId', '==', uid).orderBy('createdAt', 'desc').limit(20).get().catch(function() { return { empty: true, docs: [] }; }),
+        db.collection('bookings').where('djId', '==', uid).orderBy('createdAt', 'desc').limit(20).get().catch(function() { return { empty: true, docs: [] }; }),
+        db.collection('conversations').where('participants', 'array-contains', uid).orderBy('lastMessageAt', 'desc').limit(20).get().catch(function() { return { empty: true, docs: [] }; }),
+        db.collection('saved-djs').where('clientId', '==', uid).get().catch(function() { return { empty: true, docs: [] }; }),
+        db.collection('client-verifications').doc(uid).get().catch(function() { return { exists: false }; }),
+        db.collection('dj-verifications').doc(uid).get().catch(function() { return { exists: false }; })
+      ]).then(function(results) {
+        var userDoc = results[0];
+        var clientBookings = results[1];
+        var djBookings = results[2];
+        var conversations = results[3];
+        var savedDjs = results[4];
+        var clientVerify = results[5];
+        var djVerify = results[6];
+
+        if (!userDoc.exists) {
+          content.innerHTML = '<p style="color:#ff4d8f;">User not found.</p>';
+          return;
+        }
+
+        var d = userDoc.data();
+        var name = d.displayName || d.name || d.email || 'Unknown';
+        var email = d.email || '';
+        var phone = d.phone || '';
+        var photo = d.photoURL || d.avatar || '';
+        var created = d.createdAt ? (d.createdAt.toDate ? d.createdAt.toDate().toLocaleString() : d.createdAt) : 'N/A';
+        var lastLogin = d.lastLoginAt ? (d.lastLoginAt.toDate ? d.lastLoginAt.toDate().toLocaleString() : d.lastLoginAt) : 'N/A';
+        var banned = d.banned === true;
+        var isAdmin = d.isAdmin === true;
+        var isDJ = d.isVerifiedDJ === true;
+        var isVerifiedClient = d.isVerifiedClient === true;
+        var cvStatus = clientVerify.exists ? (clientVerify.data().status || 'pending') : 'none';
+        var dvStatus = djVerify.exists ? (djVerify.data().status || 'pending') : 'none';
+
+        var bookingsHtml = '';
+        if (!clientBookings.empty) {
+          clientBookings.forEach(function(doc) {
+            var b = doc.data();
+            bookingsHtml += '<div style="background:#1a1a1a; border-radius:8px; padding:0.5rem; margin-bottom:0.25rem;">' +
+              '<strong>' + (b.eventType || 'Booking') + '</strong> — ' + (b.date || b.eventDate || 'No date') + '<br>' +
+              'Status: <span style="color:#ffd860;">' + (b.status || 'requested') + '</span> — $' + (b.totalAmount || b.total_cost || 0) + '</div>';
+          });
+        }
+        if (bookingsHtml === '') bookingsHtml = '<p style="color:#888;">No bookings found.</p>';
+
+        var djBookingsHtml = '';
+        if (!djBookings.empty) {
+          djBookings.forEach(function(doc) {
+            var b = doc.data();
+            djBookingsHtml += '<div style="background:#1a1a1a; border-radius:8px; padding:0.5rem; margin-bottom:0.25rem;">' +
+              '<strong>' + (b.eventType || 'Booking') + '</strong> — ' + (b.date || b.eventDate || 'No date') + '<br>' +
+              'Status: <span style="color:#ffd860;">' + (b.status || 'requested') + '</span> — $' + (b.totalAmount || b.total_cost || 0) + '</div>';
+          });
+        }
+        if (djBookingsHtml === '') djBookingsHtml = '<p style="color:#888;">No DJ bookings found.</p>';
+
+        var convosHtml = '';
+        if (!conversations.empty) {
+          conversations.forEach(function(doc) {
+            var c = doc.data();
+            convosHtml += '<div style="background:#1a1a1a; border-radius:8px; padding:0.5rem; margin-bottom:0.25rem;">' +
+              (c.djName || 'DJ') + ' — ' + (c.lastMessage || 'No message') + '<br>' +
+              'Participants: ' + (c.participants ? c.participants.join(', ') : 'N/A') + '</div>';
+          });
+        }
+        if (convosHtml === '') convosHtml = '<p style="color:#888;">No conversations found.</p>';
+
+        var savedHtml = '';
+        if (!savedDjs.empty) {
+          savedDjs.forEach(function(doc) {
+            var s = doc.data();
+            savedHtml += '<div style="background:#1a1a1a; border-radius:8px; padding:0.5rem; margin-bottom:0.25rem;">' + (s.djName || s.djId || 'DJ') + '</div>';
+          });
+        }
+        if (savedHtml === '') savedHtml = '<p style="color:#888;">No saved DJs.</p>';
+
+        content.innerHTML =
+          '<div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">' +
+          (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">' : '<div style="width:64px;height:64px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>') +
+          '<div>' +
+          '<strong style="color:#fff; font-size:1.1rem;">' + name + '</strong><br>' +
+          '<span style="color:#aaa;">' + email + '</span>' + (phone ? '<br><span style="color:#888;">' + phone + '</span>' : '') + '</div>' +
+          '</div>' +
+          '<div style="background:#1a1a1a; border-radius:12px; padding:1rem; margin-bottom:1rem;">' +
+          '<p style="margin:0.25rem 0;"><strong>UID:</strong> <span style="color:#888;">' + uid + '</span></p>' +
+          '<p style="margin:0.25rem 0;"><strong>Created:</strong> ' + created + '</p>' +
+          '<p style="margin:0.25rem 0;"><strong>Last Login:</strong> ' + lastLogin + '</p>' +
+          '<p style="margin:0.25rem 0;"><strong>Admin:</strong> ' + (isAdmin ? 'Yes' : 'No') + '</p>' +
+          '<p style="margin:0.25rem 0;"><strong>Verified DJ:</strong> ' + (isDJ ? 'Yes' : 'No') + ' (' + dvStatus + ')</p>' +
+          '<p style="margin:0.25rem 0;"><strong>Client Verification:</strong> ' + (isVerifiedClient ? 'Yes' : 'No') + ' (' + cvStatus + ')</p>' +
+          '<p style="margin:0.25rem 0;"><strong>Banned:</strong> ' + (banned ? 'Yes' : 'No') + '</p>' +
+          '</div>' +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Client Bookings</h4>' + bookingsHtml +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">DJ Bookings</h4>' + djBookingsHtml +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Conversations</h4>' + convosHtml +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Saved DJs</h4>' + savedHtml +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Admin Actions</h4>' +
+          '<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-admin-action="ban" data-uid="' + uid + '">' + (banned ? 'Unban User' : 'Ban User') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#00d4ff; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Make Admin') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#22c55e;" data-admin-action="verifyClient" data-uid="' + uid + '">Verify Client (Bypass)</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ffd860; color:#000;" data-admin-action="promoteDj" data-uid="' + uid + '">Promote to DJ (Bypass)</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#333;" data-admin-action="delete" data-uid="' + uid + '">Delete Account</button>' +
+          '</div>' +
+          '<p id="sol-user-modal-status" class="form-status" aria-live="polite" style="margin-top:0.5rem; min-height:1.2em;"></p>';
+
+        content.querySelectorAll('button[data-admin-action]').forEach(function(btn) {
+          btn.addEventListener('click', function() { runAdminUserAction(btn); });
+        });
+      }).catch(function(err) {
+        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
+    }
+
+    function runAdminUserAction(btn) {
+      var action = btn.getAttribute('data-admin-action');
+      var uid = btn.getAttribute('data-uid');
+      var statusEl = document.getElementById('sol-user-modal-status');
+      if (!statusEl) return;
+      statusEl.style.color = '#ffd860';
+      statusEl.textContent = 'Working...';
+
+      if (uid === ADMIN_UID) {
+        statusEl.style.color = '#ff4d8f';
+        statusEl.textContent = 'This account is protected.';
+        return;
+      }
+
+      if (action === 'ban') {
+        var isBanned = btn.textContent === 'Unban User';
+        db.collection('users').doc(uid).set({ banned: !isBanned }, { merge: true }).then(function() {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = isBanned ? 'User unbanned.' : 'User banned.';
+          openAdminUserModal(uid);
+          loadAdminUsers();
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        return;
+      }
+
+      if (action === 'admin') {
+        var isAdmin = btn.textContent === 'Remove Admin';
+        db.collection('users').doc(uid).set({ isAdmin: !isAdmin }, { merge: true }).then(function() {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = isAdmin ? 'Admin removed.' : 'User is now admin.';
+          openAdminUserModal(uid);
+          loadAdminUsers();
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        return;
+      }
+
+      if (action === 'verifyClient') {
+        Promise.all([
+          db.collection('client-verifications').doc(uid).set({
+            status: 'approved',
+            bypassedByAdmin: true,
+            reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }),
+          db.collection('users').doc(uid).set({
+            isVerifiedClient: true,
+            verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true })
+        ]).then(function() {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = 'Client verified (bypassed by admin).';
+          openAdminUserModal(uid);
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        return;
+      }
+
+      if (action === 'promoteDj') {
+        db.collection('users').doc(uid).get().then(function(userDoc) {
+          var u = userDoc.data() || {};
+          var name = u.displayName || u.name || u.email || 'DJ';
+          var profile = {
+            email: u.email || '',
+            stageName: name,
+            djName: name,
+            status: 'approved',
+            bypassedByAdmin: true,
+            reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          return Promise.all([
+            db.collection('dj-verifications').doc(uid).set({ status: 'approved', djProfile: profile, ...profile }, { merge: true }),
+            db.collection('djs').doc(uid).set({
+              uid: uid,
+              name: name,
+              email: u.email || '',
+              isVerified: true,
+              hourly_rate: 100,
+              rating: 0,
+              total_bookings: 0
+            }, { merge: true }),
+            db.collection('users').doc(uid).set({ isVerifiedDJ: true, verifiedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+          ]);
+        }).then(function() {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = 'User promoted to verified DJ (bypassed by admin).';
+          openAdminUserModal(uid);
+          loadAdminUsers();
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        return;
+      }
+
+      if (action === 'resetPassword') {
+        var email = btn.getAttribute('data-email');
+        if (!email) {
+          statusEl.style.color = '#ff4d8f';
+          statusEl.textContent = 'No email on file.';
+          return;
+        }
+        auth.sendPasswordResetEmail(email).then(function() {
+          statusEl.style.color = '#22c55e';
+          statusEl.textContent = 'Password reset email sent.';
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        return;
+      }
+
+      if (action === 'delete') {
+        if (!confirm('Delete this user account and all related data? This cannot be undone.')) {
+          statusEl.textContent = '';
+          return;
+        }
+        Promise.all([
+          db.collection('users').doc(uid).delete(),
+          db.collection('client-verifications').doc(uid).delete(),
+          db.collection('dj-verifications').doc(uid).delete(),
+          db.collection('dj-status').doc(uid).delete(),
+          db.collection('djs').doc(uid).delete()
+        ]).then(function() {
+          closeAdminUserModal();
+          loadAdminUsers();
+        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+      }
     }
 
     function buildPaypalPayoutUrl(paypalInfo, amount) {
