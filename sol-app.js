@@ -1804,6 +1804,19 @@
         }
         if (savedHtml === '') savedHtml = '<p style="color:#888;">No saved DJs.</p>';
 
+        var isFounder = (uid === ADMIN_UID || email === ADMIN_EMAIL);
+        var founderBadge = isFounder ? '<span style="background:#22c55e; color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem; display:inline-block;">Founder / Developer — protected</span>' : '';
+        var adminActionsHtml = isFounder ?
+          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' + founderBadge + '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button></div>') :
+          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-admin-action="ban" data-uid="' + uid + '" data-banned="' + banned + '">' + (banned ? (isDJ ? 'Unsuspend DJ' : 'Unban User') : (isDJ ? 'Suspend DJ' : 'Ban User')) + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#00d4ff; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Promote to Admin') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#22c55e;" data-admin-action="verifyClient" data-uid="' + uid + '">Verify Client (Bypass)</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ffd860; color:#000;" data-admin-action="promoteDj" data-uid="' + uid + '">' + (isDJ ? 'Revoke DJ' : 'Promote to DJ (Bypass)') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#333;" data-admin-action="delete" data-uid="' + uid + '">Delete Account</button>' +
+          '</div>');
+
         content.innerHTML =
           '<div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">' +
           (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">' : '<div style="width:64px;height:64px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>') +
@@ -1824,15 +1837,7 @@
           '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">DJ Bookings</h4>' + djBookingsHtml +
           '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Conversations</h4>' + convosHtml +
           '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Saved DJs</h4>' + savedHtml +
-          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Admin Actions</h4>' +
-          '<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-admin-action="ban" data-uid="' + uid + '">' + (banned ? 'Unban User' : 'Ban User') + '</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#00d4ff; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Make Admin') + '</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#22c55e;" data-admin-action="verifyClient" data-uid="' + uid + '">Verify Client (Bypass)</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ffd860; color:#000;" data-admin-action="promoteDj" data-uid="' + uid + '">Promote to DJ (Bypass)</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#333;" data-admin-action="delete" data-uid="' + uid + '">Delete Account</button>' +
-          '</div>' +
+          '<h4 style="color:#ffd860; margin:1rem 0 0.5rem;">Admin Actions</h4>' + adminActionsHtml +
           '<p id="sol-user-modal-status" class="form-status" aria-live="polite" style="margin-top:0.5rem; min-height:1.2em;"></p>';
 
         content.querySelectorAll('button[data-admin-action]').forEach(function(btn) {
@@ -1851,14 +1856,14 @@
       statusEl.style.color = '#ffd860';
       statusEl.textContent = 'Working...';
 
-      if (uid === ADMIN_UID) {
+      if (uid === ADMIN_UID && action !== 'resetPassword') {
         statusEl.style.color = '#ff4d8f';
-        statusEl.textContent = 'This account is protected.';
+        statusEl.textContent = 'This founder account is protected.';
         return;
       }
 
       if (action === 'ban') {
-        var isBanned = btn.textContent === 'Unban User';
+        var isBanned = btn.getAttribute('data-banned') === 'true';
         db.collection('users').doc(uid).set({ banned: !isBanned }, { merge: true }).then(function() {
           statusEl.style.color = '#22c55e';
           statusEl.textContent = isBanned ? 'User unbanned.' : 'User banned.';
@@ -1900,6 +1905,21 @@
       }
 
       if (action === 'promoteDj') {
+        var isRevoke = btn.textContent === 'Revoke DJ';
+        if (isRevoke) {
+          var batch = db.batch();
+          batch.set(db.collection('users').doc(uid), { isVerifiedDJ: false, revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          batch.set(db.collection('dj-verifications').doc(uid), { status: 'revoked', revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          batch.set(db.collection('djs').doc(uid), { isVerified: false, status: 'revoked' }, { merge: true });
+          batch.commit().then(function() {
+            statusEl.style.color = '#22c55e';
+            statusEl.textContent = 'DJ status revoked.';
+            trackSolEvent('dj_revoked', { uid: uid });
+            openAdminUserModal(uid);
+            loadAdminUsers();
+          }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+          return;
+        }
         db.collection('users').doc(uid).get().then(function(userDoc) {
           var u = userDoc.data() || {};
           var name = u.displayName || u.name || u.email || 'DJ';
