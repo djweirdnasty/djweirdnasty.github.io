@@ -2010,6 +2010,7 @@
     function loadAdminEarnings() {
       var earningsList = document.getElementById('sol-admin-earnings-list');
       earningsList.innerHTML = '<p style="color:#888;">Loading earnings...</p>';
+      loadAdminMergeDjs();
       db.collection('bookings').where('status', 'in', ['confirmed', 'completed']).get()
         .then(function(snapshot) {
           var gross = 0;
@@ -2104,6 +2105,129 @@
           earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
         });
     }
+
+    function loadAdminMergeDjs() {
+      var fromSel = document.getElementById('sol-merge-from');
+      var toSel = document.getElementById('sol-merge-to');
+      if (!fromSel || !toSel) return;
+      fromSel.innerHTML = '<option value="">Select duplicate DJ</option>';
+      toSel.innerHTML = '<option value="">Select main DJ</option>';
+      db.collection('djs').orderBy('name').get().then(function(snapshot) {
+        snapshot.forEach(function(doc) {
+          var d = doc.data();
+          var name = d.name || d.stageName || 'Unknown DJ';
+          var option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = name + ' (' + doc.id + ')';
+          fromSel.appendChild(option);
+          toSel.appendChild(option.cloneNode(true));
+        });
+      }).catch(function() {});
+    }
+
+    function mergeDjs() {
+      if (!isAdmin) { alert('Admin only.'); return; }
+      var fromSel = document.getElementById('sol-merge-from');
+      var toSel = document.getElementById('sol-merge-to');
+      var fromUid = fromSel ? fromSel.value : '';
+      var toUid = toSel ? toSel.value : '';
+      if (!fromUid || !toUid || fromUid === toUid) { alert('Select two different DJs.'); return; }
+      var fromName = fromSel.options[fromSel.selectedIndex].text.split(' (')[0];
+      var toName = toSel.options[toSel.selectedIndex].text.split(' (')[0];
+      if (!confirm('Merge ALL data from ' + fromName + ' into ' + toName + '? This permanently deletes the duplicate DJ account.')) return;
+      var typed = window.prompt('Type MERGE to confirm:');
+      if (typed !== 'MERGE') { alert('Cancelled.'); return; }
+      var statusEl = document.getElementById('sol-merge-status');
+      statusEl.textContent = 'Merging...';
+      statusEl.style.color = '#ffd860';
+
+      Promise.all([
+        db.collection('djs').doc(fromUid).get(),
+        db.collection('djs').doc(toUid).get(),
+        db.collection('dj-verifications').doc(fromUid).get(),
+        db.collection('dj-verifications').doc(toUid).get(),
+        db.collection('dj-availability').doc(fromUid).get(),
+        db.collection('dj-availability').doc(toUid).get(),
+        db.collection('dj-galleries').doc(fromUid).get(),
+        db.collection('dj-galleries').doc(toUid).get(),
+        db.collection('dj-status').doc(fromUid).get(),
+        db.collection('dj-status').doc(toUid).get(),
+        db.collection('users').doc(fromUid).get(),
+        db.collection('users').doc(toUid).get()
+      ]).then(function(results) {
+        var sourceDjs = results[0].exists ? results[0].data() : {};
+        var targetDjs = results[1].exists ? results[1].data() : {};
+        var sourceVerify = results[2].exists ? results[2].data() : {};
+        var targetVerify = results[3].exists ? results[3].data() : {};
+        var sourceAvail = results[4].exists ? results[4].data() : {};
+        var targetAvail = results[5].exists ? results[5].data() : {};
+        var sourceGallery = results[6].exists ? results[6].data() : {};
+        var targetGallery = results[7].exists ? results[7].data() : {};
+        var sourceStatus = results[8].exists ? results[8].data() : {};
+        var targetStatus = results[9].exists ? results[9].data() : {};
+        var sourceUser = results[10].exists ? results[10].data() : {};
+        var targetUser = results[11].exists ? results[11].data() : {};
+
+        var batch = db.batch();
+        batch.set(db.collection('djs').doc(toUid), Object.assign({}, sourceDjs, targetDjs), { merge: true });
+
+        var mergedUser = Object.assign({}, sourceUser, targetUser);
+        mergedUser.isVerifiedDJ = mergedUser.isVerifiedDJ || sourceUser.isVerifiedDJ;
+        if (sourceUser.roles && Array.isArray(sourceUser.roles)) {
+          mergedUser.roles = Array.from(new Set((mergedUser.roles || []).concat(sourceUser.roles)));
+        }
+        if (sourceUser.role && !mergedUser.role) mergedUser.role = sourceUser.role;
+        batch.set(db.collection('users').doc(toUid), mergedUser, { merge: true });
+
+        if (sourceVerify.status === 'approved' && targetVerify.status !== 'approved') {
+          batch.set(db.collection('dj-verifications').doc(toUid), { status: 'approved', approvedAt: sourceVerify.approvedAt || new Date() }, { merge: true });
+        } else if (sourceVerify.status && !targetVerify.status) {
+          batch.set(db.collection('dj-verifications').doc(toUid), sourceVerify, { merge: true });
+        }
+        batch.delete(db.collection('dj-verifications').doc(fromUid));
+
+        var mergedBlocked = Array.from(new Set((targetAvail.blockedDates || []).concat(sourceAvail.blockedDates || [])));
+        batch.set(db.collection('dj-availability').doc(toUid), { blockedDates: mergedBlocked }, { merge: true });
+        batch.delete(db.collection('dj-availability').doc(fromUid));
+
+        var mergedPhotos = Array.from(new Set((targetGallery.photos || []).concat(sourceGallery.photos || [])));
+        batch.set(db.collection('dj-galleries').doc(toUid), { photos: mergedPhotos }, { merge: true });
+        batch.delete(db.collection('dj-galleries').doc(fromUid));
+
+        batch.set(db.collection('dj-status').doc(toUid), Object.assign({}, sourceStatus, targetStatus), { merge: true });
+        batch.delete(db.collection('dj-status').doc(fromUid));
+
+        return db.collection('bookings').where('djId', '==', fromUid).get().then(function(bookingsSnap) {
+          bookingsSnap.forEach(function(doc) {
+            batch.update(doc.ref, { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName });
+          });
+          return Promise.all([
+            db.collection('tips').where('djId', '==', fromUid).get(),
+            db.collection('disputes').where('djId', '==', fromUid).get(),
+            db.collection('feedback').where('djId', '==', fromUid).get(),
+            db.collection('saved-djs').where('djId', '==', fromUid).get()
+          ]);
+        }).then(function(snaps) {
+          snaps[0].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
+          snaps[1].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
+          snaps[2].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
+          snaps[3].forEach(function(doc) { batch.update(doc.ref, { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName }); });
+          batch.delete(db.collection('djs').doc(fromUid));
+          batch.delete(db.collection('users').doc(fromUid));
+          return batch.commit();
+        });
+      }).then(function() {
+        statusEl.textContent = 'Merged successfully. Refresh to see changes.';
+        statusEl.style.color = '#22c55e';
+        loadAdminEarnings();
+        loadAdminUsers();
+      }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    }
+
+    document.getElementById('sol-merge-djs').addEventListener('click', mergeDjs);
 
     function purgeCollection(collectionName) {
       return db.collection(collectionName).get().then(function(snapshot) {

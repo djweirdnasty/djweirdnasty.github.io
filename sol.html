@@ -427,6 +427,17 @@
             <button type="button" id="sol-purge-test-data" class="submit-btn" style="background:#ff3b30; width:100%; margin-bottom:1rem;">Purge Test Bookings & Earnings</button>
             <div id="sol-purge-status" class="form-status" aria-live="polite" style="margin-bottom:1rem; min-height:1.2em;"></div>
             <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+            <div style="margin-top:1.5rem; padding:1rem; background:#111; border:1px solid #333; border-radius:12px;">
+              <h4 style="color:#ffd860;">Merge Duplicate DJs</h4>
+              <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;">Move all data from the duplicate DJ into the main DJ, then delete the duplicate. Cannot undo.</p>
+              <label for="sol-merge-from" style="display:block; margin-bottom:0.25rem; color:#ccc;">From (duplicate)</label>
+              <select id="sol-merge-from" style="width:100%; margin-bottom:0.75rem; padding:0.5rem; background:#000; color:#fff; border:1px solid #444; border-radius:8px;"></select>
+              <label for="sol-merge-to" style="display:block; margin-bottom:0.25rem; color:#ccc;">To (keep)</label>
+              <select id="sol-merge-to" style="width:100%; margin-bottom:0.75rem; padding:0.5rem; background:#000; color:#fff; border:1px solid #444; border-radius:8px;"></select>
+              <button type="button" id="sol-merge-djs" class="submit-btn" style="width:100%; margin-bottom:0.5rem; background:#ff4d8f;">Merge Duplicate DJ into Main DJ</button>
+              <div id="sol-merge-status" class="form-status" aria-live="polite" style="min-height:1.2em;"></div>
+            </div>
+
           </div>
 
           <div id="sol-admin-panel-add-dj" style="display:none;">
@@ -890,7 +901,7 @@
 
     <img loading="lazy" src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
-  <script src="sol-app.js?v=1"></script>
+  <script src="sol-app.js?v=3"></script>
 <script src="site.js?v=14"></script>
 </body>
 </html>
