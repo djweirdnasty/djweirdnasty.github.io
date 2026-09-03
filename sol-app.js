@@ -17,6 +17,14 @@
     const functions = firebase.functions();
     const storage = firebase.storage();
 
+    // ---------- SOL Analytics ----------
+    function trackSolEvent(name, params) {
+      if (typeof gtag !== 'function') return;
+      try {
+        gtag('event', name, params || {});
+      } catch (e) {}
+    }
+
     // ---------- Account (Firebase Auth) ----------
     let authMode = 'signin';
     const authStatus = document.getElementById('sol-auth-status');
@@ -63,6 +71,7 @@
         auth.createUserWithEmailAndPassword(email, password)
           .then(function(cred) {
             console.log('[AUTH] Sign up successful:', cred.user.uid);
+            trackSolEvent('sign_up', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = 'Account created!';
             authStatus.style.color = '#22c55e';
             const name = authNameInput.value.trim();
@@ -78,6 +87,7 @@
         auth.signInWithEmailAndPassword(email, password)
           .then(function(cred) {
             console.log('[AUTH] Sign in successful:', cred.user.uid);
+            trackSolEvent('login', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = '';
           })
           .catch(function(err) {
@@ -99,6 +109,7 @@
       }
       auth.sendPasswordResetEmail(email)
         .then(function() {
+          trackSolEvent('password_reset', { method: 'email' });
           authStatus.textContent = 'Password reset email sent.';
           authStatus.style.color = '#22c55e';
         })
@@ -109,6 +120,7 @@
     });
 
     document.getElementById('sol-account-signout').addEventListener('click', function() {
+      trackSolEvent('sign_out', {});
       auth.signOut();
     });
 
@@ -277,6 +289,20 @@
           db.collection('djs').doc(user.uid).set(profileData, { merge: true });
           statusEl.textContent = keepApproved ? 'Profile updated!' : 'Profile saved & submitted for verification!';
           statusEl.style.color = '#22c55e';
+          trackSolEvent(keepApproved ? 'dj_profile_updated' : 'dj_verification_submitted', {
+            uid: user.uid,
+            stage_name: profileData.stageName,
+            city: profileData.city,
+            hourly_rate: profileData.hourlyRate
+          });
+          if (!keepApproved) {
+            trackSolEvent('dj_registration', {
+              uid: user.uid,
+              stage_name: profileData.stageName,
+              city: profileData.city,
+              hourly_rate: profileData.hourlyRate
+            });
+          }
           loadDJSetupForm(user);
           setTimeout(function() { statusEl.textContent = ''; }, 4000);
         })
@@ -314,6 +340,7 @@
           if (preview) { preview.src = url; preview.style.display = 'block'; }
           statusEl.textContent = 'Upload complete.';
           statusEl.style.color = '#22c55e';
+          trackSolEvent('dj_profile_photo_uploaded', { uid: user.uid });
         }).catch(function(err) {
           statusEl.textContent = 'Upload failed: ' + err.message;
           statusEl.style.color = '#ff4d8f';
@@ -330,6 +357,7 @@
         blockedDates: firebase.firestore.FieldValue.arrayUnion(date)
       }, { merge: true }).then(function() {
         document.getElementById('sol-dj-block-date').value = '';
+        trackSolEvent('dj_blocked_date_added', { uid: user.uid, date: date });
         loadBlockedDates(user.uid);
       });
     });
@@ -352,7 +380,10 @@
           btn.addEventListener('click', function() {
             db.collection('dj-availability').doc(uid).set({
               blockedDates: firebase.firestore.FieldValue.arrayRemove(btn.getAttribute('data-unblock'))
-            }, { merge: true }).then(function() { loadBlockedDates(uid); });
+            }, { merge: true }).then(function() {
+              trackSolEvent('dj_blocked_date_removed', { uid: uid, date: btn.getAttribute('data-unblock') });
+              loadBlockedDates(uid);
+            });
           });
         });
       });
@@ -386,6 +417,7 @@
           }, { merge: true }).then(function() {
             statusEl.textContent = 'Added.';
             statusEl.style.color = '#22c55e';
+            trackSolEvent('dj_gallery_photo_uploaded', { uid: user.uid });
             loadDjGallery(user.uid);
           }).catch(function(err) {
             statusEl.textContent = 'Save failed: ' + err.message;
@@ -848,6 +880,7 @@
       if (!user) return;
       const online = djOnlineToggle.checked;
       updateOnlineToggleUI(online);
+      trackSolEvent('dj_online_toggled', { online: online, uid: user.uid });
       const statusRef = db.collection('dj-status').doc(user.uid);
       statusRef.set({
         isOnline: online,
@@ -876,6 +909,7 @@
         djShareLocBtn.style.background = '#333';
         djLocStatus.textContent = 'Stopped';
         djLocStatus.style.color = '#888';
+        trackSolEvent('dj_location_sharing_stopped', { uid: auth.currentUser ? auth.currentUser.uid : '' });
         if (auth.currentUser) {
           db.collection('dj-status').doc(auth.currentUser.uid).set({
             sharingLocation: false
@@ -903,6 +937,7 @@
       djShareLocBtn.style.background = '#ff3b30';
       djLocStatus.textContent = 'Getting location...';
       djLocStatus.style.color = '#ffd860';
+      trackSolEvent('dj_location_sharing_started', { uid: auth.currentUser ? auth.currentUser.uid : '' });
       var instructions = document.getElementById('sol-dj-loc-instructions');
       if (instructions) instructions.style.display = 'none';
       if ('wakeLock' in navigator) {
@@ -1522,6 +1557,10 @@
                   isVerifiedDJ: true,
                   verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
+                trackSolEvent('dj_verification_approved', { uid: uid, method: 'admin_panel' });
+                trackSolEvent('dj_registration', { uid: uid, method: 'admin_panel_verification' });
+              } else {
+                trackSolEvent('dj_verification_rejected', { uid: uid });
               }
               adminStatus.textContent = 'DJ ' + newStatus + ' successfully.';
               adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff3b30';
@@ -1852,6 +1891,7 @@
         ]).then(function() {
           statusEl.style.color = '#22c55e';
           statusEl.textContent = 'Client verified (bypassed by admin).';
+          trackSolEvent('client_verification_approved', { uid: uid, method: 'admin_bypass' });
           openAdminUserModal(uid);
         }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
         return;
@@ -1885,6 +1925,8 @@
         }).then(function() {
           statusEl.style.color = '#22c55e';
           statusEl.textContent = 'User promoted to verified DJ (bypassed by admin).';
+          trackSolEvent('dj_verification_approved', { uid: uid, method: 'admin_bypass', stage_name: name });
+          trackSolEvent('dj_registration', { uid: uid, stage_name: name, method: 'admin_bypass' });
           openAdminUserModal(uid);
           loadAdminUsers();
         }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
@@ -2371,6 +2413,7 @@
         var status = document.getElementById('sol-quick-status');
         status.textContent = 'Review submitted! Thank you.';
         status.style.color = '#22c55e';
+        trackSolEvent('dj_review_submitted', { booking_id: rateBookingId, dj_id: rateDjId, rating: selectedRating });
         setTimeout(function() { status.textContent = ''; }, 3000);
       }).catch(function(err) {
         alert('Error: ' + err.message);
@@ -2391,6 +2434,7 @@
           var msg = p.type === 'flat' ? '$' + p.discount + ' off!' : p.discount + '% off!';
           statusEl.textContent = '✅ Code applied: ' + msg;
           statusEl.style.color = '#22c55e';
+          trackSolEvent('promo_code_applied', { code: code, discount: p.discount, type: p.type });
           calculatePrice();
         } else {
           statusEl.textContent = 'Invalid promo code.';
@@ -2416,6 +2460,7 @@
         addedAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(function() {
         document.getElementById('sol-song-input').value = '';
+        trackSolEvent('song_request_added', { booking_id: bookingId, song: song });
         loadPlaylist(bookingId);
       });
     });
@@ -2441,6 +2486,7 @@
           list.querySelectorAll('button[data-del-song]').forEach(function(btn) {
             btn.addEventListener('click', function() {
               db.collection('playlists').doc(btn.getAttribute('data-del-song')).delete().then(function() {
+                trackSolEvent('song_request_deleted', {});
                 loadPlaylist(bookingId);
               });
             });
@@ -2469,6 +2515,7 @@
       }).then(function() {
         statusEl.textContent = 'Dispute submitted. Admin will review shortly.';
         statusEl.style.color = '#22c55e';
+        trackSolEvent('dispute_filed', { booking_id: bookingId, dispute_type: type });
         document.getElementById('sol-dispute-text').value = '';
         document.getElementById('sol-dispute-type').value = '';
         document.getElementById('sol-dispute-booking').value = '';
@@ -3679,6 +3726,7 @@
         read: false,
         type: 'text'
       }).then(function() {
+        trackSolEvent('chat_message_sent', { conversation_id: activeConversationId });
         return db.collection('conversations').doc(activeConversationId).update({
           lastMessage: text,
           lastMessageTime: Date.now()
@@ -3815,6 +3863,7 @@
         .then(function() {
           statusEl.textContent = 'Settings saved successfully!';
           statusEl.style.color = '#22c55e';
+          trackSolEvent('admin_settings_saved', { push_enabled: data.pushEnabled, email_enabled: data.emailEnabled });
           setTimeout(function() { statusEl.textContent = ''; }, 3000);
         }).catch(function(err) {
           statusEl.textContent = 'Error: ' + err.message;
@@ -3841,7 +3890,10 @@
         });
         box.querySelectorAll('button[data-remove-saved]').forEach(function(btn) {
           btn.addEventListener('click', function() {
-            db.collection('saved-djs').doc(btn.getAttribute('data-remove-saved')).delete();
+            var djId = btn.getAttribute('data-remove-saved');
+            db.collection('saved-djs').doc(djId).delete().then(function() {
+              trackSolEvent('dj_unsaved', { saved_dj_doc_id: djId });
+            });
           });
         });
       });
@@ -3868,6 +3920,7 @@
           }).then(function() {
             e.target.textContent = '♥ Saved!';
             e.target.style.background = '#22c55e';
+            trackSolEvent('dj_saved', { dj_id: djUid, dj_name: djName });
           });
         });
       }
@@ -3919,6 +3972,7 @@
       }).then(function() {
         document.getElementById('sol-tip-status').textContent = 'Tip of $' + amount + ' submitted! Thank you.';
         document.getElementById('sol-tip-status').style.color = '#22c55e';
+        trackSolEvent('tip_sent', { booking_id: bookingId, amount: amount });
         setTimeout(function() { document.getElementById('sol-tip-status').textContent = ''; }, 4000);
       });
     });
@@ -3968,6 +4022,7 @@
       }).then(function() {
         statusEl.textContent = 'Verification submitted! We\'ll review it shortly.';
         statusEl.style.color = '#22c55e';
+        trackSolEvent('client_verification_submitted', { uid: uid });
         loadClientVerifyStatus(uid);
       }).catch(function(err) {
         statusEl.textContent = 'Error: ' + err.message;
@@ -4050,6 +4105,7 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(function() {
         document.getElementById('sol-setlist-track').value = '';
+        trackSolEvent('dj_setlist_item_added', { booking_id: bookingId });
         loadSetlist(bookingId);
       });
     });
@@ -4173,6 +4229,7 @@
         }).then(function() {
           document.getElementById('sol-client-review-status').textContent = 'Client review submitted!';
           document.getElementById('sol-client-review-status').style.color = '#22c55e';
+          trackSolEvent('client_review_submitted', { booking_id: bookingId, rating: selectedClientRating });
           document.getElementById('sol-client-review-text').value = '';
           setTimeout(function() { document.getElementById('sol-client-review-status').textContent = ''; }, 3000);
         });
