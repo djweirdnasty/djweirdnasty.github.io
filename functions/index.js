@@ -332,10 +332,8 @@ exports.syncAllAuthUsers = onCall(async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Must be signed in.");
   }
-  var callerDoc = await db.collection("users").doc(request.auth.uid).get();
   var isCallerAdmin = request.auth.uid === ADMIN_UID ||
-    (request.auth.token && request.auth.token.email === ADMIN_EMAIL) ||
-    (callerDoc.exists && callerDoc.data().isAdmin === true);
+    (request.auth.token && request.auth.token.email === ADMIN_EMAIL);
   if (!isCallerAdmin) {
     throw new HttpsError("permission-denied", "Admin only.");
   }
