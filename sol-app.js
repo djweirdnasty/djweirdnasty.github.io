@@ -1606,6 +1606,8 @@
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
     document.getElementById('sol-admin-tab-settings').addEventListener('click', function() { adminSwitchTab('settings'); loadAdminSettings(); });
 
+    document.getElementById('sol-purge-test-data').addEventListener('click', purgeTestData);
+
     function loadAdminUsers() {
       var usersList = document.getElementById('sol-admin-users-list');
       usersList.innerHTML = '<p style="color:#888;">Loading users...</p>';
@@ -2101,6 +2103,78 @@
         .catch(function(err) {
           earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
         });
+    }
+
+    function purgeCollection(collectionName) {
+      return db.collection(collectionName).get().then(function(snapshot) {
+        if (snapshot.empty) return 0;
+        var batch = db.batch();
+        var count = 0;
+        var total = 0;
+        var promises = [];
+        snapshot.forEach(function(doc) {
+          batch.delete(doc.ref);
+          count++;
+          total++;
+          if (count === 500) {
+            promises.push(batch.commit());
+            batch = db.batch();
+            count = 0;
+          }
+        });
+        if (count > 0) promises.push(batch.commit());
+        return Promise.all(promises).then(function() { return total; });
+      });
+    }
+
+    function purgeTestData() {
+      if (!isAdmin) { alert('Admin only.'); return; }
+      if (!confirm('WARNING: This permanently erases ALL bookings, tips, disputes, feedback, setlists, playlists, saved-djs, and conversations. Users and DJ profiles remain. No real money was collected. Continue?')) return;
+      var typed = window.prompt('Type DELETE to confirm erasing all test earnings data:');
+      if (typed !== 'DELETE') { alert('Cancelled.'); return; }
+      var statusEl = document.getElementById('sol-purge-status');
+      statusEl.textContent = 'Purging test data...';
+      statusEl.style.color = '#ffd860';
+      Promise.all([
+        purgeCollection('bookings'),
+        purgeCollection('tips'),
+        purgeCollection('disputes'),
+        purgeCollection('feedback'),
+        purgeCollection('setlists'),
+        purgeCollection('playlists'),
+        purgeCollection('saved-djs'),
+        purgeCollection('conversations')
+      ]).then(function(results) {
+        var total = results.reduce(function(a, b) { return a + b; }, 0);
+        return db.collection('dj-status').get().then(function(snapshot) {
+          var batch = db.batch();
+          var count = 0;
+          var promises = [];
+          snapshot.forEach(function(doc) {
+            batch.update(doc.ref, {
+              isOnline: false,
+              sharingLocation: false,
+              location: firebase.firestore.FieldValue.delete()
+            });
+            count++;
+            if (count === 500) {
+              promises.push(batch.commit());
+              batch = db.batch();
+              count = 0;
+            }
+          });
+          if (count > 0) promises.push(batch.commit());
+          return Promise.all(promises).then(function() { return total; });
+        });
+      }).then(function(total) {
+        statusEl.textContent = 'Purged ' + total + ' test records. Earnings will refresh shortly.';
+        statusEl.style.color = '#22c55e';
+        loadAdminEarnings();
+        loadAdminBookings();
+      }).catch(function(err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
     }
 
     document.getElementById('sol-admin-add-dj-form').addEventListener('submit', function(e) {
