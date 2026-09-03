@@ -1610,6 +1610,29 @@
 
     document.getElementById('sol-purge-test-data').addEventListener('click', purgeTestData);
 
+    var syncUsersBtn = document.getElementById('sol-admin-sync-users');
+    if (syncUsersBtn) {
+      syncUsersBtn.addEventListener('click', function() {
+        var btn = this;
+        btn.textContent = 'Syncing...';
+        btn.disabled = true;
+        var syncFn = firebase.functions().httpsCallable('syncAllAuthUsers');
+        syncFn({})
+          .then(function(result) {
+            var r = result.data || {};
+            btn.textContent = 'Sync All Auth Users';
+            btn.disabled = false;
+            alert('Synced! Created ' + (r.created || 0) + ' missing user docs out of ' + (r.totalAuthUsers || 0) + ' auth accounts.');
+            loadAdminUsers();
+          })
+          .catch(function(err) {
+            btn.textContent = 'Sync All Auth Users';
+            btn.disabled = false;
+            alert('Sync failed: ' + err.message);
+          });
+      });
+    }
+
     function loadAdminUsers() {
       var usersList = document.getElementById('sol-admin-users-list');
       usersList.innerHTML = '<p style="color:#888;">Loading users...</p>';

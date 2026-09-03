@@ -1,7 +1,6 @@
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
-const { auth } = require("firebase-functions/v1");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
@@ -328,27 +327,49 @@ exports.sendPaypalPayout = onCall(
   }
 );
 
-// Seed a users/ doc the moment a Firebase Auth account is created.
-// This guarantees the admin panel can see the user without waiting for them to log into sol-app.js.
-exports.seedUserDocOnCreate = auth.user().onCreate((user) => {
-  var uid = user.uid;
-  var data = {
-    email: user.email || "",
-    displayName: user.displayName || "",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-    isAdmin: false,
-    isVerifiedClient: false,
-    isVerifiedDJ: false,
-    banned: false
-  };
-  return db.collection("users").doc(uid).set(data, { merge: true })
-    .then(function() {
-      logger.info("[SEED USER] Created users doc for " + uid);
-      return null;
-    })
-    .catch(function(err) {
-      logger.error("[SEED USER] Failed to create users doc for " + uid, err);
-      return null;
-    });
+// Callable function: admin clicks "Sync Users" to create missing users/ docs for all Firebase Auth accounts.
+exports.syncAllAuthUsers = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  var callerDoc = await db.collection("users").doc(request.auth.uid).get();
+  var isCallerAdmin = request.auth.uid === ADMIN_UID ||
+    (request.auth.token && request.auth.token.email === ADMIN_EMAIL) ||
+    (callerDoc.exists && callerDoc.data().isAdmin === true);
+  if (!isCallerAdmin) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  var listUsers = admin.auth().listUsers;
+  var allUsers = [];
+  var nextPageToken = undefined;
+  do {
+    var result = await listUsers(1000, nextPageToken);
+    allUsers = allUsers.concat(result.users);
+    nextPageToken = result.pageToken;
+  } while (nextPageToken);
+
+  var batch = db.batch();
+  var created = 0;
+  for (var i = 0; i < allUsers.length; i++) {
+    var u = allUsers[i];
+    var userRef = db.collection("users").doc(u.uid);
+    var existing = await userRef.get();
+    if (!existing.exists) {
+      batch.set(userRef, {
+        email: u.email || "",
+        displayName: u.displayName || "",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+        isAdmin: false,
+        isVerifiedClient: false,
+        isVerifiedDJ: false,
+        banned: false
+      });
+      created++;
+    }
+  }
+  if (created > 0) await batch.commit();
+  logger.info("[SYNC USERS] Created " + created + " missing user docs out of " + allUsers.length + " auth users.");
+  return { created: created, totalAuthUsers: allUsers.length };
 });
