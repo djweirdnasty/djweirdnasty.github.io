@@ -5026,11 +5026,11 @@
     ];
 
     var INDIE_SONGS = [
-      { id: 'i1', title: 'Neon Dreams', artist: 'Kayla Renée', genre: 'R&B/Soul', isIndie: true, bpm: 95 },
-      { id: 'i2', title: 'City Lights', artist: 'Marco Velli', genre: 'Electronic', isIndie: true, bpm: 128 },
-      { id: 'i3', title: 'Golden Hour', artist: 'The Sunnyside', genre: 'Indie-Pop', isIndie: true, bpm: 104 },
-      { id: 'i4', title: 'Midnight Run', artist: 'Aria Cole', genre: 'Hip-Hop/Soul', isIndie: true, bpm: 88 },
-      { id: 'i5', title: 'Wavelength', artist: 'Dex Monroe', genre: 'Trap/Electronic', isIndie: true, bpm: 140 }
+      { id: 'i1', title: 'Lil Jamaica', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 140 },
+      { id: 'i2', title: 'Pull Up', artist: 'Trap Beckham', genre: 'Trap', isIndie: true, bpm: 150 },
+      { id: 'i3', title: 'SoCandy', artist: 'SoCandy', genre: 'Pop/R&B', isIndie: true, bpm: 105 },
+      { id: 'i4', title: 'Sweet Life', artist: 'SoCandy', genre: 'R&B/Soul', isIndie: true, bpm: 92 },
+      { id: 'i5', title: 'Working', artist: 'Trap Beckham', genre: 'Hip-Hop/Trap', isIndie: true, bpm: 160 }
     ];
 
     var songSuggestionsState = { suggestions: [], confirmedIds: {}, playedIndie: [], bookingId: null, djId: null, eventType: '' };
