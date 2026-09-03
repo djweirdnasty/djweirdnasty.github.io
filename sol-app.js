@@ -68,14 +68,25 @@
 
       const done = function() { authSubmitBtn.disabled = false; };
       if (authMode === 'signup') {
+        const name = authNameInput.value.trim();
         auth.createUserWithEmailAndPassword(email, password)
           .then(function(cred) {
             console.log('[AUTH] Sign up successful:', cred.user.uid);
             trackSolEvent('sign_up', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = 'Account created!';
             authStatus.style.color = '#22c55e';
-            const name = authNameInput.value.trim();
-            if (name) return cred.user.updateProfile({ displayName: name });
+            var promises = [
+              db.collection('users').doc(cred.user.uid).set({
+                email: email,
+                displayName: name || '',
+                isAdmin: false,
+                isVerifiedDJ: false,
+                banned: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true })
+            ];
+            if (name) promises.push(cred.user.updateProfile({ displayName: name }));
+            return Promise.all(promises);
           })
           .catch(function(err) {
             console.error('[AUTH] Sign up error:', err.code, err.message);
@@ -89,6 +100,11 @@
             console.log('[AUTH] Sign in successful:', cred.user.uid);
             trackSolEvent('login', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = '';
+            return db.collection('users').doc(cred.user.uid).set({
+              email: cred.user.email || email,
+              displayName: cred.user.displayName || '',
+              lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
           })
           .catch(function(err) {
             console.error('[AUTH] Sign in error:', err.code, err.message);
@@ -1615,6 +1631,11 @@
         .then(function(snapshot) {
           var users = [];
           snapshot.forEach(function(doc) { users.push({ id: doc.id, data: doc.data() }); });
+          users.sort(function(a, b) {
+            var ta = a.data.createdAt && typeof a.data.createdAt.toMillis === 'function' ? a.data.createdAt.toMillis() : 0;
+            var tb = b.data.createdAt && typeof b.data.createdAt.toMillis === 'function' ? b.data.createdAt.toMillis() : 0;
+            return tb - ta;
+          });
           document.getElementById('sol-admin-stat-users').textContent = users.length;
           renderAdminUsers(users);
           var searchEl = document.getElementById('sol-admin-user-search');
@@ -1654,6 +1675,10 @@
           ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>'
           : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>';
         var badges = '';
+        var now = Date.now();
+        var created = d.createdAt && typeof d.createdAt.toMillis === 'function' ? d.createdAt.toMillis() : 0;
+        var isNew = (now - created) < 24 * 60 * 60 * 1000;
+        if (isNew) badges += '<span style="background:#ffd860; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">NEW</span> ';
         if (isAdmin) badges += '<span style="background:#00d4ff; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
         if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
         if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
