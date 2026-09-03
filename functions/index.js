@@ -4,6 +4,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { setGlobalOptions } = require("firebase-functions/v2");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const functions = require("firebase-functions");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -329,3 +330,28 @@ exports.sendPaypalPayout = onCall(
     return { success: true, payoutBatchId: payoutBatchId, status: batchStatus, amount: totalOwed };
   }
 );
+
+// Seed a users/ doc the moment a Firebase Auth account is created.
+// This guarantees the admin panel can see the user without waiting for them to log into sol-app.js.
+exports.seedUserDocOnCreate = functions.region("us-central1").auth.user().onCreate((user) => {
+  var uid = user.uid;
+  var data = {
+    email: user.email || "",
+    displayName: user.displayName || "",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+    isAdmin: false,
+    isVerifiedClient: false,
+    isVerifiedDJ: false,
+    banned: false
+  };
+  return db.collection("users").doc(uid).set(data, { merge: true })
+    .then(function() {
+      logger.info("[SEED USER] Created users doc for " + uid);
+      return null;
+    })
+    .catch(function(err) {
+      logger.error("[SEED USER] Failed to create users doc for " + uid, err);
+      return null;
+    });
+});
