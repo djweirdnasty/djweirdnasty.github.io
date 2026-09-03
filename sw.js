@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sol-cache-v1';
+const CACHE_NAME = 'sol-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/sol.html',
@@ -64,7 +64,9 @@ self.addEventListener('fetch', function(e) {
         return res;
       }).catch(function() {
         return caches.match(req).then(function(cached) {
-          return cached || caches.match('/sol.html');
+          return cached || caches.match('/sol.html').then(function(fallback) {
+            return fallback || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+          });
         });
       })
     );
@@ -79,7 +81,7 @@ self.addEventListener('fetch', function(e) {
           }
           return res;
         }).catch(function() {
-          return cached;
+          return cached || new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
         });
       })
     );
