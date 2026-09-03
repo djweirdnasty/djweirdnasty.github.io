@@ -340,11 +340,10 @@ exports.syncAllAuthUsers = onCall(async (request) => {
     throw new HttpsError("permission-denied", "Admin only.");
   }
 
-  var listUsers = admin.auth().listUsers;
   var allUsers = [];
   var nextPageToken = undefined;
   do {
-    var result = await listUsers(1000, nextPageToken);
+    var result = await admin.auth().listUsers(1000, nextPageToken);
     allUsers = allUsers.concat(result.users);
     nextPageToken = result.pageToken;
   } while (nextPageToken);
