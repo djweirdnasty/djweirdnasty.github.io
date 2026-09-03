@@ -75,18 +75,7 @@
             trackSolEvent('sign_up', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = 'Account created!';
             authStatus.style.color = '#22c55e';
-            var promises = [
-              db.collection('users').doc(cred.user.uid).set({
-                email: email,
-                displayName: name || '',
-                isAdmin: false,
-                isVerifiedDJ: false,
-                banned: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-              }, { merge: true })
-            ];
-            if (name) promises.push(cred.user.updateProfile({ displayName: name }));
-            return Promise.all(promises);
+            if (name) return cred.user.updateProfile({ displayName: name });
           })
           .catch(function(err) {
             console.error('[AUTH] Sign up error:', err.code, err.message);
@@ -100,11 +89,6 @@
             console.log('[AUTH] Sign in successful:', cred.user.uid);
             trackSolEvent('login', { method: 'email', uid: cred.user.uid });
             authStatus.textContent = '';
-            return db.collection('users').doc(cred.user.uid).set({
-              email: cred.user.email || email,
-              displayName: cred.user.displayName || '',
-              lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
           })
           .catch(function(err) {
             console.error('[AUTH] Sign in error:', err.code, err.message);
@@ -2788,6 +2772,27 @@
       });
     }
 
+    function syncUserDoc(user) {
+      if (!user) return;
+      var uid = user.uid;
+      db.collection('users').doc(uid).get().then(function(doc) {
+        var data = {
+          email: user.email || '',
+          displayName: user.displayName || '',
+          lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (!doc.exists) {
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          data.isAdmin = false;
+          data.isVerifiedDJ = false;
+          data.banned = false;
+        }
+        return db.collection('users').doc(uid).set(data, { merge: true });
+      }).catch(function(err) {
+        console.error('[USER DOC SYNC] Error for', uid, err);
+      });
+    }
+
     auth.onAuthStateChanged(function(user) {
       console.log('[AUTH] onAuthStateChanged fired, user:', user ? user.uid : 'null');
       if (user) {
@@ -2798,6 +2803,8 @@
         const emailField = document.getElementById('sol-quick-email');
         if (nameField && !nameField.value) nameField.value = user.displayName || '';
         if (emailField && !emailField.value) emailField.value = user.email || '';
+
+        syncUserDoc(user);
 
         isVerifiedDJ = false;
         djModeToggleBtn.style.display = 'none';
