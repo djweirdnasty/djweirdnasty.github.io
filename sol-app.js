@@ -5026,11 +5026,16 @@
     ];
 
     var INDIE_SONGS = [
-      { id: 'i1', title: 'Lil Jamaica', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 140 },
-      { id: 'i2', title: 'Pull Up', artist: 'Trap Beckham', genre: 'Trap', isIndie: true, bpm: 150 },
-      { id: 'i3', title: 'SoCandy', artist: 'SoCandy', genre: 'Pop/R&B', isIndie: true, bpm: 105 },
-      { id: 'i4', title: 'Sweet Life', artist: 'SoCandy', genre: 'R&B/Soul', isIndie: true, bpm: 92 },
-      { id: 'i5', title: 'Working', artist: 'Trap Beckham', genre: 'Hip-Hop/Trap', isIndie: true, bpm: 160 }
+      { id: 'i1', title: 'Birthday Bitch', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 140 },
+      { id: 'i2', title: 'Lil Booties Matter', artist: 'Trap Beckham', genre: 'Hip-Hop/Trap', isIndie: true, bpm: 150 },
+      { id: 'i3', title: 'Taste Like Candy', artist: 'SoCandy', genre: 'R&B/Pop', isIndie: true, bpm: 105 },
+      { id: 'i4', title: 'Get Low', artist: 'SoCandy', genre: 'Hip-Hop/R&B', isIndie: true, bpm: 128 },
+      { id: 'i5', title: 'Back It Up', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 160 },
+      { id: 'i6', title: 'Smack It', artist: 'SoCandy', genre: 'R&B', isIndie: true, bpm: 110 },
+      { id: 'i7', title: 'The Cookout', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 145 },
+      { id: 'i8', title: 'Ride', artist: 'SoCandy feat. Trap Beckham', genre: 'Hip-Hop/R&B', isIndie: true, bpm: 120 },
+      { id: 'i9', title: 'Over The Top', artist: 'SoCandy', genre: 'Hip-Hop', isIndie: true, bpm: 135 },
+      { id: 'i10', title: 'Backwoods', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 155 }
     ];
 
     var songSuggestionsState = { suggestions: [], confirmedIds: {}, playedIndie: [], bookingId: null, djId: null, eventType: '' };
