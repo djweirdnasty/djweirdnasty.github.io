@@ -7,7 +7,15 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 03 Sep 2026 22:41:48 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 03 Sep 2026 23:01:26 GMT</lastBuildDate>
+    <item>
+      <title>Mississippi Police Chief Fired Amid Racist Text Scandal After 1-Year-Old Is Killed in Police Shooting</title>
+      <link>https://djweirdnasty.com/news-senatobia-police-chief-fired-racist-texts.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-senatobia-police-chief-fired-racist-texts.html</guid>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A Mississippi police department is facing another leadership change after Police Chief Harold &amp;ldquo;Hal&amp;rdquo; Vanderford was fired amid allegations that he repeatedly used racist slurs in private text messages.</description>
+      <enclosure url="https://djweirdnasty.com/1-year-old-death.jpg" type="image/jpeg" />
+    </item>
     <item>
       <title>Uber Leaves Nigeria After 12 Years as Costs, Competition and Corporate Changes Reshape Ride-Hailing</title>
       <link>https://djweirdnasty.com/news-uber-leaves-nigeria.html</link>
@@ -239,14 +247,6 @@
       <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
       <description>Rebecca Jane Mryglod, 38, has been sentenced to 20 years in an Arkansas state prison after admitting that she shot her former boyfriend 17 times inside his home.</description>
       <enclosure url="https://djweirdnasty.com/rebecca-jane.webp" type="image/webp" />
-    </item>
-    <item>
-      <title>Michael Wright, ‘The Five Heartbeats’ Star, Dies at 70</title>
-      <link>https://djweirdnasty.com/news-michael-wright-five-heartbeats-dies.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-michael-wright-five-heartbeats-dies.html</guid>
-      <pubDate>Sat, 22 Aug 2026 00:00:00 GMT</pubDate>
-      <description>Michael Wright, ‘The Five Heartbeats’ Star, Dies at 70</description>
-      <enclosure url="https://djweirdnasty.com/Michael-wright.webp" type="image/webp" />
     </item>
   </channel>
 </rss>
