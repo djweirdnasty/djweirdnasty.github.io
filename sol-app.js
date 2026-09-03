@@ -1919,6 +1919,7 @@
 
       if (action === 'promoteDj') {
         var isRevoke = btn.textContent === 'Revoke DJ';
+        var name;
         if (isRevoke) {
           var batch = db.batch();
           batch.set(db.collection('users').doc(uid), { isVerifiedDJ: false, revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -1935,7 +1936,7 @@
         }
         db.collection('users').doc(uid).get().then(function(userDoc) {
           var u = userDoc.data() || {};
-          var name = u.displayName || u.name || u.email || 'DJ';
+          name = u.displayName || u.name || u.email || 'DJ';
           var profile = {
             email: u.email || '',
             stageName: name,
