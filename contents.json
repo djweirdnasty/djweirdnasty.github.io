@@ -1,5 +1,12 @@
 [
   {
+    "path": "/news-uber-leaves-nigeria.html",
+    "title": "Uber Leaves Nigeria After 12 Years as Costs, Competition and Corporate Changes Reshape Ride-Hailing",
+    "img": "/uber.jpeg",
+    "updated": 1788475308,
+    "published": 1788393600
+  },
+  {
     "path": "/news-billy-adams-tampa-murder-conviction.html",
     "title": "Tampa Rapper Convicted of Killing Pregnant Woman and Her Unborn Child, Faces Death Penalty Phase",
     "img": "/billy-adams.webp",
@@ -129,8 +136,8 @@
     "path": "/event-philly-skate-plex.html",
     "title": "Philly Skate Plex Family Session",
     "img": "/Philly-skate-logo.webp",
-    "updated": 1787955376,
-    "published": 1787955376
+    "updated": 1788369147,
+    "published": 1788369147
   },
   {
     "path": "/event-private-booking.html",
@@ -451,8 +458,8 @@
     "path": "/news-national.html",
     "title": "National News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788310830,
-    "published": 1788220800
+    "updated": 1788475308,
+    "published": 1788393600
   },
   {
     "path": "/news-nba-youngboy-south-korea.html",
@@ -689,7 +696,7 @@
     "path": "/news.html",
     "title": "DJWEIRDNASTY | Latest News",
     "img": "/news.png",
-    "updated": 1788366927,
+    "updated": 1788475308,
     "published": 1787961600
   },
   {

@@ -7,7 +7,15 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 02 Sep 2026 16:41:42 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 03 Sep 2026 22:41:48 GMT</lastBuildDate>
+    <item>
+      <title>Uber Leaves Nigeria After 12 Years as Costs, Competition and Corporate Changes Reshape Ride-Hailing</title>
+      <link>https://djweirdnasty.com/news-uber-leaves-nigeria.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-uber-leaves-nigeria.html</guid>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Uber has stopped accepting ride requests in Nigeria and Uganda, ending a 12-year run in one of Africa&amp;#x27;s largest transportation markets as rising costs and global restructuring reshape its operations.</description>
+      <enclosure url="https://djweirdnasty.com/uber.jpeg" type="image/jpeg" />
+    </item>
     <item>
       <title>Tampa Rapper Convicted of Killing Pregnant Woman and Her Unborn Child, Faces Death Penalty Phase</title>
       <link>https://djweirdnasty.com/news-billy-adams-tampa-murder-conviction.html</link>
@@ -239,14 +247,6 @@
       <pubDate>Sat, 22 Aug 2026 00:00:00 GMT</pubDate>
       <description>Michael Wright, ‘The Five Heartbeats’ Star, Dies at 70</description>
       <enclosure url="https://djweirdnasty.com/Michael-wright.webp" type="image/webp" />
-    </item>
-    <item>
-      <title>CJ Wallace Takes Legal Action Over Changes to Voletta Wallace's Estate</title>
-      <link>https://djweirdnasty.com/news-cj-wallace-voletta-estate.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-cj-wallace-voletta-estate.html</guid>
-      <pubDate>Fri, 21 Aug 2026 00:00:00 GMT</pubDate>
-      <description>CJ Wallace Takes Legal Action Over Changes to Voletta Wallace's Estate</description>
-      <enclosure url="https://djweirdnasty.com/biggie-son.jpeg" type="image/jpeg" />
     </item>
   </channel>
 </rss>
