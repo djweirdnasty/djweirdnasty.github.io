@@ -2,6 +2,7 @@ node_modules/
 .env
 .DS_Store
 .wrangler/
+firebase-debug.log
 
 # Large video files - hosted on Cloudflare R2
 *.mp4
