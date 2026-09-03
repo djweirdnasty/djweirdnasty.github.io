@@ -1,15 +1,12 @@
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
-const { setGlobalOptions } = require("firebase-functions/v2");
 const { auth } = require("firebase-functions/v1");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
 const db = admin.firestore();
-
-setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 
 const ADMIN_UID = "3i7fQdPjN0Qxz3FysVPvnhtxzlJ3";
 const ADMIN_EMAIL = "djweirdnasty@gmail.com";
