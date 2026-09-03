@@ -2,9 +2,9 @@ const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const { setGlobalOptions } = require("firebase-functions/v2");
+const { beforeUserCreated } = require("firebase-functions/v2/identity");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
-const functions = require("firebase-functions");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -333,7 +333,8 @@ exports.sendPaypalPayout = onCall(
 
 // Seed a users/ doc the moment a Firebase Auth account is created.
 // This guarantees the admin panel can see the user without waiting for them to log into sol-app.js.
-exports.seedUserDocOnCreate = functions.region("us-central1").auth.user().onCreate((user) => {
+exports.seedUserDocOnCreate = beforeUserCreated((event) => {
+  var user = event.data;
   var uid = user.uid;
   var data = {
     email: user.email || "",

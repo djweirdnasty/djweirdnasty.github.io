@@ -1,0 +1,123 @@
+[debug] [2026-09-03T16:34:24.305Z] ----------------------------------------------------------------------
+[debug] [2026-09-03T16:34:24.308Z] Command:       /usr/local/Cellar/node@22/22.23.2/bin/node /usr/local/bin/firebase deploy --only functions:seedUserDocOnCreate
+[debug] [2026-09-03T16:34:24.308Z] CLI Version:   15.28.1
+[debug] [2026-09-03T16:34:24.308Z] Platform:      darwin
+[debug] [2026-09-03T16:34:24.308Z] Node Version:  v22.23.2
+[debug] [2026-09-03T16:34:24.309Z] Detected Agent: unknown
+[debug] [2026-09-03T16:34:24.309Z] Time:          Thu Sep 03 2026 12:34:24 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-09-03T16:34:24.309Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-03T16:34:25.336Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-09-03T16:34:25.336Z] > authorizing via signed-in user (kurtisctabb@gmail.com)
+[debug] [2026-09-03T16:34:25.336Z] [iam] checking project studio-3475382917-e5aaa for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-09-03T16:34:25.360Z] Checked if tokens are valid: false, expires at: 1788399640626
+[debug] [2026-09-03T16:34:25.361Z] Checked if tokens are valid: false, expires at: 1788399640626
+[debug] [2026-09-03T16:34:25.361Z] > refreshing access token with scopes: []
+[debug] [2026-09-03T16:34:25.363Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-09-03T16:34:25.363Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-09-03T16:34:25.580Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-09-03T16:34:25.580Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-09-03T16:34:25.625Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa:testIamPermissions [none]
+[debug] [2026-09-03T16:34:25.625Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa:testIamPermissions  x-goog-user-project=studio-3475382917-e5aaa
+[debug] [2026-09-03T16:34:25.625Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-09-03T16:34:25.900Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa:testIamPermissions 200
+[debug] [2026-09-03T16:34:25.900Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-09-03T16:34:25.900Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:25.900Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:25.900Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/studio-3475382917-e5aaa/serviceAccounts/studio-3475382917-e5aaa@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-09-03T16:34:25.900Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/studio-3475382917-e5aaa/serviceAccounts/studio-3475382917-e5aaa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-09-03T16:34:26.187Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/studio-3475382917-e5aaa/serviceAccounts/studio-3475382917-e5aaa@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-09-03T16:34:26.188Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/studio-3475382917-e5aaa/serviceAccounts/studio-3475382917-e5aaa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'studio-3475382917-e5aaa'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-09-03T16:34:26.190Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.190Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.190Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa [none]
+[debug] [2026-09-03T16:34:26.320Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa 200
+[debug] [2026-09-03T16:34:26.320Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-3475382917-e5aaa {"projectNumber":"268860816836","projectId":"studio-3475382917-e5aaa","lifecycleState":"ACTIVE","name":"Firebase app","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-11-13T15:54:12.875943Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-09-03T16:34:26.322Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.322Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.322Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/adminSdkConfig [none]
+[debug] [2026-09-03T16:34:26.661Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/adminSdkConfig 200
+[debug] [2026-09-03T16:34:26.661Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/adminSdkConfig {"projectId":"studio-3475382917-e5aaa","databaseURL":"https://studio-3475382917-e5aaa-default-rtdb.firebaseio.com","storageBucket":"studio-3475382917-e5aaa.firebasestorage.app"}
+[debug] [2026-09-03T16:34:26.661Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.661Z] Checked if tokens are valid: true, expires at: 1788456864580
+[debug] [2026-09-03T16:34:26.662Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/configs [none]
+[debug] [2026-09-03T16:34:26.929Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/configs 200
+[debug] [2026-09-03T16:34:26.929Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/studio-3475382917-e5aaa/configs {}
+[debug] [2026-09-03T16:34:26.930Z] Validating nodejs source
+[warn] ⚠  functions: Couldn't find firebase-functions package in your source code. Have you run 'npm install'? 
+[debug] [2026-09-03T16:34:26.931Z] getFunctionsSDKVersion encountered error: Cannot find module 'firebase-functions'
+Require stack:
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js
+- /usr/local/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js
+- /usr/local/lib/node_modules/firebase-tools/lib/frameworks/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/checkValidTargetFilters.js
+- /usr/local/lib/node_modules/firebase-tools/lib/commands/deploy.js
+- /usr/local/lib/node_modules/firebase-tools/lib/commands/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/bin/cli.js
+- /usr/local/lib/node_modules/firebase-tools/lib/bin/firebase.js {"code":"MODULE_NOT_FOUND","requireStack":["/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js","/usr/local/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js","/usr/local/lib/node_modules/firebase-tools/lib/frameworks/index.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js","/usr/local/lib/node_modules/firebase-tools/lib/deploy/index.js","/usr/local/lib/node_modules/firebase-tools/lib/checkValidTargetFilters.js","/usr/local/lib/node_modules/firebase-tools/lib/commands/deploy.js","/usr/local/lib/node_modules/firebase-tools/lib/commands/index.js","/usr/local/lib/node_modules/firebase-tools/lib/index.js","/usr/local/lib/node_modules/firebase-tools/lib/bin/cli.js","/usr/local/lib/node_modules/firebase-tools/lib/bin/firebase.js"]}
+[debug] [2026-09-03T16:34:26.931Z] checkFunctionsSDKVersion encountered error: Invalid Version:  {}
+[debug] [2026-09-03T16:34:26.931Z] > [functions] package.json contents: {
+  "name": "sol-functions",
+  "description": "Firebase Cloud Functions for SOL DJ Booking SMS notifications",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "scripts": {
+    "deploy": "echo 'Run firebase deploy --only functions:<name> for a specific function. The project has other Cloud Functions (acceptBooking, rejectBooking, adminApproveDJVerification) not in this codebase — a bare functions deploy will prompt to delete them.' && exit 1",
+    "test": "node --test test/*.test.js",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1"
+  }
+}
+[debug] [2026-09-03T16:34:26.932Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-09-03T16:34:26.932Z] Could not parse firebase-functions version '' into semver.
+[debug] [2026-09-03T16:34:26.932Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-09-03T16:34:27.062Z] Error: Cannot find module 'firebase-functions'
+Require stack:
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js
+- /usr/local/lib/node_modules/firebase-tools/lib/emulator/functionsEmulatorShared.js
+- /usr/local/lib/node_modules/firebase-tools/lib/frameworks/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/prepare.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/hosting/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/deploy/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/checkValidTargetFilters.js
+- /usr/local/lib/node_modules/firebase-tools/lib/commands/deploy.js
+- /usr/local/lib/node_modules/firebase-tools/lib/commands/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/index.js
+- /usr/local/lib/node_modules/firebase-tools/lib/bin/cli.js
+- /usr/local/lib/node_modules/firebase-tools/lib/bin/firebase.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1430:15)
+    at Function.resolve (node:internal/modules/helpers:157:19)
+    at Delegate.findFunctionsBinary (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:98:33)
+    at Delegate.spawnFunctionsProcess (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:128:30)
+    at Delegate.serveAdmin (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:149:35)
+    at Delegate.discoverBuild (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:192:41)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async loadCodebases (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:525:33)
+    at async prepare (/usr/local/lib/node_modules/firebase-tools/lib/deploy/functions/prepare.js:181:24)
+    at async chain (/usr/local/lib/node_modules/firebase-tools/lib/deploy/index.js:114:9)
+[error] 
+[error] Error: An unexpected error has occurred.
