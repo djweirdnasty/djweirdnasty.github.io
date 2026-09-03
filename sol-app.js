@@ -650,6 +650,7 @@
             '</div>' +
             '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
             '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-booking-id="' + b.id + '">Reject</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#9333ea;" data-counter-offer="' + b.id + '" data-amount="' + amount + '" data-duration="' + (b.duration || b.event_duration || 4) + '" data-client="' + clientName + '" data-event="' + eventType + '">Counter</button>' +
             '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="accept" data-booking-id="' + b.id + '">Accept</button>' +
             '</div>';
 
@@ -661,6 +662,18 @@
             const action = btn.getAttribute('data-action');
             const bookingId = btn.getAttribute('data-booking-id');
             handleBookingAction(bookingId, action, user);
+          });
+        });
+
+        requestsBox.querySelectorAll('button[data-counter-offer]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            openCounterOffer(
+              btn.getAttribute('data-counter-offer'),
+              parseFloat(btn.getAttribute('data-amount')) || 0,
+              parseFloat(btn.getAttribute('data-duration')) || 4,
+              btn.getAttribute('data-client') || 'Client',
+              btn.getAttribute('data-event') || 'Event'
+            );
           });
         });
       }
@@ -715,6 +728,10 @@
             (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + b.id + '">I\'m Here</button>') +
             (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff4d8f;" data-show-map="' + b.id + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + (location || '').replace(/"/g, '&quot;') + '">Show on Map</button>' : '') +
             '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + detailsId + '">Details</button>' +
+            '</div>' +
+            '<div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff;" data-track-status="' + b.id + '">📊 Track Status</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #9333ea; color:#c084fc;" data-song-suggestions="' + b.id + '" data-dj-id="' + user.uid + '" data-dj-name="' + (b.djName || user.displayName || user.email || 'DJ') + '" data-event-type="' + eventType + '">🎵 Song Suggestions</button>' +
             '</div>' +
             '<div id="' + detailsId + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
             (duration ? '<div>⏱️ Duration: ' + duration + ' hrs</div>' : '') +
@@ -809,6 +826,23 @@
               details.style.display = details.style.display === 'none' ? 'block' : 'none';
               btn.textContent = details.style.display === 'none' ? 'Details' : 'Hide';
             }
+          });
+        });
+
+        upcomingBox.querySelectorAll('button[data-track-status]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            openBookingStatusTracker(btn.getAttribute('data-track-status'));
+          });
+        });
+
+        upcomingBox.querySelectorAll('button[data-song-suggestions]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            openSongSuggestions(
+              btn.getAttribute('data-song-suggestions'),
+              btn.getAttribute('data-dj-id'),
+              btn.getAttribute('data-dj-name'),
+              btn.getAttribute('data-event-type')
+            );
           });
         });
       }
@@ -1458,7 +1492,8 @@
             '<div>📅 ' + (b.date || b.eventDate || 'TBD') + (b.startTime ? ' at ' + b.startTime : '') + '</div>' +
             '<div>💰 $' + Number(b.totalAmount || b.total_cost || 0).toLocaleString() + '</div>' +
             '</div>' +
-            (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + doc.id + '">Cancel Booking</button>' : '');
+            (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + doc.id + '">Cancel Booking</button>' : '') +
+            '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-track-status="' + doc.id + '">📊 Track Status</button>';
           bookingsList.appendChild(card);
         });
         document.getElementById('sol-admin-stat-bookings').textContent = count;
@@ -1498,6 +1533,9 @@
             setTimeout(function() { adminStatus.textContent = ''; }, 3000);
           })
           .catch(function(err) { alert('Error: ' + err.message); });
+      }
+      if (e.target && e.target.hasAttribute('data-track-status')) {
+        openBookingStatusTracker(e.target.getAttribute('data-track-status'));
       }
     });
 
@@ -3964,6 +4002,31 @@
       calculatePrice();
     });
 
+    var eqPickerBtn = document.getElementById('sol-open-equipment-picker');
+    if (eqPickerBtn) {
+      eqPickerBtn.addEventListener('click', function() {
+        var currentEq = getEquipment();
+        var duration = parseInt(document.getElementById('sol-quick-duration').value) || 4;
+        var eventType = document.getElementById('sol-quick-event').value || 'Event';
+        var summary = '<strong style="color:#fff;">' + eventType + '</strong><br>' + duration + ' hour event';
+        openEquipmentPicker(currentEq, summary, function(result) {
+          document.getElementById('sol-speakers').value = result.speakers;
+          document.getElementById('sol-microphones').value = result.microphones;
+          document.getElementById('sol-strobes').value = result.strobe_lights;
+          document.getElementById('sol-projector').checked = result.projector;
+          document.getElementById('sol-photographer').checked = result.photographer;
+          document.getElementById('sol-security').checked = result.security_needed;
+          document.getElementById('sol-security-armed').checked = result.security_armed;
+          document.getElementById('sol-mc').checked = result.mc_services;
+          var armedLabel = document.getElementById('sol-security-armed-label');
+          if (armedLabel) armedLabel.style.opacity = result.security_needed ? '1' : '0.4';
+          var armedEl = document.getElementById('sol-security-armed');
+          if (armedEl) armedEl.disabled = !result.security_needed;
+          calculatePrice();
+        });
+      });
+    }
+
     // ---------- Messaging (Firestore, interoperable with mobile app) ----------
     let activeConversationId = null;
     let chatUnsubscribe = null;
@@ -4644,5 +4707,455 @@
         subscribeToPushNotifications();
       }
     }
+
+    // =========================================================================
+    // FEATURE 1: Booking Status Tracker (ported from rork-app BookingStatusTracker)
+    // =========================================================================
+    var BOOKING_STATUS_FLOW = [
+      { status: 'pending', label: 'Pending', icon: '⏳' },
+      { status: 'confirmed', label: 'Confirmed', icon: '✅' },
+      { status: 'on_the_way', label: 'On the Way', icon: '🚗' },
+      { status: 'arrived', label: 'Arrived', icon: '📍' },
+      { status: 'started', label: 'Started', icon: '▶️' },
+      { status: 'completed', label: 'Completed', icon: '🎉' }
+    ];
+
+    function renderBookingStatusTracker(currentStatus, statusHistory) {
+      if (currentStatus === 'cancelled') {
+        return '<div style="text-align:center; padding:1.5rem;">' +
+          '<div style="width:60px; height:60px; border-radius:30px; background:#ff3b3022; display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem; font-size:1.5rem;">❌</div>' +
+          '<div style="font-size:1.1rem; font-weight:700; color:#ff3b30;">Booking Cancelled</div>' +
+          '</div>';
+      }
+      var currentIndex = -1;
+      for (var i = 0; i < BOOKING_STATUS_FLOW.length; i++) {
+        if (BOOKING_STATUS_FLOW[i].status === currentStatus) { currentIndex = i; break; }
+      }
+      if (currentIndex === -1) currentIndex = 0;
+
+      var html = '<div style="display:flex; align-items:flex-start; padding:0.5rem 0;">';
+      for (var j = 0; j < BOOKING_STATUS_FLOW.length; j++) {
+        var isCompleted = j < currentIndex;
+        var isActive = j === currentIndex;
+        var isLast = j === BOOKING_STATUS_FLOW.length - 1;
+        var iconColor = isCompleted ? '#22c55e' : isActive ? '#00d4ff' : '#555';
+        var bgColor = isCompleted ? '#22c55e22' : isActive ? '#00d4ff22' : '#222';
+        var borderColor = isCompleted ? '#22c55e' : isActive ? '#00d4ff' : '#444';
+        var textColor = (isActive || isCompleted) ? '#fff' : '#666';
+
+        var timestampStr = '';
+        if (statusHistory) {
+          for (var k = 0; k < statusHistory.length; k++) {
+            if (statusHistory[k].status === BOOKING_STATUS_FLOW[j].status) {
+              var ts = statusHistory[k].timestamp;
+              if (ts && ts.toDate) ts = ts.toDate();
+              if (ts) timestampStr = new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              break;
+            }
+          }
+        }
+
+        html += '<div style="flex:1; text-align:center; position:relative;">';
+        html += '<div style="width:44px; height:44px; border-radius:22px; background:' + bgColor + '; border:2px solid ' + borderColor + '; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:1.1rem;">' + BOOKING_STATUS_FLOW[j].icon + '</div>';
+        if (!isLast) {
+          var lineColor = isCompleted ? '#22c55e' : '#444';
+          html += '<div style="position:absolute; top:22px; left:50%; width:100%; height:2px; background:' + lineColor + '; z-index:0;"></div>';
+        }
+        html += '<div style="margin-top:0.4rem; font-size:0.7rem; font-weight:' + (isActive ? '700' : '600') + '; color:' + textColor + ';">' + BOOKING_STATUS_FLOW[j].label + '</div>';
+        if (timestampStr) html += '<div style="font-size:0.6rem; color:#888; margin-top:0.1rem;">' + timestampStr + '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function openBookingStatusTracker(bookingId) {
+      var modal = document.getElementById('sol-status-tracker-modal');
+      var content = document.getElementById('sol-status-tracker-content');
+      modal.style.display = 'flex';
+      content.innerHTML = '<p style="color:#888; text-align:center;">Loading...</p>';
+
+      db.collection('bookings').doc(bookingId).get().then(function(doc) {
+        if (!doc.exists) { content.innerHTML = '<p style="color:#ff4d8f;">Booking not found.</p>'; return; }
+        var b = doc.data();
+        var status = b.status || 'pending';
+        var history = b.statusHistory || [];
+        content.innerHTML = renderBookingStatusTracker(status, history);
+
+        if (b.djId === auth.currentUser.uid && status !== 'cancelled' && status !== 'completed') {
+          var actionsHtml = '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">';
+          if (status === 'confirmed') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-status-update="' + bookingId + '" data-new-status="on_the_way">Mark On the Way</button>';
+          if (status === 'on_the_way' || status === 'confirmed') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-status-update="' + bookingId + '" data-new-status="arrived">Mark Arrived</button>';
+          if (status === 'arrived' || status === 'on_the_way') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#9333ea;" data-status-update="' + bookingId + '" data-new-status="started">Start Event</button>';
+          if (status === 'started' || status === 'arrived') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-status-update="' + bookingId + '" data-new-status="completed">Complete</button>';
+          actionsHtml += '</div>';
+          content.innerHTML += actionsHtml;
+
+          content.querySelectorAll('button[data-status-update]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              var newStatus = btn.getAttribute('data-new-status');
+              var bId = btn.getAttribute('data-status-update');
+              var entry = { status: newStatus, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+              db.collection('bookings').doc(bId).set({
+                status: newStatus,
+                statusHistory: firebase.firestore.FieldValue.arrayUnion(entry),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true }).then(function() {
+                openBookingStatusTracker(bId);
+              }).catch(function(err) {
+                content.innerHTML += '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+              });
+            });
+          });
+        }
+      }).catch(function(err) {
+        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
+    }
+
+    document.getElementById('sol-status-tracker-close').addEventListener('click', function() {
+      document.getElementById('sol-status-tracker-modal').style.display = 'none';
+    });
+
+    // =========================================================================
+    // FEATURE 2: Equipment Picker Modal (ported from rork-app EquipmentPickerModal)
+    // =========================================================================
+    var equipmentModalState = {
+      speakers: 0, microphones: 0, strobeLights: 0,
+      projector: false, photographer: false, mc: false,
+      security: { needed: false, armed: false }
+    };
+    var equipmentModalCallback = null;
+
+    function openEquipmentPicker(currentEquipment, eventSummary, onConfirm) {
+      var modal = document.getElementById('sol-equipment-modal');
+      var summary = document.getElementById('sol-equipment-event-summary');
+      var content = document.getElementById('sol-equipment-content');
+      modal.style.display = 'flex';
+
+      if (currentEquipment) {
+        equipmentModalState = {
+          speakers: currentEquipment.speakers || 0,
+          microphones: currentEquipment.microphones || 0,
+          strobeLights: currentEquipment.strobe_lights || currentEquipment.strobeLights || 0,
+          projector: !!currentEquipment.projector,
+          photographer: !!currentEquipment.photographer,
+          mc: !!(currentEquipment.mc || currentEquipment.mc_services),
+          security: { needed: !!(currentEquipment.security_needed || (currentEquipment.security && currentEquipment.security.needed)), armed: !!(currentEquipment.security_armed || (currentEquipment.security && currentEquipment.security.armed)) }
+        };
+      }
+      equipmentModalCallback = onConfirm;
+      summary.innerHTML = eventSummary || '';
+      renderEquipmentModalContent(content);
+    }
+
+    function renderEquipmentModalContent(container) {
+      var eq = equipmentModalState;
+      function qtyRow(key, label, desc) {
+        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem; background:#111; border-radius:10px; margin-bottom:0.5rem;">' +
+          '<div><div style="font-weight:600; color:#fff; font-size:0.9rem;">' + label + '</div><div style="font-size:0.75rem; color:#888;">' + desc + '</div></div>' +
+          '<div style="display:flex; align-items:center; gap:0.5rem;">' +
+          '<button type="button" class="submit-btn" style="width:30px; height:30px; border-radius:15px; background:#333; padding:0; font-size:1rem;" data-eq-dec="' + key + '">−</button>' +
+          '<span style="min-width:30px; text-align:center; font-weight:600; color:#fff;" id="eq-val-' + key + '">' + eq[key] + '</span>' +
+          '<button type="button" class="submit-btn" style="width:30px; height:30px; border-radius:15px; background:#9333ea; padding:0; font-size:1rem;" data-eq-inc="' + key + '">+</button>' +
+          '</div></div>';
+      }
+      function toggleRow(key, label, desc) {
+        var checked = eq[key];
+        return '<div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem; background:#111; border-radius:10px; margin-bottom:0.5rem;">' +
+          '<div><div style="font-weight:600; color:#fff; font-size:0.9rem;">' + label + '</div><div style="font-size:0.75rem; color:#888;">' + desc + '</div></div>' +
+          '<label style="position:relative; display:inline-block; width:44px; height:24px; cursor:pointer;">' +
+          '<input type="checkbox" data-eq-toggle="' + key + '" ' + (checked ? 'checked' : '') + ' style="opacity:0; width:0; height:0;">' +
+          '<span style="position:absolute; top:0; left:0; right:0; bottom:0; border-radius:12px; background:' + (checked ? '#9333ea' : '#333') + '; transition:0.2s;"></span>' +
+          '<span style="position:absolute; top:2px; left:' + (checked ? '22px' : '2px') + '; width:20px; height:20px; border-radius:10px; background:#fff; transition:0.2s;"></span>' +
+          '</label></div>';
+      }
+
+      var html = '<h4 style="color:#ccc; margin:0.5rem 0 0.5rem; font-size:0.9rem;">🔊 Audio Equipment</h4>';
+      html += qtyRow('speakers', 'Speakers', 'Professional sound system');
+      html += qtyRow('microphones', 'Microphones', 'Wireless microphones');
+      html += qtyRow('strobeLights', 'Strobe Lights', 'Party lighting effects');
+      html += '<h4 style="color:#ccc; margin:1rem 0 0.5rem; font-size:0.9rem;">Additional Services</h4>';
+      html += toggleRow('projector', 'Projector', 'Video projection system');
+      html += toggleRow('photographer', 'Photographer', 'Event photography service');
+      html += toggleRow('mc', 'MC Service', 'Master of ceremonies');
+      html += '<h4 style="color:#ccc; margin:1rem 0 0.5rem; font-size:0.9rem;">Security</h4>';
+      html += toggleRow('security.needed', 'Security Needed', 'Professional security staff');
+      if (eq.security.needed) html += toggleRow('security.armed', 'Armed Security', 'Armed security personnel');
+      container.innerHTML = html;
+
+      container.querySelectorAll('button[data-eq-inc]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var key = btn.getAttribute('data-eq-inc');
+          equipmentModalState[key] = (equipmentModalState[key] || 0) + 1;
+          var valEl = document.getElementById('eq-val-' + key);
+          if (valEl) valEl.textContent = equipmentModalState[key];
+        });
+      });
+      container.querySelectorAll('button[data-eq-dec]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var key = btn.getAttribute('data-eq-dec');
+          equipmentModalState[key] = Math.max(0, (equipmentModalState[key] || 0) - 1);
+          var valEl = document.getElementById('eq-val-' + key);
+          if (valEl) valEl.textContent = equipmentModalState[key];
+        });
+      });
+      container.querySelectorAll('input[data-eq-toggle]').forEach(function(input) {
+        input.addEventListener('change', function() {
+          var key = input.getAttribute('data-eq-toggle');
+          if (key.indexOf('security.') === 0) {
+            var subKey = key.split('.')[1];
+            equipmentModalState.security[subKey] = input.checked;
+          } else {
+            equipmentModalState[key] = input.checked;
+          }
+          renderEquipmentModalContent(container);
+        });
+      });
+    }
+
+    function getEquipmentModalResult() {
+      var eq = equipmentModalState;
+      return {
+        speakers: eq.speakers,
+        microphones: eq.microphones,
+        strobe_lights: eq.strobeLights,
+        projector: eq.projector,
+        photographer: eq.photographer,
+        security_needed: eq.security.needed,
+        security_armed: eq.security.armed,
+        mc_services: eq.mc
+      };
+    }
+
+    document.getElementById('sol-equipment-close').addEventListener('click', function() {
+      document.getElementById('sol-equipment-modal').style.display = 'none';
+    });
+    document.getElementById('sol-equipment-cancel').addEventListener('click', function() {
+      document.getElementById('sol-equipment-modal').style.display = 'none';
+    });
+    document.getElementById('sol-equipment-confirm').addEventListener('click', function() {
+      document.getElementById('sol-equipment-modal').style.display = 'none';
+      if (equipmentModalCallback) equipmentModalCallback(getEquipmentModalResult());
+    });
+
+    // =========================================================================
+    // FEATURE 3: Counter Offer (ported from rork-app CounterOfferModal)
+    // =========================================================================
+    var counterOfferBookingId = null;
+
+    function openCounterOffer(bookingId, originalAmount, originalDuration, clientName, eventType) {
+      var modal = document.getElementById('sol-counter-offer-modal');
+      counterOfferBookingId = bookingId;
+      modal.style.display = 'flex';
+      document.getElementById('sol-counter-offer-info').textContent = 'Responding to ' + clientName + '\'s ' + eventType + ' request';
+      document.getElementById('sol-counter-offer-original').textContent = 'Original: $' + originalAmount + ' · ' + originalDuration + 'h';
+      document.getElementById('sol-counter-offer-amount').value = originalAmount;
+      document.getElementById('sol-counter-offer-duration').value = originalDuration;
+      document.getElementById('sol-counter-offer-message').value = '';
+    }
+
+    function submitCounterOffer() {
+      var amount = parseFloat(document.getElementById('sol-counter-offer-amount').value);
+      var duration = parseFloat(document.getElementById('sol-counter-offer-duration').value);
+      var message = document.getElementById('sol-counter-offer-message').value || '';
+      var btn = document.getElementById('sol-counter-offer-submit-btn');
+
+      if (isNaN(amount) || amount <= 0) { alert('Please enter a valid counter-offer amount.'); return; }
+      if (isNaN(duration) || duration <= 0) { alert('Please enter a valid duration in hours.'); return; }
+
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+
+      db.collection('bookings').doc(counterOfferBookingId).set({
+        counterOffer: {
+          amount: amount,
+          duration: duration,
+          message: message,
+          djId: auth.currentUser.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        hasCounterOffer: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).then(function() {
+        btn.textContent = 'Send Offer';
+        btn.disabled = false;
+        document.getElementById('sol-counter-offer-modal').style.display = 'none';
+        djConsoleStatus.textContent = 'Counter-offer sent to client!';
+        djConsoleStatus.style.color = '#22c55e';
+        setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
+      }).catch(function(err) {
+        btn.textContent = 'Send Offer';
+        btn.disabled = false;
+        alert('Failed to send counter-offer: ' + err.message);
+      });
+    }
+
+    document.getElementById('sol-counter-offer-close').addEventListener('click', function() {
+      document.getElementById('sol-counter-offer-modal').style.display = 'none';
+    });
+    document.getElementById('sol-counter-offer-cancel-btn').addEventListener('click', function() {
+      document.getElementById('sol-counter-offer-modal').style.display = 'none';
+    });
+    document.getElementById('sol-counter-offer-submit-btn').addEventListener('click', submitCounterOffer);
+
+    // =========================================================================
+    // FEATURE 4: Song Suggestions (ported from rork-app SongSuggestionPanel)
+    // =========================================================================
+    var POPULAR_SONGS = [
+      { id: 'p1', title: 'Rich Flex', artist: 'Drake & 21 Savage', genre: 'Hip-Hop', bpm: 92 },
+      { id: 'p2', title: 'Calm Down', artist: 'Rema & Selena Gomez', genre: 'Afrobeats', bpm: 107 },
+      { id: 'p3', title: 'Anti-Hero', artist: 'Taylor Swift', genre: 'Pop', bpm: 97 },
+      { id: 'p4', title: 'Flowers', artist: 'Miley Cyrus', genre: 'Pop', bpm: 118 },
+      { id: 'p5', title: 'Creepin\'', artist: 'Metro Boomin & The Weeknd', genre: 'R&B', bpm: 90 },
+      { id: 'p6', title: 'Kill Bill', artist: 'SZA', genre: 'R&B', bpm: 89 },
+      { id: 'p7', title: 'As It Was', artist: 'Harry Styles', genre: 'Pop', bpm: 174 },
+      { id: 'p8', title: 'Levitating', artist: 'Dua Lipa', genre: 'Pop/Dance', bpm: 103 },
+      { id: 'p9', title: 'Blinding Lights', artist: 'The Weeknd', genre: 'Synth-Pop', bpm: 171 },
+      { id: 'p10', title: 'Essence', artist: 'Wizkid ft. Tems', genre: 'Afrobeats', bpm: 112 },
+      { id: 'p11', title: 'Industry Baby', artist: 'Lil Nas X & Jack Harlow', genre: 'Hip-Hop', bpm: 149 },
+      { id: 'p12', title: 'Good 4 U', artist: 'Olivia Rodrigo', genre: 'Pop-Rock', bpm: 166 },
+      { id: 'p13', title: 'STAY', artist: 'The Kid LAROI & Justin Bieber', genre: 'Pop', bpm: 170 },
+      { id: 'p14', title: 'Shivers', artist: 'Ed Sheeran', genre: 'Pop', bpm: 141 },
+      { id: 'p15', title: 'Heat Waves', artist: 'Glass Animals', genre: 'Indie-Pop', bpm: 80 },
+      { id: 'p16', title: 'Butter', artist: 'BTS', genre: 'K-Pop', bpm: 110 },
+      { id: 'p17', title: 'Peaches', artist: 'Justin Bieber', genre: 'R&B/Pop', bpm: 90 },
+      { id: 'p18', title: 'abcdefu', artist: 'GAYLE', genre: 'Pop-Rock', bpm: 116 },
+      { id: 'p19', title: 'Running Up That Hill', artist: 'Kate Bush', genre: '80s/Pop', bpm: 117 },
+      { id: 'p20', title: 'Super Freaky Girl', artist: 'Nicki Minaj', genre: 'Hip-Hop', bpm: 130 }
+    ];
+
+    var INDIE_SONGS = [
+      { id: 'i1', title: 'Neon Dreams', artist: 'Kayla Renée', genre: 'R&B/Soul', isIndie: true, bpm: 95 },
+      { id: 'i2', title: 'City Lights', artist: 'Marco Velli', genre: 'Electronic', isIndie: true, bpm: 128 },
+      { id: 'i3', title: 'Golden Hour', artist: 'The Sunnyside', genre: 'Indie-Pop', isIndie: true, bpm: 104 },
+      { id: 'i4', title: 'Midnight Run', artist: 'Aria Cole', genre: 'Hip-Hop/Soul', isIndie: true, bpm: 88 },
+      { id: 'i5', title: 'Wavelength', artist: 'Dex Monroe', genre: 'Trap/Electronic', isIndie: true, bpm: 140 }
+    ];
+
+    var songSuggestionsState = { suggestions: [], confirmedIds: {}, playedIndie: [], bookingId: null, djId: null, eventType: '' };
+    var songRotationTimer = null;
+
+    function buildSongSuggestions(eventType) {
+      var genreHints = {
+        wedding: ['Pop', 'R&B', 'Afrobeats'],
+        birthday: ['Hip-Hop', 'Pop', 'R&B'],
+        corporate: ['Pop', 'Electronic', 'Synth-Pop'],
+        festival: ['Hip-Hop', 'Electronic', 'Afrobeats'],
+        club: ['Hip-Hop', 'Electronic', 'Trap'],
+        graduation: ['Pop', 'Hip-Hop', 'R&B']
+      };
+      var preferredGenres = [];
+      var lowerType = (eventType || '').toLowerCase();
+      for (var key in genreHints) { if (lowerType.indexOf(key) >= 0) { preferredGenres = genreHints[key]; break; } }
+
+      var preferred = POPULAR_SONGS.filter(function(s) {
+        return preferredGenres.some(function(g) { return s.genre.toLowerCase().indexOf(g.toLowerCase()) >= 0; });
+      });
+      var rest = POPULAR_SONGS.filter(function(s) { return preferred.indexOf(s) < 0; });
+      var ordered = preferred.concat(rest);
+
+      function shuffle(arr) { return arr.slice().sort(function() { return Math.random() - 0.5; }); }
+
+      var indieSlots = shuffle(INDIE_SONGS).slice(0, 2);
+      var popularSlots = shuffle(ordered).slice(0, 3);
+      return [popularSlots[0], indieSlots[0], popularSlots[1], indieSlots[1], popularSlots[2]].filter(Boolean);
+    }
+
+    function openSongSuggestions(bookingId, djId, djName, eventType) {
+      var modal = document.getElementById('sol-song-suggestions-modal');
+      modal.style.display = 'flex';
+      songSuggestionsState = { suggestions: [], confirmedIds: {}, playedIndie: [], bookingId: bookingId, djId: djId, eventType: eventType };
+      songSuggestionsState.suggestions = buildSongSuggestions(eventType);
+      document.getElementById('sol-song-subtitle').textContent = 'Tailored for your ' + eventType + ' · updates every 3 min';
+      renderSongSuggestions();
+
+      if (songRotationTimer) clearInterval(songRotationTimer);
+      songRotationTimer = setInterval(function() {
+        songSuggestionsState.suggestions = buildSongSuggestions(eventType);
+        songSuggestionsState.confirmedIds = {};
+        renderSongSuggestions();
+      }, 3 * 60 * 1000);
+    }
+
+    function renderSongSuggestions() {
+      var list = document.getElementById('sol-song-list');
+      var banner = document.getElementById('sol-song-indie-banner');
+      var indieCount = songSuggestionsState.playedIndie.length;
+
+      if (indieCount > 0) {
+        banner.style.display = 'block';
+        banner.textContent = '⚡ ' + indieCount + ' indie track' + (indieCount > 1 ? 's' : '') + ' in rotation — artist' + (indieCount > 1 ? 's' : '') + ' notified at event end';
+      } else {
+        banner.style.display = 'none';
+      }
+
+      var html = '';
+      for (var i = 0; i < songSuggestionsState.suggestions.length; i++) {
+        var song = songSuggestionsState.suggestions[i];
+        var isConfirmed = !!songSuggestionsState.confirmedIds[song.id];
+        var isIndie = !!song.isIndie;
+        var rowBg = isIndie ? '#1a1a2e' : 'transparent';
+        var badgeColor = isIndie ? '#d97706' : '#7c3aed';
+
+        html += '<div data-song-id="' + song.id + '" style="display:flex; align-items:center; gap:0.6rem; padding:0.6rem; background:' + rowBg + '; border-radius:10px; margin-bottom:0.4rem; cursor:pointer; opacity:' + (isConfirmed ? '0.6' : '1') + ';">';
+        html += '<div style="width:24px; height:24px; border-radius:12px; background:' + badgeColor + '; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.7rem; font-weight:700;">' + (i + 1) + '</div>';
+        html += '<div style="flex:1;">';
+        html += '<div style="display:flex; align-items:center; gap:0.3rem; flex-wrap:wrap;">';
+        html += '<span style="font-weight:600; color:#fff; font-size:0.85rem;">' + song.title + '</span>';
+        if (isIndie) html += '<span style="background:#d97706; color:#fff; border-radius:4px; padding:0.1rem 0.3rem; font-size:0.6rem; font-weight:700;">⚡ Logan</span>';
+        html += '</div>';
+        html += '<div style="font-size:0.75rem; color:#aaa;">' + song.artist + '</div>';
+        html += '<div style="font-size:0.7rem; color:#888;">' + song.genre + (song.bpm ? ' · ' + song.bpm + ' BPM' : '') + '</div>';
+        html += '</div>';
+        html += '<div style="width:20px; text-align:center;">' + (isConfirmed ? '✅' : '<div style="width:10px; height:10px; border-radius:5px; border:2px solid ' + badgeColor + ';"></div>') + '</div>';
+        html += '</div>';
+      }
+      list.innerHTML = html;
+
+      list.querySelectorAll('[data-song-id]').forEach(function(row) {
+        row.addEventListener('click', function() {
+          var songId = row.getAttribute('data-song-id');
+          var song = songSuggestionsState.suggestions.find(function(s) { return s.id === songId; });
+          if (!song || songSuggestionsState.confirmedIds[songId]) return;
+
+          if (song.isIndie) {
+            if (!confirm('"' + song.title + '" by ' + song.artist + ' is an indie artist song in the Logan System rotation.\n\nIf you play this track, ' + song.artist + ' will be notified at the end of the event.\n\nAdd to your rotation?')) return;
+            songSuggestionsState.playedIndie.push(song);
+          }
+          songSuggestionsState.confirmedIds[songId] = true;
+          renderSongSuggestions();
+        });
+      });
+    }
+
+    function closeSongSuggestions() {
+      document.getElementById('sol-song-suggestions-modal').style.display = 'none';
+      if (songRotationTimer) { clearInterval(songRotationTimer); songRotationTimer = null; }
+      if (songSuggestionsState.playedIndie.length > 0 && songSuggestionsState.bookingId) {
+        for (var i = 0; i < songSuggestionsState.playedIndie.length; i++) {
+          var song = songSuggestionsState.playedIndie[i];
+          db.collection('indie-playback-notifications').add({
+            bookingId: songSuggestionsState.bookingId,
+            djId: songSuggestionsState.djId,
+            songId: song.id,
+            songTitle: song.title,
+            artistName: song.artist,
+            eventType: songSuggestionsState.eventType,
+            playedAt: Date.now(),
+            notified: false
+          }).catch(function(err) { console.warn('Failed to write indie playback notification:', err); });
+        }
+        var songList = songSuggestionsState.playedIndie.map(function(s) { return '• "' + s.title + '" by ' + s.artist; }).join('\n');
+        alert('Indie Artist Rotation\n\nYou played ' + songSuggestionsState.playedIndie.length + ' indie artist song(s) in rotation:\n\n' + songList + '\n\nThe artist(s) have been notified. Thank you for supporting independent music!');
+      }
+    }
+
+    document.getElementById('sol-song-close').addEventListener('click', closeSongSuggestions);
+    document.getElementById('sol-song-refresh').addEventListener('click', function() {
+      songSuggestionsState.suggestions = buildSongSuggestions(songSuggestionsState.eventType);
+      songSuggestionsState.confirmedIds = {};
+      renderSongSuggestions();
+    });
 
 

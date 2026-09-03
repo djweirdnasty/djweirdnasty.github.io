@@ -673,6 +673,9 @@
         <p style="color:#ffd860; font-size:0.8rem; margin-top:0; margin-bottom:0.75rem;">📞 Strongly suggested: include your phone number in the description above so your DJ can contact you directly.</p>
 
         <h3 style="margin-top:1.5rem; margin-bottom:0.75rem;">Equipment & Extras</h3>
+        <button type="button" id="sol-open-equipment-picker" class="submit-btn" style="background:#9333ea; width:100%; margin-bottom:0.75rem;">🎛️ Open Equipment Picker</button>
+        <details style="margin-bottom:0.75rem;">
+        <summary style="cursor:pointer; color:#aaa; font-size:0.85rem;">Or use quick fields below</summary>
 
         <div style="display:flex; flex-direction:column; gap:0.75rem;">
           <div>
@@ -715,6 +718,7 @@
             <span>MC Services — $50</span>
           </label>
         </div>
+        </details>
 
         <div id="sol-price-breakdown" style="background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; margin:1rem 0;">
           <p style="margin:0.25rem 0;"><strong>Base:</strong> $25/hr × <span id="price-duration">4</span> hrs = $<span id="price-base">100</span></p>
@@ -902,7 +906,81 @@
 
     <img loading="lazy" src="2026djweirdnastyllc.png" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
-  <script src="sol-app.js?v=9"></script>
+
+  <!-- Booking Status Tracker Modal -->
+  <div id="sol-status-tracker-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a1a; border:1px solid #333; border-radius:16px; padding:1.5rem; max-width:500px; width:90%; max-height:80vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3 style="margin:0; color:#fff;">Booking Status</h3>
+        <button type="button" id="sol-status-tracker-close" class="submit-btn" style="padding:0.3rem 0.6rem; background:#333;">✕</button>
+      </div>
+      <div id="sol-status-tracker-content"></div>
+    </div>
+  </div>
+
+  <!-- Equipment Picker Modal -->
+  <div id="sol-equipment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a1a; border:1px solid #333; border-radius:16px; padding:1.5rem; max-width:500px; width:90%; max-height:85vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3 style="margin:0; color:#fff;">Equipment & Services</h3>
+        <button type="button" id="sol-equipment-close" class="submit-btn" style="padding:0.3rem 0.6rem; background:#333;">✕</button>
+      </div>
+      <div id="sol-equipment-event-summary" style="background:#111; border-radius:10px; padding:0.75rem; margin-bottom:1rem; color:#aaa; font-size:0.85rem;"></div>
+      <div id="sol-equipment-content"></div>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+        <button type="button" id="sol-equipment-cancel" class="submit-btn" style="flex:1; background:#333;">Back</button>
+        <button type="button" id="sol-equipment-confirm" class="submit-btn" style="flex:2; background:#9333ea;">Confirm Equipment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Counter Offer Modal -->
+  <div id="sol-counter-offer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a1a; border:1px solid #333; border-radius:16px; padding:1.5rem; max-width:450px; width:90%;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3 style="margin:0; color:#fff;">Send Counter-Offer</h3>
+        <button type="button" id="sol-counter-offer-close" class="submit-btn" style="padding:0.3rem 0.6rem; background:#333;">✕</button>
+      </div>
+      <p id="sol-counter-offer-info" style="color:#aaa; font-size:0.85rem; margin-bottom:0.5rem;"></p>
+      <div style="background:#111; border-radius:8px; padding:0.5rem; margin-bottom:1rem;">
+        <span id="sol-counter-offer-original" style="color:#aaa; font-size:0.85rem;"></span>
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <label style="display:block; font-weight:600; margin-bottom:0.25rem; color:#ccc;">Your Price ($)</label>
+        <input id="sol-counter-offer-amount" type="number" min="0" step="0.01" placeholder="Enter your price" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <label style="display:block; font-weight:600; margin-bottom:0.25rem; color:#ccc;">Duration (hours)</label>
+        <input id="sol-counter-offer-duration" type="number" min="0" step="0.5" placeholder="e.g. 3" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff;">
+      </div>
+      <div style="margin-bottom:0.75rem;">
+        <label style="display:block; font-weight:600; margin-bottom:0.25rem; color:#ccc;">Message (optional)</label>
+        <textarea id="sol-counter-offer-message" placeholder="Add a note to your offer..." rows="2" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <button type="button" id="sol-counter-offer-cancel-btn" class="submit-btn" style="flex:1; background:#333;">Cancel</button>
+        <button type="button" id="sol-counter-offer-submit-btn" class="submit-btn" style="flex:2; background:#9333ea;">Send Offer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Song Suggestions Modal -->
+  <div id="sol-song-suggestions-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1a1a1a; border:1px solid #333; border-radius:16px; padding:1.5rem; max-width:500px; width:90%; max-height:85vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <h3 style="margin:0; color:#fff;">🎵 Song Suggestions</h3>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <button type="button" id="sol-song-refresh" class="submit-btn" style="padding:0.3rem 0.6rem; background:#333;">🔄</button>
+          <button type="button" id="sol-song-close" class="submit-btn" style="padding:0.3rem 0.6rem; background:#333;">✕</button>
+        </div>
+      </div>
+      <p id="sol-song-subtitle" style="color:#aaa; font-size:0.8rem; margin-bottom:0.75rem;"></p>
+      <div id="sol-song-indie-banner" style="display:none; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px; padding:0.4rem 0.6rem; margin-bottom:0.75rem; font-size:0.75rem; color:#92400e; font-weight:600;"></div>
+      <div id="sol-song-list"></div>
+    </div>
+  </div>
+
+  <script src="sol-app.js?v=10"></script>
 <script src="site.js?v=14"></script>
 </body>
 </html>
