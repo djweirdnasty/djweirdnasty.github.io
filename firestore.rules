@@ -81,7 +81,7 @@ service cloud.firestore {
     // move status away from 'pending' (i.e. approve/reject).
     match /dj-verifications/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid) && request.resource.data.get('status', 'pending') == 'pending';
+      allow create: if isAdmin() || (isOwner(uid) && request.resource.data.get('status', 'pending') == 'pending');
       allow update: if isAdmin() || (
         isOwner(uid) &&
         request.resource.data.get('status', 'pending') == resource.data.get('status', 'pending')
@@ -129,7 +129,7 @@ service cloud.firestore {
     // owner-only, and only admin can approve/reject.
     match /client-verifications/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid) && request.resource.data.get('status', 'pending') == 'pending';
+      allow create: if isAdmin() || (isOwner(uid) && request.resource.data.get('status', 'pending') == 'pending');
       allow update: if isAdmin() || (
         isOwner(uid) &&
         request.resource.data.get('status', 'pending') == resource.data.get('status', 'pending')
