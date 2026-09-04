@@ -1025,6 +1025,11 @@
         djLocStatus.style.color = '#ff4d8f';
         return;
       }
+      if (!confirm('This will share your approximate live location with clients and the map. Continue?')) {
+        djLocStatus.textContent = 'Location sharing cancelled.';
+        djLocStatus.style.color = '#ff4d8f';
+        return;
+      }
       djShareLocBtn.textContent = 'Stop';
       djShareLocBtn.style.background = '#ff3b30';
       djLocStatus.textContent = 'Getting location...';
@@ -1126,10 +1131,10 @@
         onPos(pos);
         djLocWatchId = navigator.geolocation.watchPosition(onPos, function(err) {
           onErr(err, false);
-        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+        }, { enableHighAccuracy: false, maximumAge: 0, timeout: 15000 });
       }, function(err) {
         onErr(err, false);
-      }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+      }, { enableHighAccuracy: false, maximumAge: 0, timeout: 15000 });
     });
 
     document.addEventListener('visibilitychange', function() {
@@ -1221,7 +1226,7 @@
       navigator.geolocation.getCurrentPosition(function(pos) {
         onAutoPos(pos);
         djLocWatchId = navigator.geolocation.watchPosition(onAutoPos, onAutoErr, {
-          enableHighAccuracy: true, maximumAge: 10000, timeout: 20000
+          enableHighAccuracy: false, maximumAge: 10000, timeout: 20000
         });
         // Mark all confirmed bookings for this DJ as sharing location
         if (auth.currentUser) {
@@ -1232,7 +1237,7 @@
               });
             }).catch(function() {});
         }
-      }, onAutoErr, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+      }, onAutoErr, { enableHighAccuracy: false, maximumAge: 10000, timeout: 20000 });
     }
 
     function showEventOnDJMap(lat, lng, address) {
@@ -3155,6 +3160,11 @@
         mapStatus.style.color = '#ff4d8f';
         return;
       }
+      if (!confirm('This will use your approximate location to center the map. Continue?')) {
+        mapStatus.textContent = 'Location access cancelled.';
+        mapStatus.style.color = '#ff4d8f';
+        return;
+      }
       mapStatus.textContent = 'Locating you...';
       mapStatus.style.color = '#ffd860';
 
@@ -3181,7 +3191,7 @@
         else if (err.code === 3) msg = 'Location request timed out. Try again.';
         mapStatus.textContent = msg;
         mapStatus.style.color = '#ff4d8f';
-      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 10000 });
+      }, { enableHighAccuracy: false, timeout: 20000, maximumAge: 10000 });
     }
 
     function centerOnMe() {
