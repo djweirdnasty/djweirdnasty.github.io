@@ -499,3 +499,31 @@ exports.redeemPromo = onCall(async (request) => {
     type: p.type || "percent"
   };
 });
+
+// Callable function: returns whether the currently signed-in user is the site admin.
+exports.isAdmin = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  return {
+    admin: request.auth.uid === ADMIN_UID ||
+           (request.auth.token && request.auth.token.email === ADMIN_EMAIL)
+  };
+});
+
+// Callable function: returns whether a given DJ UID is the site admin.
+exports.isAdminDj = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const djId = String(request.data.djId || "");
+  if (!djId) {
+    throw new HttpsError("invalid-argument", "djId is required.");
+  }
+  const djDoc = await db.collection("users").doc(djId).get();
+  const djData = djDoc.exists ? djDoc.data() : {};
+  const djEmail = (djData.email || "").toLowerCase();
+  return {
+    admin: djId === ADMIN_UID || djEmail === ADMIN_EMAIL
+  };
+});

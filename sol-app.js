@@ -1413,11 +1413,17 @@
     const adminStatus = document.getElementById('sol-admin-status');
 
     function checkAdminStatus(user) {
-      if (user.uid === ADMIN_UID || user.email === ADMIN_EMAIL) {
-        isAdmin = true;
-        adminToggleBtn.style.display = 'inline-block';
-        return;
-      }
+      firebase.functions().httpsCallable('isAdmin')()
+        .then(function(result) {
+          if (result.data && result.data.admin) {
+            isAdmin = true;
+            adminToggleBtn.style.display = 'inline-block';
+          }
+        })
+        .catch(function(err) {
+          console.log('Admin check skipped:', err.message);
+        });
+      // Fall back to document flag for legacy users without calling the function.
       db.collection('users').doc(user.uid).get()
         .then(function(doc) {
           if (doc.exists && doc.data().isAdmin === true) {
@@ -3809,48 +3815,52 @@
           }
         }).catch(function() {});
 
-        // Upcoming events for DJ Weird Nasty
-        var djEvents = [
-          { title: 'MURRDAH SEASON MONDAY', date: 'Every Monday', time: '3:00 PM – 4:00 PM EST', location: 'Glocawear Radio (Live Stream)', img: 'murrdahseasonmonday.webp', url: 'event-murrdah-season.html', recurring: true },
-          { title: 'KREW NASA: Out of This World Tour 2026', date: 'Aug 22 – Oct 11, 2026', time: 'Various times', location: '11 Cities (Allentown, Norristown (Aug 28), Lancaster, Baltimore, Philadelphia, Pittsburgh, Brooklyn, Trenton, Ansonia, Emmaculate)', img: 'krew-nasa-tour.jpeg', url: 'event-krew-nasa.html', recurring: false, endDate: '2026-10-12' },
-          { title: 'Ghetto House Party', date: 'Saturday, August 29, 2026', time: '9:00 PM – 3:00 AM EDT', location: '476 Riverly Avenue, Collingdale, PA 19023', img: 'Ghetto-house-party.webp', url: 'event-ghetto-house-party.html', recurring: false, endDate: '2026-08-30' },
-          { title: 'Halloween Hibachi on Elm Street', date: 'Saturday, October 31, 2026', time: '12:00 PM – 6:00 PM EDT', location: 'Delink Social Club, 4172 Germantown Ave, Philadelphia, PA 19140', img: 'halloween-habachi-on-elm-street.JPG', url: 'event-halloween-hibachi-elm-street.html', recurring: false, endDate: '2026-11-01' },
-          { title: 'Philly Skate Plex Family Session', date: 'Recurring Sessions', time: 'Various times', location: 'Philly Skate Plex, Philadelphia, PA', img: 'Philly-skate-logo.webp', url: 'event-philly-skate-plex.html', recurring: true },
-          { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false, endDate: '2026-08-23' }
-        ];
-
-        var isWeirdNasty = (dj.email || '').toLowerCase() === ADMIN_EMAIL ||
-                           (dj.firebaseUid || dj.id || '') === ADMIN_UID;
-
+        // Upcoming events for DJ Weird Nasty (verified server-side)
         var eventsEl = document.getElementById('sol-dj-upcoming-events');
-        if (eventsEl && isWeirdNasty) {
-          var now = new Date();
-          var upcoming = djEvents.filter(function(e) {
-            if (e.recurring) return true;
-            if (!e.endDate) return true;
-            return new Date(e.endDate + 'T23:59:59') >= now;
-          });
-
-          if (upcoming.length > 0) {
-            var eventsHtml = '<h3 style="color:#ff4d8f; margin:0 0 0.75rem;">📅 Upcoming Events</h3>';
-            upcoming.forEach(function(e) {
-              eventsHtml += '<a href="' + e.url + '" style="display:block; text-decoration:none; color:inherit; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:0.75rem; transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#ff4d8f\'" onmouseout="this.style.borderColor=\'#333\'">' +
-                '<div style="display:flex; gap:0.75rem; align-items:flex-start;">' +
-                '<img loading="lazy" src="' + e.img + '" style="width:60px; height:60px; border-radius:8px; object-fit:cover; flex-shrink:0;" onerror="this.style.display=\'none\'">' +
-                '<div style="flex:1; min-width:0;">' +
-                '<strong style="color:#fff; font-size:0.9rem; display:block; margin-bottom:0.25rem;">' + e.title + '</strong>' +
-                '<div style="color:#ffd860; font-size:0.8rem; margin-bottom:0.15rem;">📆 ' + e.date + '</div>' +
-                '<div style="color:#aaa; font-size:0.8rem; margin-bottom:0.15rem;">🕐 ' + e.time + '</div>' +
-                '<div style="color:#aaa; font-size:0.8rem;">📍 ' + e.location + '</div>' +
-                '</div>' +
-                '</div>' +
-                '<div style="text-align:right; margin-top:0.5rem; color:#00d4ff; font-size:0.8rem; font-weight:600;">View Event Details →</div>' +
-                '</a>';
+        if (eventsEl && djUid) {
+          firebase.functions().httpsCallable('isAdminDj')({ djId: djUid }).then(function(result) {
+            if (!result.data || !result.data.admin) {
+              eventsEl.innerHTML = '';
+              return;
+            }
+            var djEvents = [
+              { title: 'MURRDAH SEASON MONDAY', date: 'Every Monday', time: '3:00 PM – 4:00 PM EST', location: 'Glocawear Radio (Live Stream)', img: 'murrdahseasonmonday.webp', url: 'event-murrdah-season.html', recurring: true },
+              { title: 'KREW NASA: Out of This World Tour 2026', date: 'Aug 22 – Oct 11, 2026', time: 'Various times', location: '11 Cities (Allentown, Norristown (Aug 28), Lancaster, Baltimore, Philadelphia, Pittsburgh, Brooklyn, Trenton, Ansonia, Emmaculate)', img: 'krew-nasa-tour.jpeg', url: 'event-krew-nasa.html', recurring: false, endDate: '2026-10-12' },
+              { title: 'Ghetto House Party', date: 'Saturday, August 29, 2026', time: '9:00 PM – 3:00 AM EDT', location: '476 Riverly Avenue, Collingdale, PA 19023', img: 'Ghetto-house-party.webp', url: 'event-ghetto-house-party.html', recurring: false, endDate: '2026-08-30' },
+              { title: 'Halloween Hibachi on Elm Street', date: 'Saturday, October 31, 2026', time: '12:00 PM – 6:00 PM EDT', location: 'Delink Social Club, 4172 Germantown Ave, Philadelphia, PA 19140', img: 'halloween-habachi-on-elm-street.JPG', url: 'event-halloween-hibachi-elm-street.html', recurring: false, endDate: '2026-11-01' },
+              { title: 'Philly Skate Plex Family Session', date: 'Recurring Sessions', time: 'Various times', location: 'Philly Skate Plex, Philadelphia, PA', img: 'Philly-skate-logo.webp', url: 'event-philly-skate-plex.html', recurring: true },
+              { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false, endDate: '2026-08-23' }
+            ];
+            var now = new Date();
+            var upcoming = djEvents.filter(function(e) {
+              if (e.recurring) return true;
+              if (!e.endDate) return true;
+              return new Date(e.endDate + 'T23:59:59') >= now;
             });
-            eventsEl.innerHTML = eventsHtml;
-          } else {
-            eventsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">📅 Upcoming Events</h3><p style="color:#888;">No upcoming events at this time.</p>';
-          }
+
+            if (upcoming.length > 0) {
+              var eventsHtml = '<h3 style="color:#ff4d8f; margin:0 0 0.75rem;">📅 Upcoming Events</h3>';
+              upcoming.forEach(function(e) {
+                eventsHtml += '<a href="' + e.url + '" style="display:block; text-decoration:none; color:inherit; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:0.75rem; transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#ff4d8f\'" onmouseout="this.style.borderColor=\'#333\'">' +
+                  '<div style="display:flex; gap:0.75rem; align-items:flex-start;">' +
+                  '<img loading="lazy" src="' + e.img + '" style="width:60px; height:60px; border-radius:8px; object-fit:cover; flex-shrink:0;" onerror="this.style.display=\'none\'">' +
+                  '<div style="flex:1; min-width:0;">' +
+                  '<strong style="color:#fff; font-size:0.9rem; display:block; margin-bottom:0.25rem;">' + e.title + '</strong>' +
+                  '<div style="color:#ffd860; font-size:0.8rem; margin-bottom:0.15rem;">📆 ' + e.date + '</div>' +
+                  '<div style="color:#aaa; font-size:0.8rem; margin-bottom:0.15rem;">🕐 ' + e.time + '</div>' +
+                  '<div style="color:#aaa; font-size:0.8rem;">📍 ' + e.location + '</div>' +
+                  '</div>' +
+                  '</div>' +
+                  '<div style="text-align:right; margin-top:0.5rem; color:#00d4ff; font-size:0.8rem; font-weight:600;">View Event Details →</div>' +
+                  '</a>';
+              });
+              eventsEl.innerHTML = eventsHtml;
+            } else {
+              eventsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">📅 Upcoming Events</h3><p style="color:#888;">No upcoming events at this time.</p>';
+            }
+          }).catch(function() {
+            if (eventsEl) eventsEl.innerHTML = '';
+          });
         } else if (eventsEl) {
           eventsEl.innerHTML = '';
         }
