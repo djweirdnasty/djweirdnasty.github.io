@@ -283,7 +283,7 @@ service cloud.firestore {
     }
 
     match /promo-codes/{code} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin(); // Client promo validation now goes through redeemPromo callable
       allow write: if isAdmin();
     }
 

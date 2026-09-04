@@ -475,3 +475,27 @@ exports.adminSendMessage = onCall(async (request) => {
   logger.info("[ADMIN MESSAGE] Sent to " + sent + " recipients, " + failed + " failed.");
   return { success: true, sent: sent, failed: failed };
 });
+
+// Callable function: client validates a promo code without reading the full list.
+exports.redeemPromo = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const code = String(request.data.code || "").trim().toUpperCase();
+  if (!code) {
+    throw new HttpsError("invalid-argument", "Promo code is required.");
+  }
+  const doc = await db.collection("promo-codes").doc(code).get();
+  if (!doc.exists) {
+    return { valid: false };
+  }
+  const p = doc.data();
+  if (p.active === false) {
+    return { valid: false };
+  }
+  return {
+    valid: true,
+    discount: Number(p.discount) || 0,
+    type: p.type || "percent"
+  };
+});

@@ -2676,24 +2676,21 @@
       var code = document.getElementById('sol-promo-code').value.trim().toUpperCase();
       var statusEl = document.getElementById('sol-promo-status');
       if (!code) { statusEl.textContent = 'Enter a code.'; statusEl.style.color = '#ff4d8f'; return; }
-      db.collection('promo-codes').doc(code).get().then(function(doc) {
-        if (doc.exists) {
-          var p = doc.data();
-          if (p.active === false) { statusEl.textContent = 'This code is no longer active.'; statusEl.style.color = '#ff3b30'; return; }
-          activePromo = { code: code, discount: p.discount || 0, type: p.type || 'percent' };
-          var msg = p.type === 'flat' ? '$' + p.discount + ' off!' : p.discount + '% off!';
-          statusEl.textContent = '✅ Code applied: ' + msg;
-          statusEl.style.color = '#22c55e';
-          trackSolEvent('promo_code_applied', { code: code, discount: p.discount, type: p.type });
-          calculatePrice();
-        } else {
-          statusEl.textContent = 'Invalid promo code.';
-          statusEl.style.color = '#ff4d8f';
-          activePromo = null;
-        }
-      }).catch(function() {
+      if (!auth.currentUser) { statusEl.textContent = 'Sign in to apply a promo code.'; statusEl.style.color = '#ff4d8f'; return; }
+      var redeemPromo = firebase.functions().httpsCallable('redeemPromo');
+      redeemPromo({ code: code }).then(function(result) {
+        var p = result.data;
+        if (!p.valid) { statusEl.textContent = 'Invalid promo code.'; statusEl.style.color = '#ff4d8f'; activePromo = null; return; }
+        activePromo = { code: code, discount: p.discount || 0, type: p.type || 'percent' };
+        var msg = p.type === 'flat' ? '$' + p.discount + ' off!' : p.discount + '% off!';
+        statusEl.textContent = '✅ Code applied: ' + msg;
+        statusEl.style.color = '#22c55e';
+        trackSolEvent('promo_code_applied', { code: code });
+        calculatePrice();
+      }).catch(function(err) {
         statusEl.textContent = 'Could not verify code.';
         statusEl.style.color = '#ff4d8f';
+        activePromo = null;
       });
     });
 
