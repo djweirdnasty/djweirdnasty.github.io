@@ -73,8 +73,100 @@
       <p><strong>🎟️ NOW ACCEPTING VENDORS!</strong><br>Get your tickets before they’re gone.</p>
       <p><a href="https://www.eventbrite.com/e/jersey-jam-philly-bbw-bunnies-dons-tickets-1992038793656?aff=oddtdtcreator" target="_blank" rel="noopener noreferrer" class="playlist-link" style="display: inline-block; margin-top: 0.5rem;">Get Tickets on Eventbrite</a></p>
       <p>Presented by BBW Bunnies &amp; Dons 🐰🔥</p>
+
+      <h2 style="margin-top: 2rem;">Event Gallery</h2>
+      <div class="gallery-carousel" id="galleryCarousel" style="position: relative; margin: 1.5rem 0;">
+        <button type="button" class="gallery-nav gallery-prev" id="galleryPrev" aria-label="Previous photos" style="position: absolute; left: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&larr;</button>
+        <div class="gallery-track" id="galleryTrack" style="display: flex; gap: 10px; overflow: hidden; padding: 0 48px;">
+        </div>
+        <button type="button" class="gallery-nav gallery-next" id="galleryNext" aria-label="Next photos" style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&rarr;</button>
+      </div>
+      <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;"><span id="galleryCounter">1</span> of <span id="galleryTotal">1</span></p>
     </article>
   </main>
+  <script>
+    (function () {
+      var images = [
+        "SaveClip.App_745305207_17956796799184749_8331383555477914777_n.jpg",
+        "SaveClip.App_749357171_17956796787184749_6771492514990303907_n.jpg",
+        "SaveClip.App_749357171_17956796826184749_4925565026774444444_n.jpg",
+        "SaveClip.App_749404218_17956796790184749_4316611310260613658_n.jpg",
+        "SaveClip.App_749652795_17956796928184749_5647293763773289212_n.jpg",
+        "SaveClip.App_749929440_17956796889184749_1287580116408707014_n.jpg",
+        "SaveClip.App_751027669_17956796817184749_1395804443799187988_n.jpg",
+        "SaveClip.App_751111375_17956796835184749_7367801553970716152_n.jpg",
+        "SaveClip.App_751125291_17956796862184749_3929990717102711415_n.jpg",
+        "SaveClip.App_751751785_17956796880184749_182772529365040183_n.jpg",
+        "SaveClip.App_751785800_17956796898184749_3620295559253448985_n.jpg",
+        "SaveClip.App_751804440_17956796937184749_3994511092973663947_n.jpg",
+        "SaveClip.App_752325964_17956796808184749_2862389875202431587_n.jpg",
+        "SaveClip.App_752610056_17956796907184749_7530614211080263097_n.jpg",
+        "SaveClip.App_752631670_17956796841184749_1405544097936176760_n.jpg",
+        "SaveClip.App_752658915_17956796919184749_1949163481436487700_n.jpg",
+        "SaveClip.App_752681987_17956796871184749_147253541711466915_n.jpg",
+        "SaveClip.App_752823882_17956796853184749_1670339168479445223_n.jpg",
+        "SaveClip.App_753197797_17956796772184749_3940663765371611732_n.jpg"
+      ];
+      var base = "buns-dons-bbw/";
+      var track = document.getElementById("galleryTrack");
+      var prevBtn = document.getElementById("galleryPrev");
+      var nextBtn = document.getElementById("galleryNext");
+      var counter = document.getElementById("galleryCounter");
+      var totalEl = document.getElementById("galleryTotal");
+
+      // Render every image once; we slide the track to show groups of 4.
+      images.forEach(function (name) {
+        var img = document.createElement("img");
+        img.src = base + name;
+        img.alt = "Jersey Jam Philly event photo";
+        img.loading = "lazy";
+        img.style.cssText = "flex: 0 0 calc(25% - 7.5px); height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4);";
+        track.appendChild(img);
+      });
+
+      var perView = 4;
+      var index = 0;
+      var total = images.length;
+      var pages = Math.max(1, Math.ceil(total / perView));
+      totalEl.textContent = pages;
+
+      function update() {
+        var imgs = track.querySelectorAll("img");
+        if (!imgs.length) return;
+        var slideWidth = imgs[0].getBoundingClientRect().width + 10; // include gap
+        track.style.transform = "translateX(" + (-index * perView * slideWidth) + "px)";
+        counter.textContent = (index + 1);
+        prevBtn.style.visibility = index === 0 ? "hidden" : "visible";
+        nextBtn.style.visibility = index >= pages - 1 ? "hidden" : "visible";
+      }
+
+      prevBtn.addEventListener("click", function () {
+        if (index > 0) { index--; update(); }
+      });
+      nextBtn.addEventListener("click", function () {
+        if (index < pages - 1) { index++; update(); }
+      });
+
+      // Responsive: show fewer on small screens
+      function setPerView() {
+        if (window.innerWidth < 600) perView = 1;
+        else if (window.innerWidth < 900) perView = 2;
+        else perView = 4;
+        pages = Math.max(1, Math.ceil(total / perView));
+        if (index > pages - 1) index = pages - 1;
+        // adjust flex basis
+        var basis = "calc(" + (100 / perView) + "% - " + (10 * (perView - 1) / perView) + "px)";
+        track.querySelectorAll("img").forEach(function (img) {
+          img.style.flexBasis = basis;
+        });
+        totalEl.textContent = pages;
+        update();
+      }
+
+      window.addEventListener("resize", setPerView);
+      setPerView();
+    })();
+  </script>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">
       <img loading="lazy" src="Stand4Socks.png" alt="Shop Stand4 Socks" style="width: 100%; max-width: 960px; height: auto; display: block; margin: 0 auto;">
