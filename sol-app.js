@@ -128,9 +128,11 @@
           .then(function(cred) {
             console.log('[AUTH] Sign up successful:', cred.user.uid);
             trackSolEvent('sign_up', { method: 'email' });
-            authStatus.textContent = 'Account created!';
+            authStatus.textContent = 'Account created! Check your email to verify before booking.';
             authStatus.style.color = '#22c55e';
-            if (name) return cred.user.updateProfile({ displayName: name });
+            var promises = [cred.user.sendEmailVerification()];
+            if (name) promises.push(cred.user.updateProfile({ displayName: name }));
+            return Promise.all(promises);
           })
           .catch(function(err) {
             console.error('[AUTH] Sign up error:', err.code, err.message);
@@ -3214,6 +3216,14 @@
 
       if (!auth.currentUser) {
         status.textContent = 'Please sign in or create an account above before booking.';
+        status.style.color = '#ff4d8f';
+        document.getElementById('sol-account-box').scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+
+      if (!auth.currentUser.emailVerified) {
+        auth.currentUser.sendEmailVerification().catch(function() {});
+        status.textContent = 'Please verify your email before booking. A new verification email has been sent.';
         status.style.color = '#ff4d8f';
         document.getElementById('sol-account-box').scrollIntoView({ behavior: 'smooth' });
         return;
