@@ -54,12 +54,14 @@
 
     function escapeCsvCell(str) {
       var s = String(str == null ? '' : str);
-      if (/^[\-=\+\@\t\r\n,;"'\s]/.test(s) || /[\r\n,;"]/.test(s) || /\s/.test(s) || s.indexOf('"') >= 0) {
-        s = s.replace(/"/g, '""');
-        return '"' + s + '"';
-      }
-      if (/^[\-=\+\@\t\r\n]/.test(s)) {
+      // Neutralize CSV formula injection by prefixing formula-triggering characters.
+      if (/^[-=+\@\t\r\n]/.test(s)) {
         s = "'" + s;
+      }
+      // RFC 4180 quoting for fields containing commas, quotes, or line breaks.
+      if (/[",\r\n]/.test(s)) {
+        s = s.replace(/"/g, '""');
+        s = '"' + s + '"';
       }
       return s;
     }
@@ -2346,6 +2348,24 @@
       statusEl.textContent = 'Merging...';
       statusEl.style.color = '#ffd860';
 
+      function commitOps(ops) {
+        var BATCH = 400;
+        var chunks = [];
+        for (var i = 0; i < ops.length; i += BATCH) {
+          chunks.push(ops.slice(i, i + BATCH));
+        }
+        var results = chunks.map(function(chunk) {
+          var batch = db.batch();
+          chunk.forEach(function(op) {
+            if (op.type === 'set') batch.set(op.ref, op.data, op.options || { merge: true });
+            else if (op.type === 'update') batch.update(op.ref, op.data);
+            else if (op.type === 'delete') batch.delete(op.ref);
+          });
+          return batch.commit();
+        });
+        return Promise.all(results);
+      }
+
       Promise.all([
         db.collection('djs').doc(fromUid).get(),
         db.collection('djs').doc(toUid).get(),
@@ -2373,8 +2393,8 @@
         var sourceUser = results[10].exists ? results[10].data() : {};
         var targetUser = results[11].exists ? results[11].data() : {};
 
-        var batch = db.batch();
-        batch.set(db.collection('djs').doc(toUid), Object.assign({}, sourceDjs, targetDjs), { merge: true });
+        var ops = [];
+        ops.push({ type: 'set', ref: db.collection('djs').doc(toUid), data: Object.assign({}, sourceDjs, targetDjs), options: { merge: true } });
 
         var mergedUser = Object.assign({}, sourceUser, targetUser);
         mergedUser.isVerifiedDJ = mergedUser.isVerifiedDJ || sourceUser.isVerifiedDJ;
@@ -2382,29 +2402,29 @@
           mergedUser.roles = Array.from(new Set((mergedUser.roles || []).concat(sourceUser.roles)));
         }
         if (sourceUser.role && !mergedUser.role) mergedUser.role = sourceUser.role;
-        batch.set(db.collection('users').doc(toUid), mergedUser, { merge: true });
+        ops.push({ type: 'set', ref: db.collection('users').doc(toUid), data: mergedUser, options: { merge: true } });
 
         if (sourceVerify.status === 'approved' && targetVerify.status !== 'approved') {
-          batch.set(db.collection('dj-verifications').doc(toUid), { status: 'approved', approvedAt: sourceVerify.approvedAt || new Date() }, { merge: true });
+          ops.push({ type: 'set', ref: db.collection('dj-verifications').doc(toUid), data: { status: 'approved', approvedAt: sourceVerify.approvedAt || new Date() }, options: { merge: true } });
         } else if (sourceVerify.status && !targetVerify.status) {
-          batch.set(db.collection('dj-verifications').doc(toUid), sourceVerify, { merge: true });
+          ops.push({ type: 'set', ref: db.collection('dj-verifications').doc(toUid), data: sourceVerify, options: { merge: true } });
         }
-        batch.delete(db.collection('dj-verifications').doc(fromUid));
+        ops.push({ type: 'delete', ref: db.collection('dj-verifications').doc(fromUid) });
 
         var mergedBlocked = Array.from(new Set((targetAvail.blockedDates || []).concat(sourceAvail.blockedDates || [])));
-        batch.set(db.collection('dj-availability').doc(toUid), { blockedDates: mergedBlocked }, { merge: true });
-        batch.delete(db.collection('dj-availability').doc(fromUid));
+        ops.push({ type: 'set', ref: db.collection('dj-availability').doc(toUid), data: { blockedDates: mergedBlocked }, options: { merge: true } });
+        ops.push({ type: 'delete', ref: db.collection('dj-availability').doc(fromUid) });
 
         var mergedPhotos = Array.from(new Set((targetGallery.photos || []).concat(sourceGallery.photos || [])));
-        batch.set(db.collection('dj-galleries').doc(toUid), { photos: mergedPhotos }, { merge: true });
-        batch.delete(db.collection('dj-galleries').doc(fromUid));
+        ops.push({ type: 'set', ref: db.collection('dj-galleries').doc(toUid), data: { photos: mergedPhotos }, options: { merge: true } });
+        ops.push({ type: 'delete', ref: db.collection('dj-galleries').doc(fromUid) });
 
-        batch.set(db.collection('dj-status').doc(toUid), Object.assign({}, sourceStatus, targetStatus), { merge: true });
-        batch.delete(db.collection('dj-status').doc(fromUid));
+        ops.push({ type: 'set', ref: db.collection('dj-status').doc(toUid), data: Object.assign({}, sourceStatus, targetStatus), options: { merge: true } });
+        ops.push({ type: 'delete', ref: db.collection('dj-status').doc(fromUid) });
 
         return db.collection('bookings').where('djId', '==', fromUid).get().then(function(bookingsSnap) {
           bookingsSnap.forEach(function(doc) {
-            batch.update(doc.ref, { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName });
+            ops.push({ type: 'update', ref: doc.ref, data: { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName } });
           });
           return Promise.all([
             db.collection('tips').where('djId', '==', fromUid).get(),
@@ -2413,13 +2433,13 @@
             db.collection('saved-djs').where('djId', '==', fromUid).get()
           ]);
         }).then(function(snaps) {
-          snaps[0].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
-          snaps[1].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
-          snaps[2].forEach(function(doc) { batch.update(doc.ref, { djId: toUid }); });
-          snaps[3].forEach(function(doc) { batch.update(doc.ref, { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName }); });
-          batch.delete(db.collection('djs').doc(fromUid));
-          batch.delete(db.collection('users').doc(fromUid));
-          return batch.commit();
+          snaps[0].forEach(function(doc) { ops.push({ type: 'update', ref: doc.ref, data: { djId: toUid } }); });
+          snaps[1].forEach(function(doc) { ops.push({ type: 'update', ref: doc.ref, data: { djId: toUid } }); });
+          snaps[2].forEach(function(doc) { ops.push({ type: 'update', ref: doc.ref, data: { djId: toUid } }); });
+          snaps[3].forEach(function(doc) { ops.push({ type: 'update', ref: doc.ref, data: { djId: toUid, djName: targetDjs.name || targetDjs.stageName || toName } }); });
+          ops.push({ type: 'delete', ref: db.collection('djs').doc(fromUid) });
+          ops.push({ type: 'delete', ref: db.collection('users').doc(fromUid) });
+          return commitOps(ops);
         });
       }).then(function() {
         statusEl.textContent = 'Merged successfully. Refresh to see changes.';
@@ -2428,7 +2448,7 @@
         loadAdminUsers();
       }).catch(function(err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff3b30';
       });
     }
 

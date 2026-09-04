@@ -16,15 +16,21 @@ service firebase.storage {
     }
 
     // DJ avatars, galleries, samples, videos — users can write only their own.
+    // Constrain to media types and a 5 MB cap per object.
     match /djs/{uid}/{allPaths=**} {
       allow read: if isSignedIn();
-      allow write: if isOwner(uid) || isAdmin();
+      allow write: if (isOwner(uid) || isAdmin()) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|audio/.*|video/.*|application/pdf');
     }
 
     // Client-specific uploads (ID verification, etc.) — owner or admin.
+    // Constrain to images/PDF and a 2 MB cap.
     match /clients/{uid}/{allPaths=**} {
       allow read: if isOwner(uid) || isAdmin();
-      allow write: if isOwner(uid) || isAdmin();
+      allow write: if (isOwner(uid) || isAdmin()) &&
+        request.resource.size < 2 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf');
     }
 
     // Catch-all: deny by default.
