@@ -377,7 +377,24 @@ exports.syncAllAuthUsers = onCall(async (request) => {
   }
   if (created > 0) await batch.commit();
   logger.info("[SYNC USERS] Created " + created + " missing user docs out of " + allUsers.length + " auth users.");
-  return { created: created, totalAuthUsers: allUsers.length };
+
+  // Backfill dj-status.isVerified for any existing verified DJs.
+  const verifiedSnapshot = await db.collection("users").where("isVerifiedDJ", "==", true).get();
+  var vBatch = db.batch();
+  var verifiedCount = 0;
+  for (var j = 0; j < verifiedSnapshot.docs.length; j++) {
+    var d = verifiedSnapshot.docs[j];
+    vBatch.set(db.collection("dj-status").doc(d.id), { isVerified: true, verifiedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    verifiedCount++;
+    if (verifiedCount % 500 === 0) {
+      await vBatch.commit();
+      vBatch = db.batch();
+    }
+  }
+  if (verifiedCount % 500 !== 0) await vBatch.commit();
+  logger.info("[SYNC USERS] Backfilled " + verifiedCount + " verified DJ status docs.");
+
+  return { created: created, totalAuthUsers: allUsers.length, verifiedDjs: verifiedCount };
 });
 
 // Callable function: admin sends messages to users, DJs, or broadcast.

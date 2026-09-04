@@ -1656,22 +1656,35 @@
             var action = btn.getAttribute('data-action');
             var uid = btn.getAttribute('data-uid');
             var newStatus = action === 'approve' ? 'approved' : 'rejected';
-            db.collection('dj-verifications').doc(uid).set({
+            var promises = [db.collection('dj-verifications').doc(uid).set({
               status: newStatus,
               reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true }).then(function() {
-              if (action === 'approve') {
-                db.collection('users').doc(uid).set({
-                  isVerifiedDJ: true,
-                  verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                trackSolEvent('dj_verification_approved', { uid: uid, method: 'admin_panel' });
-                trackSolEvent('dj_registration', { uid: uid, method: 'admin_panel_verification' });
-              } else {
-                trackSolEvent('dj_verification_rejected', { uid: uid });
-              }
+            }, { merge: true })];
+
+            var statusData = {
+              isVerified: action === 'approve'
+            };
+            if (action === 'approve') {
+              statusData.verifiedAt = firebase.firestore.FieldValue.serverTimestamp();
+            } else {
+              statusData.revokedAt = firebase.firestore.FieldValue.serverTimestamp();
+            }
+            promises.push(db.collection('dj-status').doc(uid).set(statusData, { merge: true }));
+
+            if (action === 'approve') {
+              promises.push(db.collection('users').doc(uid).set({
+                isVerifiedDJ: true,
+                verifiedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true }));
+              trackSolEvent('dj_verification_approved', { uid: uid, method: 'admin_panel' });
+              trackSolEvent('dj_registration', { uid: uid, method: 'admin_panel_verification' });
+            } else {
+              trackSolEvent('dj_verification_rejected', { uid: uid });
+            }
+
+            Promise.all(promises).then(function() {
               adminStatus.textContent = 'DJ ' + newStatus + ' successfully.';
-              adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff3b30';
+              adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff4d8f';
               setTimeout(function() { adminStatus.textContent = ''; }, 3000);
             }).catch(function(err) {
               adminStatus.textContent = 'Error: ' + err.message;
@@ -2057,6 +2070,7 @@
           var batch = db.batch();
           batch.set(db.collection('users').doc(uid), { isVerifiedDJ: false, revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
           batch.set(db.collection('dj-verifications').doc(uid), { status: 'revoked', revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          batch.set(db.collection('dj-status').doc(uid), { isVerified: false, revokedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
           batch.set(db.collection('djs').doc(uid), { isVerified: false, status: 'revoked' }, { merge: true });
           batch.commit().then(function() {
             statusEl.style.color = '#22c55e';
@@ -3061,6 +3075,10 @@
         removeDJ(doc.id);
         return;
       }
+      if (!data.isVerified) {
+        removeDJ(doc.id);
+        return;
+      }
 
       const loc = data.location || {};
       const lat = getNumber(loc.latitude, loc._latitude, loc.lat);
@@ -3114,7 +3132,7 @@
     }
 
     function subscribeToDJs() {
-      db.collection('dj-status').where('isOnline', '==', true)
+      db.collection('dj-status').where('isOnline', '==', true).where('isVerified', '==', true)
         .onSnapshot(function(snapshot) {
           snapshot.docChanges().forEach(function(change) {
             if (change.type === 'removed') {
@@ -3125,9 +3143,23 @@
           });
           updateDJCount();
         }, function(err) {
-          mapStatus.textContent = 'Live map error: ' + err.message;
-          mapStatus.style.color = '#ff4d8f';
-          console.error(err);
+          // Fallback: composite index may not exist yet, query online only and filter client-side
+          console.warn('[MAP] Composite query failed, falling back to single filter:', err.message);
+          db.collection('dj-status').where('isOnline', '==', true)
+            .onSnapshot(function(snapshot) {
+              snapshot.docChanges().forEach(function(change) {
+                if (change.type === 'removed') {
+                  removeDJ(change.doc.id);
+                } else {
+                  processDJ(change.doc);
+                }
+              });
+              updateDJCount();
+            }, function(err2) {
+              mapStatus.textContent = 'Live map error: ' + err2.message;
+              mapStatus.style.color = '#ff4d8f';
+              console.error(err2);
+            });
         });
     }
 
