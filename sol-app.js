@@ -3125,10 +3125,31 @@
       }
     }
 
+    function renderAdminOnlineDjs() {
+      var box = document.getElementById('sol-admin-online-djs-list');
+      if (!box) return;
+      var ids = Object.keys(onlineDJs);
+      if (ids.length === 0) {
+        box.innerHTML = '<p style="color:#888; text-align:center;">No DJs online.</p>';
+        return;
+      }
+      box.innerHTML = '';
+      ids.forEach(function(uid) {
+        var dj = onlineDJs[uid];
+        var d = dj.data || {};
+        var name = escapeHtml(d.djName || d.name || 'DJ');
+        var div = document.createElement('div');
+        div.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
+        div.innerHTML = '<div><strong>' + name + '</strong><br><span style="color:#888; font-size:0.8rem;">' + dj.lat.toFixed(4) + ', ' + dj.lng.toFixed(4) + '</span></div>';
+        box.appendChild(div);
+      });
+    }
+
     function updateDJCount() {
       const count = Object.keys(onlineDJs).length;
       mapStatus.textContent = count === 0 ? 'No DJs currently online.' : count + ' DJ' + (count === 1 ? '' : 's') + ' online now';
       mapStatus.style.color = count === 0 ? '#ffd860' : '#22c55e';
+      renderAdminOnlineDjs();
     }
 
     function subscribeToDJs() {
