@@ -3,6 +3,8 @@
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
     const BOOKING_URL = API_BASE + '/api/bookings/request';
     const SEARCH_URL = API_BASE + '/api/djs/search';
+    const ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+    const ADMIN_EMAIL = 'djweirdnasty@gmail.com';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyDWU2qcKFA3cxK6ofT0IOrO9ss8bj29ttU',
@@ -1399,8 +1401,6 @@
     });
 
     // ---------- Admin Console ----------
-    const ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
-    const ADMIN_EMAIL = 'djweirdnasty@gmail.com';
     let isAdmin = false;
     let adminModeActive = false;
     let adminDjsUnsubscribe = null;
@@ -3819,8 +3819,6 @@
           { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false, endDate: '2026-08-23' }
         ];
 
-        var ADMIN_EMAIL = 'djweirdnasty@gmail.com';
-        var ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
         var isWeirdNasty = (dj.email || '').toLowerCase() === ADMIN_EMAIL ||
                            (dj.firebaseUid || dj.id || '') === ADMIN_UID;
 
