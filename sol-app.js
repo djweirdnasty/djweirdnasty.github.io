@@ -187,6 +187,7 @@
     let djModeActive = false;
     let djStatusUnsubscribe = null;
     let djConversationsUnsubscribe = null;
+    let userDocUnsubscribe = null;
 
     const djModeToggleBtn = document.getElementById('sol-dj-mode-toggle');
     const djConsole = document.getElementById('sol-dj-console');
@@ -1823,6 +1824,7 @@
           '<div>' + badges + '</div>' +
           '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + escapeAttr(u.id) + '">View</button>' +
           '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + escapeAttr(u.id) + '" data-banned="' + (banned ? '1' : '0') + '" data-protected="' + (isProtected ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#ff4d8f;" data-force-logout="' + escapeAttr(u.id) + '" data-protected="' + (isProtected ? '1' : '0') + '">Log Out</button>' +
           '</div>';
         usersList.appendChild(card);
       });
@@ -1850,6 +1852,24 @@
             setTimeout(function() { adminStatus.textContent = ''; }, 3000);
             loadAdminUsers();
           }).catch(function(err) { alert('Error: ' + err.message); });
+        });
+      });
+      usersList.querySelectorAll('button[data-force-logout]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var uid = btn.getAttribute('data-force-logout');
+          var isProtected = btn.getAttribute('data-protected') === '1';
+          if (isProtected) {
+            alert('This account is the site owner and cannot be force logged out.');
+            return;
+          }
+          if (!confirm('Force log out this user? This will revoke their session and disable their account.')) return;
+          firebase.functions().httpsCallable('forceLogoutUser')({ uid: uid })
+            .then(function() {
+              adminStatus.textContent = 'User force logged out and disabled.';
+              adminStatus.style.color = '#22c55e';
+              setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+              loadAdminUsers();
+            }).catch(function(err) { alert('Error: ' + err.message); });
         });
       });
     }
@@ -2877,6 +2897,18 @@
 
         syncUserDoc(user);
 
+        if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
+        userDocUnsubscribe = db.collection('users').doc(user.uid).onSnapshot(function(doc) {
+          if (doc.exists && doc.data().banned === true) {
+            console.warn('[AUTH] User doc marked banned, signing out.');
+            auth.signOut();
+            if (authStatus) {
+              authStatus.textContent = 'Your account has been disabled.';
+              authStatus.style.color = '#ff4d8f';
+            }
+          }
+        });
+
         isVerifiedDJ = false;
         djModeToggleBtn.style.display = 'none';
         djModeActive = false;
@@ -2915,6 +2947,7 @@
         if (djConversationsUnsubscribe) { djConversationsUnsubscribe(); djConversationsUnsubscribe = null; }
         if (djBookingsUnsubscribe) { djBookingsUnsubscribe(); djBookingsUnsubscribe = null; }
         if (clientBookingsUnsubscribe) { clientBookingsUnsubscribe(); clientBookingsUnsubscribe = null; }
+        if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
       }
     });
 

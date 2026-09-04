@@ -611,8 +611,35 @@ function publicDjData(data) {
   return out;
 }
 
-// Real-time sync trigger for publicDjs is disabled until Eventarc Service Agent permissions are propagated.
-// Run syncAllPublicDjs manually to backfill.
+// Admin: force logout a user by revoking tokens and disabling the account.
+exports.forceLogoutUser = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  const targetUid = String(request.data.uid || "");
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "uid is required.");
+  }
+  if (targetUid === ADMIN_UID) {
+    throw new HttpsError("permission-denied", "Cannot force logout the founder.");
+  }
+  try {
+    await admin.auth().revokeRefreshTokens(targetUid);
+    await db.collection("users").doc(targetUid).set({
+      banned: true,
+      bannedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    logger.info("[FORCE LOGOUT] " + request.auth.uid + " revoked " + targetUid);
+    return { success: true };
+  } catch (err) {
+    logger.error("[FORCE LOGOUT] error: " + err.message);
+    throw new HttpsError("internal", err.message);
+  }
+});
 
 // Backfill the publicDjs collection for all existing DJs (admin only).
 exports.syncAllPublicDjs = onCall(async (request) => {
