@@ -428,7 +428,7 @@
         dates.forEach(function(d) {
           var chip = document.createElement('div');
           chip.style.cssText = 'background:#ff3b30; color:#fff; padding:0.3rem 0.6rem; border-radius:6px; font-size:0.85rem; display:flex; align-items:center; gap:0.3rem;';
-          chip.innerHTML = new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
+          chip.innerHTML = parseLocalDate(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) +
             ' <button type="button" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;" data-unblock="' + d + '">&times;</button>';
           box.appendChild(chip);
         });
@@ -904,7 +904,7 @@
       var autoCompleted = 0;
       confirmed.forEach(function(b) {
         try {
-          var d = new Date(b.date || b.eventDate || '');
+          var d = parseLocalDate(b.date || b.eventDate);
           d.setHours(23, 59, 59);
           if (d < now) {
             db.collection('bookings').doc(b.id).set({
