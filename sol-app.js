@@ -476,8 +476,8 @@
         doc.data().photos.forEach(function(url) {
           var wrapper = document.createElement('div');
           wrapper.style.cssText = 'position:relative; width:100px; height:100px;';
-          wrapper.innerHTML = '<img loading="lazy" src="' + url + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;" onerror="this.style.display=\'none\'">' +
-            '<button type="button" style="position:absolute;top:-4px;right:-4px;background:#ff3b30;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;" data-del-photo="' + url + '">&times;</button>';
+          wrapper.innerHTML = '<img loading="lazy" src="' + escapeAttr(url) + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;">' +
+            '<button type="button" style="position:absolute;top:-4px;right:-4px;background:#ff3b30;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;" data-del-photo="' + escapeAttr(url) + '">&times;</button>';
           box.appendChild(wrapper);
         });
         box.querySelectorAll('button[data-del-photo]').forEach(function(btn) {
@@ -540,7 +540,7 @@
             var email = d.email || p.email || '';
             var card = document.createElement('div');
             card.style.cssText = 'background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
-            card.innerHTML = '<span><strong>' + name + '</strong><br><span style="font-size:0.8rem; color:#666;">' + email + '</span></span><button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem;" data-dm-dj="' + doc.id + '" data-dm-name="' + encodeURIComponent(name) + '">Message</button>';
+            card.innerHTML = '<span><strong>' + escapeHtml(name) + '</strong><br><span style="font-size:0.8rem; color:#666;">' + escapeHtml(email) + '</span></span><button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem;" data-dm-dj="' + escapeAttr(doc.id) + '" data-dm-name="' + encodeURIComponent(escapeHtml(name)) + '">Message</button>';
             box.appendChild(card);
           });
           box.querySelectorAll('button[data-dm-dj]').forEach(function(btn) {
@@ -578,8 +578,8 @@
             var w = doc.data();
             var card = document.createElement('div');
             card.style.cssText = 'background:#111; border:1px solid #ffd860; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
-            card.innerHTML = '<span><strong>' + (w.clientName || 'Client') + '</strong><br><span style="font-size:0.8rem; color:#aaa;">' + (w.eventType || 'Event') + ' — ' + (w.date || 'TBD') + '</span></span>' +
-              '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#22c55e;" data-waitlist-accept="' + doc.id + '">Accept</button>';
+            card.innerHTML = '<span><strong>' + escapeHtml(w.clientName || 'Client') + '</strong><br><span style="font-size:0.8rem; color:#aaa;">' + escapeHtml(w.eventType || 'Event') + ' — ' + escapeHtml(w.date || 'TBD') + '</span></span>' +
+              '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem; background:#22c55e;" data-waitlist-accept="' + escapeAttr(doc.id) + '">Accept</button>';
             box.appendChild(card);
           });
           box.querySelectorAll('button[data-waitlist-accept]').forEach(function(btn) {
@@ -674,20 +674,20 @@
           const special = b.specialRequests || b.special_requests || '';
 
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
-            '<strong>' + clientName + '</strong>' +
+            '<strong>' + escapeHtml(clientName) + '</strong>' +
             '<span style="background:#ff4d8f; color:#fff; padding:0.15rem 0.5rem; border-radius:8px; font-size:0.75rem;">NEW</span>' +
             '</div>' +
             '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
-            '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + startTime : '') + '</div>' +
-            '<div>🎉 ' + eventType + '</div>' +
-            (location ? '<div>📍 ' + location + '</div>' : '') +
+            '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + escapeHtml(startTime) : '') + '</div>' +
+            '<div>🎉 ' + escapeHtml(eventType) + '</div>' +
+            (location ? '<div>📍 ' + escapeHtml(location) + '</div>' : '') +
             '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
-            (special ? '<div style="margin-top:0.5rem; color:#ffd860;">📝 ' + special + '</div>' : '') +
+            (special ? '<div style="margin-top:0.5rem; color:#ffd860;">📝 ' + escapeHtml(special).replace(/\n/g, '<br>') + '</div>' : '') +
             '</div>' +
             '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-booking-id="' + b.id + '">Reject</button>' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#9333ea;" data-counter-offer="' + b.id + '" data-amount="' + amount + '" data-duration="' + (b.duration || b.event_duration || 4) + '" data-client="' + clientName + '" data-event="' + eventType + '">Counter</button>' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="accept" data-booking-id="' + b.id + '">Accept</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-booking-id="' + escapeAttr(b.id) + '">Reject</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#9333ea;" data-counter-offer="' + escapeAttr(b.id) + '" data-amount="' + amount + '" data-duration="' + (b.duration || b.event_duration || 4) + '" data-client="' + escapeAttr(clientName) + '" data-event="' + escapeAttr(eventType) + '">Counter</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="accept" data-booking-id="' + escapeAttr(b.id) + '">Accept</button>' +
             '</div>';
 
           requestsBox.appendChild(card);
@@ -753,28 +753,28 @@
           var detailsId = 'sol-details-' + b.id;
 
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">' +
-            '<div><strong>' + eventType + '</strong><br><span style="color:#aaa; font-size:0.85rem;">' + clientName + '</span></div>' +
-            '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + startTime : '') + '</div>' +
+            '<div><strong>' + escapeHtml(eventType) + '</strong><br><span style="color:#aaa; font-size:0.85rem;">' + escapeHtml(clientName) + '</span></div>' +
+            '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + escapeHtml(startTime) : '') + '</div>' +
             '</div>' +
-            '<div id="' + countdownId + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#00d4ff; font-weight:600;"></div>' +
-            (location ? '<div style="color:#ccc; font-size:0.9rem;">📍 ' + location + '</div>' : '') +
+            '<div id="' + escapeAttr(countdownId) + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#00d4ff; font-weight:600;"></div>' +
+            (location ? '<div style="color:#ccc; font-size:0.9rem;">📍 ' + escapeHtml(location) + '</div>' : '') +
             '<div style="color:#22c55e; font-size:0.9rem; margin-top:0.25rem;">💰 $' + Number(amount).toLocaleString() + '</div>' +
-            (arrived ? '<div style="color:#22c55e; font-size:0.85rem; margin-top:0.5rem;">✅ Arrived' + (arrivalStatus ? ' — ' + arrivalStatus : '') + '</div>' : '') +
+            (arrived ? '<div style="color:#22c55e; font-size:0.85rem; margin-top:0.5rem;">✅ Arrived' + (arrivalStatus ? ' — ' + escapeHtml(arrivalStatus) : '') + '</div>' : '') +
             '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">' +
-            (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + b.id + '">I\'m Here</button>') +
-            (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff4d8f;" data-show-map="' + b.id + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + (location || '').replace(/"/g, '&quot;') + '">Show on Map</button>' : '') +
-            '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + detailsId + '">Details</button>' +
+            (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + escapeAttr(b.id) + '">I\'m Here</button>') +
+            (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff4d8f;" data-show-map="' + escapeAttr(b.id) + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + escapeAttr(location || '') + '">Show on Map</button>' : '') +
+            '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + escapeAttr(detailsId) + '">Details</button>' +
             '</div>' +
             '<div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff;" data-track-status="' + b.id + '">📊 Track Status</button>' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #9333ea; color:#c084fc;" data-song-suggestions="' + b.id + '" data-dj-id="' + user.uid + '" data-dj-name="' + (b.djName || user.displayName || user.email || 'DJ') + '" data-event-type="' + eventType + '">🎵 Song Suggestions</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff;" data-track-status="' + escapeAttr(b.id) + '">📊 Track Status</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #9333ea; color:#c084fc;" data-song-suggestions="' + escapeAttr(b.id) + '" data-dj-id="' + escapeAttr(user.uid) + '" data-dj-name="' + escapeAttr(b.djName || user.displayName || user.email || 'DJ') + '" data-event-type="' + escapeAttr(eventType) + '">🎵 Song Suggestions</button>' +
             '</div>' +
-            '<div id="' + detailsId + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
-            (duration ? '<div>⏱️ Duration: ' + duration + ' hrs</div>' : '') +
-            (clientEmail ? '<div>📧 <a href="mailto:' + clientEmail + '" style="color:#00d4ff;">' + clientEmail + '</a></div>' : '') +
-            (clientPhone ? '<div>📱 <a href="tel:' + clientPhone + '" style="color:#00d4ff;">' + clientPhone + '</a></div>' : '') +
-            (eqStr ? '<div>🎛️ Equipment: ' + eqStr + '</div>' : '') +
-            (special ? '<div style="color:#ffd860;">📝 ' + special + '</div>' : '') +
+            '<div id="' + escapeAttr(detailsId) + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
+            (duration ? '<div>⏱️ Duration: ' + escapeHtml(duration) + ' hrs</div>' : '') +
+            (clientEmail ? '<div>📧 <a href="mailto:' + escapeAttr(clientEmail) + '" style="color:#00d4ff;">' + escapeHtml(clientEmail) + '</a></div>' : '') +
+            (clientPhone ? '<div>📱 <a href="tel:' + escapeAttr(clientPhone) + '" style="color:#00d4ff;">' + escapeHtml(clientPhone) + '</a></div>' : '') +
+            (eqStr ? '<div>🎛️ Equipment: ' + escapeHtml(eqStr) + '</div>' : '') +
+            (special ? '<div style="color:#ffd860;">📝 ' + escapeHtml(special).replace(/\n/g, '<br>') + '</div>' : '') +
             '</div>';
 
           upcomingBox.appendChild(card);
@@ -1322,7 +1322,7 @@
             if (c.unreadCount) totalUnread += c.unreadCount;
             const item = document.createElement('div');
             item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
-            item.innerHTML = '<span><strong>' + (c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + (c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff4d8f;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
+            item.innerHTML = '<span><strong>' + escapeHtml(c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff4d8f;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
             item.addEventListener('click', function() {
               openChat(doc.id);
             });
@@ -2421,16 +2421,16 @@
           var card = document.createElement('div');
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
           card.innerHTML = '<div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">' +
-            '<strong>' + (typeLabels[d.type] || d.type || 'Unknown') + '</strong>' +
-            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (d.status || 'open') + '</span></div>' +
+            '<strong>' + escapeHtml(typeLabels[d.type] || d.type || 'Unknown') + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + escapeHtml(d.status || 'open') + '</span></div>' +
             '<div style="color:#ccc; font-size:0.85rem; margin-bottom:0.5rem;">' +
-            '<div>From: ' + (d.clientEmail || 'Unknown') + '</div>' +
-            '<div>Booking: ' + (d.bookingId || '').substring(0, 12) + '...</div></div>' +
-            '<p style="color:#aaa; font-size:0.85rem; margin-bottom:0.75rem;">' + (d.description || '') + '</p>' +
+            '<div>From: ' + escapeHtml(d.clientEmail || 'Unknown') + '</div>' +
+            '<div>Booking: ' + escapeHtml((d.bookingId || '').substring(0, 12)) + '...</div></div>' +
+            '<p style="color:#aaa; font-size:0.85rem; margin-bottom:0.75rem;">' + escapeHtml(d.description || '').replace(/\n/g, '<br>') + '</p>' +
             (d.status === 'open' ?
               '<div style="display:flex; gap:0.5rem;">' +
-              '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-resolve-dispute="' + doc.id + '" data-resolution="resolved">Resolve</button>' +
-              '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-resolve-dispute="' + doc.id + '" data-resolution="rejected">Reject</button>' +
+              '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-resolve-dispute="' + escapeAttr(doc.id) + '" data-resolution="resolved">Resolve</button>' +
+              '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-resolve-dispute="' + escapeAttr(doc.id) + '" data-resolution="rejected">Reject</button>' +
               '</div>' : '');
           list.appendChild(card);
         });
@@ -2548,47 +2548,35 @@
 
         var djLiveLink = '';
         if (djSharing && status === 'confirmed' && b.djId) {
-          djLiveLink = '<div style="margin-top:0.5rem;"><button type="button" class="submit-btn" style="background:#22c55e; padding:0.4rem 0.8rem; font-size:0.8rem;" data-track-dj="' + b.djId + '">Track DJ Live Location</button></div>';
+          djLiveLink = '<div style="margin-top:0.5rem;"><button type="button" class="submit-btn" style="background:#22c55e; padding:0.4rem 0.8rem; font-size:0.8rem;" data-track-dj="' + escapeAttr(b.djId) + '">Track DJ Live Location</button></div>';
+        }
+
+        var dateDisplay = 'TBD';
+        if (date) {
+          var parts = date.split(/[-/]/);
+          if (parts.length === 3) {
+            dateDisplay = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10)).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+          } else {
+            dateDisplay = new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+          }
         }
 
         card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
-          '<strong>' + eventType + '</strong>' +
-          '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600; text-transform:capitalize;">' + status + '</span>' +
+          '<strong>' + escapeHtml(eventType) + '</strong>' +
+          '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600; text-transform:capitalize;">' + escapeHtml(status) + '</span>' +
           '</div>' +
           '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
-          '<div>🎧 ' + djName + '</div>' +
-          '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + startTime : '') + '</div>' +
+          '<div>🎧 ' + escapeHtml(djName) + '</div>' +
+          '<div>📅 ' + dateDisplay + (startTime ? ' at ' + escapeHtml(startTime) : '') + '</div>' +
           '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
           '</div>' +
           progressBar +
           djLiveLink +
           '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
-          (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + b.id + '" data-booking-date="' + (date || '') + '">Cancel</button>' : '') +
-          (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + b.id + '" data-rate-dj="' + (b.djId || '') + '">Rate DJ</button>' : '') +
+          (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + escapeAttr(b.id) + '" data-booking-date="' + escapeAttr(date || '') + '">Cancel</button>' : '') +
+          (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + escapeAttr(b.id) + '" data-rate-dj="' + escapeAttr(b.djId || '') + '">Rate DJ</button>' : '') +
           '</div>';
         box.appendChild(card);
-      });
-
-      box.querySelectorAll('button[data-cancel-booking]').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var bookingId = btn.getAttribute('data-cancel-booking');
-          var bookingDate = btn.getAttribute('data-booking-date') || '';
-          var daysUntil = 999;
-          if (bookingDate) {
-            var eventDate = new Date(bookingDate);
-            daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
-          }
-          var refundMsg = daysUntil >= 7 ? '50% refund will be processed.' : 'No refund (within 7 days of event).';
-          if (!confirm('Cancel this booking? ' + refundMsg)) return;
-          db.collection('bookings').doc(bookingId).set({
-            status: 'cancelled',
-            cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
-            refundDue: daysUntil >= 7,
-            refundAmount: daysUntil >= 7 ? 50 : 0
-          }, { merge: true }).catch(function(err) {
-            alert('Error: ' + err.message);
-          });
-        });
       });
 
       box.querySelectorAll('button[data-rate-booking]').forEach(function(btn) {
@@ -2925,10 +2913,11 @@
       el.style.position = 'relative';
       var inner = document.createElement('div');
       inner.style.cssText = 'width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;';
+      var safeInitial = escapeHtml(initial);
       if (avatar) {
-        inner.innerHTML = '<img loading="lazy" src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'; this.parentElement.style.background=\'#ff4d8f\'; this.parentElement.innerHTML=\'' + initial + '\'" />';
+        inner.innerHTML = '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'" />';
       } else {
-        inner.textContent = initial;
+        inner.textContent = safeInitial;
       }
       el.appendChild(inner);
       var dot = document.createElement('div');
@@ -3646,19 +3635,22 @@
         const div = document.createElement('div');
         div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; text-align:center;';
 
-        var avatarUrl = dj.avatar || dj.photoURL || '';
+        var avatarUrl = escapeAttr(dj.avatar || dj.photoURL || '');
         var avatarHtml;
-        var initial = (dj.name || 'D').charAt(0).toUpperCase();
+        var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
         if (avatarUrl) {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;position:relative;">' +
-            initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.style.display=\'none\'">' +
+            initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;">' +
             '</div>';
         } else {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
         }
         const verified = dj.is_verified ? '✅ Verified' : '⏳ Unverified';
-        const genres = (dj.genres || []).slice(0, 3).join(', ');
-        const navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
+        const genres = escapeHtml((dj.genres || []).slice(0, 3).join(', '));
+        var navUrl = '';
+        if (dj.location && typeof dj.location.latitude === 'number' && typeof dj.location.longitude === 'number') {
+          navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
+        }
         var djId = dj.id || dj.uid || dj.dj_id || null;
         var isOnline = djId && onlineDJs[djId] ? true : false;
         var statusDot = isOnline
@@ -3672,8 +3664,8 @@
           '<div style="margin-bottom:0.75rem; position:relative;">' + avatarHtml +
           statusDot +
           '</div>' +
-          '<h3 style="margin:0 0 0.25rem; font-size:1.1rem;">' + (dj.name || 'DJ') + '</h3>' +
-          '<p style="margin:0.25rem 0; color:#ffd860; font-size:0.9rem;">⭐ ' + dj.rating + ' (' + dj.review_count + ') · $' + dj.hourly_rate + '/hr</p>' +
+          '<h3 style="margin:0 0 0.25rem; font-size:1.1rem;">' + escapeHtml(dj.name || 'DJ') + '</h3>' +
+          '<p style="margin:0.25rem 0; color:#ffd860; font-size:0.9rem;">⭐ ' + escapeHtml(dj.rating) + ' (' + escapeHtml(dj.review_count) + ') · $' + escapeHtml(dj.hourly_rate) + '/hr</p>' +
           onlineLabel +
           '<p style="margin:0.5rem 0; font-size:0.85rem; color:#aaa;">' + genres + '</p>' +
           '<button type="button" class="submit-btn" style="font-size:0.9rem; width:100%;" data-dj-index="' + index + '">View Profile</button>';
@@ -3705,33 +3697,41 @@
     function showDJProfile(dj) {
       var modal = document.getElementById('sol-dj-profile-modal');
       var content = document.getElementById('sol-dj-profile-content');
-      var initial = (dj.name || 'D').charAt(0).toUpperCase();
-      var avatar = dj.avatar || dj.photoURL || '';
+      var safeName = escapeHtml(dj.name || 'DJ');
+      var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
+      var avatar = escapeAttr(dj.avatar || dj.photoURL || '');
       var avatarHtml = avatar
-        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'">' +
-          '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
+        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;"><div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
         : '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
 
-      var genres = (dj.genres || []).join(', ') || 'Not specified';
-      var specialties = (dj.specialties || []).join(', ') || 'Not specified';
-      var equipment = (dj.equipment || []).join(', ') || 'Not specified';
+      var genres = escapeHtml((dj.genres || []).join(', ')) || 'Not specified';
+      var specialties = escapeHtml((dj.specialties || []).join(', ')) || 'Not specified';
+      var equipment = escapeHtml((dj.equipment || []).join(', ')) || 'Not specified';
       var verified = dj.is_verified ? '✅ Verified DJ' : '⏳ Unverified';
-      var navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
-      var djUid = dj.firebaseUid || dj.id || '';
+      var locationStr = '';
+      if (dj.location) {
+        if (dj.location.address) locationStr = escapeHtml(dj.location.address);
+        else if (dj.location.city) locationStr = escapeHtml(dj.location.city + (dj.location.state ? ', ' + dj.location.state : ''));
+      }
+      var navUrl = '';
+      if (dj.location && typeof dj.location.latitude === 'number' && typeof dj.location.longitude === 'number') {
+        navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + dj.location.latitude + ',' + dj.location.longitude;
+      }
+      var djUid = escapeAttr(dj.firebaseUid || dj.id || '');
 
       content.innerHTML =
         avatarHtml +
-        '<h2 style="margin:0 0 0.5rem;">' + (dj.name || 'DJ') + '</h2>' +
-        '<p style="color:#ffd860; margin:0.25rem 0;">⭐ ' + dj.rating + ' (' + dj.review_count + ' reviews)</p>' +
-        '<p style="color:#22c55e; margin:0.25rem 0; font-size:0.9rem;">' + verified + '</p>' +
-        '<p style="color:#aaa; margin:0.25rem 0; font-size:0.9rem;">📍 ' + (dj.location.address || dj.location.city + ', ' + dj.location.state) + '</p>' +
+        '<h2 style="margin:0 0 0.5rem;">' + safeName + '</h2>' +
+        '<p style="color:#ffd860; margin:0.25rem 0;">⭐ ' + escapeHtml(dj.rating) + ' (' + escapeHtml(dj.review_count) + ' reviews)</p>' +
+        '<p style="color:#22c55e; margin:0.25rem 0; font-size:0.9rem;">' + escapeHtml(verified) + '</p>' +
+        '<p style="color:#aaa; margin:0.25rem 0; font-size:0.9rem;">📍 ' + (locationStr || 'Location not set') + '</p>' +
         '<div style="text-align:left; margin:1.5rem 0; display:flex; flex-direction:column; gap:0.75rem;">' +
         '<div><strong style="color:#ff4d8f;">Genres:</strong> <span style="color:#ccc;">' + genres + '</span></div>' +
         '<div><strong style="color:#ff4d8f;">Specialties:</strong> <span style="color:#ccc;">' + specialties + '</span></div>' +
         '<div><strong style="color:#ff4d8f;">Equipment:</strong> <span style="color:#ccc;">' + equipment + '</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Experience:</strong> <span style="color:#ccc;">' + (dj.experience || 0) + ' years</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + dj.hourly_rate + '/hr</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + (dj.total_bookings_completed || 0) + '</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Experience:</strong> <span style="color:#ccc;">' + escapeHtml(dj.experience || 0) + ' years</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + escapeHtml(dj.hourly_rate) + '/hr</span></div>' +
+        '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + escapeHtml(dj.total_bookings_completed || 0) + '</span></div>' +
         '<div><strong style="color:#ff4d8f;">Match Score:</strong> <span style="color:#00d4ff;" id="sol-dj-match-score">Calculating...</span></div>' +
         '</div>' +
         '<div id="sol-dj-sound-samples" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading sound samples...</p></div>' +
@@ -3739,7 +3739,7 @@
         '<div id="sol-dj-upcoming-events" style="text-align:left; margin:1rem 0;"></div>' +
         '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
         '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
-        '<a href="' + navUrl + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' +
+        (navUrl ? '<a href="' + escapeAttr(navUrl) + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' : '') +
         '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '">Share Profile</button>' +
         '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || dj.photoURL || '') + '">♥ Save DJ</button>' +
         '</div>';
@@ -3880,9 +3880,9 @@
                 dateStr = r.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
               }
               html += '<div style="background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; margin-bottom:0.5rem;">' +
-                '<div style="display:flex; justify-content:space-between;"><strong>' + (r.fromName || 'Anonymous') + '</strong><span style="color:#ffd860;">' + stars + '</span></div>' +
-                (dateStr ? '<div style="color:#666; font-size:0.75rem; margin-top:2px;">' + dateStr + '</div>' : '') +
-                (r.review ? '<p style="color:#ccc; font-size:0.85rem; margin:0.25rem 0 0;">' + r.review + '</p>' : '') +
+                '<div style="display:flex; justify-content:space-between;"><strong>' + escapeHtml(r.fromName || 'Anonymous') + '</strong><span style="color:#ffd860;">' + stars + '</span></div>' +
+                (dateStr ? '<div style="color:#666; font-size:0.75rem; margin-top:2px;">' + escapeHtml(dateStr) + '</div>' : '') +
+                (r.review ? '<p style="color:#ccc; font-size:0.85rem; margin:0.25rem 0 0;">' + escapeHtml(r.review).replace(/\n/g, '<br>') + '</p>' : '') +
                 '</div>';
             });
             reviewsEl.innerHTML = html;
@@ -4245,8 +4245,10 @@
           var d = doc.data();
           var card = document.createElement('div');
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; align-items:center; gap:0.75rem; min-width:200px;';
-          var avatar = d.djAvatar ? '<img loading="lazy" src="' + d.djAvatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + (d.djName || 'D').charAt(0) + '</div>';
-          card.innerHTML = avatar + '<div style="flex:1;"><strong>' + (d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + doc.id + '">✕</button>';
+          var safeName = escapeHtml(d.djName || 'D');
+          var safeInitial = escapeHtml(safeName.charAt(0).toUpperCase());
+          var avatar = d.djAvatar ? '<img loading="lazy" src="' + escapeAttr(d.djAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + safeInitial + '</div>';
+          card.innerHTML = avatar + '<div style="flex:1;"><strong>' + escapeHtml(d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + escapeAttr(doc.id) + '">✕</button>';
           box.appendChild(card);
         });
         box.querySelectorAll('button[data-remove-saved]').forEach(function(btn) {
@@ -4602,23 +4604,41 @@
     var origSubmitHandler = document.getElementById('sol-quick-form').onsubmit;
 
     // ===== CANCEL BOOKING WITH REFUND LOGIC =====
+    function parseLocalDayCount(bookingDate) {
+      var parts = bookingDate.split(/[-/]/);
+      if (parts.length !== 3) return 999;
+      var y = parseInt(parts[0], 10);
+      var m = parseInt(parts[1], 10) - 1;
+      var d = parseInt(parts[2], 10);
+      var eventDate = new Date(y, m, d, 0, 0, 0, 0);
+      if (isNaN(eventDate.getTime())) return 999;
+      var now = new Date();
+      var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      return Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+    }
+
     document.addEventListener('click', function(e) {
       if (e.target && e.target.hasAttribute('data-cancel-booking')) {
         var bookingId = e.target.getAttribute('data-cancel-booking');
         var bookingDate = e.target.getAttribute('data-booking-date') || '';
-        var daysUntil = 999;
-        if (bookingDate) {
-          var eventDate = new Date(bookingDate);
-          daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
-        }
+        var daysUntil = bookingDate ? parseLocalDayCount(bookingDate) : 999;
         var refundMsg = daysUntil >= 7 ? '50% refund will be processed.' : 'No refund (within 7 days of event).';
         if (!confirm('Cancel this booking? ' + refundMsg)) return;
-        db.collection('bookings').doc(bookingId).set({
-          status: 'cancelled',
-          cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
-          refundDue: daysUntil >= 7,
-          refundAmount: daysUntil >= 7 ? 50 : 0
-        }, { merge: true });
+        db.collection('bookings').doc(bookingId).get().then(function(doc) {
+          if (!doc.exists) return;
+          var b = doc.data();
+          var total = Number(b.totalAmount || b.total_cost || 0);
+          var refundAmount = daysUntil >= 7 ? Math.round(total * 0.5 * 100) / 100 : 0;
+          db.collection('bookings').doc(bookingId).set({
+            status: 'cancelled',
+            cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+            refundDue: daysUntil >= 7,
+            refundAmount: refundAmount
+          }, { merge: true });
+        }).catch(function(err) {
+          console.error('[CANCEL] Error computing refund:', err);
+          alert('Unable to cancel booking. Please try again.');
+        });
       }
     });
 
