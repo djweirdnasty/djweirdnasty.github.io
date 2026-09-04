@@ -727,3 +727,27 @@ exports.syncAllPublicDjs = onCall(async (request) => {
   logger.info("[SYNC PUBLIC DJS] synced " + synced + " public DJ profiles");
   return { synced: synced };
 });
+
+// Keep publicDjs in sync with the source djs documents.
+exports.syncPublicDj = onDocumentWritten({
+  document: "djs/{uid}",
+}, async (event) => {
+  const uid = event.params.uid;
+  const after = event.data.after ? event.data.after.data() : null;
+  if (!after) {
+    await db.collection("publicDjs").doc(uid).delete().catch(() => {});
+    logger.info("[SYNC PUBLIC DJ] removed " + uid);
+    return;
+  }
+  const userDoc = await db.collection("users").doc(uid).get();
+  if (!userDoc.exists || !userDoc.data().isVerifiedDJ) {
+    await db.collection("publicDjs").doc(uid).delete().catch(() => {});
+    return;
+  }
+  const public = publicDjData(after);
+  public.uid = uid;
+  public.isVerifiedDJ = true;
+  public.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+  await db.collection("publicDjs").doc(uid).set(public, { merge: false });
+  logger.info("[SYNC PUBLIC DJ] updated " + uid);
+});
