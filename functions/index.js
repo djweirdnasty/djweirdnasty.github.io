@@ -346,6 +346,13 @@ exports.syncAllAuthUsers = onCall(async (request) => {
     nextPageToken = result.pageToken;
   } while (nextPageToken);
 
+  // Ensure the admin account is always marked as protected.
+  var adminRef = db.collection("users").doc(ADMIN_UID);
+  var adminDoc = await adminRef.get();
+  if (adminDoc.exists) {
+    await adminRef.set({ protected: true }, { merge: true });
+  }
+
   var batch = db.batch();
   var created = 0;
   for (var i = 0; i < allUsers.length; i++) {
@@ -361,7 +368,8 @@ exports.syncAllAuthUsers = onCall(async (request) => {
         isAdmin: false,
         isVerifiedClient: false,
         isVerifiedDJ: false,
-        banned: false
+        banned: false,
+        protected: u.uid === ADMIN_UID || (u.email || "").toLowerCase() === ADMIN_EMAIL
       });
       created++;
     }

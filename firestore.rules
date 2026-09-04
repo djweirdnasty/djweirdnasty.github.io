@@ -37,20 +37,22 @@ service cloud.firestore {
       return request.resource.data.get(field, null) == resource.data.get(field, null);
     }
 
-    // The site owner's account can never lose admin or be banned.
+    // The site owner flag is stored on the user document and managed server-side.
     function isProtectedAdmin(uid) {
-      return uid == '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+      return exists(/databases/$(database)/documents/users/$(uid)) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.get('protected', false) == true;
     }
 
     // ---------- users ----------
     // Owner can manage their own profile, but can never grant themselves
     // admin/verified/unbanned status — those are admin-only fields.
-    // The site owner's admin flag is permanent and cannot be banned.
+    // The site owner account is protected from being banned or un-adminned.
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow create: if isOwner(uid) &&
         request.resource.data.get('isAdmin', false) == false &&
-        request.resource.data.get('banned', false) == false;
+        request.resource.data.get('banned', false) == false &&
+        request.resource.data.get('protected', false) == false;
       allow update: if (
         isProtectedAdmin(uid) &&
         request.resource.data.get('isAdmin', false) == true &&
@@ -60,7 +62,8 @@ service cloud.firestore {
           isOwner(uid) &&
           unchanged('isAdmin') &&
           unchanged('banned') &&
-          unchanged('isVerifiedDJ')
+          unchanged('isVerifiedDJ') &&
+          unchanged('protected')
         ))
       );
       allow delete: if isAdmin() && !isProtectedAdmin(uid);

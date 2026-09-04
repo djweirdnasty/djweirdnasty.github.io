@@ -3,8 +3,6 @@
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
     const BOOKING_URL = API_BASE + '/api/bookings/request';
     const SEARCH_URL = API_BASE + '/api/djs/search';
-    const ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
-    const ADMIN_EMAIL = 'djweirdnasty@gmail.com';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyDWU2qcKFA3cxK6ofT0IOrO9ss8bj29ttU',
@@ -1789,6 +1787,7 @@
         var avatarHtml = avatar
           ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
           : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>';
+        var isProtected = d.protected === true;
         var badges = '';
         var now = Date.now();
         var created = d.createdAt && typeof d.createdAt.toMillis === 'function' ? d.createdAt.toMillis() : 0;
@@ -1797,6 +1796,7 @@
         if (isAdmin) badges += '<span style="background:#00d4ff; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
         if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
         if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
+        if (isProtected) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">FOUNDER</span> ';
         card.innerHTML = avatarHtml +
           '<div style="flex:1; cursor:pointer;" data-view-user="' + escapeAttr(u.id) + '"><strong>' + safeName + '</strong>' +
           (email ? '<br><span style="font-size:0.85rem; color:#aaa;">' + escapeHtml(email) + '</span>' : '') +
@@ -1804,7 +1804,7 @@
           '<div style="display:flex; flex-direction:column; gap:0.25rem; align-items:flex-end;">' +
           '<div>' + badges + '</div>' +
           '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + escapeAttr(u.id) + '">View</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + escapeAttr(u.id) + '" data-banned="' + (banned ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + escapeAttr(u.id) + '" data-banned="' + (banned ? '1' : '0') + '" data-protected="' + (isProtected ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
           '</div>';
         usersList.appendChild(card);
       });
@@ -1819,7 +1819,8 @@
         btn.addEventListener('click', function() {
           var uid = btn.getAttribute('data-ban-user');
           var isBanned = btn.getAttribute('data-banned') === '1';
-          if (uid === ADMIN_UID) {
+          var isProtected = btn.getAttribute('data-protected') === '1';
+          if (isProtected) {
             alert('This account is the site owner and cannot be banned or removed from admin.');
             return;
           }
@@ -1944,10 +1945,10 @@
         }
         if (savedHtml === '') savedHtml = '<p style="color:#888;">No saved DJs.</p>';
 
-        var isFounder = (uid === ADMIN_UID || email === ADMIN_EMAIL);
-        var founderBadge = isFounder ? '<span style="background:#22c55e; color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem; display:inline-block;">Founder / Developer — protected</span>' : '';
-        var adminActionsHtml = isFounder ?
-          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' + founderBadge + '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button></div>') :
+        var isProtected = d.protected === true;
+        var founderBadge = isProtected ? '<span style="background:#22c55e; color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem; display:inline-block;">Founder / Developer — protected</span>' : '';
+        var adminActionsHtml = isProtected ?
+          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' + founderBadge + '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '" data-protected="true">Reset Password</button></div>') :
           ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-admin-action="ban" data-uid="' + uid + '" data-banned="' + banned + '">' + (banned ? (isDJ ? 'Unsuspend DJ' : 'Unban User') : (isDJ ? 'Suspend DJ' : 'Ban User')) + '</button>' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#00d4ff; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Promote to Admin') + '</button>' +
@@ -1996,7 +1997,7 @@
       statusEl.style.color = '#ffd860';
       statusEl.textContent = 'Working...';
 
-      if (uid === ADMIN_UID && action !== 'resetPassword') {
+      if (btn.getAttribute('data-protected') === 'true' && action !== 'resetPassword') {
         statusEl.style.color = '#ff4d8f';
         statusEl.textContent = 'This founder account is protected.';
         return;
