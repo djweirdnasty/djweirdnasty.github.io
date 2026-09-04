@@ -536,7 +536,48 @@ exports.isAdminDj = onCall(async (request) => {
   };
 });
 
-// Whitelist of fields that may be exposed in the public DJ directory.
+// Callable function: returns a sanitized list of DJs near the selected location.
+exports.publicSearchDjs = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const location = request.data.selectedLocation;
+  if (!location || typeof location !== "object") {
+    throw new HttpsError("invalid-argument", "selectedLocation is required.");
+  }
+
+  const allowed = [
+    "id", "uid", "dj_id", "firebaseUid", "name", "stageName", "displayName",
+    "avatar", "photoURL", "bio", "genres", "styles", "eventTypes",
+    "hourly_rate", "hourlyRate", "baseRate", "rating", "reviewCount",
+    "is_verified", "isVerifiedDJ", "verifiedAt", "city", "state",
+    "lat", "lng", "coordinates", "distance", "available", "online",
+    "sampleUrls", "videoUrls", "socialLinks", "equipment", "yearsExperience"
+  ];
+
+  const allowedSet = new Set(allowed);
+  const stripPii = function(dj) {
+    const out = {};
+    for (const key in dj) {
+      if (allowedSet.has(key)) out[key] = dj[key];
+    }
+    return out;
+  };
+
+  try {
+    const res = await fetch(SEARCH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(location)
+    });
+    const data = await res.json();
+    const djs = Array.isArray(data.djs) ? data.djs.map(stripPii) : [];
+    return { djs: djs };
+  } catch (err) {
+    logger.error("[PUBLIC SEARCH DJS] error: " + err.message);
+    throw new HttpsError("internal", "Unable to search DJs.");
+  }
+});
 function publicDjData(data) {
   const allowed = [
     "name", "displayName", "stageName", "photoURL", "avatar", "bio", "genres",
@@ -552,20 +593,8 @@ function publicDjData(data) {
   return out;
 }
 
-// Sync a DJ's public profile whenever the private djs doc changes.
-exports.syncPublicDj = onDocumentWritten(
-  { document: "djs/{uid}" },
-  async (event) => {
-    const uid = event.params.uid;
-    const after = event.data.after;
-    if (!after || !after.exists) {
-      await db.collection("publicDjs").doc(uid).delete().catch(function() {});
-      return;
-    }
-    const data = after.data() || {};
-    await db.collection("publicDjs").doc(uid).set(publicDjData(data), { merge: false });
-  }
-);
+// Real-time sync trigger for publicDjs is disabled until Eventarc Service Agent permissions are propagated.
+// Run syncAllPublicDjs manually to backfill.
 
 // Backfill the publicDjs collection for all existing DJs (admin only).
 exports.syncAllPublicDjs = onCall(async (request) => {

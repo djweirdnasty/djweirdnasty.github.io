@@ -3592,32 +3592,29 @@
       track.innerHTML = '';
       dots.innerHTML = '';
 
-      fetch(SEARCH_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(selectedLocation)
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        if (data.djs && data.djs.length > 0) {
-          closestDjDistance = data.djs[0].distance || 0;
-          allDjs = data.djs;
-          applyDjFilters();
-          calculatePrice();
-          mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + (selectedLocation.city || selectedLocation.address);
-          mapStatus.style.color = '#22c55e';
-        } else {
+      firebase.functions().httpsCallable('publicSearchDjs')({ selectedLocation: selectedLocation })
+        .then(function(result) {
+          var data = result.data;
+          if (data.djs && data.djs.length > 0) {
+            closestDjDistance = data.djs[0].distance || 0;
+            allDjs = data.djs;
+            applyDjFilters();
+            calculatePrice();
+            mapStatus.textContent = data.djs.length + ' DJ(s) available near ' + (selectedLocation.city || selectedLocation.address);
+            mapStatus.style.color = '#22c55e';
+          } else {
+            allDjs = [];
+            track.innerHTML = '<p style="width:100%; text-align:center;">No verified DJs found near this location.</p>';
+            mapStatus.textContent = 'No DJs found near this location.';
+            mapStatus.style.color = '#ff4d8f';
+          }
+        }).catch(function(err) {
           allDjs = [];
-          track.innerHTML = '<p style="width:100%; text-align:center;">No verified DJs found near this location.</p>';
-          mapStatus.textContent = 'No DJs found near this location.';
+          track.innerHTML = '<p style="width:100%; text-align:center;">Error searching DJs.</p>';
+          mapStatus.textContent = err.message || 'Unable to search DJs.';
           mapStatus.style.color = '#ff4d8f';
-        }
-      })
-      .catch(function(err) {
-        track.innerHTML = '<p style="width:100%; text-align:center;">Could not load DJs.</p>';
-        mapStatus.textContent = 'DJ search error: ' + err.message;
-        mapStatus.style.color = '#ff4d8f';
-      });
+          console.error('[PUBLIC SEARCH]', err);
+        });
     }
 
     function applyDjFilters() {
