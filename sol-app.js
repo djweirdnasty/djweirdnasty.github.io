@@ -1363,7 +1363,7 @@
           updateDjModeBadge(totalUnread);
         }, function(err) {
           console.error('DJ conversations listener error:', err);
-          djConversationsBox.innerHTML = '<p style="color:#ff4d8f;">Could not load conversations: ' + err.message + '</p>';
+          djConversationsBox.innerHTML = '<p style="color:#ff4d8f;">Could not load conversations: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -1536,7 +1536,7 @@
           });
         })
         .catch(function(err) {
-          djsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+          djsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -1573,7 +1573,7 @@
         });
         document.getElementById('sol-admin-stat-bookings').textContent = count;
       }, function(err) {
-        bookingsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        bookingsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -1700,7 +1700,7 @@
           });
         });
       }, function(err) {
-        verificationsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        verificationsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -1786,7 +1786,7 @@
           };
         })
         .catch(function(err) {
-          usersList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+          usersList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -2029,7 +2029,7 @@
           btn.addEventListener('click', function() { runAdminUserAction(btn); });
         });
       }).catch(function(err) {
-        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2278,7 +2278,7 @@
                 payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ffd860;" title="This DJ has not added a PayPal email or PayPal.me link yet.">🔒 $' + e.unpaidTotal.toFixed(2) + ' held in admin account (djweirdnasty) until DJ adds PayPal</span>';
               }
 
-              card.innerHTML = '<div><strong>' + e.name + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
+              card.innerHTML = '<div><strong>' + escapeHtml(e.name) + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
                 '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + e.total.toFixed(2) + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
               earningsList.appendChild(card);
             });
@@ -2309,7 +2309,7 @@
           });
         })
         .catch(function(err) {
-          earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+          earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -2539,7 +2539,7 @@
           });
         });
       }, function(err) {
-        list.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        list.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2817,7 +2817,7 @@
             var s = doc.data();
             var item = document.createElement('div');
             item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#000; border-radius:6px; padding:0.5rem 0.75rem;';
-            item.innerHTML = '<span style="color:#ccc; font-size:0.9rem;">🎵 ' + s.song + '</span><button type="button" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1.2rem;" data-del-song="' + doc.id + '">&times;</button>';
+            item.innerHTML = '<span style="color:#ccc; font-size:0.9rem;">🎵 ' + escapeHtml(s.song) + '</span><button type="button" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1.2rem;" data-del-song="' + doc.id + '">&times;</button>';
             list.appendChild(item);
           });
           list.querySelectorAll('button[data-del-song]').forEach(function(btn) {
@@ -3200,7 +3200,7 @@
         var coordStr = (!isNaN(lat) && !isNaN(lng)) ? (lat.toFixed(4) + ', ' + lng.toFixed(4)) : 'Location unavailable';
         var div = document.createElement('div');
         div.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
-        div.innerHTML = '<div><strong>' + name + '</strong><br><span style="color:#888; font-size:0.8rem;">' + coordStr + '</span></div>';
+        div.innerHTML = '<div><strong>' + escapeHtml(name) + '</strong><br><span style="color:#888; font-size:0.8rem;">' + escapeHtml(coordStr) + '</span></div>';
         box.appendChild(div);
       });
     }
@@ -4342,7 +4342,7 @@
           historyBox.appendChild(card);
         });
       }, function(err) {
-        historyBox.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        historyBox.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -4615,7 +4615,7 @@
           var s = doc.data();
           var row = document.createElement('div');
           row.style.cssText = 'display:flex; align-items:center; gap:0.5rem; background:#1a1a1a; padding:0.5rem; border-radius:8px;';
-          row.innerHTML = '<span style="color:#00d4ff; font-size:0.85rem; min-width:55px;">' + (s.time || '--:--') + '</span><span style="flex:1; color:#ccc; font-size:0.85rem;">' + s.track + '</span><button type="button" class="submit-btn" style="background:#333; padding:0.25rem 0.5rem; font-size:0.75rem;" data-del-setlist="' + doc.id + '">✕</button>';
+          row.innerHTML = '<span style="color:#00d4ff; font-size:0.85rem; min-width:55px;">' + (escapeHtml(s.time) || '--:--') + '</span><span style="flex:1; color:#ccc; font-size:0.85rem;">' + escapeHtml(s.track) + '</span><button type="button" class="submit-btn" style="background:#333; padding:0.25rem 0.5rem; font-size:0.75rem;" data-del-setlist="' + doc.id + '">✕</button>';
           box.appendChild(row);
         });
         box.querySelectorAll('button[data-del-setlist]').forEach(function(btn) {
@@ -4972,13 +4972,13 @@
               }, { merge: true }).then(function() {
                 openBookingStatusTracker(bId);
               }).catch(function(err) {
-                content.innerHTML += '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+                content.innerHTML += '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
               });
             });
           });
         }
       }).catch(function(err) {
-        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
