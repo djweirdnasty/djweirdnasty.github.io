@@ -43,6 +43,15 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(uid)).data.get('protected', false) == true;
     }
 
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function stringWithin(field, max) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string && request.resource.data[field].size() <= max);
+    }
+
     // ---------- users ----------
     // Owner can manage their own profile, but can never grant themselves
     // admin/verified/unbanned status — those are admin-only fields.
@@ -133,7 +142,9 @@ service cloud.firestore {
         resource.data.toUid == request.auth.uid ||
         isAdmin()
       );
-      allow create: if isSignedIn() && request.resource.data.fromUid == request.auth.uid;
+      allow create: if isSignedIn() &&
+        request.resource.data.fromUid == request.auth.uid &&
+        stringWithin('message', 2000);
       allow update, delete: if isAdmin();
     }
 
@@ -163,6 +174,7 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow update: if isAdmin() || (
         isSignedIn() &&
+        isEmailVerified() &&
         (
           resource.data.get('status', 'pending') == request.resource.data.get('status', resource.data.get('status', 'pending')) ||
           (resource.data.get('status', 'pending') == 'pending' && (request.resource.data.get('status', 'pending') == 'confirmed' || request.resource.data.get('status', 'pending') == 'cancelled')) ||
@@ -198,7 +210,7 @@ service cloud.firestore {
     // ---------- Disputes ----------
     match /disputes/{id} {
       allow read: if isSignedIn() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.clientId == request.auth.uid;
+      allow create: if isSignedIn() && isEmailVerified() && request.resource.data.clientId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
@@ -213,8 +225,13 @@ service cloud.firestore {
     match /feedback/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() &&
+        isEmailVerified() &&
         request.resource.data.fromUserId == request.auth.uid &&
         request.resource.data.bookingId is string &&
+        request.resource.data.rating is int &&
+        request.resource.data.rating >= 0 &&
+        request.resource.data.rating <= 5 &&
+        stringWithin('review', 2000) &&
         isBookingParty(request.resource.data.bookingId, request.auth.uid) &&
         get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.get('status', null) == 'completed';
       allow update, delete: if isAdmin();
@@ -223,7 +240,7 @@ service cloud.firestore {
     // ---------- Tips ----------
     match /tips/{id} {
       allow read: if isSignedIn() && (resource.data.clientId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.clientId == request.auth.uid;
+      allow create: if isSignedIn() && isEmailVerified() && request.resource.data.clientId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 
@@ -275,7 +292,9 @@ service cloud.firestore {
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('participants', []) ||
           isAdmin()
         );
-        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        allow create: if isSignedIn() &&
+          request.resource.data.senderId == request.auth.uid &&
+          stringWithin('text', 2000);
         allow update, delete: if isAdmin();
       }
     }
