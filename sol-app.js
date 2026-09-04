@@ -3172,12 +3172,15 @@
       }
       box.innerHTML = '';
       ids.forEach(function(uid) {
-        var dj = onlineDJs[uid];
+        var dj = onlineDJs[uid] || {};
         var d = dj.data || {};
         var name = escapeHtml(d.djName || d.name || 'DJ');
+        var lat = Number(dj.lat);
+        var lng = Number(dj.lng);
+        var coordStr = (!isNaN(lat) && !isNaN(lng)) ? (lat.toFixed(4) + ', ' + lng.toFixed(4)) : 'Location unavailable';
         var div = document.createElement('div');
         div.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
-        div.innerHTML = '<div><strong>' + name + '</strong><br><span style="color:#888; font-size:0.8rem;">' + dj.lat.toFixed(4) + ', ' + dj.lng.toFixed(4) + '</span></div>';
+        div.innerHTML = '<div><strong>' + name + '</strong><br><span style="color:#888; font-size:0.8rem;">' + coordStr + '</span></div>';
         box.appendChild(div);
       });
     }
