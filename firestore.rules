@@ -71,7 +71,7 @@ service cloud.firestore {
 
     // ---------- DJ profile & verification ----------
     match /djs/{uid} {
-      allow read: if isSignedIn(); // TODO: restrict to owner/admin once client fully reads publicDjs
+      allow read: if isOwner(uid) || isAdmin();
       allow write: if isOwner(uid) || isAdmin();
     }
 
