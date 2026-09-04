@@ -115,8 +115,8 @@
     "path": "/content.html",
     "title": "Original Content | DJWEIRDNASTY",
     "img": "/original-content.png",
-    "updated": 1788487825,
-    "published": 1788487825,
+    "updated": 1788488551,
+    "published": 1788488551,
     "desc": "Watch Murrdah Season Monday, MUD MUSIC Top 10 Countdown, and play YOUIE \u2014 all original DJWEIRDNASTY content."
   },
   {
@@ -176,11 +176,19 @@
     "desc": "Book DJWEIRDNASTY for your next private event, appearance, or performance."
   },
   {
+    "path": "/event-jersey-jam.html",
+    "title": "Jersey Jam Philly | BBW Bunnies & Dons Tour #13",
+    "img": "/buns-dons-bbw/Main-Flyer.jpg",
+    "updated": 1788564934,
+    "published": 1788564934,
+    "desc": "Jersey Jam Philly presented by BBW Bunnies & Dons. Saturday, September 19, 2026 at 313 S 60th St, Philadelphia. Sports jersey dress code. Get tickets on Eventbrite."
+  },
+  {
     "path": "/index.html",
     "title": "DJWEIRDNASTY | Official Site - Mixtapes, Events & Booking",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788487818,
-    "published": 1788487818,
+    "updated": 1788564965,
+    "published": 1788564965,
     "desc": "Official site of DJWEIRDNASTY \u2014 mixtapes, live events, MUD MUSIC countdown, DJ booking, and the latest music and news."
   },
   {
@@ -531,7 +539,7 @@
     "path": "/news-national.html",
     "title": "National News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788487824,
+    "updated": 1788488551,
     "published": 1788393600,
     "desc": "National news and trending stories from DJWEIRDNASTY."
   },
@@ -803,7 +811,7 @@
     "path": "/news.html",
     "title": "DJWEIRDNASTY | Latest News",
     "img": "/news.png",
-    "updated": 1788487824,
+    "updated": 1788488551,
     "published": 1787961600,
     "desc": "Get the latest national, entertainment, music, and sports news from DJWEIRDNASTY."
   },
