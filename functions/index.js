@@ -9,6 +9,7 @@ const db = admin.firestore();
 
 const ADMIN_UID = "3i7fQdPjN0Qxz3FysVPvnhtxzlJ3";
 const ADMIN_EMAIL = "djweirdnasty@gmail.com";
+const SEARCH_URL = "https://rork-dj-booking-payment-app.onrender.com/api/djs/search";
 
 // TEMP DISABLED: uncomment once these secrets are set via `firebase functions:secrets:set`
 // const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
