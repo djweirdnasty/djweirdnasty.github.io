@@ -452,8 +452,6 @@
               </div>
             </div>
             <h4>DJ Earnings Breakdown</h4>
-            <button type="button" id="sol-purge-test-data" class="submit-btn" style="background:#ff3b30; width:100%; margin-bottom:1rem;">Purge Test Bookings & Earnings</button>
-            <div id="sol-purge-status" class="form-status" aria-live="polite" style="margin-bottom:1rem; min-height:1.2em;"></div>
             <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
             <div style="margin-top:1.5rem; padding:1rem; background:#111; border:1px solid #333; border-radius:12px;">
               <h4 style="color:#ffd860;">Merge Duplicate DJs</h4>
@@ -499,60 +497,9 @@
           </div>
 
           <div id="sol-admin-panel-settings" style="display:none;">
-            <h3>Notification & Email Settings</h3>
-            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
-              <h4 style="color:#00d4ff; margin-top:0;">Push Notifications (FCM)</h4>
-              <label for="sol-settings-fcm-key">Firebase Server Key</label>
-              <input id="sol-settings-fcm-key" type="text" placeholder="AAAA..." style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label for="sol-settings-fcm-project">Firebase Project ID</label>
-              <input id="sol-settings-fcm-project" type="text" placeholder="your-project-id" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-push-enabled" type="checkbox" style="width:18px; height:18px;">
-                <span>Enable push notifications globally</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-push-booking" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Notify on new booking requests</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-push-message" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Notify on new messages</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-push-reminder" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Send event reminders (24h before)</span>
-              </label>
-            </div>
-            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
-              <h4 style="color:#ffd860; margin-top:0;">Email Notifications</h4>
-              <label for="sol-settings-smtp-host">SMTP Host</label>
-              <input id="sol-settings-smtp-host" type="text" placeholder="smtp.gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label for="sol-settings-smtp-port">SMTP Port</label>
-              <input id="sol-settings-smtp-port" type="number" placeholder="587" style="width:100%; max-width:120px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label for="sol-settings-smtp-user">SMTP Username</label>
-              <input id="sol-settings-smtp-user" type="text" placeholder="your-email@gmail.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label for="sol-settings-smtp-pass">SMTP Password</label>
-              <input id="sol-settings-smtp-pass" type="password" placeholder="App password" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label for="sol-settings-from-email">From Email</label>
-              <input id="sol-settings-from-email" type="email" placeholder="noreply@djweirdnasty.com" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-email-enabled" type="checkbox" style="width:18px; height:18px;">
-                <span>Enable email notifications globally</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-email-booking" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Email clients on booking confirmation</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-email-reminder" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Email event reminders (24h before)</span>
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; background:#1a1a1a; border-radius:8px; cursor:pointer; margin-bottom:0.75rem;">
-                <input id="sol-settings-email-receipt" type="checkbox" style="width:18px; height:18px;" checked>
-                <span>Email payment receipts</span>
-              </label>
-            </div>
-            <button type="button" id="sol-settings-save" class="submit-btn" style="width:100%;">Save Settings</button>
+            <h3>Notification &amp; Email Settings</h3>
+            <p style="color:#888; font-size:0.85rem;">SMTP and FCM credentials are now managed server-side. To update them, edit the Cloud Functions environment or Secret Manager and rotate the values. No client access is permitted.</p>
+            <button type="button" id="sol-settings-save" class="submit-btn" style="width:100%; display:none;">Save Settings</button>
             <p id="sol-settings-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
           </div>
 

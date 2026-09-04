@@ -23,11 +23,46 @@
     function trackSolEvent(name, params) {
       if (typeof gtag !== 'function') return;
       try {
-        gtag('event', name, params || {});
+        var safeParams = {};
+        var piiKeys = ['uid', 'userId', 'email', 'stage_name', 'city', 'hourly_rate', 'phone', 'paypal', 'address', 'dj_id', 'client_id'];
+        var allowedKeys = ['method', 'online', 'status', 'action', 'rating', 'code', 'discount', 'type', 'date', 'booking_id', 'event_type', 'amount', 'conversation_id'];
+        if (params) {
+          for (var k in params) {
+            if (params.hasOwnProperty(k) && piiKeys.indexOf(k) === -1) {
+              if (allowedKeys.indexOf(k) !== -1) {
+                safeParams[k] = params[k];
+              }
+            }
+          }
+        }
+        gtag('event', name, safeParams);
       } catch (e) {}
     }
 
-    // ---------- Account (Firebase Auth) ----------
+    // ---------- Output encoding helper (prevents XSS in innerHTML) ----------
+    function escapeHtml(str) {
+      if (str == null) return '';
+      var s = String(str);
+      return s.replace(/[&<>"']/g, function(m) {
+        return m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m === '"' ? '&quot;' : '&#39;';
+      });
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str).replace(/=/g, '&#61;').replace(/`/g, '&#96;');
+    }
+
+    function escapeCsvCell(str) {
+      var s = String(str == null ? '' : str);
+      if (/^[\-=\+\@\t\r\n,;"'\s]/.test(s) || /[\r\n,;"]/.test(s) || /\s/.test(s) || s.indexOf('"') >= 0) {
+        s = s.replace(/"/g, '""');
+        return '"' + s + '"';
+      }
+      if (/^[\-=\+\@\t\r\n]/.test(s)) {
+        s = "'" + s;
+      }
+      return s;
+    }
     let authMode = 'signin';
     const authStatus = document.getElementById('sol-auth-status');
     const authNameInput = document.getElementById('sol-auth-name');
@@ -74,14 +109,14 @@
         auth.createUserWithEmailAndPassword(email, password)
           .then(function(cred) {
             console.log('[AUTH] Sign up successful:', cred.user.uid);
-            trackSolEvent('sign_up', { method: 'email', uid: cred.user.uid });
+            trackSolEvent('sign_up', { method: 'email' });
             authStatus.textContent = 'Account created!';
             authStatus.style.color = '#22c55e';
             if (name) return cred.user.updateProfile({ displayName: name });
           })
           .catch(function(err) {
             console.error('[AUTH] Sign up error:', err.code, err.message);
-            authStatus.textContent = err.message;
+            authStatus.textContent = 'Unable to create account. Please try again.';
             authStatus.style.color = '#ff4d8f';
           })
           .finally(done);
@@ -89,12 +124,12 @@
         auth.signInWithEmailAndPassword(email, password)
           .then(function(cred) {
             console.log('[AUTH] Sign in successful:', cred.user.uid);
-            trackSolEvent('login', { method: 'email', uid: cred.user.uid });
+            trackSolEvent('login', { method: 'email' });
             authStatus.textContent = '';
           })
           .catch(function(err) {
             console.error('[AUTH] Sign in error:', err.code, err.message);
-            authStatus.textContent = err.message;
+            authStatus.textContent = 'Sign in failed. Check your email and password.';
             authStatus.style.color = '#ff4d8f';
           })
           .finally(done);
@@ -112,12 +147,13 @@
       auth.sendPasswordResetEmail(email)
         .then(function() {
           trackSolEvent('password_reset', { method: 'email' });
-          authStatus.textContent = 'Password reset email sent.';
+          authStatus.textContent = 'If an account exists, a reset email has been sent.';
           authStatus.style.color = '#22c55e';
         })
         .catch(function(err) {
-          authStatus.textContent = err.message;
-          authStatus.style.color = '#ff4d8f';
+          console.error('[AUTH] Password reset error:', err.code, err.message);
+          authStatus.textContent = 'If an account exists, a reset email has been sent.';
+          authStatus.style.color = '#22c55e';
         });
     });
 
@@ -479,7 +515,7 @@
           document.getElementById('sol-dj-earnings-fees').textContent = '$' + Math.round(total * 0.15).toLocaleString();
 
           document.getElementById('sol-dj-export-csv').onclick = function() {
-            var csv = rows.map(function(r) { return r.map(function(c) { return '"' + c + '"'; }).join(','); }).join('\n');
+            var csv = rows.map(function(r) { return r.map(function(c) { return escapeCsvCell(c); }).join(','); }).join('\n');
             var blob = new Blob([csv], { type: 'text/csv' });
             var a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -1443,18 +1479,21 @@
               var card = document.createElement('div');
               card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
               var statusColor = d.status === 'approved' ? '#22c55e' : d.status === 'pending' ? '#ffd860' : '#ff3b30';
+              var safeDjName = escapeHtml(djName);
+              var safeAvatar = escapeAttr(djAvatar);
+              var safeInitial = escapeHtml((djName.charAt(0) || 'D').toUpperCase());
               var avatarHtml = djAvatar
-                ? '<img loading="lazy" src="' + djAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\'"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>'
-                : '<div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + (djName.charAt(0) || 'D').toUpperCase() + '</div>';
+                ? '<img loading="lazy" src="' + safeAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>'
+                : '<div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>';
               card.innerHTML = avatarHtml +
-                '<div style="flex:1;"><strong>' + djName + '</strong>' +
-                (djEmail ? '<br><span style="font-size:0.85rem; color:#aaa;">' + djEmail + '</span>' : '<br><span style="font-size:0.8rem; color:#666;">UID: ' + uidShort + '</span>') +
-                (djCity ? '<br><span style="font-size:0.8rem; color:#666;">' + djCity + (djState ? ', ' + djState : '') + '</span>' : '') +
-                (genresStr ? '<br><span style="font-size:0.8rem; color:#666;">' + genresStr + '</span>' : '') +
-                (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + djRate + '/hr</span>' : '') +
+                '<div style="flex:1;"><strong>' + safeDjName + '</strong>' +
+                (djEmail ? '<br><span style="font-size:0.85rem; color:#aaa;">' + escapeHtml(djEmail) + '</span>' : '<br><span style="font-size:0.8rem; color:#666;">UID: ' + escapeHtml(uidShort) + '</span>') +
+                (djCity ? '<br><span style="font-size:0.8rem; color:#666;">' + escapeHtml(djCity) + (djState ? ', ' + escapeHtml(djState) : '') + '</span>' : '') +
+                (genresStr ? '<br><span style="font-size:0.8rem; color:#666;">' + escapeHtml(genresStr) + '</span>' : '') +
+                (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + escapeHtml(djRate) + '/hr</span>' : '') +
                 '</div>' +
-                '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + (d.status || 'unknown') + '</span>' +
-                '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem;" data-delete-dj="' + v.id + '">Delete</button>';
+                '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + escapeHtml(d.status || 'unknown') + '</span>' +
+                '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem;" data-delete-dj="' + escapeAttr(v.id) + '">Delete</button>';
               djsList.appendChild(card);
             });
             document.getElementById('sol-admin-stat-djs').textContent = count;
@@ -1483,17 +1522,17 @@
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
           var statusColor = b.status === 'confirmed' ? '#22c55e' : b.status === 'pending' ? '#ffd860' : b.status === 'completed' ? '#00d4ff' : '#ff3b30';
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
-            '<strong>' + (b.eventType || b.event_type || 'Event') + '</strong>' +
-            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (b.status || 'unknown') + '</span>' +
+            '<strong>' + escapeHtml(b.eventType || b.event_type || 'Event') + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + escapeHtml(b.status || 'unknown') + '</span>' +
             '</div>' +
             '<div style="color:#ccc; font-size:0.85rem; line-height:1.6;">' +
-            '<div>👤 Client: ' + (b.clientName || b.client_name || 'Unknown') + '</div>' +
-            '<div>🎧 DJ: ' + (b.djName || 'Unknown') + '</div>' +
-            '<div>📅 ' + (b.date || b.eventDate || 'TBD') + (b.startTime ? ' at ' + b.startTime : '') + '</div>' +
+            '<div>👤 Client: ' + escapeHtml(b.clientName || b.client_name || 'Unknown') + '</div>' +
+            '<div>🎧 DJ: ' + escapeHtml(b.djName || 'Unknown') + '</div>' +
+            '<div>📅 ' + escapeHtml(b.date || b.eventDate || 'TBD') + (b.startTime ? ' at ' + escapeHtml(b.startTime) : '') + '</div>' +
             '<div>💰 $' + Number(b.totalAmount || b.total_cost || 0).toLocaleString() + '</div>' +
             '</div>' +
-            (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + doc.id + '">Cancel Booking</button>' : '') +
-            '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-track-status="' + doc.id + '">📊 Track Status</button>';
+            (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + escapeAttr(doc.id) + '">Cancel Booking</button>' : '') +
+            '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-track-status="' + escapeAttr(doc.id) + '">📊 Track Status</button>';
           bookingsList.appendChild(card);
         });
         document.getElementById('sol-admin-stat-bookings').textContent = count;
@@ -1566,20 +1605,20 @@
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
           var statusColor = d.status === 'pending' ? '#ffd860' : '#ff3b30';
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
-            '<strong>' + djName + '</strong>' +
-            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + (d.status || 'unknown') + '</span>' +
+            '<strong>' + escapeHtml(djName) + '</strong>' +
+            '<span style="color:' + statusColor + '; font-size:0.85rem;">' + escapeHtml(d.status || 'unknown') + '</span>' +
             '</div>' +
             '<div style="color:#ccc; font-size:0.85rem; margin-bottom:0.75rem;">' +
-            (djEmail ? '<div>📧 ' + djEmail + '</div>' : '') +
-            (djCity ? '<div>📍 ' + djCity + (djState ? ', ' + djState : '') + '</div>' : '') +
-            (djBio ? '<div>📝 ' + djBio + '</div>' : '') +
-            (genresStr ? '<div>🎵 ' + genresStr + '</div>' : '') +
-            (djRate ? '<div>💰 $' + djRate + '/hr</div>' : '') +
-            (djExp ? '<div>⏱️ ' + djExp + ' years experience</div>' : '') +
+            (djEmail ? '<div>📧 ' + escapeHtml(djEmail) + '</div>' : '') +
+            (djCity ? '<div>📍 ' + escapeHtml(djCity) + (djState ? ', ' + escapeHtml(djState) : '') + '</div>' : '') +
+            (djBio ? '<div>📝 ' + escapeHtml(djBio).replace(/\n/g, '<br>') + '</div>' : '') +
+            (genresStr ? '<div>🎵 ' + escapeHtml(genresStr) + '</div>' : '') +
+            (djRate ? '<div>💰 $' + escapeHtml(djRate) + '/hr</div>' : '') +
+            (djExp ? '<div>⏱️ ' + escapeHtml(djExp) + ' years experience</div>' : '') +
             '</div>' +
             '<div style="display:flex; gap:0.5rem;">' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-uid="' + doc.id + '">Reject</button>' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="approve" data-uid="' + doc.id + '">Approve</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-uid="' + escapeAttr(doc.id) + '">Reject</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-action="approve" data-uid="' + escapeAttr(doc.id) + '">Approve</button>' +
             '</div>';
           verificationsList.appendChild(card);
         });
@@ -1646,8 +1685,6 @@
     document.getElementById('sol-admin-tab-add-dj').addEventListener('click', function() { adminSwitchTab('add-dj'); });
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
     document.getElementById('sol-admin-tab-settings').addEventListener('click', function() { adminSwitchTab('settings'); loadAdminSettings(); });
-
-    document.getElementById('sol-purge-test-data').addEventListener('click', purgeTestData);
 
     var syncUsersBtn = document.getElementById('sol-admin-sync-users');
     if (syncUsersBtn) {
@@ -1721,9 +1758,11 @@
         var avatar = d.photoURL || d.avatar || '';
         var card = document.createElement('div');
         card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
+        var safeName = escapeHtml(name);
+        var safeInitial = escapeHtml((name.charAt(0) || 'U').toUpperCase());
         var avatarHtml = avatar
-          ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.style.display=\'none\'"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>'
-          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>';
+          ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
+          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>';
         var badges = '';
         var now = Date.now();
         var created = d.createdAt && typeof d.createdAt.toMillis === 'function' ? d.createdAt.toMillis() : 0;
@@ -1733,13 +1772,13 @@
         if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
         if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
         card.innerHTML = avatarHtml +
-          '<div style="flex:1; cursor:pointer;" data-view-user="' + u.id + '"><strong>' + name + '</strong>' +
-          (email ? '<br><span style="font-size:0.85rem; color:#aaa;">' + email + '</span>' : '') +
-          '<br><span style="font-size:0.8rem; color:#666;">UID: ' + u.id.substring(0, 12) + '...</span></div>' +
+          '<div style="flex:1; cursor:pointer;" data-view-user="' + escapeAttr(u.id) + '"><strong>' + safeName + '</strong>' +
+          (email ? '<br><span style="font-size:0.85rem; color:#aaa;">' + escapeHtml(email) + '</span>' : '') +
+          '<br><span style="font-size:0.8rem; color:#666;">UID: ' + escapeHtml(u.id.substring(0, 12)) + '...</span></div>' +
           '<div style="display:flex; flex-direction:column; gap:0.25rem; align-items:flex-end;">' +
           '<div>' + badges + '</div>' +
-          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + u.id + '">View</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + u.id + '" data-banned="' + (banned ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + escapeAttr(u.id) + '">View</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + escapeAttr(u.id) + '" data-banned="' + (banned ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
           '</div>';
         usersList.appendChild(card);
       });
@@ -2324,78 +2363,6 @@
     }
 
     document.getElementById('sol-merge-djs').addEventListener('click', mergeDjs);
-
-    function purgeCollection(collectionName) {
-      return db.collection(collectionName).get().then(function(snapshot) {
-        if (snapshot.empty) return 0;
-        var batch = db.batch();
-        var count = 0;
-        var total = 0;
-        var promises = [];
-        snapshot.forEach(function(doc) {
-          batch.delete(doc.ref);
-          count++;
-          total++;
-          if (count === 500) {
-            promises.push(batch.commit());
-            batch = db.batch();
-            count = 0;
-          }
-        });
-        if (count > 0) promises.push(batch.commit());
-        return Promise.all(promises).then(function() { return total; });
-      });
-    }
-
-    function purgeTestData() {
-      if (!isAdmin) { alert('Admin only.'); return; }
-      if (!confirm('WARNING: This permanently erases ALL bookings, tips, disputes, feedback, setlists, playlists, saved-djs, and conversations. Users and DJ profiles remain. No real money was collected. Continue?')) return;
-      var typed = window.prompt('Type DELETE to confirm erasing all test earnings data:');
-      if (typed !== 'DELETE') { alert('Cancelled.'); return; }
-      var statusEl = document.getElementById('sol-purge-status');
-      statusEl.textContent = 'Purging test data...';
-      statusEl.style.color = '#ffd860';
-      Promise.all([
-        purgeCollection('bookings'),
-        purgeCollection('tips'),
-        purgeCollection('disputes'),
-        purgeCollection('feedback'),
-        purgeCollection('setlists'),
-        purgeCollection('playlists'),
-        purgeCollection('saved-djs'),
-        purgeCollection('conversations')
-      ]).then(function(results) {
-        var total = results.reduce(function(a, b) { return a + b; }, 0);
-        return db.collection('dj-status').get().then(function(snapshot) {
-          var batch = db.batch();
-          var count = 0;
-          var promises = [];
-          snapshot.forEach(function(doc) {
-            batch.update(doc.ref, {
-              isOnline: false,
-              sharingLocation: false,
-              location: firebase.firestore.FieldValue.delete()
-            });
-            count++;
-            if (count === 500) {
-              promises.push(batch.commit());
-              batch = db.batch();
-              count = 0;
-            }
-          });
-          if (count > 0) promises.push(batch.commit());
-          return Promise.all(promises).then(function() { return total; });
-        });
-      }).then(function(total) {
-        statusEl.textContent = 'Purged ' + total + ' test records. Earnings will refresh shortly.';
-        statusEl.style.color = '#22c55e';
-        loadAdminEarnings();
-        loadAdminBookings();
-      }).catch(function(err) {
-        statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
-      });
-    }
 
     document.getElementById('sol-admin-add-dj-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -4246,65 +4213,24 @@
     }
 
     // ===== ADMIN SETTINGS (Push + Email) =====
+    // Credentials are now managed server-side; no client access to config/notification-settings.
     function loadAdminSettings() {
-      db.collection('config').doc('notification-settings').get().then(function(doc) {
-        var s = doc.exists ? doc.data() : {};
-        var p = s.push || {};
-        var e = s.email || {};
-        document.getElementById('sol-settings-fcm-key').value = p.fcmKey || '';
-        document.getElementById('sol-settings-fcm-project').value = p.fcmProject || '';
-        document.getElementById('sol-settings-push-enabled').checked = !!p.enabled;
-        document.getElementById('sol-settings-push-booking').checked = p.booking !== false;
-        document.getElementById('sol-settings-push-message').checked = p.message !== false;
-        document.getElementById('sol-settings-push-reminder').checked = p.reminder !== false;
-        document.getElementById('sol-settings-smtp-host').value = e.smtpHost || '';
-        document.getElementById('sol-settings-smtp-port').value = e.smtpPort || '';
-        document.getElementById('sol-settings-smtp-user').value = e.smtpUser || '';
-        document.getElementById('sol-settings-smtp-pass').value = e.smtpPass || '';
-        document.getElementById('sol-settings-from-email').value = e.fromEmail || '';
-        document.getElementById('sol-settings-email-enabled').checked = !!e.enabled;
-        document.getElementById('sol-settings-email-booking').checked = e.booking !== false;
-        document.getElementById('sol-settings-email-reminder').checked = e.reminder !== false;
-        document.getElementById('sol-settings-email-receipt').checked = e.receipt !== false;
-      }).catch(function() {});
-    }
-    document.getElementById('sol-settings-save').addEventListener('click', function() {
       var statusEl = document.getElementById('sol-settings-status');
-      statusEl.textContent = 'Saving...';
-      statusEl.style.color = '#ffd860';
-      var data = {
-        push: {
-          fcmKey: document.getElementById('sol-settings-fcm-key').value,
-          fcmProject: document.getElementById('sol-settings-fcm-project').value,
-          enabled: document.getElementById('sol-settings-push-enabled').checked,
-          booking: document.getElementById('sol-settings-push-booking').checked,
-          message: document.getElementById('sol-settings-push-message').checked,
-          reminder: document.getElementById('sol-settings-push-reminder').checked
-        },
-        email: {
-          smtpHost: document.getElementById('sol-settings-smtp-host').value,
-          smtpPort: document.getElementById('sol-settings-smtp-port').value,
-          smtpUser: document.getElementById('sol-settings-smtp-user').value,
-          smtpPass: document.getElementById('sol-settings-smtp-pass').value,
-          fromEmail: document.getElementById('sol-settings-from-email').value,
-          enabled: document.getElementById('sol-settings-email-enabled').checked,
-          booking: document.getElementById('sol-settings-email-booking').checked,
-          reminder: document.getElementById('sol-settings-email-reminder').checked,
-          receipt: document.getElementById('sol-settings-email-receipt').checked
-        },
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection('config').doc('notification-settings').set(data, { merge: true })
-        .then(function() {
-          statusEl.textContent = 'Settings saved successfully!';
-          statusEl.style.color = '#22c55e';
-          trackSolEvent('admin_settings_saved', { push_enabled: data.pushEnabled, email_enabled: data.emailEnabled });
-          setTimeout(function() { statusEl.textContent = ''; }, 3000);
-        }).catch(function(err) {
-          statusEl.textContent = 'Error: ' + err.message;
-          statusEl.style.color = '#ff4d8f';
-        });
-    });
+      if (statusEl) {
+        statusEl.textContent = 'Settings are managed server-side. Use Cloud Functions environment or Secret Manager.';
+        statusEl.style.color = '#ffd860';
+      }
+    }
+    var settingsSaveBtn = document.getElementById('sol-settings-save');
+    if (settingsSaveBtn) {
+      settingsSaveBtn.addEventListener('click', function() {
+        var statusEl = document.getElementById('sol-settings-status');
+        if (statusEl) {
+          statusEl.textContent = 'Settings are managed server-side. Use Cloud Functions environment or Secret Manager.';
+          statusEl.style.color = '#ffd860';
+        }
+      });
+    }
 
     // ===== SAVED / FAVORITE DJs =====
     function loadSavedDjs(uid) {

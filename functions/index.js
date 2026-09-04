@@ -234,7 +234,7 @@ exports.sendPaypalPayout = onCall(
   },
   async (request) => {
     var auth = request.auth;
-    if (!auth || (auth.uid !== ADMIN_UID && auth.token.email !== ADMIN_EMAIL)) {
+    if (!auth || (auth.uid !== ADMIN_UID && (!auth.token || auth.token.email !== ADMIN_EMAIL))) {
       throw new HttpsError("permission-denied", "Only the SOL admin can trigger payouts.");
     }
 
