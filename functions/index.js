@@ -535,3 +535,59 @@ exports.isAdminDj = onCall(async (request) => {
     admin: djId === ADMIN_UID || djEmail === ADMIN_EMAIL
   };
 });
+
+// Whitelist of fields that may be exposed in the public DJ directory.
+function publicDjData(data) {
+  const allowed = [
+    "name", "displayName", "stageName", "photoURL", "avatar", "bio", "genres",
+    "styles", "eventTypes", "hourlyRate", "baseRate", "rating", "reviewCount",
+    "isVerifiedDJ", "verifiedAt", "city", "state", "coordinates", "location",
+    "sampleUrls", "videoUrls", "socialLinks", "equipment", "yearsExperience",
+    "createdAt", "updatedAt"
+  ];
+  const out = {};
+  for (const key of allowed) {
+    if (key in data) out[key] = data[key];
+  }
+  return out;
+}
+
+// Sync a DJ's public profile whenever the private djs doc changes.
+exports.syncPublicDj = onDocumentWritten(
+  { document: "djs/{uid}" },
+  async (event) => {
+    const uid = event.params.uid;
+    const after = event.data.after;
+    if (!after || !after.exists) {
+      await db.collection("publicDjs").doc(uid).delete().catch(function() {});
+      return;
+    }
+    const data = after.data() || {};
+    await db.collection("publicDjs").doc(uid).set(publicDjData(data), { merge: false });
+  }
+);
+
+// Backfill the publicDjs collection for all existing DJs (admin only).
+exports.syncAllPublicDjs = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  const snapshot = await db.collection("djs").get();
+  let synced = 0;
+  const batch = db.batch();
+  for (const doc of snapshot.docs) {
+    const ref = db.collection("publicDjs").doc(doc.id);
+    batch.set(ref, publicDjData(doc.data() || {}), { merge: false });
+    synced++;
+    if (synced % 500 === 0) {
+      await batch.commit();
+    }
+  }
+  if (synced % 500 !== 0) await batch.commit();
+  logger.info("[SYNC PUBLIC DJS] synced " + synced + " public DJ profiles");
+  return { synced: synced };
+});

@@ -71,8 +71,14 @@ service cloud.firestore {
 
     // ---------- DJ profile & verification ----------
     match /djs/{uid} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn(); // TODO: restrict to owner/admin once client fully reads publicDjs
       allow write: if isOwner(uid) || isAdmin();
+    }
+
+    // ---------- Public DJ directory (non-PII projection) ----------
+    match /publicDjs/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Contains phone/PayPal/profile info submitted for review.
