@@ -3794,13 +3794,10 @@
           { title: 'Welcome 2 Muggatime', date: 'Saturday, August 22, 2026', time: '8:00 PM', location: "Crafty's, 35 Baltimore Pike, Springfield, PA 19064", img: 'muggatime.webp', url: 'event-muggatime.html', recurring: false, endDate: '2026-08-23' }
         ];
 
-        var djNameLower = (dj.name || '').toLowerCase();
-        var isWeirdNasty = djNameLower.indexOf('weird') >= 0 || djNameLower.indexOf('nasty') >= 0 || djNameLower.indexOf('djweirdnasty') >= 0;
-
-        // Also check by Firebase UID or email if available
-        if (!isWeirdNasty && dj.email && dj.email.toLowerCase().indexOf('weird') >= 0) {
-          isWeirdNasty = true;
-        }
+        var ADMIN_EMAIL = 'djweirdnasty@gmail.com';
+        var ADMIN_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+        var isWeirdNasty = (dj.email || '').toLowerCase() === ADMIN_EMAIL ||
+                           (dj.firebaseUid || dj.id || '') === ADMIN_UID;
 
         var eventsEl = document.getElementById('sol-dj-upcoming-events');
         if (eventsEl && isWeirdNasty) {
