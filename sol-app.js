@@ -63,6 +63,24 @@
       }
       return s;
     }
+
+    // Parse a date-only string (YYYY-MM-DD or similar) as local to avoid UTC off-by-one.
+    function parseLocalDate(input) {
+      var s = String(input || '').trim();
+      var parts = s.split(/[-/]/);
+      if (parts.length === 3) {
+        var y = parseInt(parts[0], 10);
+        var m = parseInt(parts[1], 10) - 1;
+        var d = parseInt(parts[2], 10);
+        return new Date(y, m, d);
+      }
+      return new Date(s);
+    }
+    function parseLocalTimestamp(input) {
+      var d = parseLocalDate(input);
+      if (isNaN(d.getTime())) return null;
+      return d.getTime();
+    }
     let authMode = 'signin';
     const authStatus = document.getElementById('sol-auth-status');
     const authNameInput = document.getElementById('sol-auth-name');
@@ -641,12 +659,12 @@
       const now = new Date();
       const upcoming = confirmed.filter(function(b) {
         try {
-          const d = new Date(b.date || b.eventDate || '');
+          const d = parseLocalDate(b.date || b.eventDate);
           d.setHours(23, 59, 59);
           return d >= now;
         } catch { return false; }
       }).sort(function(a, b) {
-        return new Date(a.date || a.eventDate || '').getTime() - new Date(b.date || b.eventDate || '').getTime();
+        return (parseLocalTimestamp(a.date || a.eventDate) || 0) - (parseLocalTimestamp(b.date || b.eventDate) || 0);
       });
 
       const earnings = completed.reduce(function(sum, b) {
@@ -678,7 +696,7 @@
             '<span style="background:#ff4d8f; color:#fff; padding:0.15rem 0.5rem; border-radius:8px; font-size:0.75rem;">NEW</span>' +
             '</div>' +
             '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
-            '<div>📅 ' + (date ? new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + escapeHtml(startTime) : '') + '</div>' +
+            '<div>📅 ' + (date ? parseLocalDate(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + escapeHtml(startTime) : '') + '</div>' +
             '<div>🎉 ' + escapeHtml(eventType) + '</div>' +
             (location ? '<div>📍 ' + escapeHtml(location) + '</div>' : '') +
             '<div>💰 $' + Number(amount).toLocaleString() + '</div>' +
@@ -754,7 +772,7 @@
 
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">' +
             '<div><strong>' + escapeHtml(eventType) + '</strong><br><span style="color:#aaa; font-size:0.85rem;">' + escapeHtml(clientName) + '</span></div>' +
-            '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? new Date(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + escapeHtml(startTime) : '') + '</div>' +
+            '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? parseLocalDate(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + escapeHtml(startTime) : '') + '</div>' +
             '</div>' +
             '<div id="' + escapeAttr(countdownId) + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#00d4ff; font-weight:600;"></div>' +
             (location ? '<div style="color:#ccc; font-size:0.9rem;">📍 ' + escapeHtml(location) + '</div>' : '') +
@@ -783,7 +801,7 @@
             var el = document.getElementById('sol-countdown-' + bId);
             if (!el || !dateStr) return;
             function tick() {
-              var target = new Date(dateStr);
+              var target = parseLocalDate(dateStr);
               if (timeStr) {
                 var parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
                 if (parts) {
@@ -2480,8 +2498,8 @@
       var bookings = [];
       snapshot.forEach(function(doc) { bookings.push({ id: doc.id, ...doc.data() }); });
       bookings.sort(function(a, b) {
-        var da = new Date(a.date || a.eventDate || 0).getTime();
-        var db = new Date(b.date || b.eventDate || 0).getTime();
+        var da = parseLocalTimestamp(a.date || a.eventDate) || 0;
+        var db = parseLocalTimestamp(b.date || b.eventDate) || 0;
         return db - da;
       });
       populateBookingDropdowns(bookings);
@@ -2557,7 +2575,7 @@
           if (parts.length === 3) {
             dateDisplay = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10)).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
           } else {
-            dateDisplay = new Date(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+            dateDisplay = parseLocalDate(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
           }
         }
 
