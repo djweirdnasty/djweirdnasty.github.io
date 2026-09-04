@@ -3061,10 +3061,6 @@
         removeDJ(doc.id);
         return;
       }
-      if (!data.isVerified) {
-        removeDJ(doc.id);
-        return;
-      }
 
       const loc = data.location || {};
       const lat = getNumber(loc.latitude, loc._latitude, loc.lat);
@@ -3118,7 +3114,7 @@
     }
 
     function subscribeToDJs() {
-      db.collection('dj-status').where('isOnline', '==', true).where('isVerified', '==', true)
+      db.collection('dj-status').where('isOnline', '==', true)
         .onSnapshot(function(snapshot) {
           snapshot.docChanges().forEach(function(change) {
             if (change.type === 'removed') {
@@ -3129,23 +3125,9 @@
           });
           updateDJCount();
         }, function(err) {
-          // Fallback: composite index may not exist yet, query online only and filter client-side
-          console.warn('[MAP] Composite query failed, falling back to single filter:', err.message);
-          db.collection('dj-status').where('isOnline', '==', true)
-            .onSnapshot(function(snapshot) {
-              snapshot.docChanges().forEach(function(change) {
-                if (change.type === 'removed') {
-                  removeDJ(change.doc.id);
-                } else {
-                  processDJ(change.doc);
-                }
-              });
-              updateDJCount();
-            }, function(err2) {
-              mapStatus.textContent = 'Live map error: ' + err2.message;
-              mapStatus.style.color = '#ff4d8f';
-              console.error(err2);
-            });
+          mapStatus.textContent = 'Live map error: ' + err.message;
+          mapStatus.style.color = '#ff4d8f';
+          console.error(err);
         });
     }
 
