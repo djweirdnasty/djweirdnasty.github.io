@@ -1,0 +1,35 @@
+rules_version = '2';
+// SOL DJ Booking — Firebase Storage security rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.uid == '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3' ||
+        request.auth.token.email == 'djweirdnasty@gmail.com'
+      );
+    }
+
+    // DJ avatars, galleries, samples, videos — users can write only their own.
+    match /djs/{uid}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
+    // Client-specific uploads (ID verification, etc.) — owner or admin.
+    match /clients/{uid}/{allPaths=**} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
+    // Catch-all: deny by default.
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
