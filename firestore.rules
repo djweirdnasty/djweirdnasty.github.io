@@ -193,9 +193,20 @@ service cloud.firestore {
     }
 
     // ---------- Reviews ----------
+    // A review must reference a completed booking the reviewer was a party to.
+    function isBookingParty(bookingId, uid) {
+      return exists(/databases/$(database)/documents/bookings/$(bookingId)) && (
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.get('clientId', null) == uid ||
+        get(/databases/$(database)/documents/bookings/$(bookingId)).data.get('djId', null) == uid
+      );
+    }
     match /feedback/{id} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.fromUserId == request.auth.uid;
+      allow create: if isSignedIn() &&
+        request.resource.data.fromUserId == request.auth.uid &&
+        request.resource.data.bookingId is string &&
+        isBookingParty(request.resource.data.bookingId, request.auth.uid) &&
+        get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.get('status', null) == 'completed';
       allow update, delete: if isAdmin();
     }
 

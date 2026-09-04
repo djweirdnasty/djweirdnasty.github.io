@@ -2651,6 +2651,7 @@
         fromName: user.displayName || user.email,
         toUserId: rateDjId,
         bookingId: rateBookingId,
+        type: 'dj',
         rating: selectedRating,
         review: reviewText,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
