@@ -370,3 +370,108 @@ exports.syncAllAuthUsers = onCall(async (request) => {
   logger.info("[SYNC USERS] Created " + created + " missing user docs out of " + allUsers.length + " auth users.");
   return { created: created, totalAuthUsers: allUsers.length };
 });
+
+// Callable function: admin sends messages to users, DJs, or broadcast.
+exports.adminSendMessage = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+
+  const data = request.data || {};
+  const recipientType = data.recipient || "all";
+  const subject = (data.subject || "").trim();
+  const body = (data.body || "").trim();
+  const target = (data.target || "").trim();
+
+  if (!body) {
+    throw new HttpsError("invalid-argument", "Message body is required.");
+  }
+
+  const fullText = subject ? subject + "\n\n" + body : body;
+  const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+  let userQuerySnapshot;
+  if (recipientType === "specific") {
+    if (!target) {
+      throw new HttpsError("invalid-argument", "Target UID or email required.");
+    }
+    let userByUid = await db.collection("users").doc(target).get();
+    if (userByUid.exists) {
+      userQuerySnapshot = { docs: [userByUid] };
+    } else {
+      let emailSnap = await db.collection("users").where("email", "==", target).limit(1).get();
+      if (emailSnap.empty) {
+        throw new HttpsError("not-found", "User not found with that UID or email.");
+      }
+      userQuerySnapshot = emailSnap;
+    }
+  } else if (recipientType === "djs") {
+    userQuerySnapshot = await db.collection("users").where("isVerifiedDJ", "==", true).get();
+  } else if (recipientType === "users") {
+    userQuerySnapshot = await db.collection("users").where("isVerifiedDJ", "==", false).get();
+  } else {
+    userQuerySnapshot = await db.collection("users").get();
+  }
+
+  let sent = 0;
+  let failed = 0;
+  let sentTo = [];
+
+  for (const userDoc of userQuerySnapshot.docs) {
+    const u = userDoc.data();
+    const uid = userDoc.id;
+    const conversationId = "admin_" + uid;
+    const conversationRef = db.collection("conversations").doc(conversationId);
+
+    try {
+      await conversationRef.set({
+        id: conversationId,
+        adminId: ADMIN_UID,
+        userId: uid,
+        participants: [ADMIN_UID, uid],
+        userName: u.displayName || u.email || "User",
+        userEmail: u.email || "",
+        lastMessage: fullText,
+        lastMessageTime: Date.now(),
+        unreadCount: admin.firestore.FieldValue.increment(1)
+      }, { merge: true });
+
+      await conversationRef.collection("messages").add({
+        senderId: ADMIN_UID,
+        senderName: "SOL Admin",
+        senderAvatar: "",
+        text: fullText,
+        subject: subject,
+        timestamp: timestamp,
+        read: false,
+        type: "admin"
+      });
+
+      sent++;
+      sentTo.push(u.email || uid);
+    } catch (err) {
+      logger.error("[ADMIN MESSAGE] Failed to send to " + uid + ": " + err.message);
+      failed++;
+    }
+  }
+
+  await db.collection("admin_broadcasts").add({
+    recipientType: recipientType,
+    target: target,
+    subject: subject,
+    body: body,
+    sent: sent,
+    failed: failed,
+    sentTo: sentTo,
+    sentBy: request.auth.uid,
+    sentByEmail: request.auth.token ? request.auth.token.email : "",
+    timestamp: timestamp
+  });
+
+  logger.info("[ADMIN MESSAGE] Sent to " + sent + " recipients, " + failed + " failed.");
+  return { success: true, sent: sent, failed: failed };
+});

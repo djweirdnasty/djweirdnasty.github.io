@@ -248,6 +248,13 @@ service cloud.firestore {
       }
     }
 
+    // ---------- Admin broadcasts & messages ----------
+    match /admin_broadcasts/{id} {
+      allow read: if isAdmin();
+      allow create: if false; // created only by Cloud Function admin SDK
+      allow update, delete: if isAdmin();
+    }
+
     // ---------- Admin-only site config & promo codes ----------
     match /config/{id} {
       allow read, write: if isAdmin();

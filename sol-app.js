@@ -1625,7 +1625,7 @@
     }
 
     function adminSwitchTab(activeId) {
-      var tabs = ['djs','bookings','verifications','users','earnings','add-dj','disputes','settings'];
+      var tabs = ['djs','bookings','verifications','users','messages','earnings','add-dj','disputes','settings'];
       tabs.forEach(function(t) {
         var panel = document.getElementById('sol-admin-panel-' + t);
         var btn = document.getElementById('sol-admin-tab-' + t);
@@ -1641,6 +1641,7 @@
     document.getElementById('sol-admin-tab-bookings').addEventListener('click', function() { adminSwitchTab('bookings'); });
     document.getElementById('sol-admin-tab-verifications').addEventListener('click', function() { adminSwitchTab('verifications'); });
     document.getElementById('sol-admin-tab-users').addEventListener('click', function() { adminSwitchTab('users'); loadAdminUsers(); });
+    document.getElementById('sol-admin-tab-messages').addEventListener('click', function() { adminSwitchTab('messages'); loadAdminMessageHistory(); });
     document.getElementById('sol-admin-tab-earnings').addEventListener('click', function() { adminSwitchTab('earnings'); loadAdminEarnings(); });
     document.getElementById('sol-admin-tab-add-dj').addEventListener('click', function() { adminSwitchTab('add-dj'); });
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
@@ -4154,6 +4155,94 @@
 
       localStorage.removeItem('sol_pending_booking');
       history.replaceState(null, '', window.location.pathname);
+    }
+
+    // ===== ADMIN MESSAGING =====
+    var adminMessageRecipient = document.getElementById('sol-admin-message-recipient');
+    if (adminMessageRecipient) {
+      adminMessageRecipient.addEventListener('change', function() {
+        var wrap = document.getElementById('sol-admin-message-specific-wrap');
+        if (wrap) wrap.style.display = (this.value === 'specific') ? 'block' : 'none';
+      });
+    }
+
+    var adminMessageForm = document.getElementById('sol-admin-message-form');
+    if (adminMessageForm) {
+      adminMessageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var recipient = adminMessageRecipient.value;
+        var target = document.getElementById('sol-admin-message-target').value.trim();
+        var subject = document.getElementById('sol-admin-message-subject').value.trim();
+        var body = document.getElementById('sol-admin-message-body').value.trim();
+        var statusEl = document.getElementById('sol-admin-message-status');
+
+        if (!body) {
+          statusEl.textContent = 'Message body is required.';
+          statusEl.style.color = '#ff4d8f';
+          return;
+        }
+        if (recipient === 'specific' && !target) {
+          statusEl.textContent = 'Enter target UID or email.';
+          statusEl.style.color = '#ff4d8f';
+          return;
+        }
+
+        statusEl.textContent = 'Sending...';
+        statusEl.style.color = '#ffd860';
+        var sendBtn = adminMessageForm.querySelector('button[type="submit"]');
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending...'; }
+
+        var sendFn = firebase.functions().httpsCallable('adminSendMessage');
+        sendFn({ recipient: recipient, target: target, subject: subject, body: body })
+          .then(function(result) {
+            var r = result.data || {};
+            statusEl.textContent = 'Sent to ' + (r.sent || 0) + ' recipients' + (r.failed ? ' (' + r.failed + ' failed)' : '') + '.';
+            statusEl.style.color = '#22c55e';
+            adminMessageForm.reset();
+            document.getElementById('sol-admin-message-specific-wrap').style.display = 'none';
+            loadAdminMessageHistory();
+          })
+          .catch(function(err) {
+            statusEl.textContent = 'Send failed: ' + err.message;
+            statusEl.style.color = '#ff4d8f';
+          })
+          .finally(function() {
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Message'; }
+          });
+      });
+    }
+
+    var adminMessageUnsubscribe = null;
+    function loadAdminMessageHistory() {
+      var historyBox = document.getElementById('sol-admin-message-history');
+      if (!historyBox) return;
+      if (adminMessageUnsubscribe) { adminMessageUnsubscribe(); adminMessageUnsubscribe = null; }
+      historyBox.innerHTML = '<p style="color:#888;">Loading messages...</p>';
+      adminMessageUnsubscribe = db.collection('admin_broadcasts').orderBy('timestamp', 'desc').limit(50).onSnapshot(function(snapshot) {
+        historyBox.innerHTML = '';
+        if (snapshot.empty) {
+          historyBox.innerHTML = '<p style="color:#888; text-align:center;">No messages sent yet.</p>';
+          return;
+        }
+        snapshot.forEach(function(doc) {
+          var m = doc.data();
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
+          var sentAt = m.timestamp ? m.timestamp.toDate().toLocaleString() : 'Just now';
+          var targetLabel = m.recipientType === 'specific' ? ('Specific: ' + (m.target || '')) :
+            m.recipientType === 'djs' ? 'All DJs' :
+            m.recipientType === 'users' ? 'All Users' : 'All Users & DJs';
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
+            '<strong style="color:#ffd860;">' + (m.subject || 'No subject') + '</strong>' +
+            '<span style="color:#888; font-size:0.8rem;">' + sentAt + '</span>' +
+            '</div>' +
+            '<div style="color:#aaa; font-size:0.85rem; margin-bottom:0.5rem;">To: ' + targetLabel + ' · Sent: ' + (m.sent || 0) + '</div>' +
+            '<div style="color:#ccc; white-space:pre-wrap; font-size:0.9rem;">' + (m.body || '').replace(/</g, '&lt;') + '</div>';
+          historyBox.appendChild(card);
+        });
+      }, function(err) {
+        historyBox.innerHTML = '<p style="color:#ff4d8f;">Error: ' + err.message + '</p>';
+      });
     }
 
     // ===== ADMIN SETTINGS (Push + Email) =====
