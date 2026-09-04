@@ -919,6 +919,9 @@ footer {
     max-width: 100%;
     min-width: auto;
     padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .event-flyer {
@@ -950,8 +953,29 @@ footer {
   }
 
   #latest-news-grid .event-card {
-    flex: 0 0 calc(33.333% - 0.67rem) !important;
-    min-width: 140px !important;
+    flex: 0 0 85% !important;
+    min-width: 260px !important;
+    max-width: 320px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  #latest-news-grid .event-card .event-flyer {
+    width: 100% !important;
+    height: 160px !important;
+    margin: 0 0 0.5rem 0 !important;
+  }
+  #latest-news-grid .event-card h3 {
+    font-size: 1rem !important;
+  }
+  #latest-news-grid .event-card a.playlist-link,
+  #latest-news-grid .event-card .share-button {
+    width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center;
   }
 
   .playlist-link,

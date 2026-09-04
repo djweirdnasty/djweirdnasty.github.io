@@ -17,6 +17,8 @@ class PageParser(HTMLParser):
         super().__init__()
         self.title = ''
         self.og_title = ''
+        self.og_desc = ''
+        self.meta_desc = ''
         self.og_image = ''
         self.twitter_image = ''
         self.in_title = False
@@ -32,8 +34,12 @@ class PageParser(HTMLParser):
             name = attrs.get('name', '').lower()
             if prop == 'og:title':
                 self.og_title = attrs.get('content', '')
+            if prop == 'og:description':
+                self.og_desc = attrs.get('content', '')
             if prop == 'og:image':
                 self.og_image = attrs.get('content', '')
+            if name == 'description':
+                self.meta_desc = attrs.get('content', '')
             if name == 'twitter:image':
                 self.twitter_image = attrs.get('content', '')
         if tag == 'img' and not self._found_img:
@@ -71,9 +77,10 @@ def get_title_img(path):
     parser = PageParser()
     parser.feed(html)
     title = parser.og_title.strip() or parser.title.strip() or path
+    desc = parser.og_desc.strip() or parser.meta_desc.strip() or ''
     img = parser.og_image or parser.twitter_image or parser.first_img
     published = parse_published(html)
-    return title, img, published
+    return title, img, published, desc
 
 def main():
     with open('sitemap.xml','r',encoding='utf-8') as f:
@@ -86,7 +93,7 @@ def main():
         path = urlparse(urldefrag(url)[0]).path
         if path in EXCLUDE:
             continue
-        title, img, published = get_title_img(path)
+        title, img, published, desc = get_title_img(path)
         if not img:
             continue
         img_path = urlparse(urljoin(url, img)).path
@@ -94,7 +101,7 @@ def main():
         updated = int(os.path.getmtime(file_path))
         if not published:
             published = updated
-        items.append({'path': path, 'title': title, 'img': img_path, 'updated': updated, 'published': published})
+        items.append({'path': path, 'title': title, 'img': img_path, 'updated': updated, 'published': published, 'desc': desc})
     with open('contents.json','w',encoding='utf-8') as f:
         json.dump(items, f, indent=2)
     print(f'Wrote {len(items)} items to contents.json')

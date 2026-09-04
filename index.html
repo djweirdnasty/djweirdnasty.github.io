@@ -39,7 +39,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=14">
+  <link rel="stylesheet" href="style.css?v=15">
   <link href="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="sol-styles.css?v=1">
   <script src="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.js"></script>
@@ -510,6 +510,7 @@
   <script>
     (function() {
       function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function esc_html(s) { return s.replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
       function card(item, cta) {
         var t = esc(item.title.replace(/\s*\|\s*DJWEIRDNASTY.*$/i,''));
         return '<article class="event-card"><h3>' + t + '</h3><img loading="lazy" src="' + esc(item.img) + '" alt="' + t + '" class="event-flyer"><p>Read the full story.</p><a href="' + esc(item.path) + '" class="playlist-link">' + cta + '</a></article>';
@@ -524,7 +525,8 @@
             var cards = news.concat(news);
             ng.innerHTML = cards.map(function(i) {
               var t = esc(i.title.replace(/\s*\|\s*DJWEIRDNASTY.*$/i,''));
-              return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start; display: flex; flex-direction: row; gap: 0.7rem; align-items: flex-start; padding: 0.8rem;"><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;"><div style="flex: 1; min-width: 0;"><h3 style="font-size:0.85rem; line-height:1.25; margin:0 0 0.5rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">' + t + '</h3><a href="' + esc(i.path) + '" class="playlist-link" style="font-size:0.75rem; padding:0.35rem 0.8rem;">Read more</a></div></article>';
+              var d = i.desc ? esc_html(i.desc.substring(0,120)) : 'Read the full story.';
+              return '<article class="event-card" style="flex: 0 0 calc(25% - 0.75rem); min-width: 220px; scroll-snap-align: start; display: flex; flex-direction: row; gap: 0.7rem; align-items: flex-start; padding: 0.8rem;"><img loading="lazy" src="' + esc(i.img) + '" alt="' + t + '" class="event-flyer" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;"><div style="flex: 1; min-width: 0;"><h3 style="font-size:0.85rem; line-height:1.25; margin:0 0 0.5rem; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">' + t + '</h3><p style="font-size:0.8rem; line-height:1.3; margin:0 0 0.5rem; color:#ccc; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">' + d + '</p><a href="' + esc(i.path) + '" class="playlist-link" style="font-size:0.75rem; padding:0.35rem 0.8rem;">Read more</a></div></article>';
             }).join('');
             if (news.length > 4) {
               var cardW = ng.querySelector('.event-card').offsetWidth + 16;
