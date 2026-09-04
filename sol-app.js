@@ -346,6 +346,10 @@
       db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
         .then(function() {
           db.collection('djs').doc(user.uid).set(profileData, { merge: true });
+          db.collection('dj-status').doc(user.uid).set({
+            djName: profileData.stageName || '',
+            djAvatar: profileData.photoURL || ''
+          }, { merge: true });
           statusEl.textContent = keepApproved ? 'Profile updated!' : 'Profile saved & submitted for verification!';
           statusEl.style.color = '#22c55e';
           trackSolEvent(keepApproved ? 'dj_profile_updated' : 'dj_verification_submitted', {

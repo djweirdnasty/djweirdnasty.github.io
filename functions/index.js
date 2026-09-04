@@ -563,34 +563,96 @@ exports.publicSearchDjs = onCall(async (request) => {
   if (!location || typeof location !== "object") {
     throw new HttpsError("invalid-argument", "selectedLocation is required.");
   }
+  const userLat = parseFloat(location.latitude != null ? location.latitude : location.lat);
+  const userLng = parseFloat(location.longitude != null ? location.longitude : location.lng);
+  if (isNaN(userLat) || isNaN(userLng)) {
+    throw new HttpsError("invalid-argument", "selectedLocation must include valid latitude and longitude.");
+  }
 
-  const allowed = [
-    "id", "uid", "dj_id", "firebaseUid", "name", "stageName", "displayName",
-    "avatar", "photoURL", "bio", "genres", "styles", "eventTypes",
-    "hourly_rate", "hourlyRate", "baseRate", "rating", "reviewCount",
-    "is_verified", "isVerifiedDJ", "verifiedAt", "city", "state",
-    "lat", "lng", "coordinates", "distance", "available", "online",
-    "sampleUrls", "videoUrls", "socialLinks", "equipment", "yearsExperience"
-  ];
-
-  const allowedSet = new Set(allowed);
-  const stripPii = function(dj) {
-    const out = {};
-    for (const key in dj) {
-      if (allowedSet.has(key)) out[key] = dj[key];
+  function getNumber(...vals) {
+    for (const v of vals) {
+      if (typeof v === "number" && !isNaN(v)) return v;
+      const n = parseFloat(v);
+      if (!isNaN(n)) return n;
     }
-    return out;
-  };
+    return null;
+  }
+
+  function toRad(deg) { return deg * Math.PI / 180; }
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 3958.8;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
 
   try {
-    const res = await fetch(SEARCH_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(location)
-    });
-    const data = await res.json();
-    const djs = Array.isArray(data.djs) ? data.djs.map(stripPii) : [];
-    return { djs: djs };
+    const verifiedSnapshot = await db.collection("users").where("isVerifiedDJ", "==", true).get();
+    const verifiedUids = verifiedSnapshot.docs.map(d => d.id);
+
+    const djsMap = {};
+    if (verifiedUids.length > 0) {
+      const chunkSize = 10;
+      for (let i = 0; i < verifiedUids.length; i += chunkSize) {
+        const chunk = verifiedUids.slice(i, i + chunkSize);
+        const djsSnapshot = await db.collection("djs").where(admin.firestore.FieldPath.documentId(), "in", chunk).get();
+        djsSnapshot.forEach(d => { djsMap[d.id] = d.data() || {}; });
+      }
+    }
+
+    const userMap = {};
+    verifiedSnapshot.forEach(d => { userMap[d.id] = d.data() || {}; });
+
+    const results = [];
+    for (const uid of verifiedUids) {
+      const u = userMap[uid] || {};
+      const d = djsMap[uid] || {};
+      if (!d.location) continue;
+      const lat = getNumber(d.location.latitude, d.location._latitude, d.location.lat);
+      const lng = getNumber(d.location.longitude, d.location._longitude, d.location.lng);
+      if (lat === null || lng === null) continue;
+
+      const name = d.stageName || d.name || d.displayName || u.displayName || u.email || "DJ";
+      const distance = haversine(userLat, userLng, lat, lng);
+      results.push({
+        id: uid,
+        uid: uid,
+        firebaseUid: uid,
+        name: name,
+        djName: name,
+        avatar: d.photoURL || d.avatar || "",
+        photoURL: d.photoURL || d.avatar || "",
+        bio: d.bio || "",
+        genres: d.genres || [],
+        styles: d.specialties || d.styles || [],
+        specialties: d.specialties || [],
+        equipment: d.equipment || [],
+        hourly_rate: d.hourlyRate || 0,
+        rating: d.rating || 0,
+        review_count: d.reviewCount || 0,
+        total_bookings_completed: d.totalBookingsCompleted || 0,
+        is_verified: true,
+        experience: d.experience || d.yearsExperience || 0,
+        city: d.city || "",
+        state: d.state || "",
+        location: {
+          address: d.location ? (d.location.address || "") : "",
+          city: d.city || "",
+          state: d.state || "",
+          latitude: lat,
+          longitude: lng
+        },
+        lat: lat,
+        lng: lng,
+        coordinates: { latitude: lat, longitude: lng },
+        distance: distance
+      });
+    }
+
+    results.sort((a, b) => a.distance - b.distance);
+    return { djs: results };
   } catch (err) {
     logger.error("[PUBLIC SEARCH DJS] error: " + err.message);
     throw new HttpsError("internal", "Unable to search DJs.");
