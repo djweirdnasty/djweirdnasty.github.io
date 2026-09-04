@@ -75,9 +75,9 @@
       <p>Presented by BBW Bunnies &amp; Dons 🐰🔥</p>
 
       <h2 style="margin-top: 2rem;">Event Gallery</h2>
-      <div class="gallery-carousel" id="galleryCarousel" style="position: relative; margin: 1.5rem 0;">
+      <div class="gallery-carousel" id="galleryCarousel" style="position: relative; margin: 1.5rem 0; padding: 0 48px;">
         <button type="button" class="gallery-nav gallery-prev" id="galleryPrev" aria-label="Previous photos" style="position: absolute; left: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&larr;</button>
-        <div class="gallery-track" id="galleryTrack" style="display: flex; gap: 10px; overflow: hidden; padding: 0 48px;">
+        <div class="gallery-track" id="galleryTrack" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
         </div>
         <button type="button" class="gallery-nav gallery-next" id="galleryNext" aria-label="Next photos" style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&rarr;</button>
       </div>
@@ -114,59 +114,64 @@
       var counter = document.getElementById("galleryCounter");
       var totalEl = document.getElementById("galleryTotal");
 
-      // Render every image once; we slide the track to show groups of 4.
-      images.forEach(function (name) {
-        var img = document.createElement("img");
-        img.src = base + name;
-        img.alt = "Jersey Jam Philly event photo";
-        img.loading = "lazy";
-        img.style.cssText = "flex: 0 0 calc(25% - 7.5px); height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4);";
-        track.appendChild(img);
-      });
-
       var perView = 4;
       var index = 0;
       var total = images.length;
-      var pages = Math.max(1, Math.ceil(total / perView));
-      totalEl.textContent = pages;
 
-      function update() {
-        var imgs = track.querySelectorAll("img");
-        if (!imgs.length) return;
-        var slideWidth = imgs[0].getBoundingClientRect().width + 10; // include gap
-        track.style.transform = "translateX(" + (-index * perView * slideWidth) + "px)";
-        counter.textContent = (index + 1);
+      function getPerView() {
+        if (window.innerWidth < 600) return 1;
+        if (window.innerWidth < 900) return 2;
+        return 4;
+      }
+
+      function render() {
+        perView = getPerView();
+        track.innerHTML = "";
+        var start = index * perView;
+        for (var i = 0; i < perView; i++) {
+          var idx = start + i;
+          if (idx >= total) break;
+          var img = document.createElement("img");
+          img.src = base + images[idx];
+          img.alt = "Jersey Jam Philly event photo";
+          img.loading = "lazy";
+          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4);";
+          track.appendChild(img);
+        }
+        var pages = Math.max(1, Math.ceil(total / perView));
+        if (index >= pages) index = pages - 1;
+        counter.textContent = index + 1;
+        totalEl.textContent = pages;
         prevBtn.style.visibility = index === 0 ? "hidden" : "visible";
         nextBtn.style.visibility = index >= pages - 1 ? "hidden" : "visible";
       }
 
       prevBtn.addEventListener("click", function () {
-        if (index > 0) { index--; update(); }
+        if (index > 0) { index--; render(); }
       });
       nextBtn.addEventListener("click", function () {
-        if (index < pages - 1) { index++; update(); }
+        var pages = Math.max(1, Math.ceil(total / perView));
+        if (index < pages - 1) { index++; render(); }
       });
 
-      // Responsive: show fewer on small screens
-      function setPerView() {
-        if (window.innerWidth < 600) perView = 1;
-        else if (window.innerWidth < 900) perView = 2;
-        else perView = 4;
-        pages = Math.max(1, Math.ceil(total / perView));
-        if (index > pages - 1) index = pages - 1;
-        // adjust flex basis
-        var basis = "calc(" + (100 / perView) + "% - " + (10 * (perView - 1) / perView) + "px)";
-        track.querySelectorAll("img").forEach(function (img) {
-          img.style.flexBasis = basis;
-        });
-        totalEl.textContent = pages;
-        update();
-      }
-
-      window.addEventListener("resize", setPerView);
-      setPerView();
+      window.addEventListener("resize", function () {
+        var newPerView = getPerView();
+        if (newPerView !== perView) {
+          index = 0;
+          render();
+        }
+      });
+      render();
     })();
   </script>
+  <style>
+    @media (max-width: 899px) {
+      #galleryTrack { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+    @media (max-width: 599px) {
+      #galleryTrack { grid-template-columns: 1fr !important; }
+    }
+  </style>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">
       <img loading="lazy" src="Stand4Socks.png" alt="Shop Stand4 Socks" style="width: 100%; max-width: 960px; height: auto; display: block; margin: 0 auto;">
