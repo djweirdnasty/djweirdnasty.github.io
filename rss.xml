@@ -7,7 +7,15 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 04 Sep 2026 23:37:10 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 05 Sep 2026 19:29:13 GMT</lastBuildDate>
+    <item>
+      <title>Meek Mill’s “Free Durk” Message Backfires as Social Media Questions His Defense</title>
+      <link>https://djweirdnasty.com/news-meek-mill-free-durk-backfires.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-meek-mill-free-durk-backfires.html</guid>
+      <pubDate>Fri, 04 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Meek Mill is facing backlash after defending Lil Durk on X as an “innocent kid from Chicago” while Durk’s federal murder-for-hire trial nears its end.</description>
+      <enclosure url="https://djweirdnasty.com/meekmilllildurk.jpg" type="image/jpeg" />
+    </item>
     <item>
       <title>Mississippi Police Chief Fired Amid Racist Text Scandal After 1-Year-Old Is Killed in Police Shooting</title>
       <link>https://djweirdnasty.com/news-senatobia-police-chief-fired-racist-texts.html</link>
@@ -239,14 +247,6 @@
       <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
       <description>Clarence Jackson, a Connecticut man, discovered he had a $5.8 million winning lottery ticket on the very last day to claim it — but circumstances prevented him from collecting.</description>
       <enclosure url="https://djweirdnasty.com/clearence-jackson.avif" type="image/avif" />
-    </item>
-    <item>
-      <title>Arkansas Woman Sentenced to 20 Years After Shooting Ex-Boyfriend 17 Times</title>
-      <link>https://djweirdnasty.com/news-arkansas-woman-sentenced-20-years.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-arkansas-woman-sentenced-20-years.html</guid>
-      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
-      <description>Rebecca Jane Mryglod, 38, has been sentenced to 20 years in an Arkansas state prison after admitting that she shot her former boyfriend 17 times inside his home.</description>
-      <enclosure url="https://djweirdnasty.com/rebecca-jane.webp" type="image/webp" />
     </item>
   </channel>
 </rss>
