@@ -7,7 +7,15 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 05 Sep 2026 19:29:13 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 06 Sep 2026 15:54:40 GMT</lastBuildDate>
+    <item>
+      <title>Future Faces Plagiarism Claims Over “Konnichiwa” From Philadelphia’s A-Town</title>
+      <link>https://djweirdnasty.com/news-future-atown-konnichiwa-plagiarism.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-future-atown-konnichiwa-plagiarism.html</guid>
+      <pubDate>Sun, 06 Sep 2026 00:00:00 GMT</pubDate>
+      <description>Fans accuse Future of copying Philadelphia comedian and internet personality A-Town after noticing similarities between Future&amp;#x27;s “Konnichiwa” and A-Town&amp;#x27;s 2024 song of the same name.</description>
+      <enclosure url="https://djweirdnasty.com/atown-vs-future-konnichiwa.webp" type="image/webp" />
+    </item>
     <item>
       <title>Meek Mill’s “Free Durk” Message Backfires as Social Media Questions His Defense</title>
       <link>https://djweirdnasty.com/news-meek-mill-free-durk-backfires.html</link>
@@ -239,14 +247,6 @@
       <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
       <description>An Ohio physician whose academic work examined adolescent homicide was fatally shot inside her home. Investigators allege her 18-year-old daughter helped plan the killing.</description>
       <enclosure url="https://djweirdnasty.com/homicidal-adolescent.webp" type="image/webp" />
-    </item>
-    <item>
-      <title>Connecticut Man Missed $5.8 Million Lottery Jackpot After Discovering Winning Ticket Too Late</title>
-      <link>https://djweirdnasty.com/news-connecticut-lottery-ticket-too-late.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-connecticut-lottery-ticket-too-late.html</guid>
-      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
-      <description>Clarence Jackson, a Connecticut man, discovered he had a $5.8 million winning lottery ticket on the very last day to claim it — but circumstances prevented him from collecting.</description>
-      <enclosure url="https://djweirdnasty.com/clearence-jackson.avif" type="image/avif" />
     </item>
   </channel>
 </rss>

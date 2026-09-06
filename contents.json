@@ -1,9 +1,17 @@
 [
   {
+    "path": "/news-future-atown-konnichiwa-plagiarism.html",
+    "title": "Future Faces Plagiarism Claims Over \u201cKonnichiwa\u201d From Philadelphia\u2019s A-Town",
+    "img": "/atown-vs-future-konnichiwa.webp",
+    "updated": 1788710079,
+    "published": 1788652800,
+    "desc": "Fans accuse Future of copying Philadelphia comedian and internet personality A-Town after noticing similarities between Future's \u201cKonnichiwa\u201d and A-Town's 2024 song of the same name."
+  },
+  {
     "path": "/news-meek-mill-free-durk-backfires.html",
     "title": "Meek Mill\u2019s \u201cFree Durk\u201d Message Backfires as Social Media Questions His Defense",
     "img": "/meekmilllildurk.jpg",
-    "updated": 1788636553,
+    "updated": 1788636581,
     "published": 1788480000,
     "desc": "Meek Mill is facing backlash after defending Lil Durk on X as an \u201cinnocent kid from Chicago\u201d while Durk\u2019s federal murder-for-hire trial nears its end."
   },
@@ -539,8 +547,8 @@
     "path": "/news-music.html",
     "title": "Music News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788636553,
-    "published": 1788480000,
+    "updated": 1788710079,
+    "published": 1788652800,
     "desc": "New music drops, artist spotlights, and industry updates from DJWEIRDNASTY."
   },
   {
@@ -819,7 +827,7 @@
     "path": "/news.html",
     "title": "DJWEIRDNASTY | Latest News",
     "img": "/news.png",
-    "updated": 1788636553,
+    "updated": 1788710079,
     "published": 1787961600,
     "desc": "Get the latest national, entertainment, music, and sports news from DJWEIRDNASTY."
   },
