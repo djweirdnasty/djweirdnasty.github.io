@@ -75,13 +75,15 @@
       <p>Presented by BBW Bunnies &amp; Dons 🐰🔥</p>
 
       <h2 style="margin-top: 2rem;">Event Gallery</h2>
-      <div class="gallery-carousel" id="galleryCarousel" style="position: relative; margin: 1.5rem 0; padding: 0 48px;">
-        <button type="button" class="gallery-nav gallery-prev" id="galleryPrev" aria-label="Previous photos" style="position: absolute; left: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&larr;</button>
-        <div class="gallery-track" id="galleryTrack" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+      <div class="gallery-carousel" id="galleryCarousel" style="position: relative; margin: 1.5rem 0;">
+        <button type="button" class="gallery-nav gallery-prev" id="galleryPrev" aria-label="Previous photos" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&larr;</button>
+        <div class="gallery-viewport" id="galleryViewport" style="overflow: hidden; margin: 0 48px;">
+          <div class="gallery-track" id="galleryTrack" style="display: flex;">
+          </div>
         </div>
-        <button type="button" class="gallery-nav gallery-next" id="galleryNext" aria-label="Next photos" style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&rarr;</button>
+        <button type="button" class="gallery-nav gallery-next" id="galleryNext" aria-label="Next photos" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;">&rarr;</button>
       </div>
-      <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;"><span id="galleryCounter">1</span> of <span id="galleryTotal">1</span></p>
+      <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;">Photos <span id="galleryCounter">1-4</span> of <span id="galleryTotal">19</span></p>
     </article>
   </main>
   <script>
@@ -108,6 +110,7 @@
         "SaveClip.App_753197797_17956796772184749_3940663765371611732_n.jpg"
       ];
       var base = "buns-dons-bbw/";
+      var viewport = document.getElementById("galleryViewport");
       var track = document.getElementById("galleryTrack");
       var prevBtn = document.getElementById("galleryPrev");
       var nextBtn = document.getElementById("galleryNext");
@@ -115,8 +118,9 @@
       var totalEl = document.getElementById("galleryTotal");
 
       var perView = 4;
-      var index = 0;
-      var total = images.length;
+      var current = 0;
+      var slideWidth = 0;
+      var timer = null;
 
       function getPerView() {
         if (window.innerWidth < 600) return 1;
@@ -124,54 +128,107 @@
         return 4;
       }
 
-      function render() {
+      function build() {
         perView = getPerView();
+        current = 0;
+        var all = images.concat(images.slice(0, perView));
         track.innerHTML = "";
-        var start = index * perView;
-        for (var i = 0; i < perView; i++) {
-          var idx = start + i;
-          if (idx >= total) break;
+        track.style.cssText = "display: flex; transition: none; transform: translateX(0);";
+
+        all.forEach(function (name) {
+          var slide = document.createElement("div");
+          slide.className = "gallery-slide";
+          slide.style.cssText = "box-sizing: border-box; padding: 5px; flex: 0 0 auto;";
+
           var img = document.createElement("img");
-          img.src = base + images[idx];
+          img.src = base + name;
           img.alt = "Jersey Jam Philly event photo";
           img.loading = "lazy";
-          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4);";
-          track.appendChild(img);
-        }
-        var pages = Math.max(1, Math.ceil(total / perView));
-        if (index >= pages) index = pages - 1;
-        counter.textContent = index + 1;
-        totalEl.textContent = pages;
-        prevBtn.style.visibility = index === 0 ? "hidden" : "visible";
-        nextBtn.style.visibility = index >= pages - 1 ? "hidden" : "visible";
+          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4); display: block;";
+          slide.appendChild(img);
+          track.appendChild(slide);
+        });
+
+        totalEl.textContent = images.length;
+        updateSizes();
       }
 
-      prevBtn.addEventListener("click", function () {
-        if (index > 0) { index--; render(); }
-      });
-      nextBtn.addEventListener("click", function () {
-        var pages = Math.max(1, Math.ceil(total / perView));
-        if (index < pages - 1) { index++; render(); }
-      });
+      function updateSizes() {
+        slideWidth = viewport.clientWidth / perView;
+        track.querySelectorAll(".gallery-slide").forEach(function (slide) {
+          slide.style.width = slideWidth + "px";
+        });
+        goTo(current, false);
+      }
 
-      window.addEventListener("resize", function () {
-        var newPerView = getPerView();
-        if (newPerView !== perView) {
-          index = 0;
-          render();
+      function goTo(idx, animate) {
+        current = idx;
+        track.style.transition = animate ? "transform 0.5s ease" : "none";
+        track.style.transform = "translateX(" + (-current * slideWidth) + "px)";
+
+        var first = (current % images.length) + 1;
+        var last = Math.min(images.length, first + perView - 1);
+        counter.textContent = first + "-" + last;
+      }
+
+      function next() {
+        if (current >= images.length) {
+          goTo(0, false);
+          requestAnimationFrame(function () { goTo(1, true); });
+          return;
+        }
+        goTo(current + 1, true);
+      }
+
+      function prev() {
+        if (current === 0) {
+          goTo(images.length, false);
+          requestAnimationFrame(function () { goTo(images.length - 1, true); });
+          return;
+        }
+        goTo(current - 1, true);
+      }
+
+      track.addEventListener("transitionend", function () {
+        if (current === images.length) {
+          goTo(0, false);
         }
       });
-      render();
+
+      function startTimer() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(next, 3000);
+      }
+
+      function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+
+      nextBtn.addEventListener("click", function () { next(); startTimer(); });
+      prevBtn.addEventListener("click", function () { prev(); startTimer(); });
+
+      var carousel = document.getElementById("galleryCarousel");
+      carousel.addEventListener("mouseenter", stopTimer);
+      carousel.addEventListener("mouseleave", startTimer);
+
+      var resizeTimer;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          var newPerView = getPerView();
+          if (newPerView !== perView) {
+            build();
+            startTimer();
+          } else {
+            updateSizes();
+          }
+        }, 250);
+      });
+
+      build();
+      startTimer();
     })();
   </script>
-  <style>
-    @media (max-width: 899px) {
-      #galleryTrack { grid-template-columns: repeat(2, 1fr) !important; }
-    }
-    @media (max-width: 599px) {
-      #galleryTrack { grid-template-columns: 1fr !important; }
-    }
-  </style>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">
       <img loading="lazy" src="Stand4Socks.png" alt="Shop Stand4 Socks" style="width: 100%; max-width: 960px; height: auto; display: block; margin: 0 auto;">
