@@ -217,6 +217,26 @@
     .events-thumbs .event-card p {
       font-size: 0.85rem;
     }
+    .events-booking {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .events-booking .event-card {
+      flex: 1 1 100%;
+      max-width: 640px;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid #ff4d8f;
+      box-shadow: 0 0 20px rgba(255,77,143,0.25);
+    }
+    .events-booking .event-card h3 {
+      font-size: 1.4rem;
+    }
+    .events-booking .event-card .playlist-link {
+      font-size: 1rem;
+      padding: 0.6rem 1.4rem;
+    }
     @media (max-width: 600px) {
       .events-thumbs .event-card {
         flex: 1 1 140px;
@@ -452,7 +472,7 @@
         </article>
       </div>
 
-      <div class="events-thumbs">
+      <div class="events-booking">
         <article class="event-card">
           <h3>Private Event Booking</h3>
           <p>Flexible dates at your venue — available for bookings, appearances, and performances.</p>
