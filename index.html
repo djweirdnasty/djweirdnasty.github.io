@@ -140,6 +140,90 @@
     .recap-lightbox.active { display: flex; }
     .recap-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
     .recap-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 10000; }
+    .events-featured-carousel {
+      position: relative;
+      overflow: hidden;
+      margin: 1.5rem 0 1rem;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.4);
+    }
+    .events-featured-track {
+      display: flex;
+      transition: transform 0.5s ease;
+      will-change: transform;
+    }
+    .events-featured-slide {
+      flex: 0 0 100%;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 1rem;
+    }
+    .events-featured-slide .event-card {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      text-align: left;
+    }
+    .events-featured-slide .event-flyer {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 360px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin: 0 0 0.75rem;
+    }
+    .events-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+    .events-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+    .events-dot.active { background: #ff4d8f; }
+    .events-thumbs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .events-thumbs .event-card {
+      flex: 0 1 220px;
+      max-width: 260px;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    .events-thumbs .event-card .event-flyer {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin: 0 0 0.5rem;
+    }
+    .events-thumbs .event-card h3 {
+      font-size: 1rem;
+    }
+    .events-thumbs .event-card p {
+      font-size: 0.85rem;
+    }
+    @media (max-width: 600px) {
+      .events-thumbs .event-card {
+        flex: 1 1 140px;
+        max-width: 100%;
+      }
+      .events-thumbs .event-card .event-flyer {
+        height: 120px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -300,40 +384,110 @@
     <section id="events" class="info">
       <h2>Upcoming Events</h2>
       <p>Here are some upcoming gigs and events to keep an eye on.</p>
-      <div class="events-grid">
-        <article class="event-card featured-event">
-          <h3>MURRDAH SEASON MONDAY LIVE EVERY MONDAY on GLOCAWEAR RADIO</h3>
+
+      <div class="events-featured-carousel" id="events-featured-carousel">
+        <div class="events-featured-track" id="events-featured-track">
+          <div class="events-featured-slide">
+            <article class="event-card">
+              <h3>MURRDAH SEASON MONDAY LIVE EVERY MONDAY on GLOCAWEAR RADIO</h3>
+              <img loading="lazy" src="murrdahseasonmonday.webp" alt="MURRDAH SEASON MONDAY" class="event-flyer">
+              <p>Join DJWEIRDNASTY and the Flavor Team every Monday on Glocawear Radio for hip hop, R&amp;B, mixes, interviews, and nonstop entertainment.</p>
+              <a href="event-murrdah-season.html" class="playlist-link">Read more</a>
+            </article>
+          </div>
+          <div class="events-featured-slide">
+            <article class="event-card">
+              <h3>Philly Skate Plex Family Session</h3>
+              <img loading="lazy" src="Philly-skate-logo.webp" alt="Philly Skate Plex logo" class="event-flyer">
+              <p>Family skate sessions Saturday, September 11 (12:30 PM – 3:00 PM) and Sunday, September 12 (12:30 PM – 3:30 PM) with DJWEIRDNASTY keeping the energy high for all ages.</p>
+              <a href="event-philly-skate-plex.html" class="playlist-link">Read more</a>
+            </article>
+          </div>
+          <div class="events-featured-slide">
+            <article class="event-card">
+              <h3>Halloween Hibachi on Elm Street</h3>
+              <img loading="lazy" src="halloween-habachi-on-elm-street.JPG" alt="Halloween Hibachi on Elm Street Flyer" class="event-flyer">
+              <p>Saturday, October 31, 2026 at Delink Social Club, Philadelphia. Live hibachi, comedy, costume contest, cash prizes, music by DJ Weird Nasty. Presented by Certified Askari.</p>
+              <a href="event-halloween-hibachi-elm-street.html" class="playlist-link">Read more</a>
+            </article>
+          </div>
+          <div class="events-featured-slide">
+            <article class="event-card">
+              <h3>Jersey Jam Philly — BBW Bunnies &amp; Dons Tour #13</h3>
+              <img loading="lazy" src="buns-dons-bbw/Main-Flyer.jpg" alt="Jersey Jam Philly flyer" class="event-flyer">
+              <p>Saturday, September 19, 2026 — 5 PM to 11 PM at <strong>313 S 60th St, Philadelphia, PA</strong>. Dress code: sports jersey / team apparel.</p>
+              <a href="event-jersey-jam.html" class="playlist-link">Read more</a>
+            </article>
+          </div>
+        </div>
+        <div class="events-dots" id="events-dots"></div>
+      </div>
+
+      <div class="events-thumbs">
+        <article class="event-card">
+          <h3>MURRDAH SEASON MONDAY</h3>
           <img loading="lazy" src="murrdahseasonmonday.webp" alt="MURRDAH SEASON MONDAY" class="event-flyer">
-          <p>Join DJWEIRDNASTY and the Flavor Team every Monday on Glocawear Radio for hip hop, R&amp;B, mixes, interviews, and nonstop entertainment.</p>
+          <p>Every Monday on Glocawear Radio.</p>
           <a href="event-murrdah-season.html" class="playlist-link">Read more</a>
         </article>
         <article class="event-card">
-          <h3>Philly Skate Plex Family Session</h3>
+          <h3>Philly Skate Plex</h3>
           <img loading="lazy" src="Philly-skate-logo.webp" alt="Philly Skate Plex logo" class="event-flyer">
-          <p>Family skate sessions Saturday, September 11 (12:30 PM – 3:00 PM) and Sunday, September 12 (12:30 PM – 3:30 PM) with DJWEIRDNASTY keeping the energy high for all ages.</p>
+          <p>Sept 11 &amp; 12 family sessions.</p>
           <a href="event-philly-skate-plex.html" class="playlist-link">Read more</a>
         </article>
-        <article class="event-card featured-event">
-          <h3>Halloween Hibachi on Elm Street</h3>
-          <img loading="lazy" src="halloween-habachi-on-elm-street.JPG" alt="Halloween Hibachi on Elm Street Flyer" class="event-flyer">
-          <p>Saturday, October 31, 2026 at Delink Social Club, Philadelphia. Live hibachi, comedy, costume contest, cash prizes, music by DJ Weird Nasty. Presented by Certified Askari.</p>
+        <article class="event-card">
+          <h3>Halloween Hibachi</h3>
+          <img loading="lazy" src="halloween-habachi-on-elm-street.JPG" alt="Halloween Hibachi" class="event-flyer">
+          <p>Oct 31 at Delink Social Club.</p>
           <a href="event-halloween-hibachi-elm-street.html" class="playlist-link">Read more</a>
         </article>
-        <article class="event-card featured-event">
-          <h3>Jersey Jam Philly — BBW Bunnies &amp; Dons Tour #13</h3>
-          <img loading="lazy" src="buns-dons-bbw/Main-Flyer.jpg" alt="Jersey Jam Philly flyer" class="event-flyer">
-          <p>Saturday, September 19, 2026 — 5 PM to 11 PM at <strong>313 S 60th St, Philadelphia, PA</strong>. Dress code: sports jersey / team apparel.</p>
+        <article class="event-card">
+          <h3>Jersey Jam Philly</h3>
+          <img loading="lazy" src="buns-dons-bbw/Main-Flyer.jpg" alt="Jersey Jam Philly" class="event-flyer">
+          <p>Sept 19 — sports jersey dress code.</p>
           <a href="event-jersey-jam.html" class="playlist-link">Read more</a>
         </article>
-        <article class="event-card booking-card">
+      </div>
+
+      <div class="events-thumbs">
+        <article class="event-card">
           <h3>Private Event Booking</h3>
           <p>Flexible dates at your venue — available for bookings, appearances, and performances.</p>
           <a href="contact.html" class="playlist-link">Read more</a>
         </article>
       </div>
+
       <div style="text-align: center; margin-top: 1.5rem;">
         <a href="event-recaps.html" class="playlist-link" style="display: inline-block; background: #ff4d8f; color: #fff; padding: 0.7rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold;">Event Recaps &nearr;</a>
       </div>
+
+      <script>
+        (function() {
+          var track = document.getElementById('events-featured-track');
+          var dots = document.getElementById('events-dots');
+          if (!track || !dots) return;
+          var slides = track.children;
+          var current = 0;
+          var total = slides.length;
+          function goTo(i) {
+            current = i;
+            track.style.transform = 'translateX(-' + (current * 100) + '%)';
+            dots.innerHTML = '';
+            for (var j = 0; j < total; j++) {
+              var b = document.createElement('button');
+              b.className = 'events-dot' + (j === current ? ' active' : '');
+              b.setAttribute('aria-label', 'Go to event ' + (j + 1));
+              b.onclick = (function(index) { return function() { goTo(index); }; })(j);
+              dots.appendChild(b);
+            }
+          }
+          goTo(0);
+          setInterval(function() {
+            goTo((current + 1) % total);
+          }, 5000);
+        })();
+      </script>
     </section>
 
         <section id="sol" class="info" style="text-align: center;">
