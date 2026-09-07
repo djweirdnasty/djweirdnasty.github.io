@@ -1,9 +1,25 @@
 [
   {
+    "path": "/news-nba-youngboy-prison-fight-video-resurfaces.html",
+    "title": "NBA YoungBoy Prison Fight Video Resurfaces, Revealing 2021 Jail Altercation",
+    "img": "/nbayoungboy-fight-video.webp",
+    "updated": 1788797370,
+    "published": 1788739200,
+    "desc": "A surveillance video from 2021 involving rapper NBA YoungBoy has resurfaced online, showing a physical confrontation while he was held at a Louisiana correctional facility."
+  },
+  {
+    "path": "/news-trump-administration-child-care-stay-at-home-parents.html",
+    "title": "Trump Administration Weighs Federal Child-Care Payments for Some Stay-at-Home Parents",
+    "img": "/trump-child-care.jpeg",
+    "updated": 1788787700,
+    "published": 1788739200,
+    "desc": "The Trump administration is considering a new approach to federal child-care assistance that could allow certain married families to receive government funding even when one parent stays home to care for the children."
+  },
+  {
     "path": "/news-future-atown-konnichiwa-plagiarism.html",
     "title": "Future Faces Plagiarism Claims Over \u201cKonnichiwa\u201d From Philadelphia\u2019s A-Town",
     "img": "/atown-vs-future-konnichiwa.webp",
-    "updated": 1788710079,
+    "updated": 1788710121,
     "published": 1788652800,
     "desc": "Fans accuse Future of copying Philadelphia comedian and internet personality A-Town after noticing similarities between Future's \u201cKonnichiwa\u201d and A-Town's 2024 song of the same name."
   },
@@ -152,14 +168,6 @@
     "desc": "Saturday, August 29, 2026 \u2014 Ghetto House Party with DJWEIRDNASTY."
   },
   {
-    "path": "/event-krew-nasa.html",
-    "title": "KREW NASA: Out of This World Tour 2026",
-    "img": "/krew-nasa-tour.jpeg",
-    "updated": 1787955376,
-    "published": 1787955376,
-    "desc": "11 Cities. 1 Movement. 1 Wave. The Out of This World Tour 2026."
-  },
-  {
     "path": "/event-muggatime.html",
     "title": "Welcome 2 Muggatime presented by Prophit Mugga Maniak",
     "img": "/muggatime.PNG",
@@ -179,8 +187,8 @@
     "path": "/event-philly-skate-plex.html",
     "title": "Philly Skate Plex Family Session",
     "img": "/Philly-skate-logo.webp",
-    "updated": 1788369147,
-    "published": 1788369147,
+    "updated": 1788788468,
+    "published": 1788788468,
     "desc": "Family skate sessions with DJWEIRDNASTY at Philly Skate Plex."
   },
   {
@@ -203,8 +211,8 @@
     "path": "/index.html",
     "title": "DJWEIRDNASTY | Official Site - Mixtapes, Events & Booking",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788565101,
-    "published": 1788565101,
+    "updated": 1788789336,
+    "published": 1788789336,
     "desc": "Official site of DJWEIRDNASTY \u2014 mixtapes, live events, MUD MUSIC countdown, DJ booking, and the latest music and news."
   },
   {
@@ -547,16 +555,16 @@
     "path": "/news-music.html",
     "title": "Music News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788710079,
-    "published": 1788652800,
+    "updated": 1788797370,
+    "published": 1788739200,
     "desc": "New music drops, artist spotlights, and industry updates from DJWEIRDNASTY."
   },
   {
     "path": "/news-national.html",
     "title": "National News | DJWEIRDNASTY",
     "img": "/djweirdnasty-banner.webp",
-    "updated": 1788488551,
-    "published": 1788393600,
+    "updated": 1788787705,
+    "published": 1788739200,
     "desc": "National news and trending stories from DJWEIRDNASTY."
   },
   {
@@ -827,7 +835,7 @@
     "path": "/news.html",
     "title": "DJWEIRDNASTY | Latest News",
     "img": "/news.png",
-    "updated": 1788710079,
+    "updated": 1788797370,
     "published": 1787961600,
     "desc": "Get the latest national, entertainment, music, and sports news from DJWEIRDNASTY."
   },

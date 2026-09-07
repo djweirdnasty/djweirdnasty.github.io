@@ -7,7 +7,23 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 06 Sep 2026 15:54:40 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 07 Sep 2026 16:09:31 GMT</lastBuildDate>
+    <item>
+      <title>NBA YoungBoy Prison Fight Video Resurfaces, Revealing 2021 Jail Altercation</title>
+      <link>https://djweirdnasty.com/news-nba-youngboy-prison-fight-video-resurfaces.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-nba-youngboy-prison-fight-video-resurfaces.html</guid>
+      <pubDate>Mon, 07 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A surveillance video from 2021 involving rapper NBA YoungBoy has resurfaced online, showing a physical confrontation while he was held at a Louisiana correctional facility.</description>
+      <enclosure url="https://djweirdnasty.com/nbayoungboy-fight-video.webp" type="image/webp" />
+    </item>
+    <item>
+      <title>Trump Administration Weighs Federal Child-Care Payments for Some Stay-at-Home Parents</title>
+      <link>https://djweirdnasty.com/news-trump-administration-child-care-stay-at-home-parents.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-trump-administration-child-care-stay-at-home-parents.html</guid>
+      <pubDate>Mon, 07 Sep 2026 00:00:00 GMT</pubDate>
+      <description>The Trump administration is considering a new approach to federal child-care assistance that could allow certain married families to receive government funding even when one parent stays home to care for the children.</description>
+      <enclosure url="https://djweirdnasty.com/trump-child-care.jpeg" type="image/jpeg" />
+    </item>
     <item>
       <title>Future Faces Plagiarism Claims Over “Konnichiwa” From Philadelphia’s A-Town</title>
       <link>https://djweirdnasty.com/news-future-atown-konnichiwa-plagiarism.html</link>
@@ -231,22 +247,6 @@
       <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
       <description>Lil Yachty is preparing to make his WWE in-ring debut against Baron Corbin at Sunday Night's Main Event on Sept. 6 in Atlanta.</description>
       <enclosure url="https://djweirdnasty.com/lil-yachty.jpeg" type="image/jpeg" />
-    </item>
-    <item>
-      <title>35-Year-Old Man Killed in Early-Morning Kensington Shooting as Philadelphia Police Search for Suspect</title>
-      <link>https://djweirdnasty.com/news-kensington-shooting-35-year-old-killed.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-kensington-shooting-35-year-old-killed.html</guid>
-      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
-      <description>A 35-year-old man was fatally shot early Sunday morning in Philadelphia's Kensington neighborhood. Police are searching for a suspect.</description>
-      <enclosure url="https://djweirdnasty.com/35-year-old-killed.jpeg" type="image/jpeg" />
-    </item>
-    <item>
-      <title>Ohio Doctor Who Studied Adolescent Homicide Killed in Alleged Plot Involving Her Daughter</title>
-      <link>https://djweirdnasty.com/news-ohio-doctor-adolescent-homicide-killed.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-ohio-doctor-adolescent-homicide-killed.html</guid>
-      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
-      <description>An Ohio physician whose academic work examined adolescent homicide was fatally shot inside her home. Investigators allege her 18-year-old daughter helped plan the killing.</description>
-      <enclosure url="https://djweirdnasty.com/homicidal-adolescent.webp" type="image/webp" />
     </item>
   </channel>
 </rss>
