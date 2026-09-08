@@ -7,7 +7,15 @@
     <atom:link href="https://djweirdnasty.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Latest national, entertainment, music, and sports news from DJWEIRDNASTY.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 07 Sep 2026 16:09:31 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 08 Sep 2026 01:09:09 GMT</lastBuildDate>
+    <item>
+      <title>Five Dead After Amazon Cargo Jet Runs Off Miami Airport Runway</title>
+      <link>https://djweirdnasty.com/news-amazon-cargo-jet-runway-overrun-miami.html</link>
+      <guid isPermaLink="true">https://djweirdnasty.com/news-amazon-cargo-jet-runway-overrun-miami.html</guid>
+      <pubDate>Mon, 07 Sep 2026 00:00:00 GMT</pubDate>
+      <description>A federal investigation is underway after an Amazon-operated cargo plane sped beyond the runway at Miami International Airport, striking vehicles and leaving five people dead.</description>
+      <enclosure url="https://djweirdnasty.com/amazon-cargo-jet-crash-miami.webp" type="image/webp" />
+    </item>
     <item>
       <title>NBA YoungBoy Prison Fight Video Resurfaces, Revealing 2021 Jail Altercation</title>
       <link>https://djweirdnasty.com/news-nba-youngboy-prison-fight-video-resurfaces.html</link>
@@ -239,14 +247,6 @@
       <pubDate>Mon, 24 Aug 2026 00:00:00 GMT</pubDate>
       <description>A Texas judge has rejected Karmelo Anthony's request for a new trial, leaving his murder conviction and 35-year prison sentence intact while his defense prepares an appeal.</description>
       <enclosure url="https://djweirdnasty.com/karmelo-anthony.jpeg" type="image/jpeg" />
-    </item>
-    <item>
-      <title>Lil Yachty's WWE Debut Draws Fan Backlash as Rapper Prepares for Five-Minute Match With Baron Corbin</title>
-      <link>https://djweirdnasty.com/news-lil-yachty-wwe-debut-baron-corbin.html</link>
-      <guid isPermaLink="true">https://djweirdnasty.com/news-lil-yachty-wwe-debut-baron-corbin.html</guid>
-      <pubDate>Sun, 23 Aug 2026 00:00:00 GMT</pubDate>
-      <description>Lil Yachty is preparing to make his WWE in-ring debut against Baron Corbin at Sunday Night's Main Event on Sept. 6 in Atlanta.</description>
-      <enclosure url="https://djweirdnasty.com/lil-yachty.jpeg" type="image/jpeg" />
     </item>
   </channel>
 </rss>
