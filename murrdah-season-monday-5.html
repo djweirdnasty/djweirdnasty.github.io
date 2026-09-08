@@ -69,6 +69,16 @@
       <p style='margin-bottom: 1rem;'>On this week's episode of MURRDAH SEASON MONDAY, Ayo Weird and special guest Skibop go head-to-head in a tech conversation, with Skibop revealing details about the GTA-style video game he's developing. BossLady Mac joins the show to promote her TV network, while Free Truth Ray from Gas Station Radio on WJYN 98.5 FM Uptown Radio discusses his upcoming music video for "No Pin No Pad" and the importance of clean edits for artists.</p>
       <p style='margin-bottom: 1rem;'>Ron Murrdah promotes the upcoming Ain't Life Funny Comedy Event on September 15th, while Ayo Weird promotes the BBW Jersey Jam on September 19th. Skibop wins Trivia Question of the Week and takes home CutWater for his crew, while BossLady Mac wins the Long Island Flavor. With Princess out, JellyDoughnut covers trending topics, including the Amazon cargo plane crash in Florida. Skibop also hits the stage to perform his new single.</p>
       <p style='margin-bottom: 1rem;'>From tech talk and trivia to trending news and a live performance, this episode delivers another dose of personality, business, and real conversation. Tune in every Monday from 3 PM to 4 PM and tap into MURRDAH SEASON MONDAY — Ron Murrdah's show, where the conversation starts here.</p>
+      <h2 style='margin-top: 2rem;'>Episode Gallery</h2>
+      <div class='gallery-carousel' id='galleryCarousel' style='position: relative; margin: 1.5rem 0;'>
+        <button type='button' class='gallery-nav gallery-prev' id='galleryPrev' aria-label='Previous photos' style='position: absolute; left: 8px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;'>&larr;</button>
+        <div class='gallery-viewport' id='galleryViewport' style='overflow: hidden; margin: 0 48px;'>
+          <div class='gallery-track' id='galleryTrack' style='display: flex;'>
+          </div>
+        </div>
+        <button type='button' class='gallery-nav gallery-next' id='galleryNext' aria-label='Next photos' style='position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 2; background: rgba(255,91,215,0.9); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer;'>&rarr;</button>
+      </div>
+      <p style='text-align: center; color: #888; font-size: 0.85rem; margin-top: 0.5rem;'>Photos <span id='galleryCounter'>1-4</span> of <span id='galleryTotal'>5</span></p>
       <p style='margin-top: 1.5rem; margin-bottom: 0.5rem;'><strong>Related Content</strong></p>
       <div class='events-grid' style='margin-bottom: 1.5rem;'>
         <article class='event-card'>
@@ -101,6 +111,135 @@
 
     <img loading="lazy" src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
+  <script>
+    (function () {
+      var images = [
+        "790806084_1566926100995026_6471351750385400261_n.jpg",
+        "793024460_2116070776453090_4681537514778205735_n.jpg",
+        "793027491_1104480922101229_6901847059668585390_n.jpg",
+        "793802507_2097109104263975_5543539259994966748_n.jpg",
+        "795847354_2176106739635549_3366069716186202437_n.jpg"
+      ];
+      var base = "MSM5/";
+      var viewport = document.getElementById("galleryViewport");
+      var track = document.getElementById("galleryTrack");
+      var prevBtn = document.getElementById("galleryPrev");
+      var nextBtn = document.getElementById("galleryNext");
+      var counter = document.getElementById("galleryCounter");
+      var totalEl = document.getElementById("galleryTotal");
+
+      var perView = 4;
+      var current = 0;
+      var slideWidth = 0;
+      var timer = null;
+
+      function getPerView() {
+        if (window.innerWidth < 600) return 1;
+        if (window.innerWidth < 900) return 2;
+        return 3;
+      }
+
+      function build() {
+        perView = getPerView();
+        current = 0;
+        var all = images.concat(images.slice(0, perView));
+        track.innerHTML = "";
+        track.style.cssText = "display: flex; transition: none; transform: translateX(0);";
+
+        all.forEach(function (name) {
+          var slide = document.createElement("div");
+          slide.className = "gallery-slide";
+          slide.style.cssText = "box-sizing: border-box; padding: 5px; flex: 0 0 auto;";
+
+          var img = document.createElement("img");
+          img.src = base + name;
+          img.alt = "Murrdah Season Monday episode photo";
+          img.loading = "lazy";
+          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4); display: block;";
+          slide.appendChild(img);
+          track.appendChild(slide);
+        });
+
+        totalEl.textContent = images.length;
+        updateSizes();
+      }
+
+      function updateSizes() {
+        slideWidth = viewport.clientWidth / perView;
+        track.querySelectorAll(".gallery-slide").forEach(function (slide) {
+          slide.style.width = slideWidth + "px";
+        });
+        goTo(current, false);
+      }
+
+      function goTo(idx, animate) {
+        current = idx;
+        track.style.transition = animate ? "transform 0.5s ease" : "none";
+        track.style.transform = "translateX(" + (-current * slideWidth) + "px)";
+
+        var first = (current % images.length) + 1;
+        var last = Math.min(images.length, first + perView - 1);
+        counter.textContent = first + "-" + last;
+      }
+
+      function next() {
+        if (current >= images.length) {
+          goTo(0, false);
+          requestAnimationFrame(function () { goTo(1, true); });
+          return;
+        }
+        goTo(current + 1, true);
+      }
+
+      function prev() {
+        if (current === 0) {
+          goTo(images.length, false);
+          requestAnimationFrame(function () { goTo(images.length - 1, true); });
+          return;
+        }
+        goTo(current - 1, true);
+      }
+
+      track.addEventListener("transitionend", function () {
+        if (current === images.length) {
+          goTo(0, false);
+        }
+      });
+
+      function startTimer() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(next, 3000);
+      }
+
+      function stopTimer() {
+        if (timer) { clearInterval(timer); timer = null; }
+      }
+
+      nextBtn.addEventListener("click", function () { next(); startTimer(); });
+      prevBtn.addEventListener("click", function () { prev(); startTimer(); });
+
+      var carousel = document.getElementById("galleryCarousel");
+      carousel.addEventListener("mouseenter", stopTimer);
+      carousel.addEventListener("mouseleave", startTimer);
+
+      var resizeTimer;
+      window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          var newPerView = getPerView();
+          if (newPerView !== perView) {
+            build();
+            startTimer();
+          } else {
+            updateSizes();
+          }
+        }, 250);
+      });
+
+      build();
+      startTimer();
+    })();
+  </script>
   <script>
     const msmShareBtn = document.getElementById('msmShareBtn');
     if (msmShareBtn) {
