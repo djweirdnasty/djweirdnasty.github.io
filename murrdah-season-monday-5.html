@@ -33,7 +33,22 @@
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
-
+  <style>
+    .gallery-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .gallery-lightbox.active { display: flex; }
+    .gallery-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .gallery-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 10000; }
+  </style>
 </head>
 <body>
   <header>
@@ -101,6 +116,10 @@
       <article class='info'></article>
     </section>
   </main>
+  <div class='gallery-lightbox' id='galleryLightbox'>
+    <span class='gallery-lightbox-close' id='galleryLightboxClose'>&times;</span>
+    <img loading='lazy' src='' id='galleryLightboxImg' alt='Enlarged Murrdah Season Monday episode photo'>
+  </div>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">
       <img loading="lazy" src="Stand4Socks.png" alt="Shop Stand4 Socks" style="width: 100%; max-width: 960px; height: auto; display: block; margin: 0 auto;">
@@ -156,7 +175,10 @@
           img.src = base + name;
           img.alt = "Murrdah Season Monday episode photo";
           img.loading = "lazy";
-          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4); display: block;";
+          img.style.cssText = "width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,91,215,0.4); display: block; cursor: zoom-in;";
+          img.addEventListener("click", function () {
+            openLightbox(base + name);
+          });
           slide.appendChild(img);
           track.appendChild(slide);
         });
@@ -215,6 +237,27 @@
       function stopTimer() {
         if (timer) { clearInterval(timer); timer = null; }
       }
+
+      var lightbox = document.getElementById("galleryLightbox");
+      var lightboxImg = document.getElementById("galleryLightboxImg");
+      var lightboxClose = document.getElementById("galleryLightboxClose");
+
+      function openLightbox(src) {
+        lightboxImg.src = src;
+        lightbox.classList.add("active");
+        stopTimer();
+      }
+
+      function closeLightbox() {
+        lightbox.classList.remove("active");
+        startTimer();
+      }
+
+      lightbox.addEventListener("click", closeLightbox);
+      lightboxClose.addEventListener("click", closeLightbox);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && lightbox.classList.contains("active")) closeLightbox();
+      });
 
       nextBtn.addEventListener("click", function () { next(); startTimer(); });
       prevBtn.addEventListener("click", function () { prev(); startTimer(); });
