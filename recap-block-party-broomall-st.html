@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-50T2Z1K2SP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-50T2Z1K2SP');
+    gtag('config', 'GT-WB5FW6G6');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+  <title>Block Party on Broomall St | DJWEIRDNASTY Event Recap</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="description" content="Block Party on Broomall St recap — photos from a block party in South West Philadelphia with DJWEIRDNASTY on the decks.">
+  <meta property="og:title" content="Block Party on Broomall St | DJWEIRDNASTY Event Recap">
+  <meta property="og:description" content="Photos from a block party in South West Philadelphia with DJWEIRDNASTY.">
+  <meta property="og:image" content="https://djweirdnasty.com/A Block Party on Broomall St (South West Philadelphia)/483983575289476.jpg">
+  <meta property="og:url" content="https://djweirdnasty.com/recap-block-party-broomall-st.html">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Block Party on Broomall St | DJWEIRDNASTY Event Recap">
+  <meta name="twitter:description" content="Photos from a block party in South West Philadelphia with DJWEIRDNASTY.">
+  <meta name="twitter:image" content="https://djweirdnasty.com/A Block Party on Broomall St (South West Philadelphia)/483983575289476.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
+  <meta name="google-adsense-account" content="ca-pub-9518165099685321">
+  <style>
+    .recap-carousel {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+    }
+    .recap-carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-carousel-track img {
+      flex: 0 0 33.333%;
+      width: 33.333%;
+      height: auto;
+      object-fit: contain;
+      max-height: 260px;
+      background: #000;
+      cursor: zoom-in;
+      box-sizing: border-box;
+      padding: 0 3px;
+    }
+    .recap-carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .recap-carousel-btn:hover { background: rgba(255,77,143,0.8); }
+    .recap-carousel-btn.prev { left: 8px; }
+    .recap-carousel-btn.next { right: 8px; }
+    .recap-carousel-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
+    .recap-thumbnails {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .recap-thumbnails img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+    .recap-thumbnails img:hover,
+    .recap-thumbnails img.active {
+      opacity: 1;
+      border: 2px solid #ff4d8f;
+    }
+    .recap-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .recap-lightbox.active { display: flex; }
+    .recap-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .recap-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 10000; }
+    .recap-share-btn {
+      background: #ff4d8f;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .recap-share-btn:hover { background: #e63e7a; }
+  </style>
+
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#events">Events</a>
+        <a href="news.html">News</a>
+        <a href="mixtapes.html">Mixtapes</a>
+        <a href="content.html">Content</a>
+        <a href="sol.html">SOL</a>
+        <a href="index.html#newsletter">Newsletter</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy-policy.html">Privacy</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <article class="info" style="text-align: left;">
+      <p><a href="event-recaps.html" style="color: #ffd860;">&larr; Back to Event Recaps</a></p>
+      <h1>Block Party on Broomall St</h1>
+      <p><em>South West Philadelphia</em></p>
+      <p>The block was hot. DJWEIRDNASTY brought the energy to Broomall St in South West Philadelphia for an unforgettable block party. Check out 183 photos from the event below.</p>
+      <h3>Photo Recap</h3>
+      <div class="recap-carousel" id="broomall-block-party-carousel">
+        <button class="recap-carousel-btn prev" onclick="recapCarousel('broomall-block-party-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+        <div class="recap-carousel-track">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483983575289476.jpg" alt="Block Party on Broomall St Photo 1" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984511956049.jpg" alt="Block Party on Broomall St Photo 2" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984515289382.jpg" alt="Block Party on Broomall St Photo 3" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984518622715.jpg" alt="Block Party on Broomall St Photo 4" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984558622711.jpg" alt="Block Party on Broomall St Photo 5" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984561956044.jpg" alt="Block Party on Broomall St Photo 6" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984565289377.jpg" alt="Block Party on Broomall St Photo 7" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984608622706.jpg" alt="Block Party on Broomall St Photo 8" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984615289372.jpg" alt="Block Party on Broomall St Photo 9" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984618622705.jpg" alt="Block Party on Broomall St Photo 10" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984685289365.jpg" alt="Block Party on Broomall St Photo 11" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984688622698.jpg" alt="Block Party on Broomall St Photo 12" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984691956031.jpg" alt="Block Party on Broomall St Photo 13" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984731956027.jpg" alt="Block Party on Broomall St Photo 14" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984748622692.jpg" alt="Block Party on Broomall St Photo 15" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984751956025.jpg" alt="Block Party on Broomall St Photo 16" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984771956023.jpg" alt="Block Party on Broomall St Photo 17" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984798622687.jpg" alt="Block Party on Broomall St Photo 18" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984801956020.jpg" alt="Block Party on Broomall St Photo 19" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984821956018.jpg" alt="Block Party on Broomall St Photo 20" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984961956004.jpg" alt="Block Party on Broomall St Photo 21" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984965289337.jpg" alt="Block Party on Broomall St Photo 22" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483984968622670.jpg" alt="Block Party on Broomall St Photo 23" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985091955991.jpg" alt="Block Party on Broomall St Photo 24" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985121955988.jpg" alt="Block Party on Broomall St Photo 25" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985125289321.jpg" alt="Block Party on Broomall St Photo 26" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985135289320.jpg" alt="Block Party on Broomall St Photo 27" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985205289313.jpg" alt="Block Party on Broomall St Photo 28" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985208622646.jpg" alt="Block Party on Broomall St Photo 29" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985211955979.jpg" alt="Block Party on Broomall St Photo 30" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985278622639.jpg" alt="Block Party on Broomall St Photo 31" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985288622638.jpg" alt="Block Party on Broomall St Photo 32" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985291955971.jpg" alt="Block Party on Broomall St Photo 33" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985378622629.jpg" alt="Block Party on Broomall St Photo 34" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985388622628.jpg" alt="Block Party on Broomall St Photo 35" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985408622626.jpg" alt="Block Party on Broomall St Photo 36" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985431955957.jpg" alt="Block Party on Broomall St Photo 37" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985481955952.jpg" alt="Block Party on Broomall St Photo 38" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985508622616.jpg" alt="Block Party on Broomall St Photo 39" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985515289282.jpg" alt="Block Party on Broomall St Photo 40" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985585289275.jpg" alt="Block Party on Broomall St Photo 41" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985588622608.jpg" alt="Block Party on Broomall St Photo 42" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985645289269.jpg" alt="Block Party on Broomall St Photo 43" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985685289265.jpg" alt="Block Party on Broomall St Photo 44" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985691955931.jpg" alt="Block Party on Broomall St Photo 45" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985908622576.jpg" alt="Block Party on Broomall St Photo 46" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985911955909.jpg" alt="Block Party on Broomall St Photo 47" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985915289242.jpg" alt="Block Party on Broomall St Photo 48" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985988622568.jpg" alt="Block Party on Broomall St Photo 49" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985991955901.jpg" alt="Block Party on Broomall St Photo 50" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483985995289234.jpg" alt="Block Party on Broomall St Photo 51" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986155289218.jpg" alt="Block Party on Broomall St Photo 52" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986158622551.jpg" alt="Block Party on Broomall St Photo 53" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986161955884.jpg" alt="Block Party on Broomall St Photo 54" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986415289192.jpg" alt="Block Party on Broomall St Photo 55" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986418622525.jpg" alt="Block Party on Broomall St Photo 56" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986421955858.jpg" alt="Block Party on Broomall St Photo 57" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986501955850.jpg" alt="Block Party on Broomall St Photo 58" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986505289183.jpg" alt="Block Party on Broomall St Photo 59" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986508622516.jpg" alt="Block Party on Broomall St Photo 60" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986598622507.jpg" alt="Block Party on Broomall St Photo 61" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986605289173.jpg" alt="Block Party on Broomall St Photo 62" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986631955837.jpg" alt="Block Party on Broomall St Photo 63" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986701955830.jpg" alt="Block Party on Broomall St Photo 64" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986758622491.jpg" alt="Block Party on Broomall St Photo 65" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986785289155.jpg" alt="Block Party on Broomall St Photo 66" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483986895289144.jpg" alt="Block Party on Broomall St Photo 67" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987038622463.jpg" alt="Block Party on Broomall St Photo 68" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987041955796.jpg" alt="Block Party on Broomall St Photo 69" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987128622454.jpg" alt="Block Party on Broomall St Photo 70" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987205289113.jpg" alt="Block Party on Broomall St Photo 71" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987251955775.jpg" alt="Block Party on Broomall St Photo 72" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987255289108.jpg" alt="Block Party on Broomall St Photo 73" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987341955766.jpg" alt="Block Party on Broomall St Photo 74" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987345289099.jpg" alt="Block Party on Broomall St Photo 75" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987365289097.jpg" alt="Block Party on Broomall St Photo 76" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987405289093.jpg" alt="Block Party on Broomall St Photo 77" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987485289085.jpg" alt="Block Party on Broomall St Photo 78" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987488622418.jpg" alt="Block Party on Broomall St Photo 79" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987491955751.jpg" alt="Block Party on Broomall St Photo 80" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987581955742.jpg" alt="Block Party on Broomall St Photo 81" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987585289075.jpg" alt="Block Party on Broomall St Photo 82" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987588622408.jpg" alt="Block Party on Broomall St Photo 83" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987705289063.jpg" alt="Block Party on Broomall St Photo 84" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987718622395.jpg" alt="Block Party on Broomall St Photo 85" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987721955728.jpg" alt="Block Party on Broomall St Photo 86" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987835289050.jpg" alt="Block Party on Broomall St Photo 87" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987875289046.jpg" alt="Block Party on Broomall St Photo 88" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483987881955712.jpg" alt="Block Party on Broomall St Photo 89" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483988651955635.jpg" alt="Block Party on Broomall St Photo 90" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483989315288902.jpg" alt="Block Party on Broomall St Photo 91" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483989648622202.jpg" alt="Block Party on Broomall St Photo 92" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990428622124.jpg" alt="Block Party on Broomall St Photo 93" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990498622117.jpg" alt="Block Party on Broomall St Photo 94" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990635288770.jpg" alt="Block Party on Broomall St Photo 95" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990898622077.jpg" alt="Block Party on Broomall St Photo 96" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990901955410.jpg" alt="Block Party on Broomall St Photo 97" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483990905288743.jpg" alt="Block Party on Broomall St Photo 98" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991215288712.jpg" alt="Block Party on Broomall St Photo 99" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991258622041.jpg" alt="Block Party on Broomall St Photo 100" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991271955373.jpg" alt="Block Party on Broomall St Photo 101" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991451955355.jpg" alt="Block Party on Broomall St Photo 102" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991455288688.jpg" alt="Block Party on Broomall St Photo 103" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991558622011.jpg" alt="Block Party on Broomall St Photo 104" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991698621997.jpg" alt="Block Party on Broomall St Photo 105" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991701955330.jpg" alt="Block Party on Broomall St Photo 106" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483991968621970.jpg" alt="Block Party on Broomall St Photo 107" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992001955300.jpg" alt="Block Party on Broomall St Photo 108" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992005288633.jpg" alt="Block Party on Broomall St Photo 109" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992211955279.jpg" alt="Block Party on Broomall St Photo 110" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992381955262.jpg" alt="Block Party on Broomall St Photo 111" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992558621911.jpg" alt="Block Party on Broomall St Photo 112" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992621955238.jpg" alt="Block Party on Broomall St Photo 113" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992738621893.jpg" alt="Block Party on Broomall St Photo 114" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992868621880.jpg" alt="Block Party on Broomall St Photo 115" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992871955213.jpg" alt="Block Party on Broomall St Photo 116" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483992935288540.jpg" alt="Block Party on Broomall St Photo 117" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993001955200.jpg" alt="Block Party on Broomall St Photo 118" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993048621862.jpg" alt="Block Party on Broomall St Photo 119" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993088621858.jpg" alt="Block Party on Broomall St Photo 120" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993218621845.jpg" alt="Block Party on Broomall St Photo 121" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993271955173.jpg" alt="Block Party on Broomall St Photo 122" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993275288506.jpg" alt="Block Party on Broomall St Photo 123" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993355288498.jpg" alt="Block Party on Broomall St Photo 124" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993425288491.jpg" alt="Block Party on Broomall St Photo 125" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993428621824.jpg" alt="Block Party on Broomall St Photo 126" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993528621814.jpg" alt="Block Party on Broomall St Photo 127" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993585288475.jpg" alt="Block Party on Broomall St Photo 128" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993588621808.jpg" alt="Block Party on Broomall St Photo 129" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483993645288469.jpg" alt="Block Party on Broomall St Photo 130" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483994175288416.jpg" alt="Block Party on Broomall St Photo 131" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483994291955071.jpg" alt="Block Party on Broomall St Photo 132" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483994348621732.jpg" alt="Block Party on Broomall St Photo 133" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483994768621690.jpg" alt="Block Party on Broomall St Photo 134" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995068621660.jpg" alt="Block Party on Broomall St Photo 135" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995121954988.jpg" alt="Block Party on Broomall St Photo 136" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995125288321.jpg" alt="Block Party on Broomall St Photo 137" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995231954977.jpg" alt="Block Party on Broomall St Photo 138" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995281954972.jpg" alt="Block Party on Broomall St Photo 139" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995498621617.jpg" alt="Block Party on Broomall St Photo 140" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995698621597.jpg" alt="Block Party on Broomall St Photo 141" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995701954930.jpg" alt="Block Party on Broomall St Photo 142" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483995705288263.jpg" alt="Block Party on Broomall St Photo 143" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996068621560.jpg" alt="Block Party on Broomall St Photo 144" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996145288219.jpg" alt="Block Party on Broomall St Photo 145" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996155288218.jpg" alt="Block Party on Broomall St Photo 146" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996448621522.jpg" alt="Block Party on Broomall St Photo 147" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996458621521.jpg" alt="Block Party on Broomall St Photo 148" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996465288187.jpg" alt="Block Party on Broomall St Photo 149" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996575288176.jpg" alt="Block Party on Broomall St Photo 150" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996578621509.jpg" alt="Block Party on Broomall St Photo 151" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996585288175.jpg" alt="Block Party on Broomall St Photo 152" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996731954827.jpg" alt="Block Party on Broomall St Photo 153" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996735288160.jpg" alt="Block Party on Broomall St Photo 154" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996738621493.jpg" alt="Block Party on Broomall St Photo 155" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996871954813.jpg" alt="Block Party on Broomall St Photo 156" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996875288146.jpg" alt="Block Party on Broomall St Photo 157" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483996878621479.jpg" alt="Block Party on Broomall St Photo 158" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997051954795.jpg" alt="Block Party on Broomall St Photo 159" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997055288128.jpg" alt="Block Party on Broomall St Photo 160" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997058621461.jpg" alt="Block Party on Broomall St Photo 161" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997195288114.jpg" alt="Block Party on Broomall St Photo 162" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997198621447.jpg" alt="Block Party on Broomall St Photo 163" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997201954780.jpg" alt="Block Party on Broomall St Photo 164" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997315288102.jpg" alt="Block Party on Broomall St Photo 165" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997335288100.jpg" alt="Block Party on Broomall St Photo 166" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997345288099.jpg" alt="Block Party on Broomall St Photo 167" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997408621426.jpg" alt="Block Party on Broomall St Photo 168" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997411954759.jpg" alt="Block Party on Broomall St Photo 169" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997415288092.jpg" alt="Block Party on Broomall St Photo 170" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997555288078.jpg" alt="Block Party on Broomall St Photo 171" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997561954744.jpg" alt="Block Party on Broomall St Photo 172" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997568621410.jpg" alt="Block Party on Broomall St Photo 173" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997735288060.jpg" alt="Block Party on Broomall St Photo 174" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997738621393.jpg" alt="Block Party on Broomall St Photo 175" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997741954726.jpg" alt="Block Party on Broomall St Photo 176" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997831954717.jpg" alt="Block Party on Broomall St Photo 177" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997835288050.jpg" alt="Block Party on Broomall St Photo 178" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997841954716.jpg" alt="Block Party on Broomall St Photo 179" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997951954705.jpg" alt="Block Party on Broomall St Photo 180" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997955288038.jpg" alt="Block Party on Broomall St Photo 181" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483997958621371.jpg" alt="Block Party on Broomall St Photo 182" loading="lazy">
+          <img src="A Block Party on Broomall St (South West Philadelphia)/483998121954688.jpg" alt="Block Party on Broomall St Photo 183" loading="lazy">
+        </div>
+        <button class="recap-carousel-btn next" onclick="recapCarousel('broomall-block-party-carousel',1)" aria-label="Next">&rsaquo;</button>
+      </div>
+      <div class="recap-carousel-counter" id="broomall-block-party-carousel-counter">1 / 183</div>
+      <div class="recap-thumbnails" id="broomall-block-party-thumbnails">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483983575289476.jpg" class="recap-thumb" data-index="0" alt="Block Party on Broomall St Thumbnail 1" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984511956049.jpg" class="recap-thumb" data-index="1" alt="Block Party on Broomall St Thumbnail 2" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984515289382.jpg" class="recap-thumb" data-index="2" alt="Block Party on Broomall St Thumbnail 3" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984518622715.jpg" class="recap-thumb" data-index="3" alt="Block Party on Broomall St Thumbnail 4" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984558622711.jpg" class="recap-thumb" data-index="4" alt="Block Party on Broomall St Thumbnail 5" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984561956044.jpg" class="recap-thumb" data-index="5" alt="Block Party on Broomall St Thumbnail 6" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984565289377.jpg" class="recap-thumb" data-index="6" alt="Block Party on Broomall St Thumbnail 7" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984608622706.jpg" class="recap-thumb" data-index="7" alt="Block Party on Broomall St Thumbnail 8" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984615289372.jpg" class="recap-thumb" data-index="8" alt="Block Party on Broomall St Thumbnail 9" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984618622705.jpg" class="recap-thumb" data-index="9" alt="Block Party on Broomall St Thumbnail 10" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984685289365.jpg" class="recap-thumb" data-index="10" alt="Block Party on Broomall St Thumbnail 11" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984688622698.jpg" class="recap-thumb" data-index="11" alt="Block Party on Broomall St Thumbnail 12" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984691956031.jpg" class="recap-thumb" data-index="12" alt="Block Party on Broomall St Thumbnail 13" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984731956027.jpg" class="recap-thumb" data-index="13" alt="Block Party on Broomall St Thumbnail 14" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984748622692.jpg" class="recap-thumb" data-index="14" alt="Block Party on Broomall St Thumbnail 15" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984751956025.jpg" class="recap-thumb" data-index="15" alt="Block Party on Broomall St Thumbnail 16" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984771956023.jpg" class="recap-thumb" data-index="16" alt="Block Party on Broomall St Thumbnail 17" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984798622687.jpg" class="recap-thumb" data-index="17" alt="Block Party on Broomall St Thumbnail 18" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984801956020.jpg" class="recap-thumb" data-index="18" alt="Block Party on Broomall St Thumbnail 19" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984821956018.jpg" class="recap-thumb" data-index="19" alt="Block Party on Broomall St Thumbnail 20" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984961956004.jpg" class="recap-thumb" data-index="20" alt="Block Party on Broomall St Thumbnail 21" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984965289337.jpg" class="recap-thumb" data-index="21" alt="Block Party on Broomall St Thumbnail 22" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483984968622670.jpg" class="recap-thumb" data-index="22" alt="Block Party on Broomall St Thumbnail 23" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985091955991.jpg" class="recap-thumb" data-index="23" alt="Block Party on Broomall St Thumbnail 24" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985121955988.jpg" class="recap-thumb" data-index="24" alt="Block Party on Broomall St Thumbnail 25" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985125289321.jpg" class="recap-thumb" data-index="25" alt="Block Party on Broomall St Thumbnail 26" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985135289320.jpg" class="recap-thumb" data-index="26" alt="Block Party on Broomall St Thumbnail 27" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985205289313.jpg" class="recap-thumb" data-index="27" alt="Block Party on Broomall St Thumbnail 28" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985208622646.jpg" class="recap-thumb" data-index="28" alt="Block Party on Broomall St Thumbnail 29" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985211955979.jpg" class="recap-thumb" data-index="29" alt="Block Party on Broomall St Thumbnail 30" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985278622639.jpg" class="recap-thumb" data-index="30" alt="Block Party on Broomall St Thumbnail 31" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985288622638.jpg" class="recap-thumb" data-index="31" alt="Block Party on Broomall St Thumbnail 32" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985291955971.jpg" class="recap-thumb" data-index="32" alt="Block Party on Broomall St Thumbnail 33" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985378622629.jpg" class="recap-thumb" data-index="33" alt="Block Party on Broomall St Thumbnail 34" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985388622628.jpg" class="recap-thumb" data-index="34" alt="Block Party on Broomall St Thumbnail 35" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985408622626.jpg" class="recap-thumb" data-index="35" alt="Block Party on Broomall St Thumbnail 36" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985431955957.jpg" class="recap-thumb" data-index="36" alt="Block Party on Broomall St Thumbnail 37" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985481955952.jpg" class="recap-thumb" data-index="37" alt="Block Party on Broomall St Thumbnail 38" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985508622616.jpg" class="recap-thumb" data-index="38" alt="Block Party on Broomall St Thumbnail 39" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985515289282.jpg" class="recap-thumb" data-index="39" alt="Block Party on Broomall St Thumbnail 40" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985585289275.jpg" class="recap-thumb" data-index="40" alt="Block Party on Broomall St Thumbnail 41" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985588622608.jpg" class="recap-thumb" data-index="41" alt="Block Party on Broomall St Thumbnail 42" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985645289269.jpg" class="recap-thumb" data-index="42" alt="Block Party on Broomall St Thumbnail 43" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985685289265.jpg" class="recap-thumb" data-index="43" alt="Block Party on Broomall St Thumbnail 44" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985691955931.jpg" class="recap-thumb" data-index="44" alt="Block Party on Broomall St Thumbnail 45" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985908622576.jpg" class="recap-thumb" data-index="45" alt="Block Party on Broomall St Thumbnail 46" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985911955909.jpg" class="recap-thumb" data-index="46" alt="Block Party on Broomall St Thumbnail 47" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985915289242.jpg" class="recap-thumb" data-index="47" alt="Block Party on Broomall St Thumbnail 48" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985988622568.jpg" class="recap-thumb" data-index="48" alt="Block Party on Broomall St Thumbnail 49" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985991955901.jpg" class="recap-thumb" data-index="49" alt="Block Party on Broomall St Thumbnail 50" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483985995289234.jpg" class="recap-thumb" data-index="50" alt="Block Party on Broomall St Thumbnail 51" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986155289218.jpg" class="recap-thumb" data-index="51" alt="Block Party on Broomall St Thumbnail 52" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986158622551.jpg" class="recap-thumb" data-index="52" alt="Block Party on Broomall St Thumbnail 53" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986161955884.jpg" class="recap-thumb" data-index="53" alt="Block Party on Broomall St Thumbnail 54" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986415289192.jpg" class="recap-thumb" data-index="54" alt="Block Party on Broomall St Thumbnail 55" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986418622525.jpg" class="recap-thumb" data-index="55" alt="Block Party on Broomall St Thumbnail 56" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986421955858.jpg" class="recap-thumb" data-index="56" alt="Block Party on Broomall St Thumbnail 57" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986501955850.jpg" class="recap-thumb" data-index="57" alt="Block Party on Broomall St Thumbnail 58" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986505289183.jpg" class="recap-thumb" data-index="58" alt="Block Party on Broomall St Thumbnail 59" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986508622516.jpg" class="recap-thumb" data-index="59" alt="Block Party on Broomall St Thumbnail 60" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986598622507.jpg" class="recap-thumb" data-index="60" alt="Block Party on Broomall St Thumbnail 61" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986605289173.jpg" class="recap-thumb" data-index="61" alt="Block Party on Broomall St Thumbnail 62" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986631955837.jpg" class="recap-thumb" data-index="62" alt="Block Party on Broomall St Thumbnail 63" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986701955830.jpg" class="recap-thumb" data-index="63" alt="Block Party on Broomall St Thumbnail 64" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986758622491.jpg" class="recap-thumb" data-index="64" alt="Block Party on Broomall St Thumbnail 65" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986785289155.jpg" class="recap-thumb" data-index="65" alt="Block Party on Broomall St Thumbnail 66" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483986895289144.jpg" class="recap-thumb" data-index="66" alt="Block Party on Broomall St Thumbnail 67" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987038622463.jpg" class="recap-thumb" data-index="67" alt="Block Party on Broomall St Thumbnail 68" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987041955796.jpg" class="recap-thumb" data-index="68" alt="Block Party on Broomall St Thumbnail 69" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987128622454.jpg" class="recap-thumb" data-index="69" alt="Block Party on Broomall St Thumbnail 70" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987205289113.jpg" class="recap-thumb" data-index="70" alt="Block Party on Broomall St Thumbnail 71" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987251955775.jpg" class="recap-thumb" data-index="71" alt="Block Party on Broomall St Thumbnail 72" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987255289108.jpg" class="recap-thumb" data-index="72" alt="Block Party on Broomall St Thumbnail 73" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987341955766.jpg" class="recap-thumb" data-index="73" alt="Block Party on Broomall St Thumbnail 74" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987345289099.jpg" class="recap-thumb" data-index="74" alt="Block Party on Broomall St Thumbnail 75" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987365289097.jpg" class="recap-thumb" data-index="75" alt="Block Party on Broomall St Thumbnail 76" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987405289093.jpg" class="recap-thumb" data-index="76" alt="Block Party on Broomall St Thumbnail 77" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987485289085.jpg" class="recap-thumb" data-index="77" alt="Block Party on Broomall St Thumbnail 78" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987488622418.jpg" class="recap-thumb" data-index="78" alt="Block Party on Broomall St Thumbnail 79" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987491955751.jpg" class="recap-thumb" data-index="79" alt="Block Party on Broomall St Thumbnail 80" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987581955742.jpg" class="recap-thumb" data-index="80" alt="Block Party on Broomall St Thumbnail 81" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987585289075.jpg" class="recap-thumb" data-index="81" alt="Block Party on Broomall St Thumbnail 82" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987588622408.jpg" class="recap-thumb" data-index="82" alt="Block Party on Broomall St Thumbnail 83" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987705289063.jpg" class="recap-thumb" data-index="83" alt="Block Party on Broomall St Thumbnail 84" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987718622395.jpg" class="recap-thumb" data-index="84" alt="Block Party on Broomall St Thumbnail 85" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987721955728.jpg" class="recap-thumb" data-index="85" alt="Block Party on Broomall St Thumbnail 86" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987835289050.jpg" class="recap-thumb" data-index="86" alt="Block Party on Broomall St Thumbnail 87" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987875289046.jpg" class="recap-thumb" data-index="87" alt="Block Party on Broomall St Thumbnail 88" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483987881955712.jpg" class="recap-thumb" data-index="88" alt="Block Party on Broomall St Thumbnail 89" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483988651955635.jpg" class="recap-thumb" data-index="89" alt="Block Party on Broomall St Thumbnail 90" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483989315288902.jpg" class="recap-thumb" data-index="90" alt="Block Party on Broomall St Thumbnail 91" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483989648622202.jpg" class="recap-thumb" data-index="91" alt="Block Party on Broomall St Thumbnail 92" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990428622124.jpg" class="recap-thumb" data-index="92" alt="Block Party on Broomall St Thumbnail 93" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990498622117.jpg" class="recap-thumb" data-index="93" alt="Block Party on Broomall St Thumbnail 94" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990635288770.jpg" class="recap-thumb" data-index="94" alt="Block Party on Broomall St Thumbnail 95" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990898622077.jpg" class="recap-thumb" data-index="95" alt="Block Party on Broomall St Thumbnail 96" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990901955410.jpg" class="recap-thumb" data-index="96" alt="Block Party on Broomall St Thumbnail 97" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483990905288743.jpg" class="recap-thumb" data-index="97" alt="Block Party on Broomall St Thumbnail 98" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991215288712.jpg" class="recap-thumb" data-index="98" alt="Block Party on Broomall St Thumbnail 99" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991258622041.jpg" class="recap-thumb" data-index="99" alt="Block Party on Broomall St Thumbnail 100" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991271955373.jpg" class="recap-thumb" data-index="100" alt="Block Party on Broomall St Thumbnail 101" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991451955355.jpg" class="recap-thumb" data-index="101" alt="Block Party on Broomall St Thumbnail 102" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991455288688.jpg" class="recap-thumb" data-index="102" alt="Block Party on Broomall St Thumbnail 103" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991558622011.jpg" class="recap-thumb" data-index="103" alt="Block Party on Broomall St Thumbnail 104" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991698621997.jpg" class="recap-thumb" data-index="104" alt="Block Party on Broomall St Thumbnail 105" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991701955330.jpg" class="recap-thumb" data-index="105" alt="Block Party on Broomall St Thumbnail 106" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483991968621970.jpg" class="recap-thumb" data-index="106" alt="Block Party on Broomall St Thumbnail 107" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992001955300.jpg" class="recap-thumb" data-index="107" alt="Block Party on Broomall St Thumbnail 108" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992005288633.jpg" class="recap-thumb" data-index="108" alt="Block Party on Broomall St Thumbnail 109" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992211955279.jpg" class="recap-thumb" data-index="109" alt="Block Party on Broomall St Thumbnail 110" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992381955262.jpg" class="recap-thumb" data-index="110" alt="Block Party on Broomall St Thumbnail 111" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992558621911.jpg" class="recap-thumb" data-index="111" alt="Block Party on Broomall St Thumbnail 112" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992621955238.jpg" class="recap-thumb" data-index="112" alt="Block Party on Broomall St Thumbnail 113" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992738621893.jpg" class="recap-thumb" data-index="113" alt="Block Party on Broomall St Thumbnail 114" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992868621880.jpg" class="recap-thumb" data-index="114" alt="Block Party on Broomall St Thumbnail 115" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992871955213.jpg" class="recap-thumb" data-index="115" alt="Block Party on Broomall St Thumbnail 116" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483992935288540.jpg" class="recap-thumb" data-index="116" alt="Block Party on Broomall St Thumbnail 117" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993001955200.jpg" class="recap-thumb" data-index="117" alt="Block Party on Broomall St Thumbnail 118" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993048621862.jpg" class="recap-thumb" data-index="118" alt="Block Party on Broomall St Thumbnail 119" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993088621858.jpg" class="recap-thumb" data-index="119" alt="Block Party on Broomall St Thumbnail 120" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993218621845.jpg" class="recap-thumb" data-index="120" alt="Block Party on Broomall St Thumbnail 121" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993271955173.jpg" class="recap-thumb" data-index="121" alt="Block Party on Broomall St Thumbnail 122" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993275288506.jpg" class="recap-thumb" data-index="122" alt="Block Party on Broomall St Thumbnail 123" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993355288498.jpg" class="recap-thumb" data-index="123" alt="Block Party on Broomall St Thumbnail 124" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993425288491.jpg" class="recap-thumb" data-index="124" alt="Block Party on Broomall St Thumbnail 125" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993428621824.jpg" class="recap-thumb" data-index="125" alt="Block Party on Broomall St Thumbnail 126" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993528621814.jpg" class="recap-thumb" data-index="126" alt="Block Party on Broomall St Thumbnail 127" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993585288475.jpg" class="recap-thumb" data-index="127" alt="Block Party on Broomall St Thumbnail 128" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993588621808.jpg" class="recap-thumb" data-index="128" alt="Block Party on Broomall St Thumbnail 129" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483993645288469.jpg" class="recap-thumb" data-index="129" alt="Block Party on Broomall St Thumbnail 130" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483994175288416.jpg" class="recap-thumb" data-index="130" alt="Block Party on Broomall St Thumbnail 131" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483994291955071.jpg" class="recap-thumb" data-index="131" alt="Block Party on Broomall St Thumbnail 132" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483994348621732.jpg" class="recap-thumb" data-index="132" alt="Block Party on Broomall St Thumbnail 133" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483994768621690.jpg" class="recap-thumb" data-index="133" alt="Block Party on Broomall St Thumbnail 134" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995068621660.jpg" class="recap-thumb" data-index="134" alt="Block Party on Broomall St Thumbnail 135" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995121954988.jpg" class="recap-thumb" data-index="135" alt="Block Party on Broomall St Thumbnail 136" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995125288321.jpg" class="recap-thumb" data-index="136" alt="Block Party on Broomall St Thumbnail 137" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995231954977.jpg" class="recap-thumb" data-index="137" alt="Block Party on Broomall St Thumbnail 138" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995281954972.jpg" class="recap-thumb" data-index="138" alt="Block Party on Broomall St Thumbnail 139" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995498621617.jpg" class="recap-thumb" data-index="139" alt="Block Party on Broomall St Thumbnail 140" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995698621597.jpg" class="recap-thumb" data-index="140" alt="Block Party on Broomall St Thumbnail 141" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995701954930.jpg" class="recap-thumb" data-index="141" alt="Block Party on Broomall St Thumbnail 142" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483995705288263.jpg" class="recap-thumb" data-index="142" alt="Block Party on Broomall St Thumbnail 143" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996068621560.jpg" class="recap-thumb" data-index="143" alt="Block Party on Broomall St Thumbnail 144" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996145288219.jpg" class="recap-thumb" data-index="144" alt="Block Party on Broomall St Thumbnail 145" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996155288218.jpg" class="recap-thumb" data-index="145" alt="Block Party on Broomall St Thumbnail 146" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996448621522.jpg" class="recap-thumb" data-index="146" alt="Block Party on Broomall St Thumbnail 147" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996458621521.jpg" class="recap-thumb" data-index="147" alt="Block Party on Broomall St Thumbnail 148" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996465288187.jpg" class="recap-thumb" data-index="148" alt="Block Party on Broomall St Thumbnail 149" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996575288176.jpg" class="recap-thumb" data-index="149" alt="Block Party on Broomall St Thumbnail 150" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996578621509.jpg" class="recap-thumb" data-index="150" alt="Block Party on Broomall St Thumbnail 151" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996585288175.jpg" class="recap-thumb" data-index="151" alt="Block Party on Broomall St Thumbnail 152" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996731954827.jpg" class="recap-thumb" data-index="152" alt="Block Party on Broomall St Thumbnail 153" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996735288160.jpg" class="recap-thumb" data-index="153" alt="Block Party on Broomall St Thumbnail 154" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996738621493.jpg" class="recap-thumb" data-index="154" alt="Block Party on Broomall St Thumbnail 155" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996871954813.jpg" class="recap-thumb" data-index="155" alt="Block Party on Broomall St Thumbnail 156" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996875288146.jpg" class="recap-thumb" data-index="156" alt="Block Party on Broomall St Thumbnail 157" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483996878621479.jpg" class="recap-thumb" data-index="157" alt="Block Party on Broomall St Thumbnail 158" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997051954795.jpg" class="recap-thumb" data-index="158" alt="Block Party on Broomall St Thumbnail 159" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997055288128.jpg" class="recap-thumb" data-index="159" alt="Block Party on Broomall St Thumbnail 160" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997058621461.jpg" class="recap-thumb" data-index="160" alt="Block Party on Broomall St Thumbnail 161" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997195288114.jpg" class="recap-thumb" data-index="161" alt="Block Party on Broomall St Thumbnail 162" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997198621447.jpg" class="recap-thumb" data-index="162" alt="Block Party on Broomall St Thumbnail 163" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997201954780.jpg" class="recap-thumb" data-index="163" alt="Block Party on Broomall St Thumbnail 164" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997315288102.jpg" class="recap-thumb" data-index="164" alt="Block Party on Broomall St Thumbnail 165" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997335288100.jpg" class="recap-thumb" data-index="165" alt="Block Party on Broomall St Thumbnail 166" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997345288099.jpg" class="recap-thumb" data-index="166" alt="Block Party on Broomall St Thumbnail 167" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997408621426.jpg" class="recap-thumb" data-index="167" alt="Block Party on Broomall St Thumbnail 168" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997411954759.jpg" class="recap-thumb" data-index="168" alt="Block Party on Broomall St Thumbnail 169" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997415288092.jpg" class="recap-thumb" data-index="169" alt="Block Party on Broomall St Thumbnail 170" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997555288078.jpg" class="recap-thumb" data-index="170" alt="Block Party on Broomall St Thumbnail 171" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997561954744.jpg" class="recap-thumb" data-index="171" alt="Block Party on Broomall St Thumbnail 172" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997568621410.jpg" class="recap-thumb" data-index="172" alt="Block Party on Broomall St Thumbnail 173" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997735288060.jpg" class="recap-thumb" data-index="173" alt="Block Party on Broomall St Thumbnail 174" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997738621393.jpg" class="recap-thumb" data-index="174" alt="Block Party on Broomall St Thumbnail 175" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997741954726.jpg" class="recap-thumb" data-index="175" alt="Block Party on Broomall St Thumbnail 176" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997831954717.jpg" class="recap-thumb" data-index="176" alt="Block Party on Broomall St Thumbnail 177" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997835288050.jpg" class="recap-thumb" data-index="177" alt="Block Party on Broomall St Thumbnail 178" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997841954716.jpg" class="recap-thumb" data-index="178" alt="Block Party on Broomall St Thumbnail 179" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997951954705.jpg" class="recap-thumb" data-index="179" alt="Block Party on Broomall St Thumbnail 180" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997955288038.jpg" class="recap-thumb" data-index="180" alt="Block Party on Broomall St Thumbnail 181" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483997958621371.jpg" class="recap-thumb" data-index="181" alt="Block Party on Broomall St Thumbnail 182" loading="lazy">
+        <img src="A Block Party on Broomall St (South West Philadelphia)/483998121954688.jpg" class="recap-thumb" data-index="182" alt="Block Party on Broomall St Thumbnail 183" loading="lazy">
+      </div>
+      <button class="recap-share-btn share-button" data-title="Block Party on Broomall St | DJWEIRDNASTY Event Recap" data-url="https://djweirdnasty.com/recap-block-party-broomall-st.html">&#128279; Share</button>
+      <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.15);">
+        <h3 style="color: #ffd860; margin-bottom: 1rem;">Keep Exploring</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+          <a href="event-recaps.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">More Event Recaps</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Photos and highlights from past DJWEIRDNASTY events.</p>
+          </a>
+          <a href="mixtapes.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Listen to Mixtapes</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Hear the sets that keep the party going.</p>
+          </a>
+          <a href="news.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Latest News</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Music, sports, entertainment, and national headlines.</p>
+          </a>
+          <a href="index.html#events" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Upcoming Events</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">See where DJWEIRDNASTY is playing next.</p>
+          </a>
+        </div>
+      </div>
+    </article>
+  </main>
+  <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
+    <span class="recap-lightbox-close">&times;</span>
+    <img loading="lazy" src="" id="recap-lightbox-img" alt="Enlarged photo">
+  </div>
+  <footer class="container">
+    <img loading="lazy" src="2026djweirdnastyllc.webp" alt="&copy; 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+  </footer>
+<script src="site.js?v=10"></script>
+<script>
+  var recapTimers = {};
+  var RECAP_PER_PAGE = 3;
+
+  function recapCarouselState(c) {
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    var total = imgs.length;
+    var maxStart = Math.max(0, total - RECAP_PER_PAGE);
+    return { total: total, maxStart: maxStart };
+  }
+
+  function recapUpdate(id) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = parseInt(c.dataset.current || '0', 10);
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    var track = c.querySelector('.recap-carousel-track');
+    track.style.transform = 'translateX(-' + (current * (100 / RECAP_PER_PAGE)) + '%)';
+    var counter = document.getElementById(id + '-counter');
+    if (counter) {
+      var end = Math.min(current + RECAP_PER_PAGE, state.total);
+      counter.textContent = (current + 1) + ' \u2013 ' + end + ' / ' + state.total;
+    }
+    var thumbs = document.querySelectorAll('.recap-thumb');
+    thumbs.forEach(function(t) { t.classList.remove('active'); });
+    var activeThumb = document.querySelector('.recap-thumb[data-index="' + current + '"]');
+    if (activeThumb) activeThumb.classList.add('active');
+    return current;
+  }
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var current = parseInt(c.dataset.current || '0', 10);
+    var state = recapCarouselState(c);
+    current = current + dir;
+    if (current < 0) current = 0;
+    if (current > state.maxStart) current = state.maxStart;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapGoTo(id, index) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = index;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapStartAuto(id, interval) {
+    recapStopAuto(id);
+    recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 4000);
+  }
+
+  function recapStopAuto(id) {
+    if (recapTimers[id]) { clearInterval(recapTimers[id]); delete recapTimers[id]; }
+  }
+
+  function recapLightbox(src) {
+    var lb = document.getElementById('recap-lightbox');
+    var lbImg = document.getElementById('recap-lightbox-img');
+    lbImg.src = src;
+    lb.classList.add('active');
+  }
+
+  function recapCloseLightbox() {
+    document.getElementById('recap-lightbox').classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') recapCloseLightbox();
+    var c = document.getElementById('broomall-block-party-carousel');
+    if (!c) return;
+    if (e.key === 'ArrowLeft') recapCarousel('broomall-block-party-carousel', -1);
+    if (e.key === 'ArrowRight') recapCarousel('broomall-block-party-carousel', 1);
+  });
+
+  (function() {
+    var c = document.getElementById('broomall-block-party-carousel');
+    if (!c) return;
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    imgs.forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        recapLightbox(img.src);
+      });
+    });
+    c.addEventListener('mouseenter', function() { recapStopAuto('broomall-block-party-carousel'); });
+    c.addEventListener('mouseleave', function() { recapStartAuto('broomall-block-party-carousel'); });
+
+    var thumbs = document.getElementById('broomall-block-party-thumbnails');
+    if (thumbs) {
+      thumbs.querySelectorAll('.recap-thumb').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var idx = parseInt(thumb.getAttribute('data-index'), 10);
+          recapGoTo('broomall-block-party-carousel', idx);
+          recapStopAuto('broomall-block-party-carousel');
+        });
+      });
+    }
+
+    recapUpdate('broomall-block-party-carousel');
+    recapStartAuto('broomall-block-party-carousel', 4000);
+  })();
+</script>
+</body>
+</html>
