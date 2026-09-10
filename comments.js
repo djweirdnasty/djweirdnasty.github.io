@@ -360,6 +360,12 @@ function renderLoginForm(holder, authArea, formArea) {
       errEl.textContent = 'Your browser is blocking local storage (private browsing mode). Please disable it to log in.';
       return;
     }
+    if (typeof gtag === 'function') {
+      gtag('event', 'login', {
+        'event_category': 'engagement',
+        'event_label': 'comments'
+      });
+    }
     renderAuthArea(authArea, formArea);
   };
 
@@ -444,6 +450,12 @@ function renderRegisterForm(holder, authArea, formArea) {
     if (!getToken()) {
       errEl.textContent = 'Your browser is blocking local storage (private browsing mode). Please disable it to sign up.';
       return;
+    }
+    if (typeof gtag === 'function') {
+      gtag('event', 'sign_up', {
+        'event_category': 'engagement',
+        'event_label': 'comments'
+      });
     }
     renderAuthArea(authArea, formArea);
   };
