@@ -318,7 +318,9 @@
     const msmShareBtn = document.getElementById('msmShareBtn');
     if (msmShareBtn) {
       msmShareBtn.addEventListener('click', function() {
-        const url = this.getAttribute('data-url') || 'https://djweirdnasty.com/murrdah-season-monday-5.html';
+        const raw = this.getAttribute('data-url') || 'https://djweirdnasty.com/murrdah-season-monday-5.html';
+        const sep = raw.indexOf('?') === -1 ? '?' : '&';
+        const url = raw + sep + 'utm_source=share&utm_medium=social&utm_campaign=latest';
         const title = this.getAttribute('data-title') || document.title;
         if (window.gtag) gtag('event', 'share', { event_label: title, page_location: url });
 

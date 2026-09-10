@@ -67,13 +67,79 @@
   <main class="container">
     <section id="not-found" class="info">
       <h2>404 — Page Not Found</h2>
-      <p>Sorry, the page you are looking for does not exist or has been moved.</p>
+      <p id="missing-path">Sorry, the page you are looking for does not exist or has been moved.</p>
       <p>
         <a href="index.html" class="playlist-link">Go back home</a>
         <a href="news.html" class="playlist-link">Browse the news</a>
+        <a href="mixtapes.html" class="playlist-link">Mixtapes</a>
+        <a href="sol.html" class="playlist-link">SOL DJ Booking</a>
         <a href="contact.html" class="playlist-link">Contact us</a>
       </p>
+      <h3 style="margin-top: 2rem;">Latest Content</h3>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1rem;">
+        <a href="news.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Latest News</a>
+        <a href="news-sports.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Sports</a>
+        <a href="news-music.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Music</a>
+        <a href="content.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Content</a>
+        <a href="murrdah-season-monday-5.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Murrdah Season Monday</a>
+        <a href="event-jersey-jam.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">Jersey Jam</a>
+        <a href="sol.html" class="playlist-link" style="display: inline-block; margin: 0.25rem;">SOL</a>
+      </div>
     </section>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        document.getElementById('missing-path').innerHTML = 'Sorry, <code style="color:#ff4d8f;">' + path + '</code> does not exist or has been moved.';
+
+        function log404() {
+          if (window.gtag) gtag('event', '404_not_found', { event_label: path, page_location: window.location.href });
+        }
+
+        function redirect(to) {
+          if (to && to !== path) {
+            window.location.replace(to + window.location.search + window.location.hash);
+          }
+        }
+
+        function tryHtml() {
+          if (path === '/' || path === '' || path.indexOf('.') !== -1) {
+            log404();
+            return;
+          }
+          var base = path.replace(/^\//, '');
+          var candidate = '/' + base + '.html';
+          fetch(candidate, { method: 'HEAD', mode: 'same-origin' })
+            .then(function (res) {
+              if (res.ok) {
+                redirect(candidate);
+              } else {
+                log404();
+              }
+            })
+            .catch(function () {
+              log404();
+            });
+        }
+
+        fetch('redirects.json')
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            var map = data && data.redirects ? data.redirects : {};
+            if (map[path]) {
+              redirect(map[path]);
+              return;
+            }
+            if (data.try_html !== false) {
+              tryHtml();
+            } else {
+              log404();
+            }
+          })
+          .catch(function () {
+            tryHtml();
+          });
+      })();
+    </script>
   </main>
   <footer class="container">
     <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: block; max-width: 100%; margin: 0 auto 1.5rem;">

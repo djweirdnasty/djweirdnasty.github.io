@@ -337,7 +337,20 @@
   // ===== Social Share Buttons =====
   var existingShare = document.querySelector('.share-button');
   if (existingShare) {
-    var shareUrl = existingShare.getAttribute('data-url') || window.location.href;
+    var rawUrl = existingShare.getAttribute('data-url') || window.location.href;
+    var shareUrl;
+    try {
+      var u = new URL(rawUrl);
+      u.searchParams.set('utm_source', 'share');
+      u.searchParams.set('utm_medium', 'social');
+      if (!u.searchParams.get('utm_campaign')) {
+        u.searchParams.set('utm_campaign', existingShare.getAttribute('data-campaign') || 'latest');
+      }
+      shareUrl = u.toString();
+    } catch (e) {
+      var sep = rawUrl.indexOf('?') === -1 ? '?' : '&';
+      shareUrl = rawUrl + sep + 'utm_source=share&utm_medium=social&utm_campaign=' + encodeURIComponent(existingShare.getAttribute('data-campaign') || 'latest');
+    }
     var shareTitle = existingShare.getAttribute('data-title') || document.title;
 
     var socialDiv = document.createElement('div');

@@ -1,0 +1,5 @@
+{
+  "redirects": {},
+  "try_html": true,
+  "note": "Add old paths as keys and current paths as values. Example: '/old-page.html': '/new-page.html'"
+}
