@@ -260,6 +260,20 @@
     }
   }
 
+  // ===== Newsletter Signup CTA (all article pages) =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    if (!article.querySelector('.article-newsletter-cta')) {
+      var nlCta = document.createElement('div');
+      nlCta.className = 'article-newsletter-cta';
+      nlCta.style.cssText = 'margin-top: 2rem; padding: 1.5rem; background: rgba(255,77,143,0.08); border: 1px solid #ff4d8f; border-radius: 12px; text-align: center;';
+      nlCta.innerHTML =
+        '<h3 style="color: #ff5bd7; margin-top: 0;">Stay in the Loop</h3>' +
+        '<p style="color: #ccc; margin-bottom: 1rem;">Get the latest from DJWEIRDNASTY &mdash; new articles, mixtapes, events, and exclusive content delivered to your inbox.</p>' +
+        '<a href="index.html#newsletter" style="display: inline-block; background: #ff4d8f; color: #fff; padding: 0.7rem 2rem; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 1rem; transition: background 0.2s;" onmouseover="this.style.background=\'#e63e7a\'" onmouseout="this.style.background=\'#ff4d8f\'">Subscribe Now</a>';
+      article.appendChild(nlCta);
+    }
+  }
+
   // ===== Scroll Animations =====
   var animateElements = document.querySelectorAll('.event-card, .mixtape-card, .featured-video-card');
   animateElements.forEach(function(el) {
