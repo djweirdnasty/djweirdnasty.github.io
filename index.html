@@ -717,13 +717,28 @@
               var halfScroll = news.length * cardW;
               var maxPos = 2 * halfScroll - cardW;
               var currentPos = 0;
-              setInterval(function() {
+              var newsTimer = null;
+              var newsPaused = false;
+              function newsScroll() {
+                if (newsPaused) return;
                 currentPos += cardW;
                 if (currentPos > maxPos) {
                   currentPos = 0;
                 }
                 ng.scrollTo({ left: currentPos, behavior: currentPos === 0 ? 'auto' : 'smooth' });
-              }, 4000);
+              }
+              function newsStartAuto() {
+                if (newsTimer) clearInterval(newsTimer);
+                newsTimer = setInterval(newsScroll, 7000);
+              }
+              function newsStopAuto() {
+                if (newsTimer) { clearInterval(newsTimer); newsTimer = null; }
+              }
+              ng.addEventListener('mouseenter', newsStopAuto);
+              ng.addEventListener('mouseleave', newsStartAuto);
+              ng.addEventListener('touchstart', newsStopAuto);
+              ng.addEventListener('touchend', function() { setTimeout(newsStartAuto, 3000); });
+              newsStartAuto();
             }
           }
           var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,4);
@@ -804,7 +819,7 @@
 
     function recapStartAuto(id, interval) {
       recapStopAuto(id);
-      recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 4000);
+      recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 7000);
     }
 
     function recapStopAuto(id) {
@@ -865,8 +880,10 @@
       });
       c.addEventListener('mouseenter', function() { recapStopAuto(id); });
       c.addEventListener('mouseleave', function() { recapStartAuto(id); });
+      c.addEventListener('touchstart', function() { recapStopAuto(id); });
+      c.addEventListener('touchend', function() { setTimeout(function() { recapStartAuto(id); }, 3000); });
       recapUpdate(id);
-      recapStartAuto(id, 4000);
+      recapStartAuto(id, 7000);
     })();
   </script>
 
