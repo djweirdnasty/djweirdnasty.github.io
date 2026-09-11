@@ -1190,5 +1190,13 @@
     "updated": 1788624000,
     "published": 1788624000,
     "desc": "St. Louis rapper Sexyy Red faces a potential $5 million default judgment after allegedly sharing the home address of her child's paternal grandmother online."
+  },
+  {
+    "path": "/news-ai-safety-extinction-risk.html",
+    "title": "AI Safety Debate Intensifies as Researchers Warn of Potential Extinction Risk",
+    "img": "/ai.webp",
+    "updated": 1788624000,
+    "published": 1788624000,
+    "desc": "Researchers with experience at OpenAI and Anthropic warn that increasingly powerful AI systems could eventually pose an existential threat to humanity."
   }
 ]
