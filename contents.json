@@ -1198,5 +1198,13 @@
     "updated": 1788624000,
     "published": 1788624000,
     "desc": "Researchers with experience at OpenAI and Anthropic warn that increasingly powerful AI systems could eventually pose an existential threat to humanity."
+  },
+  {
+    "path": "/news-911-25-years-later.html",
+    "title": "25 Years Later, America Reflects on the Lives and Legacy of 9/11",
+    "img": "/911-25-years-later.png",
+    "updated": 1788710400,
+    "published": 1788710400,
+    "desc": "A quarter-century after the September 11 terrorist attacks, Americans gathered to remember the 2,977 people killed and reflect on an event that permanently altered the country."
   }
 ]
