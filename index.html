@@ -66,7 +66,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=17">
+  <link rel="stylesheet" href="style.css?v=18">
   <link href="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.css" rel="stylesheet" />
   <link rel="stylesheet" href="sol-styles.css?v=1">
   <script src="https://unpkg.com/mapbox-gl@3.9.4/dist/mapbox-gl.js"></script>
@@ -546,20 +546,18 @@
 
 
     <section id="latest-news" class="info">
-      <h2>Latest News</h2>
+      <h2>Trending Now</h2>
+      <p>Most read articles this week.</p>
+      <div class="trending-row" id="trending-grid">
+        <p style="text-align: center; color: #888;">Loading trending articles...</p>
+      </div>
+
+      <h2 style="margin-top: 2.5rem;">Latest News</h2>
       <p>Top stories from DJWEIRDNASTY News.</p>
       <div class="news-carousel-wrapper" style="position: relative; overflow: hidden;">
         <div class="news-carousel" id="latest-news-grid" style="display: flex; gap: 1rem; overflow: hidden; scroll-snap-type: x mandatory; padding: 0.5rem 0;">
           <p style="text-align: center; color: #888;">Loading latest news...</p>
         </div>
-      </div>
-    </section>
-
-    <section id="trending" class="info">
-      <h2>Trending Now</h2>
-      <p>Most read articles this week.</p>
-      <div class="events-grid" id="trending-grid">
-        <p style="text-align: center; color: #888;">Loading trending articles...</p>
       </div>
     </section>
 
@@ -913,6 +911,6 @@
     })();
   </script>
 
-  <script src="site.js?v=17"></script>
+  <script src="site.js?v=18"></script>
 </body>
 </html>

@@ -2076,20 +2076,56 @@ body.light-mode .cookie-banner {
 }
 
 /* ===== Trending Section ===== */
-#trending .events-grid {
-  margin-top: 1.5rem;
+.trending-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
-#trending .event-card {
+.trending-row .event-card {
+  flex: 1 1 calc(25% - 0.75rem);
+  max-width: calc(25% - 0.75rem);
+  min-width: 160px;
   position: relative;
+  padding: 0.75rem;
+  text-align: left;
 }
-#trending .event-card .event-flyer {
+.trending-row .event-card .event-flyer {
   width: 100%;
-  height: 140px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 8px;
   margin-bottom: 0.5rem;
 }
-#trending .event-card h3 {
-  font-size: 0.95rem;
+.trending-row .event-card h3 {
+  font-size: 0.85rem;
+  line-height: 1.25;
+  margin: 0 0 0.35rem;
+}
+.trending-row .event-card p {
+  font-size: 0.8rem;
   line-height: 1.3;
+  color: #ccc;
+  margin: 0 0 0.5rem;
+}
+.trending-row .event-card .playlist-link {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+@media (max-width: 768px) {
+  .trending-row .event-card {
+    flex: 1 1 calc(50% - 0.75rem);
+    max-width: calc(50% - 0.75rem);
+    min-width: 130px;
+  }
+  .trending-row .event-card .event-flyer {
+    height: 80px;
+  }
+  .trending-row .event-card h3 {
+    font-size: 0.75rem;
+  }
+  .trending-row .event-card p {
+    font-size: 0.75rem;
+  }
 }

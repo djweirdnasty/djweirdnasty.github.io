@@ -898,12 +898,12 @@
         trendingGrid.innerHTML = top.map(function(s) {
           var i = s.item;
           var t = (i.title || '').replace(/\s*\|\s*DJWEIRDNASTY.*$/i, '');
-          var d = i.desc ? i.desc.substring(0, 120) : 'Read the full story.';
-          var badge = s.views > 0 ? '<span style="position:absolute;top:8px;right:8px;background:#ff4d8f;color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:999px;font-weight:700;">' + s.views + ' reads</span>' : '';
+          var d = i.desc ? i.desc.substring(0, 80) : 'Read the full story.';
+          var badge = s.views > 0 ? '<span style="position:absolute;top:6px;right:6px;background:#ff4d8f;color:#fff;font-size:0.65rem;padding:2px 6px;border-radius:999px;font-weight:700;">' + s.views + ' reads</span>' : '';
           return '<article class="event-card" style="position:relative;">' + badge +
             '<img loading="lazy" src="' + (i.img || '') + '" alt="' + t + '" class="event-flyer">' +
-            '<h3 style="font-size:0.95rem;line-height:1.3;">' + t + '</h3>' +
-            '<p style="font-size:0.85rem;color:#ccc;">' + d + '</p>' +
+            '<h3 style="font-size:0.85rem;line-height:1.25;">' + t + '</h3>' +
+            '<p style="font-size:0.8rem;color:#ccc;margin-bottom:0.5rem;">' + d + '...</p>' +
             '<a href="' + i.path + '" class="playlist-link">Read more</a></article>';
         }).join('');
       })
