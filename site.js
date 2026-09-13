@@ -1,24 +1,114 @@
 (function() {
   'use strict';
 
-  // ===== Mobile Hamburger Nav =====
+  // ===== Mobile Header & Drawer =====
+  var header = document.querySelector('header');
   var nav = document.querySelector('header nav');
-  if (nav) {
-    var toggle = document.createElement('button');
-    toggle.className = 'nav-toggle';
-    toggle.setAttribute('aria-label', 'Toggle menu');
-    toggle.innerHTML = '<span></span><span></span><span></span>';
-    nav.parentNode.insertBefore(toggle, nav);
-    toggle.addEventListener('click', function() {
-      toggle.classList.toggle('open');
-      nav.classList.toggle('open');
+  var searchOverlay, searchInput;
+
+  if (header && nav) {
+    // Create mobile header bar
+    var mobileHeader = document.createElement('div');
+    mobileHeader.className = 'mobile-header-bar';
+    mobileHeader.innerHTML =
+      '<button class="mobile-menu-btn" aria-label="Open menu" title="Menu">' +
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect y="5" width="24" height="2" rx="1" fill="#fff"/><rect y="11" width="24" height="2" rx="1" fill="#fff"/><rect y="17" width="24" height="2" rx="1" fill="#fff"/></svg>' +
+      '</button>' +
+      '<a href="index.html" class="site-banner mobile-logo" aria-label="DJWEIRDNASTY Home">' +
+      '<img src="djweirdnasty-banner.webp" alt="DJWEIRDNASTY" />' +
+      '</a>' +
+      '<button class="mobile-search-btn" aria-label="Search" title="Search">' +
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a8 8 0 0 1 8 8 8 8 0 0 1-1.6 4.8l5.1 5.1a1 1 0 0 1-1.4 1.4l-5.1-5.1A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z" fill="#fff"/></svg>' +
+      '</button>';
+    header.querySelector('.container').appendChild(mobileHeader);
+
+    // Create overlay
+    var overlay = document.createElement('div');
+    overlay.className = 'mobile-nav-overlay';
+    document.body.appendChild(overlay);
+
+    // Create drawer
+    var drawer = document.createElement('div');
+    drawer.className = 'mobile-nav-drawer';
+    drawer.setAttribute('aria-label', 'Main navigation');
+    drawer.innerHTML =
+      '<div class="drawer-top">' +
+      '<h2>Menu</h2>' +
+      '<button class="drawer-close" aria-label="Close menu">&times;</button>' +
+      '</div>' +
+      '<div class="drawer-section">' +
+      '<p class="drawer-section-title">Sections</p>' +
+      '<a href="index.html">Home</a>' +
+      '<a href="news.html">News</a>' +
+      '<a href="news-music.html">Music</a>' +
+      '<a href="news-entertainment.html">Entertainment</a>' +
+      '<a href="news-sports.html">Sports</a>' +
+      '<a href="news-national.html">National</a>' +
+      '</div>' +
+      '<div class="drawer-section">' +
+      '<p class="drawer-section-title">More</p>' +
+      '<a href="mixtapes.html">Mixtapes</a>' +
+      '<a href="content.html">Content</a>' +
+      '<a href="sol.html">SOL / Booking</a>' +
+      '<a href="index.html#newsletter">Newsletter</a>' +
+      '<a href="index.html#events">Events</a>' +
+      '</div>' +
+      '<div class="drawer-section">' +
+      '<p class="drawer-section-title">Contact Us</p>' +
+      '<a href="submit-tip.html">Got A Tip? Photo? Video?</a>' +
+      '<a href="contact.html">General Inquiries</a>' +
+      '<a href="contact.html#submit-music">Music Submissions</a>' +
+      '</div>' +
+      '<div class="drawer-section">' +
+      '<p class="drawer-section-title">Other</p>' +
+      '<a href="index.html#about">About Us</a>' +
+      '<a href="privacy-policy.html">Privacy</a>' +
+      '<a href="privacy-policy.html#terms">Terms</a>' +
+      '</div>' +
+      '<div class="drawer-section">' +
+      '<p class="drawer-section-title">Follow</p>' +
+      '<div class="drawer-socials">' +
+      '<a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">' +
+      '<svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06.41-2.23.06-1.27.07-1.65.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.28-.06 1.69-.07 4.89-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.12 1.38C1.35 2.67.94 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.12.66.66 1.33 1.08 2.12 1.38.76.3 1.64.5 2.91.56 1.28.06 1.69.07 4.95.07s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.3 1.46-.72 2.12-1.38.66-.66 1.08-1.33 1.38-2.12.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.3-.79-.72-1.46-1.38-2.12-.66-.66-1.33-1.08-2.12-1.38-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0z"/><path d="M12 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84zm0 10.16A4 4 0 1 1 12 8a4 4 0 0 1 0 8z"/><circle cx="18.41" cy="5.59" r="1.44"/></svg>' +
+      '</a>' +
+      '<a href="https://www.tiktok.com/@iamdjweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="TikTok">' +
+      '<svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/></svg>' +
+      '</a>' +
+      '<a href="https://audiomack.com/ayoweird" target="_blank" rel="noopener noreferrer" aria-label="Audiomack">' +
+      '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg>' +
+      '</a>' +
+      '<a href="https://www.youtube.com/@djweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="YouTube">' +
+      '<svg viewBox="0 0 24 24"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.92 24 12 24 12s0-3.92-.5-5.8zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>' +
+      '</a>' +
+      '</div>' +
+      '</div>';
+    document.body.appendChild(drawer);
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    mobileHeader.querySelector('.mobile-menu-btn').addEventListener('click', openDrawer);
+    overlay.addEventListener('click', closeDrawer);
+    drawer.querySelector('.drawer-close').addEventListener('click', closeDrawer);
+    drawer.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() { setTimeout(closeDrawer, 150); });
     });
-    // Close on link click
-    nav.querySelectorAll('a').forEach(function(a) {
-      a.addEventListener('click', function() {
-        toggle.classList.remove('open');
-        nav.classList.remove('open');
-      });
+
+    // Search button opens search modal
+    var searchBtn = mobileHeader.querySelector('.mobile-search-btn');
+    searchBtn.addEventListener('click', function() {
+      var so = document.querySelector('.site-search-overlay');
+      var si = document.querySelector('.site-search-box input');
+      if (so) so.classList.add('active');
+      if (si) si.focus();
     });
   }
 

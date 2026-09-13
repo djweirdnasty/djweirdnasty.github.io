@@ -1665,69 +1665,170 @@ body.light-mode .cookie-banner {
   }
 }
 
-/* ===== Mobile Hamburger Nav ===== */
-.nav-toggle {
+/* ===== Mobile Header & Slide-out Drawer ===== */
+.mobile-header-bar {
   display: none;
 }
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1002;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.mobile-nav-overlay.open {
+  display: block;
+  opacity: 1;
+}
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: 85%;
+  max-width: 340px;
+  height: 100%;
+  background: #0a0a0f;
+  z-index: 1003;
+  transform: translateX(-100%);
+  transition: transform 0.35s ease;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255,91,215,0.25);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+}
+.mobile-nav-drawer.open {
+  transform: translateX(0);
+}
+.drawer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.drawer-top h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #ff5bd7;
+  letter-spacing: 1px;
+}
+.drawer-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.6rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+.drawer-section {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.drawer-section-title {
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0 1.25rem 0.75rem;
+  font-weight: 600;
+}
+.drawer-section a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.25rem;
+  color: #f4f4f4;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: background 0.15s ease;
+}
+.drawer-section a:hover {
+  background: rgba(255,91,215,0.1);
+  color: #ff5bd7;
+}
+.drawer-section a svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+.drawer-socials {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+}
+.drawer-socials a {
+  padding: 0.6rem;
+  border-radius: 50%;
+  background: rgba(255,91,215,0.08);
+  border: 1px solid rgba(255,91,215,0.25);
+}
+.drawer-socials a:hover {
+  background: rgba(255,91,215,0.2);
+}
+.drawer-socials svg {
+  width: 20px;
+  height: 20px;
+  fill: #ff5bd7;
+}
+
 @media (max-width: 768px) {
-  .nav-toggle {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 36px;
-    height: 30px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    margin: 0 auto 0.5rem;
-    z-index: 1001;
-  }
-  .nav-toggle span {
-    display: block;
+  header {
+    position: fixed;
+    top: 0; left: 0;
     width: 100%;
-    height: 3px;
-    background: #ff5bd7;
-    border-radius: 2px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    box-shadow: 0 0 6px #ff4fd8;
+    background: #000;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
   }
-  .nav-toggle.open span:nth-child(1) {
-    transform: translateY(10px) rotate(45deg);
+  body {
+    padding-top: 56px;
   }
-  .nav-toggle.open span:nth-child(2) {
-    opacity: 0;
+  header .container {
+    padding: 0;
   }
-  .nav-toggle.open span:nth-child(3) {
-    transform: translateY(-10px) rotate(-45deg);
+  .site-banner {
+    display: none;
+  }
+  .site-banner.mobile-logo {
+    display: block;
+    margin: 0;
+  }
+  .site-banner.mobile-logo img {
+    max-height: 32px;
+    width: auto;
+    object-fit: contain;
   }
   header nav {
     display: none;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: rgba(0,0,0,0.95);
-    border-radius: 12px;
-    border: 1px solid rgba(255,91,215,0.3);
   }
-  header nav.open {
+  .mobile-header-bar {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
   }
-  header nav a {
-    font-size: 0.95rem;
-    text-align: center;
-    padding: 0.4rem 0;
-  }
-  .nav-dropdown-content {
-    position: static;
-    transform: none;
-    display: block;
+  .mobile-menu-btn,
+  .mobile-search-btn {
+    background: none;
     border: none;
-    background: transparent;
-    padding: 0.3rem 0 0.3rem 1.5rem;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
   }
-  .nav-dropdown > a::after {
-    content: "";
+  .mobile-menu-btn svg,
+  .mobile-search-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
   }
 }
 
