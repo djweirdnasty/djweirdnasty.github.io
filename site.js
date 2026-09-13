@@ -37,7 +37,7 @@
       '<button class="drawer-close" aria-label="Close menu">&times;</button>' +
       '</div>' +
       '<div class="drawer-section">' +
-      '<p class="drawer-section-title">Sections</p>' +
+      '<p class="drawer-section-title">News</p>' +
       '<a href="index.html">Home</a>' +
       '<a href="news.html">News</a>' +
       '<a href="news-music.html">Music</a>' +
