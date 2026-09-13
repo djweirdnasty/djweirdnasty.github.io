@@ -183,7 +183,7 @@ def _check_new_content():
         db.close()
 
 
-scheduler.add_job(_check_new_content, "interval", minutes=60)
+scheduler.add_job(_check_new_content, "interval", minutes=30)
 
 
 @app.on_event("startup")

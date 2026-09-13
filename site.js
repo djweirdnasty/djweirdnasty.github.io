@@ -31,7 +31,8 @@
       '<a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.12 1.38C1.35 2.67.94 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.12.66.66 1.33 1.08 2.12 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.3 1.46-.72 2.12-1.38.66-.66 1.08-1.33 1.38-2.12.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.3-.79-.72-1.46-1.38-2.12-.66-.66-1.33-1.08-2.12-1.38-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0z"/><path d="M12 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84zm0 10.16A4 4 0 1 1 12 8a4 4 0 0 1 0 8z"/><circle cx="18.41" cy="5.59" r="1.44"/></svg></a>' +
       '<a href="https://www.tiktok.com/@iamdjweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/></svg></a>' +
       '<a href="https://audiomack.com/ayoweird" target="_blank" rel="noopener noreferrer" aria-label="Audiomack" title="Audiomack"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg></a>' +
-      '<a href="https://www.youtube.com/@djweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.92 24 12 24 12s0-3.92-.5-5.8zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>';
+      '<a href="https://www.youtube.com/@djweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.92 24 12 24 12s0-3.92-.5-5.8zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>' +
+      '<a href="submit-tip.html" aria-label="Submit a Tip" title="Submit a Story Tip" style="font-size:0.8rem;font-weight:600;width:auto;padding:0 14px;border-radius:999px;">TIP</a>';
     footer.insertBefore(socialDiv, footer.firstChild);
   }
 
@@ -735,6 +736,90 @@
         }
       }).catch(function() {});
     }
+  }
+
+  // ===== Trending Articles =====
+  // Track article views and show trending on homepage
+  var TRENDING_KEY = 'djwn_views';
+  var TRENDING_MAX = 50;
+
+  function getViewCounts() {
+    try { return JSON.parse(localStorage.getItem(TRENDING_KEY) || '{}'); } catch(e) { return {}; }
+  }
+
+  function saveViewCounts(counts) {
+    try {
+      var keys = Object.keys(counts);
+      if (keys.length > TRENDING_MAX) {
+        var sorted = keys.sort(function(a,b) { return counts[b] - counts[a]; });
+        var trimmed = {};
+        sorted.slice(0, TRENDING_MAX).forEach(function(k) { trimmed[k] = counts[k]; });
+        counts = trimmed;
+      }
+      localStorage.setItem(TRENDING_KEY, JSON.stringify(counts));
+    } catch(e) {}
+  }
+
+  // Track view on article pages
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    var slug = window.location.pathname.split('/').pop();
+    var counts = getViewCounts();
+    counts[slug] = (counts[slug] || 0) + 1;
+    saveViewCounts(counts);
+
+    // Also send to API for cross-device trending
+    try {
+      fetch('https://djweirdnasty-api.kurtisctabb.workers.dev/api/views', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: slug })
+      }).catch(function() {});
+    } catch(e) {}
+  }
+
+  // Show trending on homepage
+  var trendingGrid = document.getElementById('trending-grid');
+  if (trendingGrid) {
+    fetch('/contents.json?_=' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(items) {
+        var counts = getViewCounts();
+        // Score = local views * 2 + recency bonus
+        var now = Date.now() / 1000;
+        var scored = items.filter(function(i) {
+          return i.path && i.path.indexOf('/news-') === 0 && i.path.indexOf('.html') !== -1 &&
+                 i.path.indexOf('news-music.html') === -1 && i.path.indexOf('news-sports.html') === -1 &&
+                 i.path.indexOf('news-entertainment.html') === -1 && i.path.indexOf('news-national.html') === -1 &&
+                 i.path.indexOf('news.html') === -1;
+        }).map(function(i) {
+          var slug = i.path.split('/').pop();
+          var views = counts[slug] || 0;
+          var ageDays = Math.max(1, (now - (i.published || i.updated || now)) / 86400);
+          var recencyBonus = Math.max(0, 30 - ageDays) * 0.5;
+          return { item: i, score: views * 2 + recencyBonus, views: views };
+        }).sort(function(a, b) { return b.score - a.score; });
+
+        var top = scored.slice(0, 4);
+        if (top.length === 0 || top[0].views === 0) {
+          // No views yet - show most recent as fallback
+          top = scored.slice(0, 4);
+        }
+
+        trendingGrid.innerHTML = top.map(function(s) {
+          var i = s.item;
+          var t = (i.title || '').replace(/\s*\|\s*DJWEIRDNASTY.*$/i, '');
+          var d = i.desc ? i.desc.substring(0, 120) : 'Read the full story.';
+          var badge = s.views > 0 ? '<span style="position:absolute;top:8px;right:8px;background:#ff4d8f;color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:999px;font-weight:700;">' + s.views + ' reads</span>' : '';
+          return '<article class="event-card" style="position:relative;">' + badge +
+            '<img loading="lazy" src="' + (i.img || '') + '" alt="' + t + '" class="event-flyer">' +
+            '<h3 style="font-size:0.95rem;line-height:1.3;">' + t + '</h3>' +
+            '<p style="font-size:0.85rem;color:#ccc;">' + d + '</p>' +
+            '<a href="' + i.path + '" class="playlist-link">Read more</a></article>';
+        }).join('');
+      })
+      .catch(function() {
+        trendingGrid.innerHTML = '<p style="color:#888;">Unable to load trending articles.</p>';
+      });
   }
 
   // ===== AWIN Publisher MasterTag =====

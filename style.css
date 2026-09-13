@@ -1973,3 +1973,22 @@ body.light-mode .cookie-banner {
   font-family: inherit;
   margin: 0.25rem;
 }
+
+/* ===== Trending Section ===== */
+#trending .events-grid {
+  margin-top: 1.5rem;
+}
+#trending .event-card {
+  position: relative;
+}
+#trending .event-card .event-flyer {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+#trending .event-card h3 {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}

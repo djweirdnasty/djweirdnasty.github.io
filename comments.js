@@ -496,6 +496,29 @@ function renderCommentForm(formArea) {
     var content = textarea.value.trim();
     if (!content) return;
 
+    // Client-side spam protection
+    var spamError = checkCommentSpam(content);
+    if (spamError) {
+      errEl.textContent = spamError;
+      textarea.style.borderColor = '#ff6b6b';
+      setTimeout(function () { textarea.style.borderColor = ''; }, 2000);
+      return;
+    }
+
+    // Rate limiting: max 3 comments per 2 minutes
+    var lastComments = [];
+    try { lastComments = JSON.parse(localStorage.getItem('djwn_comment_times') || '[]'); } catch(e) {}
+    var now = Date.now();
+    lastComments = lastComments.filter(function(t) { return now - t < 120000; });
+    if (lastComments.length >= 3) {
+      errEl.textContent = 'You are commenting too quickly. Please wait a moment before posting again.';
+      textarea.style.borderColor = '#ff6b6b';
+      setTimeout(function () { textarea.style.borderColor = ''; }, 2000);
+      return;
+    }
+    lastComments.push(now);
+    try { localStorage.setItem('djwn_comment_times', JSON.stringify(lastComments)); } catch(e) {}
+
     errEl.textContent = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Posting...';
@@ -620,6 +643,49 @@ function setupLikeButton(btn, slug) {
       btn.querySelector('.djwn-heart').innerHTML = '&#9825;';
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// Spam detection
+// ---------------------------------------------------------------------------
+
+function checkCommentSpam(content) {
+  if (!content || content.length < 2) return 'Comment is too short.';
+  if (content.length > 2000) return 'Comment is too long (max 2000 characters).';
+
+  var lower = content.toLowerCase();
+
+  // Excessive URLs (more than 2)
+  var urlCount = (content.match(/https?:\/\//gi) || []).length;
+  if (urlCount > 2) return 'Comments cannot contain more than 2 links.';
+
+  // Known spam patterns
+  var spamPatterns = [
+    /\bviagra\b/i, /\bcialis\b/i, /\bcasino\b/i, /\bgambling\b/i,
+    /\blottery\s*winner\b/i, /\bfree\s*money\b/i, /\bmake\s*money\s*online\b/i,
+    /\bwork\s*from\s*home\b/i, /\bweight\s*loss\b/i, /\bcrypto\s*giveaway\b/i,
+    /\bbit\.ly\b/i, /\btinyurl\b/i, /\bbinary\s*options\b/i,
+    /\bescort\s*service\b/i, /\bdating\s*site\b/i,
+    /\bseo\s*backlink\b/i, /\bbuy\s*followers\b/i,
+    /\bclick\s*here\s*to\b/i, /\bearn\s*\$?\d/i
+  ];
+  for (var i = 0; i < spamPatterns.length; i++) {
+    if (spamPatterns[i].test(content)) return 'Your comment was flagged as potential spam.';
+  }
+
+  // Excessive capitalization (shouting)
+  var upperCount = (content.match(/[A-Z]/g) || []).length;
+  var letterCount = (content.match(/[a-zA-Z]/g) || []).length;
+  if (letterCount > 20 && upperCount / letterCount > 0.7) {
+    return 'Please reduce excessive capitalization in your comment.';
+  }
+
+  // Repeated characters (e.g. "aaaaaaa" or "!!!!!!!!!!")
+  if (/(.)\1{9,}/.test(content)) {
+    return 'Comment contains too many repeated characters.';
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
