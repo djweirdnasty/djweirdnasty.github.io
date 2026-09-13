@@ -572,10 +572,16 @@
     </section>
 
     <section id="latest-murrdah" class="info">
-      <h2>MURRDAH SEASON MONDAY</h2>
-      <p>Catch up on MURRDAH SEASON MONDAY every Monday on Glocawear Radio.</p>
+      <h2>Latest Event Recap</h2>
+      <p>Photos and highlights from the most recent DJWEIRDNASTY event.</p>
       <div class="events-grid" id="latest-murrdah-grid">
-        <p style="text-align: center; color: #888;">Loading MURRDAH SEASON MONDAY...</p>
+        <article class="event-card">
+          <h3>Tee-Tee & Shanta&rsquo;s Birthday Celebration at Sipz On 5th</h3>
+          <img loading="lazy" src="sipz12th.PNG" alt="Tee-Tee & Shanta Birthday at Sipz On 5th" class="event-flyer">
+          <p><em>Saturday, September 12, 2026 &mdash; Sipz On 5th Lounge & Bar, Philadelphia, PA</em></p>
+          <p>The vibes were immaculate. Tee-Tee and Shanta celebrated their birthdays at Sipz On 5th with DJWEIRDNASTY on the decks. 19 photos from the event.</p>
+          <a href="recap-sipz-birthday.html" class="playlist-link">View More &nearr;</a>
+        </article>
       </div>
     </section>
 
@@ -729,9 +735,6 @@
               newsStartAuto();
             }
           }
-          var murrdah = items.filter(function(i) { return i.path.indexOf('murrdah') !== -1; }).sort(function(a,b) { return (b.published || b.updated) - (a.published || a.updated); }).slice(0,4);
-          var mrg = document.getElementById('latest-murrdah-grid');
-          if (mrg) mrg.innerHTML = murrdah.map(function(i) { return card(i, 'Read more'); }).join('');
         })
         .catch(function() {});
     })();
