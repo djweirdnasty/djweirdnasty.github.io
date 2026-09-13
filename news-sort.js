@@ -16,7 +16,7 @@
   var parseCardDate = function(card) {
     var em = card.querySelector('em');
     if (!em) return 0;
-    var m = (em.textContent || '').match(/Published:\s*(\w+),\s*(\w+)\s+(\d{1,2}),\s*(\d{4})/);
+    var m = (em.textContent || '').match(/Published:\s*(?:(\w+),\s*)?(\w+)\s+(\d{1,2}),\s*(\d{4})/);
     if (!m) return 0;
     var mon = months[m[2]];
     if (mon === undefined) return 0;
