@@ -437,12 +437,19 @@
   }, 3000);
 
   // ===== Book DJWEIRDNASTY CTA =====
-  if (window.location.pathname.indexOf('sol.html') === -1 &&
+  if (!document.getElementById('bookCta') &&
+      window.location.pathname.indexOf('sol.html') === -1 &&
       window.location.pathname.indexOf('contact.html') === -1) {
     var bookCta = document.createElement('a');
     bookCta.className = 'book-cta';
+    bookCta.id = 'bookCta';
     bookCta.href = 'sol.html';
-    bookCta.innerHTML = '\u266B Book DJWEIRDNASTY';
+    bookCta.setAttribute('aria-label', 'Book DJWEIRDNASTY');
+    var bookImg = document.createElement('img');
+    bookImg.src = 'sol-logo.png';
+    bookImg.alt = 'Book DJWEIRDNASTY';
+    bookImg.loading = 'lazy';
+    bookCta.appendChild(bookImg);
     document.body.appendChild(bookCta);
 
     window.addEventListener('scroll', function() {
