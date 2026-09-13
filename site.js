@@ -1,6 +1,40 @@
 (function() {
   'use strict';
 
+  // ===== Mobile Hamburger Nav =====
+  var nav = document.querySelector('header nav');
+  if (nav) {
+    var toggle = document.createElement('button');
+    toggle.className = 'nav-toggle';
+    toggle.setAttribute('aria-label', 'Toggle menu');
+    toggle.innerHTML = '<span></span><span></span><span></span>';
+    nav.parentNode.insertBefore(toggle, nav);
+    toggle.addEventListener('click', function() {
+      toggle.classList.toggle('open');
+      nav.classList.toggle('open');
+    });
+    // Close on link click
+    nav.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', function() {
+        toggle.classList.remove('open');
+        nav.classList.remove('open');
+      });
+    });
+  }
+
+  // ===== Social Media Links in Footer =====
+  var footer = document.querySelector('footer');
+  if (footer && !footer.querySelector('.footer-social')) {
+    var socialDiv = document.createElement('div');
+    socialDiv.className = 'footer-social';
+    socialDiv.innerHTML =
+      '<a href="https://www.instagram.com/djweirdnasty/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.12 1.38C1.35 2.67.94 3.35.63 4.14.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.12.66.66 1.33 1.08 2.12 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56.79-.3 1.46-.72 2.12-1.38.66-.66 1.08-1.33 1.38-2.12.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91-.3-.79-.72-1.46-1.38-2.12-.66-.66-1.33-1.08-2.12-1.38-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0z"/><path d="M12 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84zm0 10.16A4 4 0 1 1 12 8a4 4 0 0 1 0 8z"/><circle cx="18.41" cy="5.59" r="1.44"/></svg></a>' +
+      '<a href="https://www.tiktok.com/@iamdjweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok"><svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.84-.1z"/></svg></a>' +
+      '<a href="https://audiomack.com/ayoweird" target="_blank" rel="noopener noreferrer" aria-label="Audiomack" title="Audiomack"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5l-4-4 1.41-1.41L10 13.67l6.59-6.59L18 8.5l-8 8z"/></svg></a>' +
+      '<a href="https://www.youtube.com/@djweirdnasty" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.08 0 12 0 12s0 3.92.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.92 24 12 24 12s0-3.92-.5-5.8zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>';
+    footer.insertBefore(socialDiv, footer.firstChild);
+  }
+
   // ===== Dark Mode Toggle =====
   var toggle = document.createElement('button');
   toggle.className = 'theme-toggle';
@@ -433,11 +467,288 @@
     });
   }
 
+  // ===== Breadcrumbs =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    if (!article.querySelector('.breadcrumbs')) {
+      var bc = document.createElement('div');
+      bc.className = 'breadcrumbs';
+      var catName = 'News';
+      var catLink = 'news.html';
+      var allLinks = article.querySelectorAll('a');
+      for (var i = 0; i < allLinks.length; i++) {
+        var href = allLinks[i].getAttribute('href') || '';
+        if (href.indexOf('news-music.html') !== -1) { catName = 'Music'; catLink = 'news-music.html'; break; }
+        if (href.indexOf('news-sports.html') !== -1) { catName = 'Sports'; catLink = 'news-sports.html'; break; }
+        if (href.indexOf('news-entertainment.html') !== -1) { catName = 'Entertainment'; catLink = 'news-entertainment.html'; break; }
+        if (href.indexOf('news-national.html') !== -1) { catName = 'National'; catLink = 'news-national.html'; break; }
+      }
+      bc.innerHTML = '<a href="index.html">Home</a><span>&rsaquo;</span><a href="news.html">News</a><span>&rsaquo;</span><a href="' + catLink + '">' + catName + '</a><span>&rsaquo;</span>';
+      article.insertBefore(bc, article.firstChild);
+    }
+  }
+
+  // ===== Reading Time =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    var emEl = article.querySelector('em');
+    if (emEl && !emEl.querySelector('.reading-time')) {
+      var text = article.textContent || '';
+      var words = text.trim().split(/\s+/).length;
+      var mins = Math.max(1, Math.ceil(words / 200));
+      var rt = document.createElement('span');
+      rt.className = 'reading-time';
+      rt.textContent = ' \u2022 ' + mins + ' min read';
+      emEl.appendChild(rt);
+    }
+  }
+
+  // ===== Load More on News Category Pages =====
+  var newsCatPage = document.querySelector('section.info article.event-card');
+  if (newsCatPage && (window.location.pathname.indexOf('news-music.html') !== -1 ||
+      window.location.pathname.indexOf('news-sports.html') !== -1 ||
+      window.location.pathname.indexOf('news-entertainment.html') !== -1 ||
+      window.location.pathname.indexOf('news-national.html') !== -1)) {
+    var allCards = document.querySelectorAll('section.info article.event-card');
+    var INITIAL_SHOW = 12;
+    var INCREMENT = 8;
+    var shown = INITIAL_SHOW;
+
+    if (allCards.length > INITIAL_SHOW) {
+      for (var i = INITIAL_SHOW; i < allCards.length; i++) {
+        allCards[i].style.display = 'none';
+      }
+      var loadBtn = document.createElement('button');
+      loadBtn.className = 'load-more-btn';
+      loadBtn.textContent = 'Load More (' + (allCards.length - INITIAL_SHOW) + ' more)';
+      var lastCard = allCards[allCards.length - 1];
+      lastCard.parentNode.appendChild(loadBtn);
+
+      loadBtn.addEventListener('click', function() {
+        var revealed = 0;
+        for (var j = shown; j < allCards.length && revealed < INCREMENT; j++) {
+          allCards[j].style.display = '';
+          revealed++;
+        }
+        shown += revealed;
+        if (shown >= allCards.length) {
+          loadBtn.style.display = 'none';
+        } else {
+          loadBtn.textContent = 'Load More (' + (allCards.length - shown) + ' more)';
+        }
+      });
+    }
+  }
+
+  // ===== Site-Wide Search =====
+  var searchTrigger = document.createElement('button');
+  searchTrigger.className = 'site-search-trigger';
+  searchTrigger.textContent = '\uD83D\uDD0D Search';
+  if (nav) {
+    nav.parentNode.appendChild(searchTrigger);
+  }
+
+  var searchOverlay = document.createElement('div');
+  searchOverlay.className = 'site-search-overlay';
+  searchOverlay.innerHTML =
+    '<div class="site-search-box">' +
+    '<button class="site-search-close" aria-label="Close search">&times;</button>' +
+    '<input type="text" placeholder="Search articles, mixtapes, events..." aria-label="Search site">' +
+    '<div class="site-search-results"></div>' +
+    '</div>';
+  document.body.appendChild(searchOverlay);
+
+  var searchInput = searchOverlay.querySelector('input');
+  var searchResults = searchOverlay.querySelector('.site-search-results');
+  var searchIndex = null;
+
+  searchTrigger.addEventListener('click', function() {
+    searchOverlay.classList.add('active');
+    searchInput.focus();
+  });
+  searchOverlay.querySelector('.site-search-close').addEventListener('click', function() {
+    searchOverlay.classList.remove('active');
+  });
+  searchOverlay.addEventListener('click', function(e) {
+    if (e.target === searchOverlay) searchOverlay.classList.remove('active');
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') searchOverlay.classList.remove('active');
+  });
+
+  function loadSearchIndex() {
+    if (searchIndex) return Promise.resolve(searchIndex);
+    return fetch('/contents.json').then(function(r) { return r.json(); }).then(function(data) {
+      searchIndex = data.map(function(item) {
+        return {
+          path: item.path,
+          title: item.title || '',
+          desc: item.desc || '',
+          img: item.img || '',
+          category: (item.path.match(/news-(music|sports|entertainment|national)/) || [,'News'])[1]
+        };
+      });
+      return searchIndex;
+    }).catch(function() { return []; });
+  }
+
+  var searchDebounce = null;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(function() {
+      var q = searchInput.value.toLowerCase().trim();
+      if (q.length < 2) { searchResults.innerHTML = ''; return; }
+      loadSearchIndex().then(function(idx) {
+        var matches = idx.filter(function(item) {
+          return (item.title.toLowerCase().indexOf(q) !== -1 || item.desc.toLowerCase().indexOf(q) !== -1);
+        }).slice(0, 20);
+        if (matches.length === 0) {
+          searchResults.innerHTML = '<p style="color:#888;padding:1rem;">No results found.</p>';
+        } else {
+          searchResults.innerHTML = matches.map(function(m) {
+            return '<a href="' + m.path + '">' + m.title + ' <small>(' + m.category + ')</small></a>';
+          }).join('');
+        }
+      });
+    }, 200);
+  });
+
+  // ===== Floating Share Buttons (mobile article pages) =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    var floatShare = document.createElement('div');
+    floatShare.className = 'float-share';
+    var pageUrl = encodeURIComponent(window.location.href);
+    var pageTitle = encodeURIComponent(document.title);
+    floatShare.innerHTML =
+      '<a class="fs-x" href="https://twitter.com/intent/tweet?url=' + pageUrl + '&text=' + pageTitle + '" target="_blank" rel="noopener" aria-label="Share on X">X</a>' +
+      '<a class="fs-fb" href="https://www.facebook.com/sharer/sharer.php?u=' + pageUrl + '" target="_blank" rel="noopener" aria-label="Share on Facebook">f</a>' +
+      '<a class="fs-wa" href="https://wa.me/?text=' + pageTitle + '%20' + pageUrl + '" target="_blank" rel="noopener" aria-label="Share on WhatsApp">W</a>' +
+      '<button class="fs-copy" aria-label="Copy link">+</button>';
+    document.body.appendChild(floatShare);
+
+    floatShare.querySelector('.fs-copy').addEventListener('click', function() {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+          floatShare.querySelector('.fs-copy').textContent = '\u2713';
+          setTimeout(function() { floatShare.querySelector('.fs-copy').textContent = '+'; }, 1500);
+        });
+      }
+    });
+
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 300) {
+        floatShare.classList.add('visible');
+      } else {
+        floatShare.classList.remove('visible');
+      }
+    }, { passive: true });
+  }
+
+  // ===== Event Countdown Widget (homepage) =====
+  var eventsSection = document.getElementById('events');
+  if (eventsSection && window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')) {
+    var countdownSection = document.getElementById('event-countdown');
+    if (!countdownSection && eventsSection) {
+      // Look for upcoming event data
+      fetch('/contents.json').then(function(r) { return r.json(); }).then(function(items) {
+        var now = Date.now();
+        var upcoming = items.filter(function(i) {
+          return i.path && i.path.indexOf('/event-') === 0 && i.date && i.date > now / 1000;
+        }).sort(function(a, b) { return a.date - b.date; });
+
+        if (upcoming.length > 0) {
+          var ev = upcoming[0];
+          var cd = document.createElement('div');
+          cd.className = 'event-countdown';
+          cd.id = 'event-countdown';
+          cd.innerHTML =
+            '<h3>Next Event: ' + (ev.title || 'Coming Soon') + '</h3>' +
+            '<p style="color:#ccc;">' + (ev.desc || '') + '</p>' +
+            '<div class="countdown-timer" id="countdown-display">' +
+            '<div class="countdown-unit"><span class="countdown-num" id="cd-days">0</span><span class="countdown-label">Days</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-num" id="cd-hours">0</span><span class="countdown-label">Hours</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-num" id="cd-mins">0</span><span class="countdown-label">Mins</span></div>' +
+            '<div class="countdown-unit"><span class="countdown-num" id="cd-secs">0</span><span class="countdown-label">Secs</span></div>' +
+            '</div>' +
+            (ev.path ? '<a href="' + ev.path + '" class="playlist-link">View Event</a>' : '');
+          eventsSection.insertBefore(cd, eventsSection.firstChild);
+
+          function updateCountdown() {
+            var diff = ev.date * 1000 - Date.now();
+            if (diff < 0) { cd.style.display = 'none'; return; }
+            var d = Math.floor(diff / 86400000);
+            var h = Math.floor((diff % 86400000) / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            var dd = document.getElementById('cd-days');
+            var dh = document.getElementById('cd-hours');
+            var dm = document.getElementById('cd-mins');
+            var ds = document.getElementById('cd-secs');
+            if (dd) dd.textContent = d;
+            if (dh) dh.textContent = h;
+            if (dm) dm.textContent = m;
+            if (ds) ds.textContent = s;
+          }
+          updateCountdown();
+          setInterval(updateCountdown, 1000);
+        }
+      }).catch(function() {});
+    }
+  }
+
+  // ===== Related Mixtapes on Article Pages =====
+  if (article && window.location.pathname.indexOf('news-') !== -1 && window.location.pathname.indexOf('news.html') === -1) {
+    if (!article.querySelector('.related-mixtapes')) {
+      fetch('mixtapes.html').then(function(r) { return r.text(); }).then(function(html) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var cards = doc.querySelectorAll('.mixtape-card');
+        if (cards.length === 0) return;
+        
+        // Pick up to 2 random mixtapes
+        var shuffled = Array.from(cards).sort(function() { return Math.random() - 0.5; });
+        var picks = shuffled.slice(0, 2);
+        
+        var section = document.createElement('section');
+        section.className = 'related-mixtapes';
+        section.style.cssText = 'margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);';
+        section.innerHTML = '<h2 style="color: #ffd860; font-size: 1.3rem; margin-bottom: 1rem;">Mixtapes You Might Like</h2>';
+        
+        var grid = document.createElement('div');
+        grid.className = 'related-articles-grid';
+        
+        picks.forEach(function(card) {
+          var img = card.querySelector('.mixtape-cover');
+          var h1 = card.querySelector('h1');
+          var link = card.querySelector('.mixtape-link');
+          if (!h1 || !link) return;
+          var mini = document.createElement('article');
+          mini.className = 'event-card';
+          mini.innerHTML =
+            (img ? '<img src="' + img.getAttribute('src') + '" alt="' + (img.getAttribute('alt') || '') + '" class="event-flyer" style="width:100%;max-height:200px;object-fit:cover;">' : '') +
+            '<h3 style="font-size:0.95rem;">' + h1.textContent + '</h3>' +
+            '<a href="' + link.getAttribute('href') + '" class="playlist-link" target="_blank" rel="noopener">Listen Now</a>';
+          grid.appendChild(mini);
+        });
+        
+        if (grid.children.length > 0) {
+          section.appendChild(grid);
+          article.appendChild(section);
+        }
+      }).catch(function() {});
+    }
+  }
+
   // ===== AWIN Publisher MasterTag =====
   var awinTag = document.createElement('script');
   awinTag.async = true;
   awinTag.src = 'https://www.dwin2.com/pub.3038027.min.js';
   document.body.appendChild(awinTag);
+
+  // ===== Service Worker Registration (PWA) =====
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/service-worker.js').catch(function() {});
+    });
+  }
 
   // ===== AWIN affiliate promo link =====
   var path = window.location.pathname;

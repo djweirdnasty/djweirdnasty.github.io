@@ -1,11 +1,11 @@
 {
-  "name": "SOL | Sounds of Logan DJ Booking",
-  "short_name": "SOL",
-  "description": "Book professional DJs for your event. Sounds of Logan DJ booking and payment platform.",
-  "start_url": "/sol.html",
+  "name": "DJWEIRDNASTY | Mixtapes, Events & News",
+  "short_name": "DJWEIRDNASTY",
+  "description": "Official site of DJWEIRDNASTY — mixtapes, live events, MUD MUSIC countdown, DJ booking, and the latest music and news.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#0a0a0a",
   "theme_color": "#ff4d8f",
   "icons": [
@@ -28,6 +28,6 @@
       "purpose": "any"
     }
   ],
-  "categories": ["music", "entertainment", "business"],
+  "categories": ["music", "entertainment", "news"],
   "screenshots": []
 }
