@@ -179,7 +179,7 @@ def build_article_html(cfg, published_str):
       <a href="https://www.awin1.com/cread.php?awinmid=128989&awinaffid=3038027&ued=https%3A%2F%2Fwww.stand4socks.com%2Fcollections%2Fall" target="_blank" rel="sponsored noopener" style="display: inline-block; padding: 14px 28px; background: #ff5bd7; color: #fff; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 1.1rem; transition: all 0.2s ease;" onmouseover="this.style.background='#ff7ce0'" onmouseout="this.style.background='#ff5bd7'">Shop Stand4 Socks</a>
     </div>
 
-    <img loading="lazy" src="2026djweirdnastyllc.webp" alt="© 2026 Djweirdnastyllc" style="max-width: 300px; display: block; margin: 0 auto;">
+    <img loading="lazy" src="2026djweirdnastyllc.webp" alt="&copy; 2026 Djweirdnasty LLC" style="max-width: 300px; display: block; margin: 0 auto;">
   </footer>
 <script src="comments.js?v=4"></script>
 <script src="site.js?v=10"></script>
