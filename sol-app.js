@@ -4804,6 +4804,18 @@
     // ---------- PWA: Service Worker & Push Notifications ----------
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
+        // Clean up any stray registration from the main site's
+        // /service-worker.js (same scope) left over from earlier visits,
+        // which fought with /sw.js and broke Firebase auth/session state.
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(reg) {
+            var scriptUrl = reg.active && reg.active.scriptURL || (reg.installing && reg.installing.scriptURL) || (reg.waiting && reg.waiting.scriptURL) || '';
+            if (scriptUrl.indexOf('/service-worker.js') !== -1) {
+              reg.unregister();
+            }
+          });
+        }).catch(function() {});
+
         navigator.serviceWorker.register('/sw.js').then(function(reg) {
           console.log('[PWA] Service Worker registered:', reg.scope);
         }).catch(function(err) {

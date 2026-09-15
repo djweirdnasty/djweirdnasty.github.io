@@ -926,7 +926,11 @@
   document.body.appendChild(awinTag);
 
   // ===== Service Worker Registration (PWA) =====
-  if ('serviceWorker' in navigator) {
+  // Skip on sol.html: it registers its own dedicated /sw.js for the same
+  // scope, and having two service workers fight over one scope causes
+  // stale caching and breaks Firebase auth/session handling there.
+  var isSolApp = /\/sol\.html$/.test(window.location.pathname);
+  if ('serviceWorker' in navigator && !isSolApp) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('/service-worker.js').catch(function() {});
     });

@@ -1,5 +1,5 @@
 // DJWEIRDNASTY Service Worker - PWA offline caching
-var CACHE_NAME = 'djweirdnasty-v2';
+var CACHE_NAME = 'djweirdnasty-v3';
 var PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -35,6 +35,11 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
+
+  // Never intercept Firebase/auth or third-party API calls (this SW should
+  // only ever run on the main site; SOL's own /sw.js handles sol.html).
+  var url = new URL(req.url);
+  if (url.hostname !== self.location.hostname) return;
 
   // Network-first for HTML documents so page edits show up without a hard refresh
   if (req.destination === 'document' || req.mode === 'navigate') {
