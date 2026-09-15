@@ -1,5 +1,5 @@
 // DJWEIRDNASTY Service Worker - PWA offline caching
-var CACHE_NAME = 'djweirdnasty-v1';
+var CACHE_NAME = 'djweirdnasty-v2';
 var PRECACHE_URLS = [
   '/',
   '/index.html',
@@ -33,22 +33,39 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  if (e.request.method !== 'GET') return;
+  var req = e.request;
+  if (req.method !== 'GET') return;
+
+  // Network-first for HTML documents so page edits show up without a hard refresh
+  if (req.destination === 'document' || req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(function(response) {
+        var clone = response.clone();
+        caches.open(CACHE_NAME).then(function(cache) { cache.put(req, clone); });
+        return response;
+      }).catch(function() {
+        return caches.match(req).then(function(cached) {
+          return cached || caches.match('/index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  // Cache-first for static assets (css/js/images)
   e.respondWith(
-    caches.match(e.request).then(function(cached) {
+    caches.match(req).then(function(cached) {
       if (cached) return cached;
-      return fetch(e.request).then(function(response) {
+      return fetch(req).then(function(response) {
         if (response && response.status === 200 && response.type === 'basic') {
           var clone = response.clone();
           caches.open(CACHE_NAME).then(function(cache) {
-            cache.put(e.request, clone);
+            cache.put(req, clone);
           });
         }
         return response;
       }).catch(function() {
-        if (e.request.headers.get('accept') && e.request.headers.get('accept').indexOf('text/html') !== -1) {
-          return caches.match('/index.html');
-        }
+        return cached;
       });
     })
   );
