@@ -101,6 +101,37 @@ function base64urlDecode(str) {
 }
 
 // ---------------------------------------------------------------------------
+// Login/register rate limiting (D1-backed, since Workers run at the edge
+// with no shared in-memory state across locations)
+// ---------------------------------------------------------------------------
+
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+function clientIp(request) {
+  return request.headers.get('CF-Connecting-IP') || 'unknown';
+}
+
+async function checkRateLimit(request, env, route) {
+  const ip = clientIp(request);
+  const windowStart = Date.now() - RATE_LIMIT_WINDOW_MS;
+
+  const { count } = await env.DB.prepare(
+    'SELECT COUNT(*) as count FROM auth_attempts WHERE ip = ? AND route = ? AND attempted_at > ?'
+  ).bind(ip, route, windowStart).first();
+
+  if (count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  await env.DB.prepare(
+    'INSERT INTO auth_attempts (ip, route, attempted_at) VALUES (?, ?, ?)'
+  ).bind(ip, route, Date.now()).run();
+
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // Auth middleware
 // ---------------------------------------------------------------------------
 
@@ -148,11 +179,17 @@ export default {
 
       // --- Auth: Register ---
       if (path === '/api/auth/register' && method === 'POST') {
+        if (!(await checkRateLimit(request, env, 'register'))) {
+          return json({ error: 'Too many attempts. Please try again later.' }, 429);
+        }
         return await handleRegister(request, env);
       }
 
       // --- Auth: Login ---
       if (path === '/api/auth/login' && method === 'POST') {
+        if (!(await checkRateLimit(request, env, 'login'))) {
+          return json({ error: 'Too many attempts. Please try again later.' }, 429);
+        }
         return await handleLogin(request, env);
       }
 

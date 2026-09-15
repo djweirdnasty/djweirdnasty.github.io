@@ -1,5 +1,7 @@
 import os
 import secrets
+import time
+from collections import defaultdict
 from datetime import datetime
 import json
 import urllib.request
@@ -226,6 +228,30 @@ def require_admin(request: Request):
     return payload
 
 
+# ─── Login rate limiting ───
+# Simple in-memory sliding-window limiter (single-process deployment).
+LOGIN_RATE_LIMIT = 5           # max attempts
+LOGIN_RATE_WINDOW = 300        # per 5 minutes, per IP
+_login_attempts: dict[str, list[float]] = defaultdict(list)
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def check_login_rate_limit(request: Request):
+    ip = _client_ip(request)
+    now = time.time()
+    attempts = [t for t in _login_attempts[ip] if now - t < LOGIN_RATE_WINDOW]
+    if len(attempts) >= LOGIN_RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again later.")
+    attempts.append(now)
+    _login_attempts[ip] = attempts
+
+
 # ─── Public endpoints ───
 
 @app.post("/api/subscribe")
@@ -410,7 +436,8 @@ def newsletter_archive_detail(camp_id: int, db: Session = Depends(get_db)):
 # ─── Admin auth ───
 
 @app.post("/api/admin/login")
-def admin_login(req: LoginRequest):
+def admin_login(req: LoginRequest, request: Request):
+    check_login_rate_limit(request)
     if req.username == admin_user and req.password == admin_pass:
         token = create_access_token({"sub": admin_user})
         return {"token": token}

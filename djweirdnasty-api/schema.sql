@@ -28,3 +28,12 @@ CREATE TABLE IF NOT EXISTS likes (
 
 CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments(post_slug);
 CREATE INDEX IF NOT EXISTS idx_likes_post_slug ON likes(post_slug);
+
+CREATE TABLE IF NOT EXISTS auth_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ip TEXT NOT NULL,
+  route TEXT NOT NULL,
+  attempted_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_attempts_ip_route ON auth_attempts(ip, route, attempted_at);
