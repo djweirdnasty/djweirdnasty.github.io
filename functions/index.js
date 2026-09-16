@@ -19,6 +19,8 @@ const SEARCH_URL = "https://rork-dj-booking-payment-app.onrender.com/api/djs/sea
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
 const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
+const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
+const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@djweirdnasty.com";
 
 function formatPhoneE164(raw) {
   if (!raw) return null;
@@ -50,6 +52,27 @@ async function sendSms(accountSid, authToken, fromNumber, toNumber, message) {
     throw new Error("Twilio error " + res.status + ": " + JSON.stringify(data));
   }
   return data;
+}
+
+async function sendEmail(apiKey, to, subject, html) {
+  var res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + apiKey,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: SENDGRID_FROM_EMAIL, name: "SOL DJ Booking" },
+      subject: subject,
+      content: [{ type: "text/html", value: html }]
+    })
+  });
+  if (res.status !== 202) {
+    var text = await res.text().catch(function () { return ""; });
+    throw new Error("SendGrid error " + res.status + ": " + text);
+  }
+  return true;
 }
 
 function money(n) {
@@ -750,4 +773,55 @@ exports.syncPublicDj = onDocumentWritten({
   public.updatedAt = admin.firestore.FieldValue.serverTimestamp();
   await db.collection("publicDjs").doc(uid).set(public, { merge: false });
   logger.info("[SYNC PUBLIC DJ] updated " + uid);
+});
+
+// Email users when their admin privileges, DJ status, or ban status changes.
+exports.notifyUserOnPrivilegeChange = onDocumentWritten({
+  document: "users/{uid}",
+  secrets: [SENDGRID_API_KEY],
+}, async (event) => {
+  const uid = event.params.uid;
+  const beforeSnap = event.data.before;
+  const afterSnap = event.data.after;
+  if (!afterSnap || !afterSnap.exists) return;
+
+  const beforeData = beforeSnap && beforeSnap.exists ? beforeSnap.data() : null;
+  const afterData = afterSnap.data() || {};
+  if (!beforeData) return;
+
+  const changes = [];
+  if (beforeData.isAdmin !== true && afterData.isAdmin === true) {
+    changes.push("You have been granted admin privileges on SOL.");
+  }
+  if (beforeData.isAdmin === true && afterData.isAdmin !== true) {
+    changes.push("Your admin privileges on SOL have been revoked.");
+  }
+  if (beforeData.isVerifiedDJ !== true && afterData.isVerifiedDJ === true) {
+    changes.push("Your DJ account on SOL has been verified and approved.");
+  }
+  if (beforeData.isVerifiedDJ === true && afterData.isVerifiedDJ !== true) {
+    changes.push("Your DJ verification on SOL has been revoked.");
+  }
+  if (beforeData.banned !== true && afterData.banned === true) {
+    changes.push("Your SOL account has been disabled/banned.");
+  }
+  if (beforeData.banned === true && afterData.banned !== true) {
+    changes.push("Your SOL account has been re-enabled/unbanned.");
+  }
+
+  if (changes.length === 0) return;
+
+  const toEmail = afterData.email || (await admin.auth().getUser(uid).catch(function () { return {}; })).email;
+  if (!toEmail) {
+    logger.warn("[NOTIFY PRIVILEGE] No email for user " + uid);
+    return;
+  }
+
+  const html = "<p>" + changes.join("</p><p>") + "</p><p>If you believe this was a mistake, contact support at " + ADMIN_EMAIL + ".</p>";
+  try {
+    await sendEmail(SENDGRID_API_KEY.value(), toEmail, "Your SOL account status has changed", html);
+    logger.info("[NOTIFY PRIVILEGE] Sent status email to " + toEmail);
+  } catch (err) {
+    logger.error("[NOTIFY PRIVILEGE] Failed to send email to " + toEmail + ": " + err.message);
+  }
 });
