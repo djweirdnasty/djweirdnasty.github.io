@@ -5151,6 +5151,101 @@
       }
     }
 
+    // ---------- PWA Install Prompt ----------
+    // iOS Safari only delivers Web Push to installed (Home Screen) apps, so
+    // getting users to install is what makes closed-app notifications work.
+    var deferredInstallPrompt = null;
+    var installBanner = null;
+
+    function isInStandaloneMode() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        navigator.standalone === true;
+    }
+
+    function isIosSafari() {
+      var ua = navigator.userAgent;
+      var isIos = /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+      return isIos && isSafari;
+    }
+
+    function hideInstallBanner() {
+      if (installBanner) installBanner.style.display = 'none';
+    }
+
+    function showInstallBanner(canPromptDirectly) {
+      if (isInStandaloneMode()) return;
+      if (localStorage.getItem('sol-install-dismissed')) return;
+      if (installBanner) { installBanner.style.display = 'flex'; return; }
+
+      installBanner = document.createElement('div');
+      installBanner.style.cssText = 'position:fixed; left:12px; right:12px; bottom:12px; z-index:9999; ' +
+        'background:#1a1a1a; border:1px solid #00d4ff; border-radius:12px; padding:0.75rem 1rem; ' +
+        'display:flex; align-items:center; gap:0.75rem; box-shadow:0 4px 20px rgba(0,0,0,0.6); ' +
+        'font-size:0.9rem; color:#fff; font-family:inherit;';
+
+      var text = document.createElement('div');
+      text.style.flex = '1';
+      if (canPromptDirectly) {
+        text.innerHTML = '<strong>Install SOL</strong><br>' +
+          '<span style="color:#aaa; font-size:0.8rem;">Get booking notifications even when the app is closed.</span>';
+      } else {
+        text.innerHTML = '<strong>Install SOL for notifications</strong><br>' +
+          '<span style="color:#aaa; font-size:0.8rem;">Tap <strong>Share</strong>, then <strong>"Add to Home Screen"</strong> to get booking alerts on your phone.</span>';
+      }
+      installBanner.appendChild(text);
+
+      if (canPromptDirectly) {
+        var installBtn = document.createElement('button');
+        installBtn.type = 'button';
+        installBtn.className = 'submit-btn';
+        installBtn.textContent = 'Install';
+        installBtn.style.cssText = 'padding:0.5rem 1rem; white-space:nowrap;';
+        installBtn.addEventListener('click', function() {
+          if (!deferredInstallPrompt) return;
+          deferredInstallPrompt.prompt();
+          deferredInstallPrompt.userChoice.then(function(choice) {
+            if (choice.outcome === 'accepted') hideInstallBanner();
+            deferredInstallPrompt = null;
+          });
+        });
+        installBanner.appendChild(installBtn);
+      }
+
+      var closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.textContent = '✕';
+      closeBtn.setAttribute('aria-label', 'Dismiss');
+      closeBtn.style.cssText = 'background:none; border:none; color:#aaa; font-size:1.1rem; padding:0.25rem; cursor:pointer;';
+      closeBtn.addEventListener('click', function() {
+        localStorage.setItem('sol-install-dismissed', '1');
+        hideInstallBanner();
+      });
+      installBanner.appendChild(closeBtn);
+
+      document.body.appendChild(installBanner);
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      showInstallBanner(true);
+    });
+
+    window.addEventListener('appinstalled', function() {
+      hideInstallBanner();
+      deferredInstallPrompt = null;
+    });
+
+    // iOS Safari never fires beforeinstallprompt — show manual instructions.
+    if (isIosSafari() && !isInStandaloneMode()) {
+      window.addEventListener('load', function() {
+        showInstallBanner(false);
+      });
+    }
+
     // =========================================================================
     // FEATURE 1: Booking Status Tracker (ported from rork-app BookingStatusTracker)
     // =========================================================================
