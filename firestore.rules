@@ -135,6 +135,11 @@ service cloud.firestore {
       allow write: if isOwner(uid) || isAdmin();
     }
 
+    match /dj-events/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
     // DJ-to-DJ networking messages.
     match /dj-messages/{id} {
       allow read: if isSignedIn() && (

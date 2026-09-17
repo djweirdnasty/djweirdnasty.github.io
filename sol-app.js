@@ -573,13 +573,68 @@
     }
 
     // ---------- DJ Earnings + CSV Export ----------
+    var djEarningsBookings = [];
+    var djEarningsPeriod = 'month';
+
+    function renderDJEarningsPeriod() {
+      var now = new Date();
+      var start;
+      if (djEarningsPeriod === 'week') start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+      else if (djEarningsPeriod === 'year') start = new Date(now.getFullYear(), 0, 1);
+      else start = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      var periodTotal = 0;
+      djEarningsBookings.forEach(function(b) {
+        var d = new Date(b.date || b.eventDate || 0);
+        if (d >= start) periodTotal += Math.round((b.totalAmount || b.total_cost || 0) * 0.85);
+      });
+      var labelEl = document.getElementById('sol-dj-earnings-period-label');
+      var amountEl = document.getElementById('sol-dj-earnings-period-amount');
+      if (labelEl) labelEl.textContent = djEarningsPeriod === 'week' ? 'Last 7 Days' : djEarningsPeriod === 'year' ? 'This Year' : 'This Month';
+      if (amountEl) amountEl.textContent = '$' + periodTotal.toLocaleString();
+
+      document.querySelectorAll('.sol-earnings-period').forEach(function(btn) {
+        btn.style.background = btn.getAttribute('data-period') === djEarningsPeriod ? '#ff4d8f' : '#333';
+      });
+
+      var currentYear = now.getFullYear();
+      var monthly = Array.from({ length: 12 }, function() { return 0; });
+      djEarningsBookings.forEach(function(b) {
+        var d = new Date(b.date || b.eventDate || 0);
+        if (d.getFullYear() === currentYear) {
+          monthly[d.getMonth()] += Math.round((b.totalAmount || b.total_cost || 0) * 0.85);
+        }
+      });
+      var maxVal = Math.max.apply(null, monthly.concat([1]));
+      var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var chartEl = document.getElementById('sol-dj-earnings-chart');
+      if (chartEl) {
+        chartEl.innerHTML = monthly.map(function(val, i) {
+          var h = Math.max(4, Math.round((val / maxVal) * 90));
+          return '<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">' +
+            '<div title="$' + val.toLocaleString() + '" style="width:100%; background:#ff4d8f; border-radius:3px 3px 0 0; height:' + h + 'px;"></div>' +
+            '<span style="font-size:0.6rem; color:#888; margin-top:2px;">' + monthNames[i] + '</span>' +
+            '</div>';
+        }).join('');
+      }
+    }
+
+    document.querySelectorAll('.sol-earnings-period').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        djEarningsPeriod = btn.getAttribute('data-period');
+        renderDJEarningsPeriod();
+      });
+    });
+
     function loadDJEarnings(uid) {
       db.collection('bookings').where('djId', '==', uid).where('status', '==', 'completed').get()
         .then(function(snapshot) {
           var total = 0, gigs = 0;
           var rows = [['Date','Event','Client','Amount','Platform Fee','DJ Payout']];
+          djEarningsBookings = [];
           snapshot.forEach(function(doc) {
             var b = doc.data();
+            djEarningsBookings.push(b);
             var amount = b.totalAmount || b.total_cost || 0;
             total += amount;
             gigs++;
@@ -595,6 +650,7 @@
           document.getElementById('sol-dj-earnings-total').textContent = '$' + Math.round(total * 0.85).toLocaleString();
           document.getElementById('sol-dj-earnings-gigs').textContent = gigs;
           document.getElementById('sol-dj-earnings-fees').textContent = '$' + Math.round(total * 0.15).toLocaleString();
+          renderDJEarningsPeriod();
 
           document.getElementById('sol-dj-export-csv').onclick = function() {
             var csv = rows.map(function(r) { return r.map(function(c) { return escapeCsvCell(c); }).join(','); }).join('\n');
@@ -605,6 +661,85 @@
             a.click();
           };
         });
+    }
+
+    // ---------- DJ Custom Gigs (public/private events on schedule + profile) ----------
+    function subscribeDJGigs(uid) {
+      db.collection('dj-events').doc(uid).onSnapshot(function(doc) {
+        var events = doc.exists ? (doc.data().events || []) : [];
+        var listEl = document.getElementById('sol-dj-gigs-list');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (events.length === 0) {
+          listEl.innerHTML = '<p style="color:#888; text-align:center;">No upcoming gigs posted yet.</p>';
+          return;
+        }
+        events.slice().sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); }).forEach(function(ev) {
+          var card = document.createElement('div');
+          card.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem;';
+          card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:flex-start;">' +
+            '<div>' +
+            '<strong>' + escapeHtml(ev.title || 'Event') + '</strong> ' +
+            '<span style="font-size:0.75rem; color:' + (ev.isPublic ? '#22c55e' : '#888') + ';">' + (ev.isPublic ? 'PUBLIC' : 'PRIVATE') + '</span>' +
+            '<div style="color:#aaa; font-size:0.85rem; margin-top:0.25rem;">📍 ' + escapeHtml(ev.venue || '') + '</div>' +
+            '<div style="color:#aaa; font-size:0.85rem;">📅 ' + escapeHtml(ev.date || '') + (ev.startTime ? ' ' + escapeHtml(ev.startTime) + (ev.endTime ? '–' + escapeHtml(ev.endTime) : '') : '') + '</div>' +
+            '</div>' +
+            '<button type="button" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1.1rem;" data-del-gig="' + escapeAttr(ev.id) + '">&times;</button>' +
+            '</div>';
+          listEl.appendChild(card);
+        });
+        listEl.querySelectorAll('button[data-del-gig]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('dj-events').doc(uid).set({
+              events: events.filter(function(e) { return e.id !== btn.getAttribute('data-del-gig'); })
+            }).then(function() { subscribeDJGigs(uid); });
+          });
+        });
+      }, function(err) {
+        console.error('DJ gigs listener error:', err);
+      });
+    }
+
+    var solGigAddBtn = document.getElementById('sol-gig-add');
+    if (solGigAddBtn) {
+      solGigAddBtn.addEventListener('click', function() {
+        var user = auth.currentUser;
+        if (!user) return;
+        var title = document.getElementById('sol-gig-title').value.trim();
+        var venue = document.getElementById('sol-gig-venue').value.trim();
+        var date = document.getElementById('sol-gig-date').value;
+        var startTime = document.getElementById('sol-gig-start').value;
+        var endTime = document.getElementById('sol-gig-end').value;
+        var isPublic = document.getElementById('sol-gig-public').checked;
+        if (!title || !date) {
+          alert('Please enter at least a title and date.');
+          return;
+        }
+        var event = {
+          id: 'gig_' + Date.now(),
+          title: title,
+          venue: venue,
+          date: date,
+          startTime: startTime,
+          endTime: endTime,
+          isPublic: isPublic
+        };
+        var ref = db.collection('dj-events').doc(user.uid);
+        ref.get().then(function(doc) {
+          var events = doc.exists ? (doc.data().events || []) : [];
+          events.push(event);
+          return ref.set({ events: events }, { merge: true });
+        }).then(function() {
+          document.getElementById('sol-gig-title').value = '';
+          document.getElementById('sol-gig-venue').value = '';
+          document.getElementById('sol-gig-date').value = '';
+          document.getElementById('sol-gig-start').value = '';
+          document.getElementById('sol-gig-end').value = '';
+          trackSolEvent('dj_gig_posted', { uid: user.uid, is_public: isPublic });
+        }).catch(function(err) {
+          alert('Could not save gig: ' + err.message);
+        });
+      });
     }
 
     // ---------- DJ Network (DJ-to-DJ messaging) ----------
@@ -1454,6 +1589,7 @@
           loadBlockedDates(user.uid);
           loadDjGallery(user.uid);
           loadDJEarnings(user.uid);
+          subscribeDJGigs(user.uid);
           loadDJNetwork(user.uid);
           loadDJWaitlist(user.uid);
           loadDJCalendarData(user.uid);
@@ -2607,6 +2743,40 @@
       });
     }
 
+    // ---------- Client Messages ----------
+    let clientConversationsUnsubscribe = null;
+
+    function subscribeClientConversations(user) {
+      if (clientConversationsUnsubscribe) clientConversationsUnsubscribe();
+      var wrap = document.getElementById('sol-client-messages-wrap');
+      var box = document.getElementById('sol-client-conversations');
+      if (!wrap || !box) return;
+      clientConversationsUnsubscribe = db.collection('conversations')
+        .where('clientId', '==', user.uid)
+        .onSnapshot(function(snapshot) {
+          if (snapshot.empty) {
+            wrap.style.display = 'none';
+            return;
+          }
+          wrap.style.display = '';
+          box.innerHTML = '';
+          var convos = [];
+          snapshot.forEach(function(doc) { convos.push({ id: doc.id, data: doc.data() }); });
+          convos.sort(function(a, b) { return (b.data.lastMessageTime || 0) - (a.data.lastMessageTime || 0); });
+          convos.forEach(function(c) {
+            var d = c.data;
+            var item = document.createElement('div');
+            item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
+            item.innerHTML = '<span><strong>' + escapeHtml(d.djName || 'DJ') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(d.lastMessage || 'No messages yet') + '</span></span>' +
+              (d.unreadCount ? '<span style="font-size:0.75rem; color:#ff4d8f;">' + d.unreadCount + ' unread</span>' : '');
+            item.addEventListener('click', function() { openChat(c.id); });
+            box.appendChild(item);
+          });
+        }, function(err) {
+          console.error('Client conversations listener error:', err);
+        });
+    }
+
     // ---------- Client Bookings ----------
     let clientBookingsUnsubscribe = null;
     let rateBookingId = null;
@@ -2653,6 +2823,7 @@
         var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#00d4ff' : '#ff3b30';
         var canCancel = status === 'pending' || status === 'confirmed';
         var canRate = status === 'completed' && !b.clientRated;
+        var canMessage = status !== 'cancelled' && status !== 'pending' && b.djId;
         var djArrived = b.djArrived === true;
         var djSharing = b.djSharingLocation === true || (b.djStatus && b.djStatus.sharingLocation === true);
 
@@ -2728,10 +2899,21 @@
           progressBar +
           djLiveLink +
           '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
+          (canMessage ? '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #ff4d8f; color:#ff4d8f;" data-message-dj="' + escapeAttr(b.id) + '" data-message-dj-id="' + escapeAttr(b.djId) + '" data-message-dj-name="' + escapeAttr(djName) + '">💬 Message DJ</button>' : '') +
           (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + escapeAttr(b.id) + '" data-booking-date="' + escapeAttr(date || '') + '">Cancel</button>' : '') +
           (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + escapeAttr(b.id) + '" data-rate-dj="' + escapeAttr(b.djId || '') + '">Rate DJ</button>' : '') +
           '</div>';
         box.appendChild(card);
+      });
+
+      box.querySelectorAll('button[data-message-dj]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          createOrOpenConversation(
+            btn.getAttribute('data-message-dj'),
+            btn.getAttribute('data-message-dj-id'),
+            btn.getAttribute('data-message-dj-name')
+          );
+        });
       });
 
       box.querySelectorAll('button[data-rate-booking]').forEach(function(btn) {
@@ -3026,6 +3208,7 @@
           handlePaymentReturn();
         }
         subscribeClientBookings(user);
+        subscribeClientConversations(user);
         loadSavedDjs(user.uid);
         loadLoyalty(user.uid);
         loadClientVerifyStatus(user.uid);
@@ -3943,6 +4126,7 @@
         '<div id="sol-dj-sound-samples" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading sound samples...</p></div>' +
         '<div id="sol-dj-video-reel" style="text-align:left; margin:1rem 0;"></div>' +
         '<div id="sol-dj-upcoming-events" style="text-align:left; margin:1rem 0;"></div>' +
+        '<div id="sol-dj-public-gigs" style="text-align:left; margin:1rem 0;"></div>' +
         '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
         '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
         (navUrl ? '<a href="' + escapeAttr(navUrl) + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' : '') +
@@ -4036,6 +4220,34 @@
           });
         } else if (eventsEl) {
           eventsEl.innerHTML = '';
+        }
+
+        // Public gigs posted by this DJ (any verified DJ)
+        var gigsEl = document.getElementById('sol-dj-public-gigs');
+        if (gigsEl && djUid) {
+          db.collection('dj-events').doc(djUid).get().then(function(gigDoc) {
+            var events = gigDoc.exists ? (gigDoc.data().events || []) : [];
+            var today = new Date().toISOString().slice(0, 10);
+            var upcomingGigs = events.filter(function(e) { return e.isPublic && e.date >= today; })
+              .sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
+            if (upcomingGigs.length === 0) {
+              gigsEl.innerHTML = '';
+              return;
+            }
+            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">🎤 Upcoming Gigs</h3>';
+            upcomingGigs.forEach(function(e) {
+              html += '<div style="background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem; margin-bottom:0.5rem;">' +
+                '<strong style="color:#fff; font-size:0.9rem;">' + escapeHtml(e.title || 'Event') + '</strong>' +
+                '<div style="color:#aaa; font-size:0.8rem; margin-top:0.25rem;">📍 ' + escapeHtml(e.venue || '') + '</div>' +
+                '<div style="color:#aaa; font-size:0.8rem;">📅 ' + escapeHtml(e.date || '') + (e.startTime ? ' ' + escapeHtml(e.startTime) + (e.endTime ? '–' + escapeHtml(e.endTime) : '') : '') + '</div>' +
+                '</div>';
+            });
+            gigsEl.innerHTML = html;
+          }).catch(function() {
+            gigsEl.innerHTML = '';
+          });
+        } else if (gigsEl) {
+          gigsEl.innerHTML = '';
         }
 
         // Calculate match score
