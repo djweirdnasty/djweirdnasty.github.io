@@ -553,18 +553,93 @@
       });
     });
 
+    var djGalleryPhotos = [];
+    var djGalleryIndex = 0;
+    var djGalleryAutoTimer = null;
+
+    function djGalleryPerPage() {
+      return window.innerWidth <= 640 ? 2 : 3;
+    }
+
+    function djGalleryUpdate() {
+      var track = document.getElementById('sol-dj-gallery-track');
+      if (!track) return;
+      var perPage = djGalleryPerPage();
+      var total = djGalleryPhotos.length;
+      var maxStart = Math.max(0, total - perPage);
+      if (djGalleryIndex > maxStart) djGalleryIndex = maxStart;
+      if (djGalleryIndex < 0) djGalleryIndex = 0;
+      track.style.transform = 'translateX(-' + (djGalleryIndex * (100 / perPage)) + '%)';
+      track.querySelectorAll('img').forEach(function(img) {
+        img.style.flex = '0 0 ' + (100 / perPage) + '%';
+        img.style.width = (100 / perPage) + '%';
+      });
+      var counter = document.getElementById('sol-dj-gallery-counter');
+      if (counter) {
+        counter.textContent = total === 0 ? '' :
+          (djGalleryIndex + 1) + ' \u2013 ' + Math.min(djGalleryIndex + perPage, total) + ' / ' + total;
+      }
+      document.querySelectorAll('#sol-dj-gallery .sol-gallery-thumb img').forEach(function(t) {
+        t.classList.remove('active');
+      });
+      var active = document.querySelector('#sol-dj-gallery .sol-gallery-thumb img[data-index="' + djGalleryIndex + '"]');
+      if (active) active.classList.add('active');
+    }
+
+    function djGalleryNav(dir) {
+      var maxStart = Math.max(0, djGalleryPhotos.length - djGalleryPerPage());
+      djGalleryIndex += dir;
+      if (djGalleryIndex > maxStart) djGalleryIndex = 0;
+      if (djGalleryIndex < 0) djGalleryIndex = maxStart;
+      djGalleryUpdate();
+    }
+
+    function djGalleryStopAuto() {
+      if (djGalleryAutoTimer) { clearInterval(djGalleryAutoTimer); djGalleryAutoTimer = null; }
+    }
+
+    function djGalleryStartAuto() {
+      djGalleryStopAuto();
+      if (djGalleryPhotos.length <= djGalleryPerPage()) return;
+      djGalleryAutoTimer = setInterval(function() { djGalleryNav(1); }, 4000);
+    }
+
     function loadDjGallery(uid) {
       db.collection('dj-galleries').doc(uid).get().then(function(doc) {
         var box = document.getElementById('sol-dj-gallery');
+        var track = document.getElementById('sol-dj-gallery-track');
+        var carousel = document.getElementById('sol-dj-gallery-carousel');
+        if (!box || !track || !carousel) return;
+
+        djGalleryPhotos = (doc.exists && doc.data().photos) || [];
         box.innerHTML = '';
-        if (!doc.exists || !doc.data().photos) return;
-        doc.data().photos.forEach(function(url) {
-          var wrapper = document.createElement('div');
-          wrapper.style.cssText = 'position:relative; width:100px; height:100px;';
-          wrapper.innerHTML = '<img loading="lazy" src="' + escapeAttr(url) + '" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #444;">' +
-            '<button type="button" style="position:absolute;top:-4px;right:-4px;background:#ff3b30;border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:0.8rem;" data-del-photo="' + escapeAttr(url) + '">&times;</button>';
-          box.appendChild(wrapper);
+        track.innerHTML = '';
+        carousel.style.display = djGalleryPhotos.length ? 'block' : 'none';
+
+        djGalleryPhotos.forEach(function(url, idx) {
+          var img = document.createElement('img');
+          img.loading = 'lazy';
+          img.src = url;
+          img.alt = 'Gallery photo ' + (idx + 1);
+          img.addEventListener('click', function() {
+            var lb = document.getElementById('sol-gallery-lightbox');
+            document.getElementById('sol-gallery-lightbox-img').src = url;
+            lb.classList.add('active');
+          });
+          track.appendChild(img);
+
+          var thumb = document.createElement('div');
+          thumb.className = 'sol-gallery-thumb';
+          thumb.innerHTML = '<img loading="lazy" src="' + escapeAttr(url) + '" data-index="' + idx + '" alt="Thumbnail ' + (idx + 1) + '">' +
+            '<button type="button" class="sol-gallery-del" data-del-photo="' + escapeAttr(url) + '" aria-label="Delete photo">&times;</button>';
+          thumb.querySelector('img').addEventListener('click', function() {
+            djGalleryIndex = idx;
+            djGalleryUpdate();
+            djGalleryStopAuto();
+          });
+          box.appendChild(thumb);
         });
+
         box.querySelectorAll('button[data-del-photo]').forEach(function(btn) {
           btn.addEventListener('click', function() {
             db.collection('dj-galleries').doc(uid).set({
@@ -572,8 +647,31 @@
             }, { merge: true }).then(function() { loadDjGallery(uid); });
           });
         });
+
+        djGalleryUpdate();
+        djGalleryStartAuto();
       });
     }
+
+    document.getElementById('sol-dj-gallery-prev').addEventListener('click', function() {
+      djGalleryNav(-1);
+      djGalleryStopAuto();
+    });
+    document.getElementById('sol-dj-gallery-next').addEventListener('click', function() {
+      djGalleryNav(1);
+      djGalleryStopAuto();
+    });
+    document.getElementById('sol-dj-gallery-carousel').addEventListener('mouseenter', djGalleryStopAuto);
+    document.getElementById('sol-dj-gallery-carousel').addEventListener('mouseleave', djGalleryStartAuto);
+    document.getElementById('sol-gallery-lightbox').addEventListener('click', function() {
+      this.classList.remove('active');
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('sol-gallery-lightbox').classList.remove('active');
+      }
+    });
+    window.addEventListener('resize', djGalleryUpdate);
 
     // ---------- DJ Earnings + CSV Export ----------
     var djEarningsBookings = [];

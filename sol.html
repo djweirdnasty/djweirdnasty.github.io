@@ -55,7 +55,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="sol-styles.css?v=1">
+  <link rel="stylesheet" href="sol-styles.css?v=2">
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 
 </head>
@@ -264,7 +264,18 @@
             <label for="sol-dj-gallery-file" class="submit-btn" style="cursor:pointer; padding:0.5rem 1rem;">Upload Photo</label>
           </div>
           <p id="sol-dj-gallery-status" style="font-size:0.85rem; margin-bottom:0.75rem;"></p>
-          <div id="sol-dj-gallery" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+          <div id="sol-dj-gallery-carousel" class="sol-gallery-carousel" style="display:none;">
+            <button type="button" class="sol-gallery-btn prev" id="sol-dj-gallery-prev" aria-label="Previous">&lsaquo;</button>
+            <div class="sol-gallery-track" id="sol-dj-gallery-track"></div>
+            <button type="button" class="sol-gallery-btn next" id="sol-dj-gallery-next" aria-label="Next">&rsaquo;</button>
+          </div>
+          <div class="sol-gallery-counter" id="sol-dj-gallery-counter"></div>
+          <h4 style="margin:1rem 0 0.25rem;">All Photos</h4>
+          <div id="sol-dj-gallery" class="sol-gallery-thumbs" style="margin-bottom:1.5rem;"></div>
+          <div id="sol-gallery-lightbox" class="sol-gallery-lightbox">
+            <span class="sol-gallery-lightbox-close" id="sol-gallery-lightbox-close" aria-label="Close">&times;</span>
+            <img id="sol-gallery-lightbox-img" alt="Gallery photo">
+          </div>
 
           <h3 style="margin-top:2rem;">My Earnings</h3>
           <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
@@ -1003,7 +1014,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=37"></script>
+  <script src="sol-app.js?v=38"></script>
 <script src="site.js?v=23"></script>
 </body>
 </html>
