@@ -2948,6 +2948,9 @@
       var hasActive = bookings.some(function(b) { return b.status !== 'cancelled'; });
       var playlistWrap = document.getElementById('sol-playlist-wrap');
       if (playlistWrap) playlistWrap.style.display = hasActive ? '' : 'none';
+      var hasConfirmed = bookings.some(function(b) { return b.status !== 'cancelled' && b.status !== 'pending'; });
+      var disputeWrap = document.getElementById('sol-dispute-wrap');
+      if (disputeWrap) disputeWrap.style.display = hasConfirmed ? '' : 'none';
     }
 
     function syncUserDoc(user) {
