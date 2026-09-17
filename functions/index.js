@@ -917,6 +917,91 @@ exports.publicSearchDjs = onCall(async (request) => {
     throw new HttpsError("internal", "Unable to search DJs.");
   }
 });
+
+// Public (unauthenticated) DJ profile lookup for shareable dj.html pages.
+// Returns only promo-safe fields — no email, phone, PayPal, license, or
+// precise coordinates. Private gigs are filtered out server-side.
+exports.getPublicDjProfile = onCall(async (request) => {
+  const data = request.data || {};
+  let uid = String(data.djId || "").trim();
+  const name = String(data.name || "").trim();
+
+  try {
+    if (!uid && name) {
+      // Back-compat for old sol.html?dj=<name> share links.
+      let snap = await db.collection("djs").where("stageName", "==", name).limit(1).get();
+      if (snap.empty) {
+        snap = await db.collection("djs").where("name", "==", name).limit(1).get();
+      }
+      if (snap.empty) {
+        throw new HttpsError("not-found", "DJ not found.");
+      }
+      uid = snap.docs[0].id;
+    }
+    if (!uid) {
+      throw new HttpsError("invalid-argument", "djId or name is required.");
+    }
+
+    const userDoc = await db.collection("users").doc(uid).get();
+    if (!userDoc.exists || userDoc.data().isVerifiedDJ !== true) {
+      throw new HttpsError("not-found", "DJ not found.");
+    }
+
+    const results = await Promise.all([
+      db.collection("djs").doc(uid).get(),
+      db.collection("dj-galleries").doc(uid).get(),
+      db.collection("dj-samples").doc(uid).get(),
+      db.collection("dj-videos").doc(uid).get(),
+      db.collection("dj-events").doc(uid).get(),
+    ]);
+    const d = results[0].exists ? results[0].data() : {};
+    const photos = results[1].exists ? (results[1].data().photos || []) : [];
+    const samples = results[2].exists ? (results[2].data().samples || []) : [];
+    const videos = results[3].exists ? (results[3].data().videos || []) : [];
+    const allEvents = results[4].exists ? (results[4].data().events || []) : [];
+    const gigs = allEvents
+      .filter(function (ev) { return ev.isPublic === true; })
+      .map(function (ev) {
+        return {
+          title: ev.title || "",
+          venue: ev.venue || "",
+          date: ev.date || "",
+          startTime: ev.startTime || "",
+          endTime: ev.endTime || "",
+          description: ev.description || "",
+          ticketUrl: ev.ticketUrl || "",
+          coverCharge: ev.coverCharge || "",
+        };
+      })
+      .sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+
+    return {
+      uid: uid,
+      name: d.stageName || d.name || d.displayName || "DJ",
+      avatar: d.photoURL || d.avatar || "",
+      bio: d.bio || "",
+      genres: d.genres || [],
+      specialties: d.specialties || d.styles || [],
+      equipment: d.equipment || [],
+      hourlyRate: d.hourlyRate || 0,
+      rating: d.rating || 0,
+      reviewCount: d.reviewCount || 0,
+      totalBookingsCompleted: d.totalBookingsCompleted || 0,
+      experience: d.experience || d.yearsExperience || 0,
+      city: d.city || "",
+      state: d.state || "",
+      photos: photos,
+      samples: samples,
+      videos: videos,
+      gigs: gigs,
+    };
+  } catch (err) {
+    if (err instanceof HttpsError) throw err;
+    logger.error("[PUBLIC DJ PROFILE] error: " + err.message);
+    throw new HttpsError("internal", "Unable to load DJ profile.");
+  }
+});
+
 function publicDjData(data) {
   const allowed = [
     "name", "displayName", "stageName", "photoURL", "avatar", "bio", "genres",

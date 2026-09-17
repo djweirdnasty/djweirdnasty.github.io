@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; frame-src https://www.youtube.com; connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net; upgrade-insecure-requests">
+  <title>DJ Profile | SOL: Sounds of Logan</title>
+  <meta name="description" content="View this verified DJ's profile on Sounds of Logan — photos, stats, upcoming gigs, and more.">
+  <meta property="og:title" content="DJ Profile | SOL: Sounds of Logan">
+  <meta property="og:description" content="Book verified DJs for your next event on Sounds of Logan.">
+  <meta property="og:type" content="profile">
+  <meta property="og:image" content="https://djweirdnasty.com/sol-logo.png">
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#ff4d8f">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+    }
+    .profile-wrap { max-width: 640px; margin: 0 auto; }
+    .profile-header { text-align: center; margin-bottom: 1.5rem; }
+    .profile-header img.logo { width: 56px; height: 56px; border-radius: 50%; }
+    .card {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e; margin: 0 auto 1rem; display: block; }
+    .avatar-fallback { width: 140px; height: 140px; border-radius: 50%; background: #ff4d8f; display: flex; align-items: center; justify-content: center; font-size: 52px; font-weight: 700; margin: 0 auto 1rem; border: 4px solid #22c55e; }
+    .badge { display: inline-block; background: #22c55e22; color: #22c55e; border: 1px solid #22c55e; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; }
+    .stats { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .stat { text-align: center; }
+    .stat .num { font-size: 1.25rem; font-weight: 700; color: #ffd860; }
+    .stat .lbl { font-size: 0.75rem; color: #888; }
+    .tag { display: inline-block; background: #1a1a1a; border: 1px solid #333; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.8rem; color: #ccc; margin: 0.15rem; }
+    .btn {
+      display: inline-block; background: #ff4d8f; color: #fff; border: none;
+      padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;
+      font-size: 1rem; font-weight: 600; text-decoration: none; text-align: center;
+    }
+    .btn.secondary { background: #1a1a1a; border: 1px solid #00d4ff; color: #00d4ff; }
+    h3.section { color: #ff4d8f; margin: 0 0 0.75rem; font-size: 1rem; }
+
+    /* Gallery (mirrors event recap / DJ console carousel) */
+    .gal-carousel { position: relative; margin: 0.5rem 0; overflow: hidden; border-radius: 12px; background: #0a0a0a; }
+    .gal-track { display: flex; transition: transform 0.4s ease; will-change: transform; }
+    .gal-track img { flex: 0 0 33.333%; width: 33.333%; height: auto; object-fit: contain; max-height: 280px; background: #000; cursor: zoom-in; box-sizing: border-box; padding: 0 3px; }
+    .gal-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 1.5rem; padding: 0.5rem 1rem; cursor: pointer; border-radius: 50%; z-index: 2; transition: background 0.2s; }
+    .gal-btn:hover { background: rgba(255,77,143,0.8); }
+    .gal-btn.prev { left: 8px; }
+    .gal-btn.next { right: 8px; }
+    .gal-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
+    .gal-thumbs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; padding: 0.75rem; background: #0a0a0a; border: 1px solid #333; border-radius: 12px; max-height: 280px; overflow-y: auto; }
+    .gal-thumbs img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s, border 0.2s; border: 2px solid transparent; }
+    .gal-thumbs img:hover, .gal-thumbs img.active { opacity: 1; border: 2px solid #ff4d8f; }
+    .gal-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
+    .gal-lightbox.active { display: flex; }
+    .gal-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .gal-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; }
+    @media (max-width: 640px) {
+      .gal-track img { flex: 0 0 50%; width: 50%; max-height: 200px; }
+    }
+
+    .gig { background: #0a0a0a; border: 1px solid #333; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; }
+    .gig a { color: #00d4ff; }
+    .muted { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="profile-wrap">
+    <div class="profile-header">
+      <img class="logo" src="sol-logo.png" alt="SOL">
+      <p class="muted" style="font-size:0.9rem; margin-top:0.25rem;">Sounds of Logan — DJ Booking</p>
+    </div>
+    <div id="profile-body">
+      <div class="card" style="text-align:center;">
+        <p class="muted">Loading DJ profile…</p>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:1rem;">
+      <a href="sol.html" class="muted" style="font-size:0.85rem;">&larr; Sounds of Logan</a>
+    </p>
+  </div>
+
+  <div id="gal-lightbox" class="gal-lightbox">
+    <span class="gal-lightbox-close" id="gal-lightbox-close" aria-label="Close">&times;</span>
+    <img id="gal-lightbox-img" alt="Gallery photo">
+  </div>
+
+  <script>
+    firebase.initializeApp({
+      apiKey: 'AIzaSyDWU2qcKFA3cxK6ofT0IOrO9ss8bj29ttU',
+      authDomain: 'studio-3475382917-e5aaa.firebaseapp.com',
+      projectId: 'studio-3475382917-e5aaa',
+      storageBucket: 'studio-3475382917-e5aaa.firebasestorage.app',
+      messagingSenderId: '268860816836',
+      appId: '1:268860816836:web:8073ff3c8327ef12a97891'
+    });
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function escAttr(s) { return esc(s); }
+
+    var galleryPhotos = [];
+    var galleryIndex = 0;
+    var galleryAuto = null;
+
+    function perPage() { return window.innerWidth <= 640 ? 2 : 3; }
+
+    function galUpdate() {
+      var track = document.getElementById('gal-track');
+      if (!track) return;
+      var pp = perPage();
+      var total = galleryPhotos.length;
+      var maxStart = Math.max(0, total - pp);
+      if (galleryIndex > maxStart) galleryIndex = maxStart;
+      if (galleryIndex < 0) galleryIndex = 0;
+      track.style.transform = 'translateX(-' + (galleryIndex * (100 / pp)) + '%)';
+      track.querySelectorAll('img').forEach(function(img) {
+        img.style.flex = '0 0 ' + (100 / pp) + '%';
+        img.style.width = (100 / pp) + '%';
+      });
+      var counter = document.getElementById('gal-counter');
+      if (counter) {
+        counter.textContent = total === 0 ? '' :
+          (galleryIndex + 1) + ' \u2013 ' + Math.min(galleryIndex + pp, total) + ' / ' + total;
+      }
+      document.querySelectorAll('#gal-thumbs img').forEach(function(t) { t.classList.remove('active'); });
+      var active = document.querySelector('#gal-thumbs img[data-index="' + galleryIndex + '"]');
+      if (active) active.classList.add('active');
+    }
+
+    function galNav(dir) {
+      var maxStart = Math.max(0, galleryPhotos.length - perPage());
+      galleryIndex += dir;
+      if (galleryIndex > maxStart) galleryIndex = 0;
+      if (galleryIndex < 0) galleryIndex = maxStart;
+      galUpdate();
+    }
+
+    function galStopAuto() { if (galleryAuto) { clearInterval(galleryAuto); galleryAuto = null; } }
+    function galStartAuto() {
+      galStopAuto();
+      if (galleryPhotos.length <= perPage()) return;
+      galleryAuto = setInterval(function() { galNav(1); }, 4000);
+    }
+
+    function renderGallery(photos) {
+      galleryPhotos = photos || [];
+      if (!galleryPhotos.length) return '';
+      return '<h3 class="section">Photos</h3>' +
+        '<div class="gal-carousel" id="gal-carousel">' +
+        '<button type="button" class="gal-btn prev" id="gal-prev" aria-label="Previous">&lsaquo;</button>' +
+        '<div class="gal-track" id="gal-track">' +
+        galleryPhotos.map(function(u, i) {
+          return '<img loading="lazy" src="' + escAttr(u) + '" alt="Photo ' + (i + 1) + '">';
+        }).join('') +
+        '</div>' +
+        '<button type="button" class="gal-btn next" id="gal-next" aria-label="Next">&rsaquo;</button>' +
+        '</div>' +
+        '<div class="gal-counter" id="gal-counter"></div>' +
+        '<div class="gal-thumbs" id="gal-thumbs">' +
+        galleryPhotos.map(function(u, i) {
+          return '<img loading="lazy" src="' + escAttr(u) + '" data-index="' + i + '" alt="Thumbnail ' + (i + 1) + '">';
+        }).join('') +
+        '</div>';
+    }
+
+    function wireGallery() {
+      var prev = document.getElementById('gal-prev');
+      var next = document.getElementById('gal-next');
+      var carousel = document.getElementById('gal-carousel');
+      var thumbs = document.getElementById('gal-thumbs');
+      if (!prev) return;
+      prev.addEventListener('click', function() { galNav(-1); galStopAuto(); });
+      next.addEventListener('click', function() { galNav(1); galStopAuto(); });
+      carousel.addEventListener('mouseenter', galStopAuto);
+      carousel.addEventListener('mouseleave', galStartAuto);
+      document.getElementById('gal-track').querySelectorAll('img').forEach(function(img) {
+        img.addEventListener('click', function() {
+          document.getElementById('gal-lightbox-img').src = img.src;
+          document.getElementById('gal-lightbox').classList.add('active');
+        });
+      });
+      thumbs.querySelectorAll('img').forEach(function(t) {
+        t.addEventListener('click', function() {
+          galleryIndex = parseInt(t.getAttribute('data-index'), 10);
+          galUpdate();
+          galStopAuto();
+        });
+      });
+      galUpdate();
+      galStartAuto();
+    }
+
+    function renderProfile(dj) {
+      document.title = dj.name + ' | SOL: Sounds of Logan';
+      var initial = esc((dj.name || 'D').charAt(0).toUpperCase());
+      var avatarHtml = dj.avatar
+        ? '<img class="avatar" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '">'
+        : '<div class="avatar-fallback">' + initial + '</div>';
+      var loc = [dj.city, dj.state].filter(Boolean).join(', ');
+
+      var stats =
+        '<div class="stats">' +
+        (dj.hourlyRate ? '<div class="stat"><div class="num">$' + esc(dj.hourlyRate) + '</div><div class="lbl">per hour</div></div>' : '') +
+        '<div class="stat"><div class="num">' + esc(dj.experience || 0) + '</div><div class="lbl">years exp.</div></div>' +
+        '<div class="stat"><div class="num">' + esc(dj.totalBookingsCompleted || 0) + '</div><div class="lbl">gigs</div></div>' +
+        '<div class="stat"><div class="num">⭐ ' + esc(dj.rating || 0) + '</div><div class="lbl">' + esc(dj.reviewCount || 0) + ' reviews</div></div>' +
+        '</div>';
+
+      var tags = '';
+      (dj.genres || []).forEach(function(g) { tags += '<span class="tag">' + esc(g) + '</span>'; });
+      (dj.specialties || []).forEach(function(s) { tags += '<span class="tag">' + esc(s) + '</span>'; });
+
+      var equipment = (dj.equipment || []).length
+        ? '<p style="margin-top:0.75rem;"><strong style="color:#ff4d8f;">Equipment:</strong> <span style="color:#ccc;">' + esc(dj.equipment.join(', ')) + '</span></p>'
+        : '';
+
+      var samples = (dj.samples || []).length
+        ? '<h3 class="section">Sound Samples</h3>' + dj.samples.map(function(u) {
+            return '<audio controls src="' + escAttr(u) + '" style="width:100%; margin-bottom:0.5rem; height:36px;"></audio>';
+          }).join('')
+        : '';
+
+      var videos = (dj.videos || []).length
+        ? '<h3 class="section">Video Reel</h3>' + dj.videos.map(function(u) {
+            if (u.indexOf('youtube') >= 0 || u.indexOf('youtu.be') >= 0) {
+              var ytId = u.split('v=')[1] || u.split('youtu.be/')[1] || '';
+              return '<iframe width="100%" height="200" src="https://www.youtube.com/embed/' + escAttr(ytId.split('&')[0]) + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
+            }
+            return '<video controls src="' + escAttr(u) + '" style="width:100%; border-radius:8px; margin-bottom:0.5rem;"></video>';
+          }).join('')
+        : '';
+
+      var gigs = (dj.gigs || []).length
+        ? '<h3 class="section">Upcoming Gigs</h3>' + dj.gigs.map(function(ev) {
+            return '<div class="gig">' +
+              '<strong>' + esc(ev.title || 'Event') + '</strong>' +
+              (ev.venue ? '<div class="muted" style="font-size:0.85rem; margin-top:0.25rem;">📍 ' + esc(ev.venue) + '</div>' : '') +
+              '<div class="muted" style="font-size:0.85rem;">📅 ' + esc(ev.date || '') + (ev.startTime ? ' ' + esc(ev.startTime) + (ev.endTime ? '–' + esc(ev.endTime) : '') : '') + '</div>' +
+              (ev.description ? '<div class="muted" style="font-size:0.85rem; margin-top:0.25rem;">' + esc(ev.description) + '</div>' : '') +
+              (ev.coverCharge ? '<div style="color:#ffd860; font-size:0.85rem;">Cover: ' + esc(ev.coverCharge) + '</div>' : '') +
+              (ev.ticketUrl ? '<div style="margin-top:0.35rem;"><a href="' + escAttr(ev.ticketUrl) + '" target="_blank" rel="noopener">Get tickets</a></div>' : '') +
+              '</div>';
+          }).join('')
+        : '';
+
+      document.getElementById('profile-body').innerHTML =
+        '<div class="card" style="text-align:center;">' +
+        avatarHtml +
+        '<h1 style="font-size:1.6rem; margin-bottom:0.5rem;">' + esc(dj.name) + '</h1>' +
+        '<span class="badge">✅ Verified DJ</span>' +
+        (loc ? '<p class="muted" style="margin-top:0.5rem; font-size:0.9rem;">📍 ' + esc(loc) + '</p>' : '') +
+        stats +
+        (dj.bio ? '<p style="color:#ccc; font-size:0.95rem; line-height:1.6; text-align:left; margin-top:0.5rem;">' + esc(dj.bio).replace(/\n/g, '<br>') + '</p>' : '') +
+        (tags ? '<div style="margin-top:0.75rem;">' + tags + '</div>' : '') +
+        equipment +
+        '<div style="display:flex; gap:0.5rem; margin-top:1.25rem; flex-wrap:wrap;">' +
+        '<a href="sol.html" class="btn" style="flex:1;">Book on SOL</a>' +
+        '<button type="button" id="share-btn" class="btn secondary" style="flex:1;">Share Profile</button>' +
+        '</div>' +
+        '</div>' +
+        (galleryPhotos.length || samples || videos || gigs
+          ? '<div class="card">' + renderGallery(dj.photos) + samples + videos + gigs + '</div>'
+          : '');
+
+      wireGallery();
+
+      document.getElementById('share-btn').addEventListener('click', function() {
+        var url = 'https://djweirdnasty.com/dj.html?uid=' + encodeURIComponent(dj.uid);
+        if (navigator.share) {
+          navigator.share({ title: dj.name + ' — SOL DJ', text: 'Check out ' + dj.name + ' on Sounds of Logan!', url: url });
+        } else {
+          navigator.clipboard.writeText(url).then(function() {
+            var btn = document.getElementById('share-btn');
+            btn.textContent = 'Link Copied!';
+            setTimeout(function() { btn.textContent = 'Share Profile'; }, 2000);
+          });
+        }
+      });
+    }
+
+    document.getElementById('gal-lightbox').addEventListener('click', function() {
+      this.classList.remove('active');
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') document.getElementById('gal-lightbox').classList.remove('active');
+    });
+    window.addEventListener('resize', galUpdate);
+
+    var params = new URLSearchParams(window.location.search);
+    var djId = params.get('uid') || '';
+    var djName = params.get('dj') || '';
+
+    if (!djId && !djName) {
+      document.getElementById('profile-body').innerHTML =
+        '<div class="card" style="text-align:center;"><p class="muted">No DJ specified.</p></div>';
+    } else {
+      firebase.functions().httpsCallable('getPublicDjProfile')({ djId: djId, name: djName })
+        .then(function(result) {
+          galleryPhotos = result.data.photos || [];
+          renderProfile(result.data);
+        })
+        .catch(function(err) {
+          document.getElementById('profile-body').innerHTML =
+            '<div class="card" style="text-align:center;">' +
+            '<p class="muted">DJ profile not found.</p>' +
+            '<p style="margin-top:1rem;"><a class="btn" href="sol.html">Browse DJs on SOL</a></p>' +
+            '</div>';
+          console.error('[DJ PROFILE]', err);
+        });
+    }
+  </script>
+</body>
+</html>

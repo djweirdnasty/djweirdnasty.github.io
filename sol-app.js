@@ -1,5 +1,14 @@
     console.log('[SOL APP] loaded v7');
 
+    // Back-compat: old "Share Profile" links were sol.html?dj=<name> with no
+    // handler. Redirect them to the dedicated public DJ profile page.
+    (function() {
+      var djParam = new URLSearchParams(window.location.search).get('dj');
+      if (djParam) {
+        window.location.replace('dj.html?dj=' + encodeURIComponent(djParam));
+      }
+    })();
+
     const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
     const BOOKING_URL = API_BASE + '/api/bookings/request';
     const SEARCH_URL = API_BASE + '/api/djs/search';
@@ -247,6 +256,7 @@
       document.getElementById('sol-dj-name').textContent = name;
       document.getElementById('sol-dj-location').textContent = city ? city + (state ? ', ' + state : '') : '';
       document.getElementById('sol-dj-verified-badge').style.display = isVerifiedDJ ? 'inline-block' : 'none';
+      document.getElementById('sol-dj-share-profile').style.display = isVerifiedDJ ? 'inline-block' : 'none';
 
       if (avatar) {
         const avatarEl = document.getElementById('sol-dj-avatar');
@@ -672,6 +682,23 @@
       }
     });
     window.addEventListener('resize', djGalleryUpdate);
+
+    // ---------- DJ public profile share ----------
+    document.getElementById('sol-dj-share-profile').addEventListener('click', function() {
+      var user = auth.currentUser;
+      if (!user) return;
+      var url = window.location.origin + '/dj.html?uid=' + encodeURIComponent(user.uid);
+      var name = document.getElementById('sol-dj-name').textContent || 'DJ';
+      if (navigator.share) {
+        navigator.share({ title: name + ' — SOL DJ', text: 'Check out my DJ profile on Sounds of Logan!', url: url });
+      } else {
+        navigator.clipboard.writeText(url).then(function() {
+          var btn = document.getElementById('sol-dj-share-profile');
+          btn.textContent = '✅ Link Copied!';
+          setTimeout(function() { btn.textContent = '🔗 Share My Public Profile'; }, 2000);
+        });
+      }
+    });
 
     // ---------- DJ Earnings + CSV Export ----------
     var djEarningsBookings = [];
@@ -4224,7 +4251,7 @@
         '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
         '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
         (navUrl ? '<a href="' + escapeAttr(navUrl) + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' : '') +
-        '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '">Share Profile</button>' +
+        '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '" data-share-dj-uid="' + djUid + '">Share Profile</button>' +
         '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || dj.photoURL || '') + '">♥ Save DJ</button>' +
         '</div>';
 
@@ -4414,7 +4441,9 @@
       if (e.target === this) this.style.display = 'none';
       if (e.target && e.target.hasAttribute('data-share-dj')) {
         var djName = decodeURIComponent(e.target.getAttribute('data-share-dj'));
-        var shareUrl = window.location.origin + window.location.pathname + '?dj=' + encodeURIComponent(djName);
+        var djShareUid = e.target.getAttribute('data-share-dj-uid') || '';
+        var shareUrl = window.location.origin + '/dj.html?' +
+          (djShareUid ? 'uid=' + encodeURIComponent(djShareUid) : 'dj=' + encodeURIComponent(djName));
         var shareText = 'Check out ' + djName + ' on SOL DJ Booking!';
         if (navigator.share) {
           navigator.share({ title: djName + ' — SOL DJ', text: shareText, url: shareUrl });
@@ -4430,7 +4459,14 @@
     document.getElementById('sol-dj-track').addEventListener('click', function(e) {
       if (e.target && e.target.tagName === 'BUTTON' && e.target.hasAttribute('data-dj-index')) {
         var idx = parseInt(e.target.getAttribute('data-dj-index'));
-        if (lastDjList[idx]) showDJProfile(lastDjList[idx]);
+        var dj = lastDjList[idx];
+        if (!dj) return;
+        var uid = dj.firebaseUid || dj.id || dj.uid || dj.dj_id || '';
+        if (uid) {
+          window.open('dj.html?uid=' + encodeURIComponent(uid), '_blank');
+        } else {
+          showDJProfile(dj);
+        }
       }
     });
 
