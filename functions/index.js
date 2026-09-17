@@ -920,9 +920,16 @@ exports.publicSearchDjs = onCall(async (request) => {
   }
 });
 
+function djSlugify(name) {
+  return String(name || "").toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 // Public (unauthenticated) DJ profile lookup for shareable dj.html pages.
 // Returns only promo-safe fields — no email, phone, PayPal, license, or
 // precise coordinates. Private gigs are filtered out server-side.
+// Accepts ?dj=<slug> (preferred) or djId (back-compat for old uid links).
 exports.getPublicDjProfile = onCall(async (request) => {
   const data = request.data || {};
   let uid = String(data.djId || "").trim();
@@ -930,10 +937,34 @@ exports.getPublicDjProfile = onCall(async (request) => {
 
   try {
     if (!uid && name) {
-      // Back-compat for old sol.html?dj=<name> share links.
-      let snap = await db.collection("djs").where("stageName", "==", name).limit(1).get();
+      const slug = djSlugify(name);
+      // 1) Stored slug (written on profile save).
+      let snap = await db.collection("djs").where("profileSlug", "==", slug).limit(1).get();
+      // 2) Exact stage/display-name match for DJs saved before slugs existed.
+      if (snap.empty) {
+        snap = await db.collection("djs").where("stageName", "==", name).limit(1).get();
+      }
       if (snap.empty) {
         snap = await db.collection("djs").where("name", "==", name).limit(1).get();
+      }
+      // 3) Slug-match over verified DJs' stage/display names.
+      if (snap.empty) {
+        const verified = await db.collection("users").where("isVerifiedDJ", "==", true).get();
+        const uids = verified.docs.map(d => d.id);
+        for (let i = 0; i < uids.length && snap.empty; i += 10) {
+          const chunk = uids.slice(i, i + 10);
+          const djsSnap = await db.collection("djs").where(admin.firestore.FieldPath.documentId(), "in", chunk).get();
+          djsSnap.forEach(function(d) {
+            const dd = d.data() || {};
+            const candidates = [dd.profileSlug, dd.stageName, dd.name, dd.displayName];
+            for (const c of candidates) {
+              if (djSlugify(c) === slug) {
+                snap = { docs: [d], empty: false };
+                break;
+              }
+            }
+          });
+        }
       }
       if (snap.empty) {
         throw new HttpsError("not-found", "DJ not found.");
@@ -979,6 +1010,7 @@ exports.getPublicDjProfile = onCall(async (request) => {
 
     return {
       uid: uid,
+      slug: djSlugify(d.stageName || d.name || d.displayName || ""),
       name: d.stageName || d.name || d.displayName || "DJ",
       avatar: d.photoURL || d.avatar || "",
       bio: d.bio || "",

@@ -352,8 +352,10 @@
         if (/^https?:\/\//i.test(s)) return s;
         return 'https://' + domain + '/' + s.replace(/^@/, '');
       };
+      var stageNameVal = document.getElementById('stage-name').value.trim();
       var profileData = {
-        stageName: document.getElementById('stage-name').value.trim(),
+        stageName: stageNameVal,
+        profileSlug: stageNameVal.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
         photoURL: document.getElementById('avatar-url').value.trim(),
         avatar: document.getElementById('avatar-url').value.trim(),
         phone: document.getElementById('phone').value.trim(),

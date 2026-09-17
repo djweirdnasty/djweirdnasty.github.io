@@ -83,6 +83,13 @@
       return s;
     }
 
+    // URL-safe DJ profile slug: "DJ Weird Nasty" → "dj-weird-nasty"
+    function djSlugify(name) {
+      return String(name || '').toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
     // Normalize a social entry: full URL passthrough, "@handle"/"handle" → domain URL.
     function normalizeSocialUrl(input, domain) {
       var s = String(input || '').trim();
@@ -367,8 +374,10 @@
       var specialties = document.getElementById('sol-dj-specialties').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
       var equipment = document.getElementById('sol-dj-equipment').value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
 
+      var stageNameVal = document.getElementById('sol-dj-stage-name').value.trim();
       var profileData = {
-        stageName: document.getElementById('sol-dj-stage-name').value.trim(),
+        stageName: stageNameVal,
+        profileSlug: djSlugify(stageNameVal),
         photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
         avatar: document.getElementById('sol-dj-avatar-url').value.trim(),
         phone: document.getElementById('sol-dj-phone').value.trim(),
@@ -816,8 +825,10 @@
     document.getElementById('sol-dj-share-profile').addEventListener('click', function() {
       var user = auth.currentUser;
       if (!user) return;
-      var url = window.location.origin + '/dj.html?uid=' + encodeURIComponent(user.uid);
       var name = document.getElementById('sol-dj-name').textContent || 'DJ';
+      var slug = djSlugify(name);
+      var url = window.location.origin + '/dj.html?' +
+        (slug ? 'dj=' + encodeURIComponent(slug) : 'uid=' + encodeURIComponent(user.uid));
       if (navigator.share) {
         navigator.share({ title: name + ' — SOL DJ', text: 'Check out my DJ profile on Sounds of Logan!', url: url });
       } else {
@@ -4583,8 +4594,9 @@
       if (e.target && e.target.hasAttribute('data-share-dj')) {
         var djName = decodeURIComponent(e.target.getAttribute('data-share-dj'));
         var djShareUid = e.target.getAttribute('data-share-dj-uid') || '';
+        var djShareSlug = djSlugify(djName);
         var shareUrl = window.location.origin + '/dj.html?' +
-          (djShareUid ? 'uid=' + encodeURIComponent(djShareUid) : 'dj=' + encodeURIComponent(djName));
+          (djShareSlug ? 'dj=' + encodeURIComponent(djShareSlug) : 'uid=' + encodeURIComponent(djShareUid));
         var shareText = 'Check out ' + djName + ' on SOL DJ Booking!';
         if (navigator.share) {
           navigator.share({ title: djName + ' — SOL DJ', text: shareText, url: shareUrl });
@@ -4603,7 +4615,10 @@
         var dj = lastDjList[idx];
         if (!dj) return;
         var uid = dj.firebaseUid || dj.id || dj.uid || dj.dj_id || '';
-        if (uid) {
+        var slug = djSlugify(dj.name || dj.djName || '');
+        if (slug) {
+          window.open('dj.html?dj=' + encodeURIComponent(slug), '_blank');
+        } else if (uid) {
           window.open('dj.html?uid=' + encodeURIComponent(uid), '_blank');
         } else {
           showDJProfile(dj);

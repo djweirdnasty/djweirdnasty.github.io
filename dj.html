@@ -208,6 +208,9 @@
 
     function renderProfile(dj) {
       document.title = dj.name + ' | SOL: Sounds of Logan';
+      if (dj.slug) {
+        history.replaceState(null, '', 'dj.html?dj=' + encodeURIComponent(dj.slug));
+      }
       var initial = esc((dj.name || 'D').charAt(0).toUpperCase());
       var avatarHtml = dj.avatar
         ? '<img class="avatar" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '">'
@@ -307,7 +310,8 @@
       wireGallery();
 
       document.getElementById('share-btn').addEventListener('click', function() {
-        var url = 'https://djweirdnasty.com/dj.html?uid=' + encodeURIComponent(dj.uid);
+        var url = 'https://djweirdnasty.com/dj.html?' +
+          (dj.slug ? 'dj=' + encodeURIComponent(dj.slug) : 'uid=' + encodeURIComponent(dj.uid));
         if (navigator.share) {
           navigator.share({ title: dj.name + ' — SOL DJ', text: 'Check out ' + dj.name + ' on Sounds of Logan!', url: url });
         } else {
