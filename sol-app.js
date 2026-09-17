@@ -1388,15 +1388,16 @@
     }
 
     djModeToggleBtn.addEventListener('click', function() {
+      if (!isVerifiedDJ) {
+        window.location.href = 'dj-apply.html';
+        return;
+      }
       djModeActive = !djModeActive;
       if (djModeActive) {
         djConsole.style.display = 'block';
         clientView.style.display = 'none';
         djModeToggleBtn.textContent = 'Client Mode';
         const user = auth.currentUser;
-        if (!isVerifiedDJ) {
-          document.getElementById('sol-dj-setup').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
         if (user) {
           subscribeDJStatus(user);
           subscribeDJConversations(user);

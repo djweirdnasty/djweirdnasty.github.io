@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; upgrade-insecure-requests">
+  <title>Apply as DJ | SOL: Sounds of Logan</title>
+  <meta name="description" content="Apply to become a verified DJ on Sounds of Logan.">
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#ff4d8f">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .apply-wrap { max-width: 560px; margin: 0 auto; }
+    .apply-header { text-align: center; margin-bottom: 1.5rem; }
+    .apply-header img { width: 56px; height: 56px; border-radius: 50%; }
+    .apply-header h1 { font-size: 1.8rem; margin: 0.5rem 0 0.25rem; }
+    .apply-header p { color: #aaa; font-size: 0.95rem; }
+    .card {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .status-banner {
+      padding: 0.75rem;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    label { display: block; margin: 0.9rem 0 0.3rem; font-size: 0.9rem; color: #ccc; }
+    input[type="text"], input[type="tel"], input[type="number"], textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #000;
+      color: #fff;
+      font-size: 1rem;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .optin-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem; background: #1a1a1a; border-radius: 8px;
+      cursor: pointer; margin-top: 0.9rem;
+    }
+    .optin-row span { font-size: 0.85rem; color: #ccc; }
+    .btn {
+      display: inline-block;
+      background: #ff4d8f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem 1.4rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.6; cursor: default; }
+    .btn.secondary { background: #333; }
+    .submit-btn { width: 100%; margin-top: 1.25rem; }
+    .form-status { margin-top: 0.75rem; font-size: 0.9rem; min-height: 1.2em; }
+    .avatar-preview {
+      width: 72px; height: 72px; border-radius: 36px; object-fit: cover;
+      border: 2px solid #22c55e; display: none; margin-top: 0.5rem;
+    }
+    .back-link { display: block; text-align: center; margin-top: 1.25rem; color: #ff4d8f; text-decoration: none; font-size: 0.9rem; }
+    .back-link:hover { text-decoration: underline; }
+    .signin-box { text-align: center; padding: 2rem 1rem; }
+    .signin-box p { color: #aaa; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="apply-wrap">
+    <div class="apply-header">
+      <img src="sol-logo.png" alt="SOL logo">
+      <h1>Apply as DJ</h1>
+      <p>Sounds of Logan &mdash; submit your profile for verification</p>
+    </div>
+
+    <div id="need-signin" class="card signin-box" style="display:none;">
+      <p>You need to be signed in to apply as a DJ.</p>
+      <a class="btn" href="sol.html">Go to Sign In</a>
+    </div>
+
+    <div id="apply-card" class="card" style="display:none;">
+      <div id="verify-status" class="status-banner"></div>
+      <form id="apply-form">
+        <label for="stage-name">Stage Name</label>
+        <input id="stage-name" type="text" placeholder="DJ Name">
+
+        <label>Profile Picture</label>
+        <input id="avatar-file" type="file" accept="image/*" style="display:none;">
+        <label for="avatar-file" class="btn secondary" style="margin:0;">Upload Profile Photo</label>
+        <img id="avatar-preview" class="avatar-preview" src="" alt="Profile preview">
+        <p id="avatar-upload-status" class="form-status"></p>
+        <input id="avatar-url" type="hidden">
+
+        <label for="phone">Phone Number (for text alerts)</label>
+        <input id="phone" type="tel" placeholder="215-555-0123">
+
+        <label class="optin-row">
+          <input id="sms-optin" type="checkbox" checked>
+          <span>Text me new booking requests to my phone</span>
+        </label>
+
+        <label for="paypal">PayPal Email or PayPal.me Username (for payouts)</label>
+        <input id="paypal" type="text" placeholder="you@example.com or paypal.me/yourname">
+
+        <label for="city">City</label>
+        <input id="city" type="text" placeholder="Philadelphia">
+
+        <label for="state">State</label>
+        <input id="state" type="text" placeholder="PA">
+
+        <label for="genres">Genres (comma separated)</label>
+        <input id="genres" type="text" placeholder="Hip-Hop, R&B, Top 40">
+
+        <label for="specialties">Specialties (comma separated)</label>
+        <input id="specialties" type="text" placeholder="Weddings, Clubs, Corporate">
+
+        <label for="equipment">Equipment (comma separated)</label>
+        <input id="equipment" type="text" placeholder="Pioneer DDJ-SX3, Speakers, Lighting">
+
+        <label for="hourly-rate">Hourly Rate ($)</label>
+        <input id="hourly-rate" type="number" min="50" max="1000" placeholder="250">
+
+        <label for="experience">Years of Experience</label>
+        <input id="experience" type="number" min="0" max="50" placeholder="5">
+
+        <label for="bio">Bio</label>
+        <textarea id="bio" placeholder="Tell clients about yourself..."></textarea>
+
+        <button type="submit" id="submit-btn" class="btn submit-btn">Submit for Verification</button>
+        <p id="form-status" class="form-status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <a class="back-link" href="sol.html">&larr; Back to Sounds of Logan</a>
+  </div>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: 'AIzaSyDWU2qcKFA3cxK6ofT0IOrO9ss8bj29ttU',
+      authDomain: 'studio-3475382917-e5aaa.firebaseapp.com',
+      projectId: 'studio-3475382917-e5aaa',
+      storageBucket: 'studio-3475382917-e5aaa.firebasestorage.app',
+      messagingSenderId: '268860816836',
+      appId: '1:268860816836:web:8073ff3c8327ef12a97891'
+    };
+    firebase.initializeApp(firebaseConfig);
+    var auth = firebase.auth();
+    var db = firebase.firestore();
+    var storage = firebase.storage();
+
+    var currentStatus = null;
+    var needSignin = document.getElementById('need-signin');
+    var applyCard = document.getElementById('apply-card');
+    var statusBanner = document.getElementById('verify-status');
+    var submitBtn = document.getElementById('submit-btn');
+    var formStatus = document.getElementById('form-status');
+
+    function setBanner(text, color, bg) {
+      statusBanner.textContent = text;
+      statusBanner.style.color = color;
+      statusBanner.style.background = bg;
+      statusBanner.style.display = 'block';
+    }
+
+    auth.onAuthStateChanged(function(user) {
+      if (!user) {
+        needSignin.style.display = 'block';
+        applyCard.style.display = 'none';
+        return;
+      }
+      needSignin.style.display = 'none';
+      applyCard.style.display = 'block';
+      loadForm(user);
+    });
+
+    function loadForm(user) {
+      db.collection('dj-verifications').doc(user.uid).get()
+        .then(function(doc) {
+          var d = doc.exists ? doc.data() : {};
+          var p = d.djProfile || {};
+          currentStatus = d.status || null;
+          document.getElementById('stage-name').value = p.stageName || user.displayName || '';
+          var avatarUrl = p.photoURL || p.avatar || '';
+          document.getElementById('avatar-url').value = avatarUrl;
+          var preview = document.getElementById('avatar-preview');
+          if (avatarUrl) { preview.src = avatarUrl; preview.style.display = 'block'; }
+          document.getElementById('phone').value = p.phone || '';
+          document.getElementById('sms-optin').checked = p.smsOptIn !== false;
+          document.getElementById('paypal').value = p.paypal || '';
+          document.getElementById('city').value = p.city || (p.location && p.location.city) || '';
+          document.getElementById('state').value = p.state || (p.location && p.location.state) || '';
+          document.getElementById('genres').value = (p.genres || []).join(', ');
+          document.getElementById('specialties').value = (p.specialties || []).join(', ');
+          document.getElementById('equipment').value = (p.equipment || []).join(', ');
+          document.getElementById('hourly-rate').value = p.hourlyRate || '';
+          document.getElementById('experience').value = p.experience || '';
+          document.getElementById('bio').value = p.bio || '';
+
+          if (d.status === 'approved') {
+            setBanner('Verified DJ — profile is live', '#22c55e', '#22c55e33');
+            submitBtn.textContent = 'Save Profile Changes';
+          } else if (d.status === 'pending') {
+            setBanner('Verification pending — admin will review soon', '#ffd860', '#ffd86033');
+            submitBtn.textContent = 'Update Application';
+          } else if (d.status === 'rejected') {
+            setBanner('Verification rejected — update and resubmit', '#ff3b30', '#ff3b3033');
+          } else {
+            setBanner('Submit your profile for verification', '#00d4ff', '#00d4ff33');
+          }
+        });
+    }
+
+    document.getElementById('avatar-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.match('image.*')) {
+        formStatus.textContent = 'Please select an image file.';
+        formStatus.style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      var statusEl = document.getElementById('avatar-upload-status');
+      var preview = document.getElementById('avatar-preview');
+      statusEl.textContent = 'Uploading...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      var path = 'public/' + user.uid + '/dj-avatars/' + Date.now() + '.' + ext;
+      var ref = storage.ref(path);
+      var upload = ref.put(file);
+      upload.on('state_changed', function() {}, function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      }, function() {
+        ref.getDownloadURL().then(function(url) {
+          document.getElementById('avatar-url').value = url;
+          preview.src = url;
+          preview.style.display = 'block';
+          statusEl.textContent = 'Upload complete.';
+          statusEl.style.color = '#22c55e';
+        }).catch(function(err) {
+          statusEl.textContent = 'Upload failed: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
+      });
+    });
+
+    document.getElementById('apply-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var user = auth.currentUser;
+      if (!user) return;
+      submitBtn.disabled = true;
+      formStatus.textContent = 'Saving...';
+      formStatus.style.color = '#ffd860';
+
+      var split = function(id) {
+        return document.getElementById(id).value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      };
+      var profileData = {
+        stageName: document.getElementById('stage-name').value.trim(),
+        photoURL: document.getElementById('avatar-url').value.trim(),
+        avatar: document.getElementById('avatar-url').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        smsOptIn: document.getElementById('sms-optin').checked,
+        paypal: document.getElementById('paypal').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        state: document.getElementById('state').value.trim(),
+        genres: split('genres'),
+        specialties: split('specialties'),
+        equipment: split('equipment'),
+        hourlyRate: parseFloat(document.getElementById('hourly-rate').value) || 0,
+        experience: parseInt(document.getElementById('experience').value) || 0,
+        bio: document.getElementById('bio').value.trim(),
+        email: user.email,
+        displayName: user.displayName || user.email
+      };
+
+      var keepApproved = currentStatus === 'approved';
+      var verData = {
+        status: keepApproved ? 'approved' : 'pending',
+        djProfile: profileData
+      };
+      if (!keepApproved) {
+        verData.submittedAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+
+      db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
+        .then(function() {
+          db.collection('djs').doc(user.uid).set(profileData, { merge: true });
+          db.collection('dj-status').doc(user.uid).set({
+            djName: profileData.stageName || '',
+            djAvatar: profileData.photoURL || ''
+          }, { merge: true });
+          formStatus.textContent = keepApproved ? 'Profile updated!' : 'Application submitted for verification!';
+          formStatus.style.color = '#22c55e';
+          currentStatus = keepApproved ? 'approved' : 'pending';
+          loadForm(user);
+        })
+        .catch(function(err) {
+          formStatus.textContent = 'Error: ' + err.message;
+          formStatus.style.color = '#ff4d8f';
+        })
+        .finally(function() {
+          submitBtn.disabled = false;
+        });
+    });
+  </script>
+</body>
+</html>
