@@ -149,6 +149,12 @@
         <label for="bio">Bio</label>
         <textarea id="bio" placeholder="Tell clients about yourself..."></textarea>
 
+        <label>Driver's License <span style="color:#888;">(optional — required for higher-paid gigs outside your normal area)</span></label>
+        <input id="license-file" type="file" accept="image/*,application/pdf" style="display:none;">
+        <label for="license-file" class="btn secondary" style="margin:0;">Upload Driver's License</label>
+        <span id="license-status" class="form-status" style="display:inline; margin-left:0.5rem;"></span>
+        <input id="license-url" type="hidden">
+
         <button type="submit" id="submit-btn" class="btn submit-btn">Submit for Verification</button>
         <p id="form-status" class="form-status" aria-live="polite"></p>
       </form>
@@ -219,6 +225,10 @@
           document.getElementById('hourly-rate').value = p.hourlyRate || '';
           document.getElementById('experience').value = p.experience || '';
           document.getElementById('bio').value = p.bio || '';
+          if (d.licenseUrl) {
+            document.getElementById('license-status').textContent = 'License on file — upload a new file to replace it.';
+            document.getElementById('license-status').style.color = '#888';
+          }
 
           if (d.status === 'approved') {
             setBanner('Verified DJ — profile is live', '#22c55e', '#22c55e33');
@@ -269,6 +279,39 @@
       });
     });
 
+    document.getElementById('license-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var statusEl = document.getElementById('license-status');
+      var isImage = !!file.type.match('image.*');
+      if (!isImage && file.type !== 'application/pdf') {
+        statusEl.textContent = 'Please select an image or PDF file.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        statusEl.textContent = 'File must be under 5 MB.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      statusEl.textContent = 'Uploading...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || (isImage ? 'jpg' : 'pdf')).toLowerCase();
+      var ref = storage.ref('licenses/' + user.uid + '/' + Date.now() + '.' + ext);
+      ref.put(file).then(function() {
+        return ref.getDownloadURL();
+      }).then(function(url) {
+        document.getElementById('license-url').value = url;
+        statusEl.textContent = 'License uploaded — only you and admins can view it.';
+        statusEl.style.color = '#22c55e';
+      }).catch(function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
+
     document.getElementById('apply-form').addEventListener('submit', function(e) {
       e.preventDefault();
       var user = auth.currentUser;
@@ -307,6 +350,12 @@
       };
       if (!keepApproved) {
         verData.submittedAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+      var licenseUrl = document.getElementById('license-url').value;
+      if (licenseUrl) {
+        verData.licenseUrl = licenseUrl;
+        verData.licenseSubmittedAt = firebase.firestore.FieldValue.serverTimestamp();
+        verData.licenseStatus = 'pending';
       }
 
       db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })

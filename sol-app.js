@@ -288,6 +288,11 @@
           document.getElementById('sol-dj-hourly-rate').value = p.hourlyRate || '';
           document.getElementById('sol-dj-experience').value = p.experience || '';
           document.getElementById('sol-dj-bio').value = p.bio || '';
+          if (d.licenseUrl) {
+            var licStatusEl = document.getElementById('sol-dj-license-status');
+            licStatusEl.textContent = 'License on file — upload a new file to replace it.';
+            licStatusEl.style.color = '#888';
+          }
 
           var statusEl = document.getElementById('sol-dj-verify-status');
           var submitBtn = document.getElementById('sol-dj-submit-btn');
@@ -352,6 +357,12 @@
       };
       if (!keepApproved) {
         verData.submittedAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+      var licenseUrl = document.getElementById('sol-dj-license-url').value;
+      if (licenseUrl) {
+        verData.licenseUrl = licenseUrl;
+        verData.licenseSubmittedAt = firebase.firestore.FieldValue.serverTimestamp();
+        verData.licenseStatus = 'pending';
       }
 
       db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
@@ -419,6 +430,41 @@
           statusEl.textContent = 'Upload failed: ' + err.message;
           statusEl.style.color = '#ff4d8f';
         });
+      });
+    });
+
+    // ---------- DJ Driver's License Upload ----------
+    document.getElementById('sol-dj-license-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var statusEl = document.getElementById('sol-dj-license-status');
+      var isImage = !!file.type.match('image.*');
+      if (!isImage && file.type !== 'application/pdf') {
+        statusEl.textContent = 'Please select an image or PDF file.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        statusEl.textContent = 'File must be under 5 MB.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      statusEl.textContent = 'Uploading...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || (isImage ? 'jpg' : 'pdf')).toLowerCase();
+      var ref = storage.ref('licenses/' + user.uid + '/' + Date.now() + '.' + ext);
+      ref.put(file).then(function() {
+        return ref.getDownloadURL();
+      }).then(function(url) {
+        document.getElementById('sol-dj-license-url').value = url;
+        statusEl.textContent = 'License uploaded — only you and admins can view it.';
+        statusEl.style.color = '#22c55e';
+        trackSolEvent('dj_license_uploaded', { uid: user.uid });
+      }).catch(function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
       });
     });
 
@@ -1664,6 +1710,7 @@
             (genresStr ? '<div>🎵 ' + escapeHtml(genresStr) + '</div>' : '') +
             (djRate ? '<div>💰 $' + escapeHtml(djRate) + '/hr</div>' : '') +
             (djExp ? '<div>⏱️ ' + escapeHtml(djExp) + ' years experience</div>' : '') +
+            (d.licenseUrl ? '<div>🪪 Driver\'s license ' + (d.licenseStatus ? '(' + escapeHtml(d.licenseStatus) + ') ' : '') + '— <a href="' + escapeAttr(d.licenseUrl) + '" target="_blank" rel="noopener" style="color:#00d4ff;">view document</a> <span style="color:#888;">— eligible for premium out-of-area gigs if approved</span></div>' : '') +
             '</div>' +
             '<div style="display:flex; gap:0.5rem;">' +
             '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-uid="' + escapeAttr(doc.id) + '">Reject</button>' +
@@ -1676,10 +1723,14 @@
             var action = btn.getAttribute('data-action');
             var uid = btn.getAttribute('data-uid');
             var newStatus = action === 'approve' ? 'approved' : 'rejected';
-            var promises = [db.collection('dj-verifications').doc(uid).set({
+            var verUpdate = {
               status: newStatus,
               reviewedAt: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true })];
+            };
+            if (d.licenseUrl) {
+              verUpdate.licenseStatus = action === 'approve' ? 'verified' : 'rejected';
+            }
+            var promises = [db.collection('dj-verifications').doc(uid).set(verUpdate, { merge: true })];
 
             var statusData = {
               isVerified: action === 'approve'

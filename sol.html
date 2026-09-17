@@ -238,6 +238,12 @@
               <label for="sol-dj-bio">Bio</label>
               <textarea id="sol-dj-bio" placeholder="Tell clients about yourself..." style="width:100%; min-height:80px; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; resize:vertical; margin-bottom:0.75rem;"></textarea>
 
+              <label>Driver's License <span style="color:#888; font-size:0.8rem;">(optional — required for higher-paid gigs outside your normal area)</span></label>
+              <input id="sol-dj-license-file" type="file" accept="image/*,application/pdf" style="display:none;">
+              <label for="sol-dj-license-file" class="submit-btn" style="display:inline-block; text-align:center; cursor:pointer; margin-bottom:0.5rem; padding:0.6rem 1.2rem; background:#333;">Upload Driver's License</label>
+              <span id="sol-dj-license-status" style="font-size:0.85rem; margin-left:0.5rem;"></span>
+              <input id="sol-dj-license-url" type="hidden">
+
               <button type="submit" id="sol-dj-submit-btn" class="submit-btn" style="width:100%;">Save Profile & Submit for Verification</button>
             </form>
             <p id="sol-dj-setup-status" class="form-status" aria-live="polite" style="margin-top:0.5rem;"></p>
@@ -959,7 +965,7 @@
     </div>
   </div>
 
-  <script src="sol-app.js?v=24"></script>
+  <script src="sol-app.js?v=25"></script>
 <script src="site.js?v=23"></script>
 </body>
 </html>

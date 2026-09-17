@@ -24,6 +24,22 @@ service firebase.storage {
         request.resource.contentType.matches('image/.*|audio/.*|video/.*|application/pdf');
     }
 
+    // Driver's licenses — owner or admin only. Images/PDF, 5 MB cap.
+    match /licenses/{uid}/{allPaths=**} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if isOwner(uid) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf');
+    }
+
+    // Public uploads (avatars, galleries) — anyone can read, owner writes.
+    match /public/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(uid) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|audio/.*|video/.*|application/pdf');
+    }
+
     // Client-specific uploads (ID verification, etc.) — owner or admin.
     // Constrain to images/PDF and a 2 MB cap.
     match /clients/{uid}/{allPaths=**} {
