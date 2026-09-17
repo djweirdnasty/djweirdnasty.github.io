@@ -3,6 +3,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
+const webpush = require("web-push");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -20,6 +21,20 @@ const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
 const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@djweirdnasty.com";
+
+// Web Push (PWA) — public key is safe to embed; private key stays in Secret Manager.
+const VAPID_PRIVATE_KEY = defineSecret("VAPID_PRIVATE_KEY");
+const VAPID_PUBLIC_KEY = "BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68";
+var vapidConfigured = false;
+function ensureVapid() {
+  if (vapidConfigured) return;
+  webpush.setVapidDetails(
+    "mailto:" + ADMIN_EMAIL,
+    VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY.value()
+  );
+  vapidConfigured = true;
+}
 
 function formatPhoneE164(raw) {
   if (!raw) return null;
@@ -96,6 +111,55 @@ async function sendExpoPush(token, title, body) {
   return data;
 }
 
+// Sends a Web Push to the browser/PWA subscription stored at
+// push-subscriptions/{uid}. Returns true if a push was delivered.
+// Expired subscriptions (404/410) are deleted so we stop retrying them.
+async function sendWebPush(uid, payload) {
+  var subDoc = await db.collection("push-subscriptions").doc(uid).get();
+  if (!subDoc.exists || !subDoc.data().subscription) return false;
+  ensureVapid();
+  try {
+    await webpush.sendNotification(subDoc.data().subscription, JSON.stringify(payload));
+    return true;
+  } catch (err) {
+    if (err.statusCode === 404 || err.statusCode === 410) {
+      await subDoc.ref.delete().catch(function () {});
+      logger.info("[WEB PUSH] Deleted expired subscription for " + uid);
+    } else {
+      throw err;
+    }
+  }
+  return false;
+}
+
+// Fans a notification out to every push channel a user has:
+// Web Push (PWA/browser) + Expo push (native app). Returns counts sent.
+async function notifyUser(uid, title, body, url) {
+  var result = { webPush: 0, expoPush: 0 };
+  try {
+    var sent = await sendWebPush(uid, {
+      title: title,
+      body: body,
+      tag: "sol-" + Date.now(),
+      data: { url: url || "/sol.html" }
+    });
+    if (sent) result.webPush = 1;
+  } catch (err) {
+    logger.error("[NOTIFY] Web push failed for " + uid + ": " + err.message);
+  }
+  try {
+    var userDoc = await db.collection("users").doc(uid).get();
+    var token = userDoc.exists ? userDoc.data().expoPushToken : null;
+    if (token) {
+      await sendExpoPush(token, title, body);
+      result.expoPush = 1;
+    }
+  } catch (err) {
+    logger.error("[NOTIFY] Expo push failed for " + uid + ": " + err.message);
+  }
+  return result;
+}
+
 // TEMP DISABLED: uncomment once TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER secrets are set
 /*
 exports.notifyDjOnBooking = onDocumentWritten(
@@ -170,6 +234,95 @@ exports.notifyDjOnBooking = onDocumentWritten(
   }
 );
 */
+
+// Push booking status updates to the client (and DJ) so phones get notified
+// even when the SOL browser tab/PWA is closed. The on-page countdown timer
+// cannot run while the browser is closed, but it always re-derives from the
+// booking's stored date/time on reopen — these pushes are what keep users
+// informed in the meantime.
+exports.notifyOnBookingUpdate = onDocumentWritten(
+  {
+    document: "bookings/{bookingId}",
+    secrets: [VAPID_PRIVATE_KEY],
+  },
+  async (event) => {
+    var afterSnap = event.data.after;
+    if (!afterSnap || !afterSnap.exists) return;
+
+    var beforeSnap = event.data.before;
+    var before = beforeSnap && beforeSnap.exists ? beforeSnap.data() : null;
+    var after = afterSnap.data();
+    var bookingId = event.params.bookingId;
+
+    var clientId = after.clientId;
+    var djId = after.djId;
+
+    var djName = after.djName || "Your DJ";
+    var clientName = after.clientName || after.client_name || "A client";
+    var eventType = after.eventType || after.event_type || "event";
+    var date = after.date || after.eventDate || "TBD";
+    var time = after.startTime || after.eventTime || "";
+    var when = date + (time ? " at " + time : "");
+    var duration = after.duration ? " (" + after.duration + " hrs)" : "";
+
+    var pushes = []; // [{ uid, title, body }]
+
+    if (!before) {
+      // New booking request — notify the DJ.
+      if (djId) {
+        pushes.push({
+          uid: djId,
+          title: "New booking request",
+          body: clientName + " requested you for " + eventType + " on " + when + ". Open SOL to accept or decline."
+        });
+      }
+    } else if (before.status !== after.status) {
+      switch (after.status) {
+        case "confirmed":
+          if (clientId) pushes.push({ uid: clientId, title: "Booking confirmed", body: djName + " confirmed your " + eventType + " booking for " + when + "." });
+          break;
+        case "accepted":
+          if (clientId) pushes.push({ uid: clientId, title: "Booking accepted", body: djName + " accepted your " + eventType + " booking for " + when + "." });
+          break;
+        case "on_the_way":
+          if (clientId) pushes.push({ uid: clientId, title: "DJ on the way", body: djName + " is on the way to your " + eventType + "!" });
+          break;
+        case "arrived":
+          if (clientId) pushes.push({ uid: clientId, title: "DJ arrived", body: djName + " has arrived at your event." });
+          break;
+        case "started":
+          if (clientId) pushes.push({ uid: clientId, title: "Event started", body: djName + " started your event" + duration + " — timer is running." });
+          break;
+        case "completed":
+          if (clientId) pushes.push({ uid: clientId, title: "Event completed", body: "Your " + eventType + " with " + djName + " is complete. Thanks for booking with SOL!" });
+          break;
+        case "cancelled":
+          if (clientId) pushes.push({ uid: clientId, title: "Booking cancelled", body: "Your " + eventType + " booking on " + when + " was cancelled." });
+          if (djId) pushes.push({ uid: djId, title: "Booking cancelled", body: "The " + eventType + " booking on " + when + " was cancelled." });
+          break;
+      }
+    }
+
+    // DJ pressed the event timer — tell the client the clock is running.
+    if (!before || (!before.timerStarted && after.timerStarted)) {
+      if (after.status === "started" || after.status === "confirmed" || after.status === "arrived") {
+        if (clientId) {
+          pushes.push({
+            uid: clientId,
+            title: "Event timer started",
+            body: djName + " started the timer for your " + eventType + duration + "."
+          });
+        }
+      }
+    }
+
+    for (var i = 0; i < pushes.length; i++) {
+      var p = pushes[i];
+      await notifyUser(p.uid, p.title, p.body, "/sol.html");
+      logger.info("[BOOKING PUSH] " + after.status + " -> " + p.uid + " for booking " + bookingId);
+    }
+  }
+);
 
 function paypalBaseUrl(mode) {
   return mode === "live"
@@ -438,7 +591,7 @@ exports.syncAllAuthUsers = onCall(async (request) => {
 
 // Callable function: admin sends messages to users, DJs, or broadcast.
 exports.adminSendMessage = onCall(
-  { secrets: [SENDGRID_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER] },
+  { secrets: [SENDGRID_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, VAPID_PRIVATE_KEY] },
   async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Must be signed in.");
@@ -527,7 +680,7 @@ exports.adminSendMessage = onCall(
       continue;
     }
 
-    // Push notification (Expo push token stored on the user doc when they enable notifications).
+    // Push notification (Expo push token for the app + Web Push subscription for the PWA).
     if (u.expoPushToken) {
       try {
         await sendExpoPush(u.expoPushToken, subject || "New message from SOL Admin", body);
@@ -535,6 +688,17 @@ exports.adminSendMessage = onCall(
       } catch (err) {
         logger.error("[ADMIN MESSAGE] Push failed for " + uid + ": " + err.message);
       }
+    }
+    try {
+      var webPushed = await sendWebPush(uid, {
+        title: subject || "New message from SOL Admin",
+        body: body.slice(0, 200),
+        tag: "sol-admin-" + uid,
+        data: { url: "/sol.html" }
+      });
+      if (webPushed) pushSent++;
+    } catch (err) {
+      logger.error("[ADMIN MESSAGE] Web push failed for " + uid + ": " + err.message);
     }
 
     // Email via SendGrid.
