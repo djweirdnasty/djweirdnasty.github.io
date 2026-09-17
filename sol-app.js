@@ -148,7 +148,7 @@
       const password = authPasswordInput.value;
       if (!email || !password) {
         authStatus.textContent = 'Enter an email and password.';
-        authStatus.style.color = '#ff4d8f';
+        authStatus.style.color = '#ff1111';
         return;
       }
       authSubmitBtn.disabled = true;
@@ -172,7 +172,7 @@
           .catch(function(err) {
             console.error('[AUTH] Sign up error:', err.code, err.message);
             authStatus.textContent = 'Unable to create account. Please try again.';
-            authStatus.style.color = '#ff4d8f';
+            authStatus.style.color = '#ff1111';
           })
           .finally(done);
       } else {
@@ -185,7 +185,7 @@
           .catch(function(err) {
             console.error('[AUTH] Sign in error:', err.code, err.message);
             authStatus.textContent = 'Sign in failed (' + (err.code || 'unknown') + '): ' + (err.message || 'Check your email and password.');
-            authStatus.style.color = '#ff4d8f';
+            authStatus.style.color = '#ff1111';
           })
           .finally(done);
       }
@@ -356,8 +356,8 @@
             statusEl.style.color = '#ff3b30';
           } else {
             statusEl.textContent = '📝 Submit your profile for verification';
-            statusEl.style.background = '#00d4ff33';
-            statusEl.style.color = '#00d4ff';
+            statusEl.style.background = '#ff555533';
+            statusEl.style.color = '#ff5555';
           }
         });
     }
@@ -447,7 +447,7 @@
         })
         .catch(function(err) {
           statusEl.textContent = 'Error: ' + err.message;
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
         });
     });
 
@@ -457,7 +457,7 @@
       if (!file) return;
       if (!file.type.match('image.*')) {
         document.getElementById('sol-dj-avatar-upload-status').textContent = 'Please select an image file.';
-        document.getElementById('sol-dj-avatar-upload-status').style.color = '#ff4d8f';
+        document.getElementById('sol-dj-avatar-upload-status').style.color = '#ff1111';
         return;
       }
       var user = auth.currentUser;
@@ -472,7 +472,7 @@
       var upload = ref.put(file);
       upload.on('state_changed', function() {}, function(err) {
         statusEl.textContent = 'Upload failed: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       }, function() {
         ref.getDownloadURL().then(function(url) {
           document.getElementById('sol-dj-avatar-url').value = url;
@@ -482,7 +482,7 @@
           trackSolEvent('dj_profile_photo_uploaded', { uid: user.uid });
         }).catch(function(err) {
           statusEl.textContent = 'Upload failed: ' + err.message;
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
         });
       });
     });
@@ -495,12 +495,12 @@
       var isImage = !!file.type.match('image.*');
       if (!isImage && file.type !== 'application/pdf') {
         statusEl.textContent = 'Please select an image or PDF file.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
         statusEl.textContent = 'File must be under 5 MB.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         return;
       }
       var user = auth.currentUser;
@@ -518,7 +518,7 @@
         trackSolEvent('dj_license_uploaded', { uid: user.uid });
       }).catch(function(err) {
         statusEl.textContent = 'Upload failed: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       });
     });
 
@@ -569,7 +569,7 @@
       if (!file) return;
       if (!file.type.match('image.*')) {
         document.getElementById('sol-dj-gallery-status').textContent = 'Please select an image file.';
-        document.getElementById('sol-dj-gallery-status').style.color = '#ff4d8f';
+        document.getElementById('sol-dj-gallery-status').style.color = '#ff1111';
         return;
       }
       var user = auth.currentUser;
@@ -583,7 +583,7 @@
       var upload = ref.put(file);
       upload.on('state_changed', function() {}, function(err) {
         statusEl.textContent = 'Upload failed: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       }, function() {
         ref.getDownloadURL().then(function(url) {
           db.collection('dj-galleries').doc(user.uid).set({
@@ -595,11 +595,11 @@
             loadDjGallery(user.uid);
           }).catch(function(err) {
             statusEl.textContent = 'Save failed: ' + err.message;
-            statusEl.style.color = '#ff4d8f';
+            statusEl.style.color = '#ff1111';
           });
         }).catch(function(err) {
           statusEl.textContent = 'Upload failed: ' + err.message;
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
         });
       });
     });
@@ -756,12 +756,12 @@
       var statusEl = document.getElementById('sol-dj-video-status');
       if (!file.type.match('video.*')) {
         statusEl.textContent = 'Please select a video file.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         return;
       }
       if (file.size > 100 * 1024 * 1024) {
         statusEl.textContent = 'Video too large — max 100 MB. For bigger files, upload to YouTube and paste the link.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         return;
       }
       var user = auth.currentUser;
@@ -777,7 +777,7 @@
         }
       }, function(err) {
         statusEl.textContent = 'Upload failed: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       }, function() {
         ref.getDownloadURL().then(function(url) {
           db.collection('dj-videos').doc(user.uid).set({
@@ -790,7 +790,7 @@
           });
         }).catch(function(err) {
           statusEl.textContent = 'Upload failed: ' + err.message;
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
         });
       });
     });
@@ -805,7 +805,7 @@
       if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
       if (!/youtube\.com|youtu\.be|vimeo\.com/i.test(url)) {
         statusEl.textContent = 'Please paste a YouTube (or Vimeo) link. Use Upload Video for video files.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         return;
       }
       db.collection('dj-videos').doc(user.uid).set({
@@ -817,7 +817,7 @@
         loadDjVideos(user.uid);
       }).catch(function(err) {
         statusEl.textContent = 'Save failed: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       });
     });
 
@@ -863,7 +863,7 @@
       if (amountEl) amountEl.textContent = '$' + periodTotal.toLocaleString();
 
       document.querySelectorAll('.sol-earnings-period').forEach(function(btn) {
-        btn.style.background = btn.getAttribute('data-period') === djEarningsPeriod ? '#ff4d8f' : '#333';
+        btn.style.background = btn.getAttribute('data-period') === djEarningsPeriod ? '#ff1111' : '#333';
       });
 
       var currentYear = now.getFullYear();
@@ -881,7 +881,7 @@
         chartEl.innerHTML = monthly.map(function(val, i) {
           var h = Math.max(4, Math.round((val / maxVal) * 90));
           return '<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">' +
-            '<div title="$' + val.toLocaleString() + '" style="width:100%; background:#ff4d8f; border-radius:3px 3px 0 0; height:' + h + 'px;"></div>' +
+            '<div title="$' + val.toLocaleString() + '" style="width:100%; background:#ff1111; border-radius:3px 3px 0 0; height:' + h + 'px;"></div>' +
             '<span style="font-size:0.6rem; color:#888; margin-top:2px;">' + monthNames[i] + '</span>' +
             '</div>';
         }).join('');
@@ -1119,7 +1119,7 @@
 
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
             '<strong>' + escapeHtml(clientName) + '</strong>' +
-            '<span style="background:#ff4d8f; color:#fff; padding:0.15rem 0.5rem; border-radius:8px; font-size:0.75rem;">NEW</span>' +
+            '<span style="background:#ff1111; color:#fff; padding:0.15rem 0.5rem; border-radius:8px; font-size:0.75rem;">NEW</span>' +
             '</div>' +
             '<div style="color:#ccc; font-size:0.9rem; line-height:1.6;">' +
             '<div>📅 ' + (date ? parseLocalDate(date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) : 'TBD') + (startTime ? ' at ' + escapeHtml(startTime) : '') + '</div>' +
@@ -1200,23 +1200,23 @@
             '<div><strong>' + escapeHtml(eventType) + '</strong><br><span style="color:#aaa; font-size:0.85rem;">' + escapeHtml(clientName) + '</span></div>' +
             '<div style="text-align:right; color:#aaa; font-size:0.85rem;">' + (date ? parseLocalDate(date).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '') + (startTime ? '<br>' + escapeHtml(startTime) : '') + '</div>' +
             '</div>' +
-            '<div id="' + escapeAttr(countdownId) + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#00d4ff; font-weight:600;"></div>' +
+            '<div id="' + escapeAttr(countdownId) + '" style="background:#1a1a1a; border-radius:8px; padding:0.5rem 0.75rem; margin-bottom:0.5rem; text-align:center; font-size:0.9rem; color:#ff5555; font-weight:600;"></div>' +
             (location ? '<div style="color:#ccc; font-size:0.9rem;">📍 ' + escapeHtml(location) + '</div>' : '') +
             '<div style="color:#22c55e; font-size:0.9rem; margin-top:0.25rem;">💰 $' + Number(amount).toLocaleString() + '</div>' +
             (arrived ? '<div style="color:#22c55e; font-size:0.85rem; margin-top:0.5rem;">✅ Arrived' + (arrivalStatus ? ' — ' + escapeHtml(arrivalStatus) : '') + '</div>' : '') +
             '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">' +
-            (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-im-here="' + escapeAttr(b.id) + '">I\'m Here</button>') +
-            (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff4d8f;" data-show-map="' + escapeAttr(b.id) + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + escapeAttr(location || '') + '">Show on Map</button>' : '') +
+            (arrived ? '' : '<button type="button" class="submit-btn" style="flex:1; background:#ff5555; color:#000;" data-im-here="' + escapeAttr(b.id) + '">I\'m Here</button>') +
+            (hasCoords ? '<button type="button" class="submit-btn" style="flex:1; background:#ff1111;" data-show-map="' + escapeAttr(b.id) + '" data-lat="' + evtLat + '" data-lng="' + evtLng + '" data-addr="' + escapeAttr(location || '') + '">Show on Map</button>' : '') +
             '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-expand="' + escapeAttr(detailsId) + '">Details</button>' +
             '</div>' +
             '<div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">' +
-            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff;" data-track-status="' + escapeAttr(b.id) + '">📊 Track Status</button>' +
+            '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #ff5555; color:#ff5555;" data-track-status="' + escapeAttr(b.id) + '">📊 Track Status</button>' +
             '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #9333ea; color:#c084fc;" data-song-suggestions="' + escapeAttr(b.id) + '" data-dj-id="' + escapeAttr(user.uid) + '" data-dj-name="' + escapeAttr(b.djName || user.displayName || user.email || 'DJ') + '" data-event-type="' + escapeAttr(eventType) + '">🎵 Song Suggestions</button>' +
             '</div>' +
             '<div id="' + escapeAttr(detailsId) + '" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid #333; color:#ccc; font-size:0.85rem; line-height:1.8;">' +
             (duration ? '<div>⏱️ Duration: ' + escapeHtml(duration) + ' hrs</div>' : '') +
-            (clientEmail ? '<div>📧 <a href="mailto:' + escapeAttr(clientEmail) + '" style="color:#00d4ff;">' + escapeHtml(clientEmail) + '</a></div>' : '') +
-            (clientPhone ? '<div>📱 <a href="tel:' + escapeAttr(clientPhone) + '" style="color:#00d4ff;">' + escapeHtml(clientPhone) + '</a></div>' : '') +
+            (clientEmail ? '<div>📧 <a href="mailto:' + escapeAttr(clientEmail) + '" style="color:#ff5555;">' + escapeHtml(clientEmail) + '</a></div>' : '') +
+            (clientPhone ? '<div>📱 <a href="tel:' + escapeAttr(clientPhone) + '" style="color:#ff5555;">' + escapeHtml(clientPhone) + '</a></div>' : '') +
             (eqStr ? '<div>🎛️ Equipment: ' + escapeHtml(eqStr) + '</div>' : '') +
             (special ? '<div style="color:#ffd860;">📝 ' + escapeHtml(special).replace(/\n/g, '<br>') + '</div>' : '') +
             '</div>';
@@ -1294,7 +1294,7 @@
               setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
             }).catch(function(err) {
               djConsoleStatus.textContent = 'Error: ' + err.message;
-              djConsoleStatus.style.color = '#ff4d8f';
+              djConsoleStatus.style.color = '#ff1111';
             });
           });
         });
@@ -1367,19 +1367,19 @@
             })
             .catch(function(err) {
               djConsoleStatus.textContent = 'Failed: ' + err.message;
-              djConsoleStatus.style.color = '#ff4d8f';
+              djConsoleStatus.style.color = '#ff1111';
             });
         });
       } else {
         bookingRef.set(updateData, { merge: true })
           .then(function() {
             djConsoleStatus.textContent = 'Booking rejected.';
-            djConsoleStatus.style.color = '#ff4d8f';
+            djConsoleStatus.style.color = '#ff1111';
             setTimeout(function() { djConsoleStatus.textContent = ''; }, 3000);
           })
           .catch(function(err) {
             djConsoleStatus.textContent = 'Failed: ' + err.message;
-            djConsoleStatus.style.color = '#ff4d8f';
+            djConsoleStatus.style.color = '#ff1111';
           });
       }
     }
@@ -1406,7 +1406,7 @@
         djId: user.uid
       }, { merge: true }).catch(function(err) {
         djConsoleStatus.textContent = 'Failed to update status: ' + err.message;
-        djConsoleStatus.style.color = '#ff4d8f';
+        djConsoleStatus.style.color = '#ff1111';
       });
     });
 
@@ -1456,17 +1456,17 @@
       }
       if (!navigator.geolocation) {
         djLocStatus.textContent = 'Geolocation not supported on this device';
-        djLocStatus.style.color = '#ff4d8f';
+        djLocStatus.style.color = '#ff1111';
         return;
       }
       if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         djLocStatus.textContent = 'HTTPS required for location';
-        djLocStatus.style.color = '#ff4d8f';
+        djLocStatus.style.color = '#ff1111';
         return;
       }
       if (!confirm('This will share your approximate live location with clients and the map. Continue?')) {
         djLocStatus.textContent = 'Location sharing cancelled.';
-        djLocStatus.style.color = '#ff4d8f';
+        djLocStatus.style.color = '#ff1111';
         return;
       }
       djShareLocBtn.textContent = 'Stop';
@@ -1557,7 +1557,7 @@
         } else {
           djLocStatus.textContent = msg;
         }
-        djLocStatus.style.color = '#ff4d8f';
+        djLocStatus.style.color = '#ff1111';
         djShareLocBtn.textContent = 'Start';
         djShareLocBtn.style.background = '#333';
         if (djWakeLock) { djWakeLock.release().catch(function() {}); djWakeLock = null; }
@@ -1601,7 +1601,7 @@
         .then(function(data) {
           if (!data || data.length === 0) {
             djLocStatus.textContent = 'Address not found.';
-            djLocStatus.style.color = '#ff4d8f';
+            djLocStatus.style.color = '#ff1111';
             return;
           }
           var lat = parseFloat(data[0].lat);
@@ -1618,7 +1618,7 @@
         })
         .catch(function() {
           djLocStatus.textContent = 'Location lookup failed.';
-          djLocStatus.style.color = '#ff4d8f';
+          djLocStatus.style.color = '#ff1111';
         });
     });
 
@@ -1661,7 +1661,7 @@
 
       function onAutoErr(err) {
         djLocStatus.textContent = 'Auto-share error: ' + err.message;
-        djLocStatus.style.color = '#ff4d8f';
+        djLocStatus.style.color = '#ff1111';
       }
 
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -1710,7 +1710,7 @@
       }
 
       if (djEventMarker) djEventMarker.remove();
-      var el = createSolPin('#ff4d8f', 16);
+      var el = createSolPin('#ff1111', 16);
       djEventMarker = new mapboxgl.Marker({ element: el })
         .setLngLat([lng, lat])
         .setPopup(new mapboxgl.Popup().setHTML('<strong>Event Location</strong><br>' + (address || '')))
@@ -1788,7 +1788,7 @@
             if (c.unreadCount) totalUnread += c.unreadCount;
             const item = document.createElement('div');
             item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
-            item.innerHTML = '<span><strong>' + escapeHtml(c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff4d8f;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
+            item.innerHTML = '<span><strong>' + escapeHtml(c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff1111;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
             item.addEventListener('click', function() {
               openChat(doc.id);
             });
@@ -1797,7 +1797,7 @@
           updateDjModeBadge(totalUnread);
         }, function(err) {
           console.error('DJ conversations listener error:', err);
-          djConversationsBox.innerHTML = '<p style="color:#ff4d8f;">Could not load conversations: ' + escapeHtml(err.message) + '</p>';
+          djConversationsBox.innerHTML = '<p style="color:#ff1111;">Could not load conversations: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -1958,8 +1958,8 @@
               var safeAvatar = escapeAttr(djAvatar);
               var safeInitial = escapeHtml((djName.charAt(0) || 'D').toUpperCase());
               var avatarHtml = djAvatar
-                ? '<img loading="lazy" src="' + safeAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>'
-                : '<div style="width:48px;height:48px;border-radius:50%;background:#00d4ff;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>';
+                ? '<img loading="lazy" src="' + safeAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:48px;height:48px;border-radius:50%;background:#ff5555;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>'
+                : '<div style="width:48px;height:48px;border-radius:50%;background:#ff5555;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>';
               card.innerHTML = avatarHtml +
                 '<div style="flex:1;"><strong>' + safeDjName + '</strong>' +
                 (djEmail ? '<br><span style="font-size:0.85rem; color:#aaa;">' + escapeHtml(djEmail) + '</span>' : '<br><span style="font-size:0.8rem; color:#666;">UID: ' + escapeHtml(uidShort) + '</span>') +
@@ -1971,7 +1971,7 @@
                 '<div style="display:flex; flex-wrap:wrap; gap:0.35rem; justify-content:flex-end; max-width:220px;">' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #22c55e; color:#22c55e; padding:0.35rem 0.6rem; font-size:0.75rem;" data-view-dj-admin="' + escapeAttr(v.id) + '" data-view-dj-name="' + escapeAttr(djName) + '">View</button>' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ffd860; color:#ffd860; padding:0.35rem 0.6rem; font-size:0.75rem;" data-edit-dj-admin="' + escapeAttr(v.id) + '">Edit</button>' +
-                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.35rem 0.6rem; font-size:0.75rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff5555; color:#ff5555; padding:0.35rem 0.6rem; font-size:0.75rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff9d5c; color:#ff9d5c; padding:0.35rem 0.6rem; font-size:0.75rem;" data-login-dj-admin="' + escapeAttr(v.id) + '" data-login-dj-name="' + escapeAttr(djName) + '">Log In</button>' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff3b30; color:#ff3b30; padding:0.35rem 0.6rem; font-size:0.75rem;" data-signout-dj-admin="' + escapeAttr(v.id) + '" data-signout-dj-name="' + escapeAttr(djName) + '">Log Out</button>' +
                 '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.35rem 0.6rem; font-size:0.75rem;" data-delete-dj="' + escapeAttr(v.id) + '">Delete</button>' +
@@ -2038,7 +2038,7 @@
           });
         })
         .catch(function(err) {
-          djsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+          djsList.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -2058,7 +2058,7 @@
           var b = doc.data();
           var card = document.createElement('div');
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem;';
-          var statusColor = b.status === 'confirmed' ? '#22c55e' : b.status === 'pending' ? '#ffd860' : b.status === 'completed' ? '#00d4ff' : '#ff3b30';
+          var statusColor = b.status === 'confirmed' ? '#22c55e' : b.status === 'pending' ? '#ffd860' : b.status === 'completed' ? '#ff5555' : '#ff3b30';
           card.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">' +
             '<strong>' + escapeHtml(b.eventType || b.event_type || 'Event') + '</strong>' +
             '<span style="color:' + statusColor + '; font-size:0.85rem;">' + escapeHtml(b.status || 'unknown') + '</span>' +
@@ -2070,12 +2070,12 @@
             '<div>💰 $' + Number(b.totalAmount || b.total_cost || 0).toLocaleString() + '</div>' +
             '</div>' +
             (b.status !== 'cancelled' && b.status !== 'completed' ? '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-cancel-admin-booking="' + escapeAttr(doc.id) + '">Cancel Booking</button>' : '') +
-            '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-track-status="' + escapeAttr(doc.id) + '">📊 Track Status</button>';
+            '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff5555; color:#ff5555; padding:0.4rem 0.7rem; font-size:0.8rem; margin-top:0.5rem;" data-track-status="' + escapeAttr(doc.id) + '">📊 Track Status</button>';
           bookingsList.appendChild(card);
         });
         document.getElementById('sol-admin-stat-bookings').textContent = count;
       }, function(err) {
-        bookingsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        bookingsList.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2153,7 +2153,7 @@
             (genresStr ? '<div>🎵 ' + escapeHtml(genresStr) + '</div>' : '') +
             (djRate ? '<div>💰 $' + escapeHtml(djRate) + '/hr</div>' : '') +
             (djExp ? '<div>⏱️ ' + escapeHtml(djExp) + ' years experience</div>' : '') +
-            (d.licenseUrl ? '<div>🪪 Driver\'s license ' + (d.licenseStatus ? '(' + escapeHtml(d.licenseStatus) + ') ' : '') + '— <a href="' + escapeAttr(d.licenseUrl) + '" target="_blank" rel="noopener" style="color:#00d4ff;">view document</a> <span style="color:#888;">— eligible for premium out-of-area gigs if approved</span></div>' : '') +
+            (d.licenseUrl ? '<div>🪪 Driver\'s license ' + (d.licenseStatus ? '(' + escapeHtml(d.licenseStatus) + ') ' : '') + '— <a href="' + escapeAttr(d.licenseUrl) + '" target="_blank" rel="noopener" style="color:#ff5555;">view document</a> <span style="color:#888;">— eligible for premium out-of-area gigs if approved</span></div>' : '') +
             '</div>' +
             '<div style="display:flex; gap:0.5rem;">' +
             '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-action="reject" data-uid="' + escapeAttr(doc.id) + '">Reject</button>' +
@@ -2198,16 +2198,16 @@
 
             Promise.all(promises).then(function() {
               adminStatus.textContent = 'DJ ' + newStatus + ' successfully.';
-              adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff4d8f';
+              adminStatus.style.color = action === 'approve' ? '#22c55e' : '#ff1111';
               setTimeout(function() { adminStatus.textContent = ''; }, 3000);
             }).catch(function(err) {
               adminStatus.textContent = 'Error: ' + err.message;
-              adminStatus.style.color = '#ff4d8f';
+              adminStatus.style.color = '#ff1111';
             });
           });
         });
       }, function(err) {
-        verificationsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        verificationsList.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2226,7 +2226,7 @@
         var btn = document.getElementById('sol-admin-tab-' + t);
         if (panel) panel.style.display = (t === activeId) ? 'block' : 'none';
         if (btn) {
-          if (t === activeId) { btn.style.background = '#00d4ff'; btn.style.color = '#000'; }
+          if (t === activeId) { btn.style.background = '#ff5555'; btn.style.color = '#000'; }
           else { btn.style.background = ''; btn.style.color = ''; }
         }
       });
@@ -2293,7 +2293,7 @@
           };
         })
         .catch(function(err) {
-          usersList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+          usersList.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -2317,15 +2317,15 @@
         var safeName = escapeHtml(name);
         var safeInitial = escapeHtml((name.charAt(0) || 'U').toUpperCase());
         var avatarHtml = avatar
-          ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
-          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>';
+          ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
+          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>';
         var isProtected = d.protected === true;
         var badges = '';
         var now = Date.now();
         var created = d.createdAt && typeof d.createdAt.toMillis === 'function' ? d.createdAt.toMillis() : 0;
         var isNew = (now - created) < 24 * 60 * 60 * 1000;
         if (isNew) badges += '<span style="background:#ffd860; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">NEW</span> ';
-        if (isAdmin) badges += '<span style="background:#00d4ff; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
+        if (isAdmin) badges += '<span style="background:#ff5555; color:#000; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">ADMIN</span> ';
         if (isDJ) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">DJ</span> ';
         if (banned) badges += '<span style="background:#ff3b30; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">BANNED</span> ';
         if (isProtected) badges += '<span style="background:#22c55e; color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.7rem; font-weight:600;">FOUNDER</span> ';
@@ -2335,9 +2335,9 @@
           '<br><span style="font-size:0.8rem; color:#666;">UID: ' + escapeHtml(u.id.substring(0, 12)) + '...</span></div>' +
           '<div style="display:flex; flex-direction:column; gap:0.25rem; align-items:flex-end;">' +
           '<div>' + badges + '</div>' +
-          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#00d4ff; color:#000;" data-view-user="' + escapeAttr(u.id) + '">View</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#ff5555; color:#000;" data-view-user="' + escapeAttr(u.id) + '">View</button>' +
           '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-ban-user="' + escapeAttr(u.id) + '" data-banned="' + (banned ? '1' : '0') + '" data-protected="' + (isProtected ? '1' : '0') + '">' + (banned ? 'Unban' : 'Ban') + '</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#ff4d8f;" data-force-logout="' + escapeAttr(u.id) + '" data-protected="' + (isProtected ? '1' : '0') + '">Log Out</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.75rem; background:#ff1111;" data-force-logout="' + escapeAttr(u.id) + '" data-protected="' + (isProtected ? '1' : '0') + '">Log Out</button>' +
           '</div>';
         usersList.appendChild(card);
       });
@@ -2394,9 +2394,9 @@
       modal.id = 'sol-user-modal';
       modal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;';
       modal.innerHTML =
-        '<div style="background:#111; border:1px solid #ff4d8f; border-radius:16px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative;">' +
+        '<div style="background:#111; border:1px solid #ff1111; border-radius:16px; max-width:700px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative;">' +
         '<button type="button" id="sol-user-modal-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>' +
-        '<h3 style="margin-top:0; color:#ff4d8f;">User Profile</h3>' +
+        '<h3 style="margin-top:0; color:#ff1111;">User Profile</h3>' +
         '<div id="sol-user-modal-content" style="color:#ccc; font-size:0.9rem; line-height:1.5;">Loading...</div>' +
         '</div>';
       document.body.appendChild(modal);
@@ -2547,7 +2547,7 @@
           });
         });
       }).catch(function(err) {
-        content.innerHTML = '<p style="color:#ff4d8f;">Error loading DJ: ' + escapeHtml(err.message) + '</p>';
+        content.innerHTML = '<p style="color:#ff1111;">Error loading DJ: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2576,7 +2576,7 @@
         var djVerify = results[6];
 
         if (!userDoc.exists) {
-          content.innerHTML = '<p style="color:#ff4d8f;">User not found.</p>';
+          content.innerHTML = '<p style="color:#ff1111;">User not found.</p>';
           return;
         }
 
@@ -2639,19 +2639,19 @@
         var isProtected = d.protected === true;
         var founderBadge = isProtected ? '<span style="background:#22c55e; color:#fff; padding:0.4rem 0.8rem; border-radius:8px; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem; display:inline-block;">Founder / Developer — protected</span>' : '';
         var adminActionsHtml = isProtected ?
-          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' + founderBadge + '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '" data-protected="true">Reset Password</button></div>') :
+          ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' + founderBadge + '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff1111;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '" data-protected="true">Reset Password</button></div>') :
           ('<div style="display:flex; flex-wrap:wrap; gap:0.5rem;">' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:' + (banned ? '#22c55e' : '#ff3b30') + ';" data-admin-action="ban" data-uid="' + uid + '" data-banned="' + banned + '">' + (banned ? (isDJ ? 'Unsuspend DJ' : 'Unban User') : (isDJ ? 'Suspend DJ' : 'Ban User')) + '</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#00d4ff; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Promote to Admin') + '</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff5555; color:#000;" data-admin-action="admin" data-uid="' + uid + '">' + (isAdmin ? 'Remove Admin' : 'Promote to Admin') + '</button>' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#22c55e;" data-admin-action="verifyClient" data-uid="' + uid + '">Verify Client (Bypass)</button>' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ffd860; color:#000;" data-admin-action="promoteDj" data-uid="' + uid + '">' + (isDJ ? 'Revoke DJ' : 'Promote to DJ (Bypass)') + '</button>' +
-          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff4d8f;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button>' +
+          '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#ff1111;" data-admin-action="resetPassword" data-uid="' + uid + '" data-email="' + email + '">Reset Password</button>' +
           '<button type="button" class="submit-btn" style="padding:0.4rem 0.8rem; font-size:0.85rem; background:#333;" data-admin-action="delete" data-uid="' + uid + '">Delete Account</button>' +
           '</div>');
 
         content.innerHTML =
           '<div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">' +
-          (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">' : '<div style="width:64px;height:64px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>') +
+          (photo ? '<img src="' + photo + '" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">' : '<div style="width:64px;height:64px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#fff;">' + (name.charAt(0) || 'U').toUpperCase() + '</div>') +
           '<div>' +
           '<strong style="color:#fff; font-size:1.1rem;">' + name + '</strong><br>' +
           '<span style="color:#aaa;">' + email + '</span>' + (phone ? '<br><span style="color:#888;">' + phone + '</span>' : '') + '</div>' +
@@ -2676,7 +2676,7 @@
           btn.addEventListener('click', function() { runAdminUserAction(btn); });
         });
       }).catch(function(err) {
-        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        content.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -2689,7 +2689,7 @@
       statusEl.textContent = 'Working...';
 
       if (btn.getAttribute('data-protected') === 'true' && action !== 'resetPassword') {
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         statusEl.textContent = 'This founder account is protected.';
         return;
       }
@@ -2701,7 +2701,7 @@
           statusEl.textContent = isBanned ? 'User unbanned.' : 'User banned.';
           openAdminUserModal(uid);
           loadAdminUsers();
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
         return;
       }
 
@@ -2712,7 +2712,7 @@
           statusEl.textContent = isAdmin ? 'Admin removed.' : 'User is now admin.';
           openAdminUserModal(uid);
           loadAdminUsers();
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
         return;
       }
 
@@ -2732,7 +2732,7 @@
           statusEl.textContent = 'Client verified (bypassed by admin).';
           trackSolEvent('client_verification_approved', { uid: uid, method: 'admin_bypass' });
           openAdminUserModal(uid);
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
         return;
       }
 
@@ -2751,7 +2751,7 @@
             trackSolEvent('dj_revoked', { uid: uid });
             openAdminUserModal(uid);
             loadAdminUsers();
-          }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+          }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
           return;
         }
         db.collection('users').doc(uid).get().then(function(userDoc) {
@@ -2785,14 +2785,14 @@
           trackSolEvent('dj_registration', { uid: uid, stage_name: name, method: 'admin_bypass' });
           openAdminUserModal(uid);
           loadAdminUsers();
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
         return;
       }
 
       if (action === 'resetPassword') {
         var email = btn.getAttribute('data-email');
         if (!email) {
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
           statusEl.textContent = 'No email on file.';
           return;
         }
@@ -2802,7 +2802,7 @@
         }).then(function() {
           statusEl.style.color = '#22c55e';
           statusEl.textContent = 'Password reset email sent.';
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
         return;
       }
 
@@ -2820,7 +2820,7 @@
         ]).then(function() {
           closeAdminUserModal();
           loadAdminUsers();
-        }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
+        }).catch(function(err) { statusEl.style.color = '#ff1111'; statusEl.textContent = err.message; });
       }
     }
 
@@ -2959,7 +2959,7 @@
           });
         })
         .catch(function(err) {
-          earningsList.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+          earningsList.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
         });
     }
 
@@ -3137,7 +3137,7 @@
         setTimeout(function() { statusEl.textContent = ''; }, 4000);
       }).catch(function(err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       });
     });
 
@@ -3189,7 +3189,7 @@
           });
         });
       }, function(err) {
-        list.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        list.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -3218,7 +3218,7 @@
             var item = document.createElement('div');
             item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
             item.innerHTML = '<span><strong>' + escapeHtml(d.djName || 'DJ') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(d.lastMessage || 'No messages yet') + '</span></span>' +
-              (d.unreadCount ? '<span style="font-size:0.75rem; color:#ff4d8f;">' + d.unreadCount + ' unread</span>' : '');
+              (d.unreadCount ? '<span style="font-size:0.75rem; color:#ff1111;">' + d.unreadCount + ' unread</span>' : '');
             item.addEventListener('click', function() { openChat(c.id); });
             box.appendChild(item);
           });
@@ -3270,7 +3270,7 @@
         var djName = b.djName || 'DJ';
         var amount = b.totalAmount || b.total_cost || 0;
         var status = b.status || 'unknown';
-        var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#00d4ff' : '#ff3b30';
+        var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#ff5555' : '#ff3b30';
         var canCancel = status === 'pending' || status === 'confirmed';
         var canRate = status === 'completed' && !b.clientRated;
         var canMessage = status !== 'cancelled' && status !== 'pending' && b.djId;
@@ -3292,7 +3292,7 @@
           var dots = steps.map(function(label, i) {
             var isActive = i <= currentStep;
             var isCurrent = i === currentStep;
-            var color = isActive ? (i === 4 ? '#00d4ff' : i === 3 ? '#22c55e' : i === 2 ? '#ffd860' : '#ff4d8f') : '#333';
+            var color = isActive ? (i === 4 ? '#ff5555' : i === 3 ? '#22c55e' : i === 2 ? '#ffd860' : '#ff1111') : '#333';
             var size = isCurrent ? '12px' : '10px';
             return '<div style="display:flex; flex-direction:column; align-items:center; flex:1;">' +
               '<div style="width:' + size + '; height:' + size + '; border-radius:50%; background:' + color + ';' + (isCurrent ? 'box-shadow:0 0 8px ' + color + ';' : '') + ' transition:all 0.3s;"></div>' +
@@ -3301,7 +3301,7 @@
           }).join('');
           var connectors = steps.slice(0, -1).map(function(_, i) {
             var isDone = i < currentStep;
-            return '<div style="flex:0.5; height:2px; background:' + (isDone ? '#ff4d8f' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
+            return '<div style="flex:0.5; height:2px; background:' + (isDone ? '#ff1111' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
           }).join('');
           var dotsRow = '';
           for (var si = 0; si < steps.length; si++) {
@@ -3311,11 +3311,11 @@
           var barHtml = '<div style="display:flex; align-items:flex-start; margin:0.75rem 0;">';
           for (var si2 = 0; si2 < steps.length; si2++) {
             barHtml += '<div style="display:flex; flex-direction:column; align-items:center; flex:1;">' +
-              '<div style="width:' + (si2 === currentStep ? '12px' : '10px') + '; height:' + (si2 === currentStep ? '12px' : '10px') + '; border-radius:50%; background:' + (si2 <= currentStep ? (si2 === 4 ? '#00d4ff' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff4d8f') : '#333') + ';' + (si2 === currentStep ? 'box-shadow:0 0 8px ' + (si2 === 4 ? '#00d4ff' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff4d8f') + ';' : '') + ' transition:all 0.3s;"></div>' +
+              '<div style="width:' + (si2 === currentStep ? '12px' : '10px') + '; height:' + (si2 === currentStep ? '12px' : '10px') + '; border-radius:50%; background:' + (si2 <= currentStep ? (si2 === 4 ? '#ff5555' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff1111') : '#333') + ';' + (si2 === currentStep ? 'box-shadow:0 0 8px ' + (si2 === 4 ? '#ff5555' : si2 === 3 ? '#22c55e' : si2 === 2 ? '#ffd860' : '#ff1111') + ';' : '') + ' transition:all 0.3s;"></div>' +
               '<span style="font-size:0.65rem; color:' + (si2 <= currentStep ? '#ccc' : '#555') + '; margin-top:4px; text-align:center;">' + steps[si2] + '</span>' +
               '</div>';
             if (si2 < steps.length - 1) {
-              barHtml += '<div style="flex:0.5; height:2px; background:' + (si2 < currentStep ? '#ff4d8f' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
+              barHtml += '<div style="flex:0.5; height:2px; background:' + (si2 < currentStep ? '#ff1111' : '#333') + '; margin-top:5px; transition:background 0.3s;"></div>';
             }
           }
           barHtml += '</div>';
@@ -3349,7 +3349,7 @@
           progressBar +
           djLiveLink +
           '<div style="display:flex; gap:0.5rem; margin-top:0.75rem;">' +
-          (canMessage ? '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #ff4d8f; color:#ff4d8f;" data-message-dj="' + escapeAttr(b.id) + '" data-message-dj-id="' + escapeAttr(b.djId) + '" data-message-dj-name="' + escapeAttr(djName) + '">💬 Message DJ</button>' : '') +
+          (canMessage ? '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #ff1111; color:#ff1111;" data-message-dj="' + escapeAttr(b.id) + '" data-message-dj-id="' + escapeAttr(b.djId) + '" data-message-dj-name="' + escapeAttr(djName) + '">💬 Message DJ</button>' : '') +
           (canCancel ? '<button type="button" class="submit-btn" style="flex:1; background:#ff3b30;" data-cancel-booking="' + escapeAttr(b.id) + '" data-booking-date="' + escapeAttr(date || '') + '">Cancel</button>' : '') +
           (canRate ? '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-rate-booking="' + escapeAttr(b.id) + '" data-rate-dj="' + escapeAttr(b.djId || '') + '">Rate DJ</button>' : '') +
           '</div>';
@@ -3462,12 +3462,12 @@
     document.getElementById('sol-promo-apply').addEventListener('click', function() {
       var code = document.getElementById('sol-promo-code').value.trim().toUpperCase();
       var statusEl = document.getElementById('sol-promo-status');
-      if (!code) { statusEl.textContent = 'Enter a code.'; statusEl.style.color = '#ff4d8f'; return; }
-      if (!auth.currentUser) { statusEl.textContent = 'Sign in to apply a promo code.'; statusEl.style.color = '#ff4d8f'; return; }
+      if (!code) { statusEl.textContent = 'Enter a code.'; statusEl.style.color = '#ff1111'; return; }
+      if (!auth.currentUser) { statusEl.textContent = 'Sign in to apply a promo code.'; statusEl.style.color = '#ff1111'; return; }
       var redeemPromo = firebase.functions().httpsCallable('redeemPromo');
       redeemPromo({ code: code }).then(function(result) {
         var p = result.data;
-        if (!p.valid) { statusEl.textContent = 'Invalid promo code.'; statusEl.style.color = '#ff4d8f'; activePromo = null; return; }
+        if (!p.valid) { statusEl.textContent = 'Invalid promo code.'; statusEl.style.color = '#ff1111'; activePromo = null; return; }
         activePromo = { code: code, discount: p.discount || 0, type: p.type || 'percent' };
         var msg = p.type === 'flat' ? '$' + p.discount + ' off!' : p.discount + '% off!';
         statusEl.textContent = '✅ Code applied: ' + msg;
@@ -3476,7 +3476,7 @@
         calculatePrice();
       }).catch(function(err) {
         statusEl.textContent = 'Could not verify code.';
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
         activePromo = null;
       });
     });
@@ -3534,7 +3534,7 @@
       var type = document.getElementById('sol-dispute-type').value;
       var text = document.getElementById('sol-dispute-text').value.trim();
       var statusEl = document.getElementById('sol-dispute-status');
-      if (!bookingId || !type || !text) { statusEl.textContent = 'Fill all fields.'; statusEl.style.color = '#ff4d8f'; return; }
+      if (!bookingId || !type || !text) { statusEl.textContent = 'Fill all fields.'; statusEl.style.color = '#ff1111'; return; }
       var user = auth.currentUser;
       statusEl.textContent = 'Submitting...';
       statusEl.style.color = '#ffd860';
@@ -3556,7 +3556,7 @@
         setTimeout(function() { statusEl.textContent = ''; }, 4000);
       }).catch(function(err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       });
     });
 
@@ -3631,7 +3631,7 @@
             auth.signOut();
             if (authStatus) {
               authStatus.textContent = 'Your account has been disabled.';
-              authStatus.style.color = '#ff4d8f';
+              authStatus.style.color = '#ff1111';
             }
             return;
           }
@@ -3644,7 +3644,7 @@
               auth.signOut();
               if (authStatus) {
                 authStatus.textContent = 'You were signed out by an administrator.';
-                authStatus.style.color = '#ff4d8f';
+                authStatus.style.color = '#ff1111';
               }
             }
           }
@@ -3731,7 +3731,7 @@
       var el = document.createElement('div');
       el.style.position = 'relative';
       var inner = document.createElement('div');
-      inner.style.cssText = 'width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;';
+      inner.style.cssText = 'width:40px;height:40px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;';
       var safeInitial = escapeHtml(initial);
       if (avatar) {
         inner.innerHTML = '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'" />';
@@ -3776,7 +3776,7 @@
       map.addControl(new mapboxgl.AttributionControl({ compact: true, customAttribution: 'SOL' }), 'bottom-right');
 
       map.on('load', function() {
-        var selEl = createSolPin('#ff4d8f', 16);
+        var selEl = createSolPin('#ff1111', 16);
         selectedMarker = new mapboxgl.Marker({ element: selEl, draggable: true })
           .setLngLat([selectedLocation.longitude, selectedLocation.latitude])
           .setPopup(new mapboxgl.Popup().setText('Event location'))
@@ -3874,7 +3874,7 @@
       var avatar = data.djAvatar || data.avatar || data.photoURL || '';
       var popupAvatar = avatar
         ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
-        : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
+        : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
       var popupHtml = '<div style="text-align:center;">' + popupAvatar +
                       '<strong>' + djName + '</strong><br>' +
                       '<span style="color:#22c55e;font-size:12px;">Online</span>' +
@@ -3956,7 +3956,7 @@
               updateDJCount();
             }, function(err2) {
               mapStatus.textContent = 'Live map error: ' + err2.message;
-              mapStatus.style.color = '#ff4d8f';
+              mapStatus.style.color = '#ff1111';
               console.error(err2);
             });
         });
@@ -3965,17 +3965,17 @@
     function useMyLocation() {
       if (!navigator.geolocation) {
         mapStatus.textContent = 'Geolocation is not supported by your browser.';
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
         return;
       }
       if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
         mapStatus.textContent = 'HTTPS required for location access.';
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
         return;
       }
       if (!confirm('This will use your approximate location to center the map. Continue?')) {
         mapStatus.textContent = 'Location access cancelled.';
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
         return;
       }
       mapStatus.textContent = 'Locating you...';
@@ -4003,7 +4003,7 @@
         else if (err.code === 2) msg = 'Location unavailable. Check your GPS or network connection.';
         else if (err.code === 3) msg = 'Location request timed out. Try again.';
         mapStatus.textContent = msg;
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
       }, { enableHighAccuracy: false, timeout: 20000, maximumAge: 10000 });
     }
 
@@ -4023,7 +4023,7 @@
         map.fitBounds(bounds, { padding: 60 });
       } else {
         mapStatus.textContent = 'No DJs to show yet.';
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
       }
     }
 
@@ -4046,7 +4046,7 @@
 
       if (!auth.currentUser) {
         status.textContent = 'Please sign in or create an account above before booking.';
-        status.style.color = '#ff4d8f';
+        status.style.color = '#ff1111';
         document.getElementById('sol-account-box').scrollIntoView({ behavior: 'smooth' });
         return;
       }
@@ -4054,7 +4054,7 @@
       if (!auth.currentUser.emailVerified) {
         auth.currentUser.sendEmailVerification().catch(function() {});
         status.textContent = 'Please verify your email before booking. A new verification email has been sent.';
-        status.style.color = '#ff4d8f';
+        status.style.color = '#ff1111';
         document.getElementById('sol-account-box').scrollIntoView({ behavior: 'smooth' });
         return;
       }
@@ -4109,7 +4109,7 @@
         if (!result.ok) {
           const detail = result.data.detail || result.data.message || 'Error ' + result.status;
           status.textContent = 'SOL quick booking error: ' + detail;
-          status.style.color = '#ff4d8f';
+          status.style.color = '#ff1111';
           btn.textContent = original;
           btn.disabled = false;
           return;
@@ -4156,7 +4156,7 @@
       })
       .catch(function(err) {
         status.textContent = 'Network error: ' + err.message;
-        status.style.color = '#ff4d8f';
+        status.style.color = '#ff1111';
         btn.textContent = original;
         btn.disabled = false;
       });
@@ -4258,7 +4258,7 @@
     function getEventRoute() {
       if (!userMarker) {
         mapStatus.textContent = 'Set your location first (use "My Location").';
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
         return;
       }
       var userLL = userMarker.getLngLat();
@@ -4274,7 +4274,7 @@
         .then(function(data) {
           if (!data.routes || !data.routes.length) {
             mapStatus.textContent = 'No route found.';
-            mapStatus.style.color = '#ff4d8f';
+            mapStatus.style.color = '#ff1111';
             return;
           }
           var route = data.routes[0];
@@ -4293,7 +4293,7 @@
               source: 'sol-route',
               layout: { 'line-join': 'round', 'line-cap': 'round' },
               paint: {
-                'line-color': '#00d4ff',
+                'line-color': '#ff5555',
                 'line-width': 6,
                 'line-opacity': 0.9,
                 'line-emissive-strength': 1
@@ -4317,7 +4317,7 @@
         })
         .catch(function(err) {
           mapStatus.textContent = 'Routing failed: ' + err.message;
-          mapStatus.style.color = '#ff4d8f';
+          mapStatus.style.color = '#ff1111';
         });
     }
 
@@ -4345,12 +4345,12 @@
           input.value = '';
         } else {
           mapStatus.textContent = 'Location not found.';
-          mapStatus.style.color = '#ff4d8f';
+          mapStatus.style.color = '#ff1111';
         }
       })
       .catch(function(err) {
         mapStatus.textContent = 'Search error: ' + err.message;
-        mapStatus.style.color = '#ff4d8f';
+        mapStatus.style.color = '#ff1111';
       });
     }
 
@@ -4419,13 +4419,13 @@
             allDjs = [];
             track.innerHTML = '<p style="width:100%; text-align:center;">No verified DJs found near this location.</p>';
             mapStatus.textContent = 'No DJs found near this location.';
-            mapStatus.style.color = '#ff4d8f';
+            mapStatus.style.color = '#ff1111';
           }
         }).catch(function(err) {
           allDjs = [];
           track.innerHTML = '<p style="width:100%; text-align:center;">Error searching DJs.</p>';
           mapStatus.textContent = err.message || 'Unable to search DJs.';
-          mapStatus.style.color = '#ff4d8f';
+          mapStatus.style.color = '#ff1111';
           console.error('[PUBLIC SEARCH]', err);
         });
     }
@@ -4486,17 +4486,17 @@
 
       djs.forEach(function(dj, index) {
         const div = document.createElement('div');
-        div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff4d8f; border-radius:12px; padding:1rem; text-align:center;';
+        div.style.cssText = 'flex:0 0 260px; min-width:260px; scroll-snap-align:start; background:#111; border:1px solid #ff1111; border-radius:12px; padding:1rem; text-align:center;';
 
         var avatarUrl = escapeAttr(dj.avatar || dj.photoURL || '');
         var avatarHtml;
         var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
         if (avatarUrl) {
-          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;position:relative;">' +
+          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;position:relative;">' +
             initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;">' +
             '</div>';
         } else {
-          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
+          avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
         }
         const verified = dj.is_verified ? '✅ Verified' : '⏳ Unverified';
         const genres = escapeHtml((dj.genres || []).slice(0, 3).join(', '));
@@ -4538,7 +4538,7 @@
         const cardWidth = 276;
         const idx = Math.round(track.scrollLeft / cardWidth);
         Array.from(dots.children).forEach(function(d, i) {
-          d.style.background = (i === idx) ? '#ff4d8f' : '#444';
+          d.style.background = (i === idx) ? '#ff1111' : '#444';
           d.style.width = (i === idx) ? '24px' : '8px';
           d.style.borderRadius = (i === idx) ? '4px' : '50%';
         });
@@ -4554,8 +4554,8 @@
       var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
       var avatar = escapeAttr(dj.avatar || dj.photoURL || '');
       var avatarHtml = avatar
-        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;"><div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
-        : '<div style="width:120px;height:120px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
+        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;"><div style="width:120px;height:120px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
+        : '<div style="width:120px;height:120px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
 
       var genres = escapeHtml((dj.genres || []).join(', ')) || 'Not specified';
       var specialties = escapeHtml((dj.specialties || []).join(', ')) || 'Not specified';
@@ -4579,13 +4579,13 @@
         '<p style="color:#22c55e; margin:0.25rem 0; font-size:0.9rem;">' + escapeHtml(verified) + '</p>' +
         '<p style="color:#aaa; margin:0.25rem 0; font-size:0.9rem;">📍 ' + (locationStr || 'Location not set') + '</p>' +
         '<div style="text-align:left; margin:1.5rem 0; display:flex; flex-direction:column; gap:0.75rem;">' +
-        '<div><strong style="color:#ff4d8f;">Genres:</strong> <span style="color:#ccc;">' + genres + '</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Specialties:</strong> <span style="color:#ccc;">' + specialties + '</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Equipment:</strong> <span style="color:#ccc;">' + equipment + '</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Experience:</strong> <span style="color:#ccc;">' + escapeHtml(dj.experience || 0) + ' years</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + escapeHtml(dj.hourly_rate) + '/hr</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + escapeHtml(dj.total_bookings_completed || 0) + '</span></div>' +
-        '<div><strong style="color:#ff4d8f;">Match Score:</strong> <span style="color:#00d4ff;" id="sol-dj-match-score">Calculating...</span></div>' +
+        '<div><strong style="color:#ff1111;">Genres:</strong> <span style="color:#ccc;">' + genres + '</span></div>' +
+        '<div><strong style="color:#ff1111;">Specialties:</strong> <span style="color:#ccc;">' + specialties + '</span></div>' +
+        '<div><strong style="color:#ff1111;">Equipment:</strong> <span style="color:#ccc;">' + equipment + '</span></div>' +
+        '<div><strong style="color:#ff1111;">Experience:</strong> <span style="color:#ccc;">' + escapeHtml(dj.experience || 0) + ' years</span></div>' +
+        '<div><strong style="color:#ff1111;">Hourly Rate:</strong> <span style="color:#22c55e;">$' + escapeHtml(dj.hourly_rate) + '/hr</span></div>' +
+        '<div><strong style="color:#ff1111;">Bookings Completed:</strong> <span style="color:#ccc;">' + escapeHtml(dj.total_bookings_completed || 0) + '</span></div>' +
+        '<div><strong style="color:#ff1111;">Match Score:</strong> <span style="color:#ff5555;" id="sol-dj-match-score">Calculating...</span></div>' +
         '</div>' +
         (function() {
           var links = '';
@@ -4617,7 +4617,7 @@
           var samplesEl = document.getElementById('sol-dj-sound-samples');
           if (!samplesEl) return;
           if (doc.exists && doc.data().samples && doc.data().samples.length > 0) {
-            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Sound Samples</h3>';
+            var html = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">Sound Samples</h3>';
             doc.data().samples.forEach(function(url) {
               html += '<audio controls src="' + url + '" style="width:100%; margin-bottom:0.5rem; height:36px;"></audio>';
             });
@@ -4635,7 +4635,7 @@
           var videoEl = document.getElementById('sol-dj-video-reel');
           if (!videoEl) return;
           if (doc.exists && doc.data().videos && doc.data().videos.length > 0) {
-            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Video Reel</h3>';
+            var html = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">Video Reel</h3>';
             doc.data().videos.forEach(function(url) {
               if (url.includes('youtube') || url.includes('youtu.be')) {
                 var ytId = url.split('v=')[1] || url.split('youtu.be/')[1] || '';
@@ -4671,9 +4671,9 @@
             });
 
             if (upcoming.length > 0) {
-              var eventsHtml = '<h3 style="color:#ff4d8f; margin:0 0 0.75rem;">📅 Upcoming Events</h3>';
+              var eventsHtml = '<h3 style="color:#ff1111; margin:0 0 0.75rem;">📅 Upcoming Events</h3>';
               upcoming.forEach(function(e) {
-                eventsHtml += '<a href="' + e.url + '" style="display:block; text-decoration:none; color:inherit; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:0.75rem; transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#ff4d8f\'" onmouseout="this.style.borderColor=\'#333\'">' +
+                eventsHtml += '<a href="' + e.url + '" style="display:block; text-decoration:none; color:inherit; background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; margin-bottom:0.75rem; transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'#ff1111\'" onmouseout="this.style.borderColor=\'#333\'">' +
                   '<div style="display:flex; gap:0.75rem; align-items:flex-start;">' +
                   '<img loading="lazy" src="' + e.img + '" style="width:60px; height:60px; border-radius:8px; object-fit:cover; flex-shrink:0;" onerror="this.style.display=\'none\'">' +
                   '<div style="flex:1; min-width:0;">' +
@@ -4683,12 +4683,12 @@
                   '<div style="color:#aaa; font-size:0.8rem;">📍 ' + e.location + '</div>' +
                   '</div>' +
                   '</div>' +
-                  '<div style="text-align:right; margin-top:0.5rem; color:#00d4ff; font-size:0.8rem; font-weight:600;">View Event Details →</div>' +
+                  '<div style="text-align:right; margin-top:0.5rem; color:#ff5555; font-size:0.8rem; font-weight:600;">View Event Details →</div>' +
                   '</a>';
               });
               eventsEl.innerHTML = eventsHtml;
             } else {
-              eventsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">📅 Upcoming Events</h3><p style="color:#888;">No upcoming events at this time.</p>';
+              eventsEl.innerHTML = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">📅 Upcoming Events</h3><p style="color:#888;">No upcoming events at this time.</p>';
             }
           }).catch(function() {
             if (eventsEl) eventsEl.innerHTML = '';
@@ -4709,7 +4709,7 @@
               gigsEl.innerHTML = '';
               return;
             }
-            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">🎤 Upcoming Gigs</h3>';
+            var html = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">🎤 Upcoming Gigs</h3>';
             upcomingGigs.forEach(function(e) {
               html += '<div style="background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem; margin-bottom:0.5rem;">' +
                 '<strong style="color:#fff; font-size:0.9rem;">' + escapeHtml(e.title || 'Event') + '</strong>' +
@@ -4737,14 +4737,14 @@
           if (dj.experience && dj.experience >= 5) score += 5;
           score = Math.min(100, score);
           scoreEl.textContent = score + '%';
-          scoreEl.style.color = score >= 80 ? '#22c55e' : score >= 60 ? '#ffd860' : '#ff4d8f';
+          scoreEl.style.color = score >= 80 ? '#22c55e' : score >= 60 ? '#ffd860' : '#ff1111';
         }
 
         db.collection('feedback').where('toUserId', '==', djUid).orderBy('createdAt', 'desc').limit(20).get()
           .then(function(snapshot) {
             var reviewsEl = document.getElementById('sol-dj-reviews');
             if (snapshot.empty) {
-              reviewsEl.innerHTML = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3><p style="color:#888;">No reviews yet. Be the first to review after your event!</p>';
+              reviewsEl.innerHTML = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">Reviews</h3><p style="color:#888;">No reviews yet. Be the first to review after your event!</p>';
               return;
             }
             var reviews = [];
@@ -4758,7 +4758,7 @@
             var avgStars = '';
             for (var i = 1; i <= 5; i++) avgStars += i <= Math.round(parseFloat(avgRating)) ? '★' : '☆';
 
-            var html = '<h3 style="color:#ff4d8f; margin:0 0 0.5rem;">Reviews</h3>' +
+            var html = '<h3 style="color:#ff1111; margin:0 0 0.5rem;">Reviews</h3>' +
               '<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">' +
               '<span style="font-size:1.5rem; color:#ffd860;">' + avgStars + '</span>' +
               '<span style="color:#ccc; font-size:0.9rem;">' + avgRating + ' out of 5 (' + reviews.length + ' review' + (reviews.length === 1 ? '' : 's') + ')</span>' +
@@ -4919,7 +4919,7 @@
             const m = doc.data();
             const mine = auth.currentUser && m.senderId === auth.currentUser.uid;
             const bubble = document.createElement('div');
-            bubble.style.cssText = 'align-self:' + (mine ? 'flex-end' : 'flex-start') + '; background:' + (mine ? '#ff4d8f' : '#222') + '; color:#fff; padding:0.5rem 0.75rem; border-radius:10px; max-width:80%;';
+            bubble.style.cssText = 'align-self:' + (mine ? 'flex-end' : 'flex-start') + '; background:' + (mine ? '#ff1111' : '#222') + '; color:#fff; padding:0.5rem 0.75rem; border-radius:10px; max-width:80%;';
             bubble.textContent = (mine ? '' : (m.senderName || 'DJ') + ': ') + (m.text || '');
             messagesBox.appendChild(bubble);
           });
@@ -5050,12 +5050,12 @@
 
         if (!body) {
           statusEl.textContent = 'Message body is required.';
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
           return;
         }
         if (recipient === 'specific' && !target) {
           statusEl.textContent = 'Enter target UID or email.';
-          statusEl.style.color = '#ff4d8f';
+          statusEl.style.color = '#ff1111';
           return;
         }
 
@@ -5077,7 +5077,7 @@
           })
           .catch(function(err) {
             statusEl.textContent = 'Send failed: ' + err.message;
-            statusEl.style.color = '#ff4d8f';
+            statusEl.style.color = '#ff1111';
           })
           .finally(function() {
             if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send Message'; }
@@ -5114,7 +5114,7 @@
           historyBox.appendChild(card);
         });
       }, function(err) {
-        historyBox.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        historyBox.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 
@@ -5153,7 +5153,7 @@
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; align-items:center; gap:0.75rem; min-width:200px;';
           var safeName = escapeHtml(d.djName || 'D');
           var safeInitial = escapeHtml(safeName.charAt(0).toUpperCase());
-          var avatar = d.djAvatar ? '<img loading="lazy" src="' + escapeAttr(d.djAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff4d8f;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + safeInitial + '</div>';
+          var avatar = d.djAvatar ? '<img loading="lazy" src="' + escapeAttr(d.djAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + safeInitial + '</div>';
           card.innerHTML = avatar + '<div style="flex:1;"><strong>' + escapeHtml(d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + escapeAttr(doc.id) + '">✕</button>';
           box.appendChild(card);
         });
@@ -5216,7 +5216,7 @@
     document.querySelectorAll('.sol-tip-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         document.querySelectorAll('.sol-tip-btn').forEach(function(b) { b.style.background = ''; });
-        btn.style.background = '#ff4d8f';
+        btn.style.background = '#ff1111';
         var val = btn.getAttribute('data-tip');
         if (val === 'custom') {
           document.getElementById('sol-tip-custom').style.display = 'block';
@@ -5270,7 +5270,7 @@
         if (doc.exists) {
           var s = doc.data().status || 'pending';
           if (s === 'approved') { box.textContent = '✅ Verified'; box.style.color = '#22c55e'; }
-          else if (s === 'rejected') { box.textContent = '❌ Verification rejected'; box.style.color = '#ff4d8f'; }
+          else if (s === 'rejected') { box.textContent = '❌ Verification rejected'; box.style.color = '#ff1111'; }
           else { box.textContent = '⏳ Verification pending review'; box.style.color = '#ffd860'; }
         } else {
           box.textContent = 'Not verified yet. Complete the form below.';
@@ -5295,7 +5295,7 @@
         loadClientVerifyStatus(uid);
       }).catch(function(err) {
         statusEl.textContent = 'Error: ' + err.message;
-        statusEl.style.color = '#ff4d8f';
+        statusEl.style.color = '#ff1111';
       });
     });
 
@@ -5333,7 +5333,7 @@
         cell.textContent = d;
         var hasBooking = djCalendarBookings.some(function(b) { return (b.event_date || b.date || '').startsWith(dateStr); });
         var isBlocked = djCalendarBlocked.indexOf(dateStr) >= 0;
-        if (hasBooking) { cell.style.background = 'rgba(255,77,143,0.3)'; cell.style.color = '#ff4d8f'; cell.title = 'Has booking'; }
+        if (hasBooking) { cell.style.background = 'rgba(255, 17, 17,0.3)'; cell.style.color = '#ff1111'; cell.title = 'Has booking'; }
         if (isBlocked) { cell.style.background = 'rgba(255,59,48,0.3)'; cell.style.color = '#ff3b30'; cell.title = 'Blocked'; }
         grid.appendChild(cell);
       }
@@ -5387,7 +5387,7 @@
           var s = doc.data();
           var row = document.createElement('div');
           row.style.cssText = 'display:flex; align-items:center; gap:0.5rem; background:#1a1a1a; padding:0.5rem; border-radius:8px;';
-          row.innerHTML = '<span style="color:#00d4ff; font-size:0.85rem; min-width:55px;">' + (escapeHtml(s.time) || '--:--') + '</span><span style="flex:1; color:#ccc; font-size:0.85rem;">' + escapeHtml(s.track) + '</span><button type="button" class="submit-btn" style="background:#333; padding:0.25rem 0.5rem; font-size:0.75rem;" data-del-setlist="' + doc.id + '">✕</button>';
+          row.innerHTML = '<span style="color:#ff5555; font-size:0.85rem; min-width:55px;">' + (escapeHtml(s.time) || '--:--') + '</span><span style="flex:1; color:#ccc; font-size:0.85rem;">' + escapeHtml(s.track) + '</span><button type="button" class="submit-btn" style="background:#333; padding:0.25rem 0.5rem; font-size:0.75rem;" data-del-setlist="' + doc.id + '">✕</button>';
           box.appendChild(row);
         });
         box.querySelectorAll('button[data-del-setlist]').forEach(function(btn) {
@@ -5451,7 +5451,7 @@
         months.forEach(function(m) {
           var bar = document.createElement('div');
           var h = Math.max(4, (m.value / maxVal) * 80);
-          bar.style.cssText = 'flex:1; background:linear-gradient(180deg,#ff4d8f,#e33471); border-radius:4px 4px 0 0; height:' + h + 'px; position:relative;';
+          bar.style.cssText = 'flex:1; background:linear-gradient(180deg,#ff1111,#c90000); border-radius:4px 4px 0 0; height:' + h + 'px; position:relative;';
           bar.title = m.label + ': $' + m.value.toFixed(0);
           var lbl = document.createElement('div');
           lbl.style.cssText = 'font-size:0.65rem; color:#888; text-align:center; margin-top:4px;';
@@ -5692,7 +5692,7 @@
 
       installBanner = document.createElement('div');
       installBanner.style.cssText = 'position:fixed; left:12px; right:12px; bottom:12px; z-index:9999; ' +
-        'background:#1a1a1a; border:1px solid #00d4ff; border-radius:12px; padding:0.75rem 1rem; ' +
+        'background:#1a1a1a; border:1px solid #ff5555; border-radius:12px; padding:0.75rem 1rem; ' +
         'display:flex; align-items:center; gap:0.75rem; box-shadow:0 4px 20px rgba(0,0,0,0.6); ' +
         'font-size:0.9rem; color:#fff; font-family:inherit;';
 
@@ -5786,9 +5786,9 @@
         var isCompleted = j < currentIndex;
         var isActive = j === currentIndex;
         var isLast = j === BOOKING_STATUS_FLOW.length - 1;
-        var iconColor = isCompleted ? '#22c55e' : isActive ? '#00d4ff' : '#555';
-        var bgColor = isCompleted ? '#22c55e22' : isActive ? '#00d4ff22' : '#222';
-        var borderColor = isCompleted ? '#22c55e' : isActive ? '#00d4ff' : '#444';
+        var iconColor = isCompleted ? '#22c55e' : isActive ? '#ff5555' : '#555';
+        var bgColor = isCompleted ? '#22c55e22' : isActive ? '#ff555522' : '#222';
+        var borderColor = isCompleted ? '#22c55e' : isActive ? '#ff5555' : '#444';
         var textColor = (isActive || isCompleted) ? '#fff' : '#666';
 
         var timestampStr = '';
@@ -5824,7 +5824,7 @@
       content.innerHTML = '<p style="color:#888; text-align:center;">Loading...</p>';
 
       db.collection('bookings').doc(bookingId).get().then(function(doc) {
-        if (!doc.exists) { content.innerHTML = '<p style="color:#ff4d8f;">Booking not found.</p>'; return; }
+        if (!doc.exists) { content.innerHTML = '<p style="color:#ff1111;">Booking not found.</p>'; return; }
         var b = doc.data();
         var status = b.status || 'pending';
         var history = b.statusHistory || [];
@@ -5832,7 +5832,7 @@
 
         if (b.djId === auth.currentUser.uid && status !== 'cancelled' && status !== 'completed') {
           var actionsHtml = '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">';
-          if (status === 'confirmed') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#00d4ff; color:#000;" data-status-update="' + bookingId + '" data-new-status="on_the_way">Mark On the Way</button>';
+          if (status === 'confirmed') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#ff5555; color:#000;" data-status-update="' + bookingId + '" data-new-status="on_the_way">Mark On the Way</button>';
           if (status === 'on_the_way' || status === 'confirmed') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#22c55e;" data-status-update="' + bookingId + '" data-new-status="arrived">Mark Arrived</button>';
           if (status === 'arrived' || status === 'on_the_way') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#9333ea;" data-status-update="' + bookingId + '" data-new-status="started">Start Event</button>';
           if (status === 'started' || status === 'arrived') actionsHtml += '<button type="button" class="submit-btn" style="flex:1; background:#ffd860; color:#000;" data-status-update="' + bookingId + '" data-new-status="completed">Complete</button>';
@@ -5851,13 +5851,13 @@
               }, { merge: true }).then(function() {
                 openBookingStatusTracker(bId);
               }).catch(function(err) {
-                content.innerHTML += '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+                content.innerHTML += '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
               });
             });
           });
         }
       }).catch(function(err) {
-        content.innerHTML = '<p style="color:#ff4d8f;">Error: ' + escapeHtml(err.message) + '</p>';
+        content.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
     }
 

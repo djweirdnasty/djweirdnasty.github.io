@@ -1,6 +1,43 @@
     /* ===== SOL App Styles ===== */
     #sol-app-content { max-width: 100%; }
 
+    /* Branded SOL header (matches public DJ profile design) */
+    .sol-brand-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 22px;
+      margin-bottom: 1rem;
+      border: 2px solid #292929;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #050505, #111111, #030303);
+      position: relative;
+      overflow: hidden;
+    }
+    .sol-brand-header::after {
+      content: "";
+      position: absolute;
+      right: 5%;
+      top: -50px;
+      width: 10px;
+      height: 200px;
+      background: #ff1111;
+      transform: rotate(40deg);
+      box-shadow: 0 0 20px #ff1111;
+      pointer-events: none;
+    }
+    .sol-brand-logo { width: 72px; height: 72px; object-fit: contain; position: relative; z-index: 2; }
+    .sol-brand-divider { height: 48px; width: 3px; background: #ff1111; box-shadow: 0 0 10px #ff1111; position: relative; z-index: 2; }
+    .sol-brand-title { margin: 0; font-size: clamp(22px, 4vw, 38px); font-weight: 900; letter-spacing: 2px; color: #fff; position: relative; z-index: 2; }
+    .sol-brand-title span { color: #ff1111; }
+    .sol-brand-sub { margin: 4px 0 0; letter-spacing: 5px; font-size: 11px; color: #ddd; position: relative; z-index: 2; }
+    @media (max-width: 500px) {
+      .sol-brand-header { padding: 14px 16px; gap: 14px; }
+      .sol-brand-logo { width: 52px; height: 52px; }
+      .sol-brand-divider { height: 38px; }
+      .sol-brand-sub { letter-spacing: 3px; font-size: 9px; }
+    }
+
     /* All .submit-btn buttons get consistent styling */
     .submit-btn {
       display: inline-flex;
@@ -10,19 +47,19 @@
       padding: 0.6rem 1.2rem;
       font-size: 0.95rem;
       font-weight: 700;
-      background: linear-gradient(135deg, #ff4d8f 0%, #e33471 100%);
+      background: linear-gradient(135deg, #ff1111 0%, #c90000 100%);
       color: #fff;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 14px rgba(255, 77, 143, 0.3);
+      box-shadow: 0 4px 14px rgba(255, 17, 17, 0.3);
       text-decoration: none;
       white-space: nowrap;
     }
     .submit-btn:hover, .submit-btn:focus {
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(255, 77, 143, 0.45);
+      box-shadow: 0 6px 20px rgba(255, 17, 17, 0.45);
       filter: brightness(1.1);
     }
     .submit-btn:active { transform: translateY(0); }
@@ -52,8 +89,8 @@
     #sol-app-content select:focus,
     #sol-app-content textarea:focus {
       outline: none;
-      border-color: #ff4d8f;
-      box-shadow: 0 0 0 3px rgba(255, 77, 143, 0.15);
+      border-color: #ff1111;
+      box-shadow: 0 0 0 3px rgba(255, 17, 17, 0.15);
     }
     #sol-app-content select {
       appearance: none;
@@ -75,10 +112,10 @@
     #sol-app-content h2 {
       font-size: 1.5rem;
       font-weight: 800;
-      color: #ff4d8f;
+      color: #ff1111;
       margin: 2rem 0 1rem;
       padding-bottom: 0.5rem;
-      border-bottom: 2px solid rgba(255, 77, 143, 0.2);
+      border-bottom: 2px solid rgba(255, 17, 17, 0.2);
     }
     #sol-app-content h3 {
       font-size: 1.15rem;
@@ -94,8 +131,8 @@
 
     /* Account bar */
     #sol-account-bar {
-      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      background: linear-gradient(135deg, rgba(255, 17, 17, 0.08) 0%, rgba(255, 17, 17, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 17, 17, 0.3) !important;
       backdrop-filter: blur(10px);
     }
 
@@ -105,8 +142,8 @@
     }
     #sol-account-box {
       background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.25) !important;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 77, 143, 0.08);
+      border: 1px solid rgba(255, 17, 17, 0.25) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 17, 17, 0.08);
     }
 
     /* Admin stats cards */
@@ -115,7 +152,7 @@
     }
     #sol-admin-console > div:first-child > div:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+      box-shadow: 0 8px 24px rgba(255, 17, 17, 0.15);
     }
 
     /* Admin tab buttons */
@@ -128,20 +165,20 @@
     }
     #sol-admin-console .submit-btn:hover {
       background: rgba(50, 50, 50, 0.9);
-      border-color: rgba(255, 77, 143, 0.3);
+      border-color: rgba(255, 17, 17, 0.3);
     }
 
     /* DJ Console sections */
     #sol-dj-console > div[style*="background:#111"],
     #sol-dj-console form[style*="background:#111"] {
       background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.15) !important;
+      border: 1px solid rgba(255, 17, 17, 0.15) !important;
     }
 
     /* DJ profile header */
     #sol-dj-profile {
-      background: linear-gradient(135deg, rgba(255, 77, 143, 0.08) 0%, rgba(0, 212, 255, 0.05) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.25) !important;
+      background: linear-gradient(135deg, rgba(255, 17, 17, 0.08) 0%, rgba(255, 17, 17, 0.05) 100%) !important;
+      border: 1px solid rgba(255, 17, 17, 0.25) !important;
     }
 
     /* DJ status pills */
@@ -159,19 +196,19 @@
     }
     #sol-dj-track > div:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(255, 77, 143, 0.2);
-      border-color: rgba(255, 77, 143, 0.5) !important;
+      box-shadow: 0 8px 24px rgba(255, 17, 17, 0.2);
+      border-color: rgba(255, 17, 17, 0.5) !important;
     }
 
     /* Carousel nav buttons */
     #sol-dj-prev, #sol-dj-next {
       background: rgba(20, 20, 20, 0.9) !important;
-      border: 1px solid rgba(255, 77, 143, 0.3) !important;
+      border: 1px solid rgba(255, 17, 17, 0.3) !important;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
       min-width: 40px;
     }
     #sol-dj-prev:hover, #sol-dj-next:hover {
-      background: rgba(255, 77, 143, 0.2) !important;
+      background: rgba(255, 17, 17, 0.2) !important;
     }
 
     /* Filter bar */
@@ -185,15 +222,15 @@
 
     /* Price breakdown */
     #sol-price-breakdown {
-      background: linear-gradient(135deg, rgba(255, 77, 143, 0.06) 0%, rgba(0, 0, 0, 0.4) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+      background: linear-gradient(135deg, rgba(255, 17, 17, 0.06) 0%, rgba(0, 0, 0, 0.4) 100%) !important;
+      border: 1px solid rgba(255, 17, 17, 0.2) !important;
     }
 
     /* Modals */
     #sol-dj-profile-modal > div,
     #sol-rate-modal > div {
       background: linear-gradient(135deg, #161616 0%, #0a0a0a 100%) !important;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 77, 143, 0.1);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 17, 17, 0.1);
     }
 
     /* Star rating */
@@ -206,7 +243,7 @@
     /* Chat box */
     #sol-chat-box {
       background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%) !important;
-      border: 1px solid rgba(255, 77, 143, 0.2) !important;
+      border: 1px solid rgba(255, 17, 17, 0.2) !important;
     }
 
     /* Blocked date chips */
@@ -229,18 +266,18 @@
     #sol-dj-track::-webkit-scrollbar { display: none; }
     #sol-app-content ::-webkit-scrollbar { width: 6px; }
     #sol-app-content ::-webkit-scrollbar-track { background: transparent; }
-    #sol-app-content ::-webkit-scrollbar-thumb { background: rgba(255, 77, 143, 0.3); border-radius: 3px; }
-    #sol-app-content ::-webkit-scrollbar-thumb:hover { background: rgba(255, 77, 143, 0.5); }
+    #sol-app-content ::-webkit-scrollbar-thumb { background: rgba(255, 17, 17, 0.3); border-radius: 3px; }
+    #sol-app-content ::-webkit-scrollbar-thumb:hover { background: rgba(255, 17, 17, 0.5); }
 
     /* Mapbox GL JS dark theme overrides */
     #sol-map .mapboxgl-popup-content {
       background: rgba(0,0,0,0.85);
       color: #fff;
-      border: 1px solid #ff4d8f;
+      border: 1px solid #ff1111;
       border-radius: 8px;
       font-size: 0.85rem;
     }
-    #sol-map .mapboxgl-popup-tip { border-top-color: #ff4d8f; border-bottom-color: #ff4d8f; }
+    #sol-map .mapboxgl-popup-tip { border-top-color: #ff1111; border-bottom-color: #ff1111; }
     #sol-map .mapboxgl-popup-close-button {
       color: #fff;
       font-size: 1.1rem;
@@ -248,7 +285,7 @@
       right: 2px;
       top: 2px;
     }
-    #sol-map .mapboxgl-popup-close-button:hover { background: rgba(255,77,143,0.3); }
+    #sol-map .mapboxgl-popup-close-button:hover { background: rgba(255, 17, 17,0.3); }
     #sol-map .mapboxgl-ctrl-group { background: #1a1a1a; border: 1px solid #333; }
     #sol-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
     #sol-map .mapboxgl-ctrl-icon { filter: invert(1); }
@@ -257,13 +294,13 @@
     #sol-dj-event-map .mapboxgl-popup-content {
       background: rgba(0,0,0,0.85);
       color: #fff;
-      border: 1px solid #ff4d8f;
+      border: 1px solid #ff1111;
       border-radius: 8px;
       font-size: 0.85rem;
     }
-    #sol-dj-event-map .mapboxgl-popup-tip { border-top-color: #ff4d8f; border-bottom-color: #ff4d8f; }
+    #sol-dj-event-map .mapboxgl-popup-tip { border-top-color: #ff1111; border-bottom-color: #ff1111; }
     #sol-dj-event-map .mapboxgl-popup-close-button { color: #fff; font-size: 1.1rem; padding: 2px 6px; right: 2px; top: 2px; }
-    #sol-dj-event-map .mapboxgl-popup-close-button:hover { background: rgba(255,77,143,0.3); }
+    #sol-dj-event-map .mapboxgl-popup-close-button:hover { background: rgba(255, 17, 17,0.3); }
     #sol-dj-event-map .mapboxgl-ctrl-group { background: #1a1a1a; border: 1px solid #333; }
     #sol-dj-event-map .mapboxgl-ctrl-group button { background: #1a1a1a; }
     #sol-dj-event-map .mapboxgl-ctrl-icon { filter: invert(1); }
@@ -508,14 +545,14 @@
 .sol-gallery-track { display: flex; transition: transform 0.4s ease; will-change: transform; }
 .sol-gallery-track img { flex: 0 0 33.333%; width: 33.333%; height: auto; object-fit: contain; max-height: 260px; background: #000; cursor: zoom-in; box-sizing: border-box; padding: 0 3px; }
 .sol-gallery-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 1.5rem; padding: 0.5rem 1rem; cursor: pointer; border-radius: 50%; z-index: 2; transition: background 0.2s; }
-.sol-gallery-btn:hover { background: rgba(255,77,143,0.8); }
+.sol-gallery-btn:hover { background: rgba(255, 17, 17,0.8); }
 .sol-gallery-btn.prev { left: 8px; }
 .sol-gallery-btn.next { right: 8px; }
 .sol-gallery-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
 .sol-gallery-thumbs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; padding: 0.75rem; background: #111; border: 1px solid #333; border-radius: 12px; max-height: 280px; overflow-y: auto; }
 .sol-gallery-thumb { position: relative; width: 80px; height: 60px; flex: 0 0 auto; }
 .sol-gallery-thumb img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s, border 0.2s; border: 2px solid transparent; display: block; }
-.sol-gallery-thumb img:hover, .sol-gallery-thumb img.active { opacity: 1; border: 2px solid #ff4d8f; }
+.sol-gallery-thumb img:hover, .sol-gallery-thumb img.active { opacity: 1; border: 2px solid #ff1111; }
 .sol-gallery-thumb .sol-gallery-del { position: absolute; top: -6px; right: -6px; background: #ff3b30; border: none; color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; line-height: 1; z-index: 2; padding: 0; }
 .sol-gallery-lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
 .sol-gallery-lightbox.active { display: flex; }
