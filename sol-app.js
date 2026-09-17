@@ -151,7 +151,7 @@
           })
           .catch(function(err) {
             console.error('[AUTH] Sign in error:', err.code, err.message);
-            authStatus.textContent = 'Sign in failed. Check your email and password.';
+            authStatus.textContent = 'Sign in failed (' + (err.code || 'unknown') + '): ' + (err.message || 'Check your email and password.');
             authStatus.style.color = '#ff4d8f';
           })
           .finally(done);
@@ -201,12 +201,19 @@
     const djConsoleStatus = document.getElementById('sol-dj-console-status');
     const djConversationsBox = document.getElementById('sol-dj-conversations');
 
+    function updateDjToggleLabel() {
+      djModeToggleBtn.textContent = djModeActive ? 'Client Mode' : (isVerifiedDJ ? 'DJ Mode' : 'Apply as DJ');
+    }
+
     function checkDJVerification(user) {
+      // Always show the toggle so clients can access the DJ application form
+      djModeToggleBtn.style.display = 'inline-block';
+      updateDjToggleLabel();
       db.collection('dj-verifications').doc(user.uid).get()
         .then(function(doc) {
           if (doc.exists && doc.data().status === 'approved') {
             isVerifiedDJ = true;
-            djModeToggleBtn.style.display = 'inline-block';
+            updateDjToggleLabel();
             loadDJProfile(user, doc.data());
             db.collection('dj-status').doc(user.uid).set({ isVerified: true }, { merge: true }).catch(function() {});
           } else {
@@ -216,7 +223,7 @@
         .then(function(userDoc) {
           if (userDoc && userDoc.exists && userDoc.data().isVerifiedDJ === true) {
             isVerifiedDJ = true;
-            djModeToggleBtn.style.display = 'inline-block';
+            updateDjToggleLabel();
             loadDJProfile(user, userDoc.data());
             db.collection('dj-status').doc(user.uid).set({ isVerified: true }, { merge: true }).catch(function() {});
           }
@@ -1387,6 +1394,9 @@
         clientView.style.display = 'none';
         djModeToggleBtn.textContent = 'Client Mode';
         const user = auth.currentUser;
+        if (!isVerifiedDJ) {
+          document.getElementById('sol-dj-setup').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         if (user) {
           subscribeDJStatus(user);
           subscribeDJConversations(user);
@@ -1403,7 +1413,7 @@
       } else {
         djConsole.style.display = 'none';
         clientView.style.display = 'block';
-        djModeToggleBtn.textContent = 'DJ Mode';
+        updateDjToggleLabel();
         if (djStatusUnsubscribe) { djStatusUnsubscribe(); djStatusUnsubscribe = null; }
         if (djConversationsUnsubscribe) { djConversationsUnsubscribe(); djConversationsUnsubscribe = null; }
         if (djBookingsUnsubscribe) { djBookingsUnsubscribe(); djBookingsUnsubscribe = null; }
@@ -1453,7 +1463,7 @@
         clientView.style.display = 'none';
         djConsole.style.display = 'none';
         djModeActive = false;
-        djModeToggleBtn.textContent = 'DJ Mode';
+        updateDjToggleLabel();
         adminToggleBtn.textContent = 'Exit Admin';
         loadAdminData();
       } else {
@@ -2938,7 +2948,7 @@
         djModeActive = false;
         djConsole.style.display = 'none';
         clientView.style.display = 'block';
-        djModeToggleBtn.textContent = 'DJ Mode';
+        updateDjToggleLabel();
         checkDJVerification(user);
         isAdmin = false;
         adminToggleBtn.style.display = 'none';
