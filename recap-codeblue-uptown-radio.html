@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-50T2Z1K2SP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-50T2Z1K2SP');
+    gtag('config', 'GT-WB5FW6G6');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://audiomack.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://djweirdnasty-api.kurtisctabb.workers.dev https://www.google-analytics.com https://analytics.google.com; upgrade-insecure-requests">
+  <title>CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio | DJWEIRDNASTY Event Recap</title>
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="description" content="DJWEIRDNASTY spinning on CODEBLUE WORLD Talk Radio with Elisha Taylor on WJYN 98.5 FM Uptown Radio in Philadelphia — with special guest Damon from X RUMBLE, Ron Murrdah, and Sturdy MU.">
+  <meta property="og:title" content="CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio | DJWEIRDNASTY Event Recap">
+  <meta property="og:description" content="DJWEIRDNASTY spinning on CODEBLUE WORLD Talk Radio with Elisha Taylor on WJYN 98.5 FM Uptown Radio in Philadelphia.">
+  <meta property="og:image" content="https://djweirdnasty.com/Uptown Radio 98.5/FLYER.jpg">
+  <meta property="og:url" content="https://djweirdnasty.com/recap-codeblue-uptown-radio.html">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio | DJWEIRDNASTY Event Recap">
+  <meta name="twitter:description" content="DJWEIRDNASTY spinning on CODEBLUE WORLD Talk Radio with Elisha Taylor on WJYN 98.5 FM Uptown Radio in Philadelphia.">
+  <meta name="twitter:image" content="https://djweirdnasty.com/Uptown Radio 98.5/FLYER.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
+  <meta name="google-adsense-account" content="ca-pub-9518165099685321">
+  <style>
+    .recap-carousel {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+    }
+    .recap-carousel-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-carousel-track img {
+      flex: 0 0 33.333%;
+      width: 33.333%;
+      height: auto;
+      object-fit: contain;
+      max-height: 260px;
+      background: #000;
+      cursor: zoom-in;
+      box-sizing: border-box;
+      padding: 0 3px;
+    }
+    .recap-carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 2;
+      transition: background 0.2s;
+    }
+    .recap-carousel-btn:hover { background: rgba(255,77,143,0.8); }
+    .recap-carousel-btn.prev { left: 8px; }
+    .recap-carousel-btn.next { right: 8px; }
+    .recap-carousel-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
+    .recap-thumbnails {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .recap-thumbnails img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s, border 0.2s;
+      border: 2px solid transparent;
+    }
+    .recap-thumbnails img:hover,
+    .recap-thumbnails img.active {
+      opacity: 1;
+      border: 2px solid #ff4d8f;
+    }
+    .recap-lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: zoom-out;
+    }
+    .recap-lightbox.active { display: flex; }
+    .recap-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .recap-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; z-index: 10000; }
+    .recap-share-btn {
+      background: #ff4d8f;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .recap-share-btn:hover { background: #e63e7a; }
+  </style>
+
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#events">Events</a>
+        <a href="news.html">News</a>
+        <a href="mixtapes.html">Mixtapes</a>
+        <a href="content.html">Content</a>
+        <a href="sol.html">SOL</a>
+        <a href="index.html#newsletter">Newsletter</a>
+        <a href="contact.html">Contact</a>
+        <a href="privacy-policy.html">Privacy</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <article class="info" style="text-align: left;">
+      <p><a href="event-recaps.html" style="color: #ffd860;">&larr; Back to Event Recaps</a></p>
+      <h1>CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio</h1>
+      <p><em>Wednesday, September 16, 2026 &mdash; WJYN 98.5 FM Uptown Radio, Philadelphia, PA</em></p>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; justify-content: center;">
+        <img loading="lazy" src="Uptown Radio 98.5/FLYER.jpg" alt="CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio Flyer" class="event-flyer" style="max-width: 480px; width: 100%; border-radius: 12px;">
+      </div>
+      <p>&#128251;&#128293; <strong>SPINNING ON PHILLY&rsquo;S WJYN 98.5 FM!</strong> &#128293;&#128251;</p>
+      <p>DJWEIRDNASTY was spinning on CODEBLUE WORLD Talk Radio with Elisha Taylor on WJYN 98.5 FM Uptown Radio in Philadelphia!</p>
+      <p>&#127908; <strong>Special Guest:</strong> Damon from X RUMBLE joined the show for a great conversation.</p>
+      <p>&#128680; And the crew kept pulling up! Ron Murrdah from Glocawear Radio&rsquo;s Murrdah Season Monday stopped through to promote Code Blue&rsquo;s flavored Philly Phruit Juice. &#127865;&#128293;</p>
+      <p>&#128085; Sturdy MU also came through with an unboxing of the new MARSUS CLOTHING cardigans, showcasing the latest pieces on the show.</p>
+      <p>It was another night of Philly radio, music, conversation, brands, and culture all coming together on the airwaves! &#127911;&#128293;</p>
+      <p>
+        &#128251; WJYN 98.5 FM Uptown Radio<br>
+        &#127897;&#65039; CODEBLUE WORLD Talk Radio<br>
+        &#127908; Elisha Taylor<br>
+        &#128293; Damon &mdash; X RUMBLE<br>
+        &#128225; Ron Murrdah &mdash; Glocawear Radio / Murrdah Season Monday<br>
+        &#128085; Sturdy MU &mdash; MARSUS CLOTHING
+      </p>
+      <h3>Photo Recap</h3>
+      <div class="recap-carousel" id="uptown-radio-carousel">
+        <button class="recap-carousel-btn prev" onclick="recapCarousel('uptown-radio-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+        <div class="recap-carousel-track">
+          <img src="Uptown Radio 98.5/801070439_1854972482536505_4539896879827126521_n.jpg" alt="98.5 Uptown Radio Photo 1" loading="lazy">
+          <img src="Uptown Radio 98.5/801219684_1277533358781593_3205159788344965005_n.jpg" alt="98.5 Uptown Radio Photo 2" loading="lazy">
+          <img src="Uptown Radio 98.5/801304644_1468868311813476_2783764777931536806_n.jpg" alt="98.5 Uptown Radio Photo 3" loading="lazy">
+          <img src="Uptown Radio 98.5/801304645_961689199571135_8294050427254950649_n.jpg" alt="98.5 Uptown Radio Photo 4" loading="lazy">
+          <img src="Uptown Radio 98.5/801368865_1642010284181855_8215217769047329371_n.jpg" alt="98.5 Uptown Radio Photo 5" loading="lazy">
+          <img src="Uptown Radio 98.5/801578186_2124253825183136_4604674830433612925_n.jpg" alt="98.5 Uptown Radio Photo 6" loading="lazy">
+          <img src="Uptown Radio 98.5/802029471_1073486085663199_3030159954123508882_n.jpg" alt="98.5 Uptown Radio Photo 7" loading="lazy">
+          <img src="Uptown Radio 98.5/802029472_1603111991276814_1057154141572192030_n.jpg" alt="98.5 Uptown Radio Photo 8" loading="lazy">
+          <img src="Uptown Radio 98.5/802276144_1068921249192494_2008556090022634205_n.jpg" alt="98.5 Uptown Radio Photo 9" loading="lazy">
+          <img src="Uptown Radio 98.5/803824379_1258235699777153_1848355814588370643_n.jpg" alt="98.5 Uptown Radio Photo 10" loading="lazy">
+          <img src="Uptown Radio 98.5/803924397_2321510771919002_6778913689084218073_n.jpg" alt="98.5 Uptown Radio Photo 11" loading="lazy">
+          <img src="Uptown Radio 98.5/805402788_29533333822933299_1028648116277984571_n.jpg" alt="98.5 Uptown Radio Photo 12" loading="lazy">
+          <img src="Uptown Radio 98.5/806211002_1644569747034177_7928075206019209191_n.jpg" alt="98.5 Uptown Radio Photo 13" loading="lazy">
+          <img src="Uptown Radio 98.5/806363837_965746989112071_7799279647586015228_n.jpg" alt="98.5 Uptown Radio Photo 14" loading="lazy">
+          <img src="Uptown Radio 98.5/807383844_1576601147499830_2982782490146266289_n.jpg" alt="98.5 Uptown Radio Photo 15" loading="lazy">
+          <img src="Uptown Radio 98.5/807758287_1364277758806839_8739232565211930530_n.jpg" alt="98.5 Uptown Radio Photo 16" loading="lazy">
+          <img src="Uptown Radio 98.5/808468988_1374467534772909_3451219810500261092_n.jpg" alt="98.5 Uptown Radio Photo 17" loading="lazy">
+          <img src="Uptown Radio 98.5/808942645_1076834055239454_5021305702423970128_n.jpg" alt="98.5 Uptown Radio Photo 18" loading="lazy">
+          <img src="Uptown Radio 98.5/808942645_1777563076820830_7724520972355042019_n.jpg" alt="98.5 Uptown Radio Photo 19" loading="lazy">
+          <img src="Uptown Radio 98.5/810448757_2370349350038441_7599660540344632835_n.jpg" alt="98.5 Uptown Radio Photo 20" loading="lazy">
+          <img src="Uptown Radio 98.5/810777372_1794200665046422_493929057943791255_n.jpg" alt="98.5 Uptown Radio Photo 21" loading="lazy">
+          <img src="Uptown Radio 98.5/810813074_1133038622486664_571299184721680972_n.jpg" alt="98.5 Uptown Radio Photo 22" loading="lazy">
+          <img src="Uptown Radio 98.5/812728902_2023354201689900_3224182834583764710_n.jpg" alt="98.5 Uptown Radio Photo 23" loading="lazy">
+          <img src="Uptown Radio 98.5/813831977_1996468167967541_6241313443866672547_n.jpg" alt="98.5 Uptown Radio Photo 24" loading="lazy">
+        </div>
+        <button class="recap-carousel-btn next" onclick="recapCarousel('uptown-radio-carousel',1)" aria-label="Next">&rsaquo;</button>
+      </div>
+      <p class="recap-carousel-counter" id="uptown-radio-carousel-counter"></p>
+      <h3>All Photos</h3>
+      <div class="recap-thumbnails" id="uptown-radio-thumbnails">
+        <img src="Uptown Radio 98.5/801070439_1854972482536505_4539896879827126521_n.jpg" class="recap-thumb" data-index="0" alt="98.5 Uptown Radio Thumbnail 1" loading="lazy">
+        <img src="Uptown Radio 98.5/801219684_1277533358781593_3205159788344965005_n.jpg" class="recap-thumb" data-index="1" alt="98.5 Uptown Radio Thumbnail 2" loading="lazy">
+        <img src="Uptown Radio 98.5/801304644_1468868311813476_2783764777931536806_n.jpg" class="recap-thumb" data-index="2" alt="98.5 Uptown Radio Thumbnail 3" loading="lazy">
+        <img src="Uptown Radio 98.5/801304645_961689199571135_8294050427254950649_n.jpg" class="recap-thumb" data-index="3" alt="98.5 Uptown Radio Thumbnail 4" loading="lazy">
+        <img src="Uptown Radio 98.5/801368865_1642010284181855_8215217769047329371_n.jpg" class="recap-thumb" data-index="4" alt="98.5 Uptown Radio Thumbnail 5" loading="lazy">
+        <img src="Uptown Radio 98.5/801578186_2124253825183136_4604674830433612925_n.jpg" class="recap-thumb" data-index="5" alt="98.5 Uptown Radio Thumbnail 6" loading="lazy">
+        <img src="Uptown Radio 98.5/802029471_1073486085663199_3030159954123508882_n.jpg" class="recap-thumb" data-index="6" alt="98.5 Uptown Radio Thumbnail 7" loading="lazy">
+        <img src="Uptown Radio 98.5/802029472_1603111991276814_1057154141572192030_n.jpg" class="recap-thumb" data-index="7" alt="98.5 Uptown Radio Thumbnail 8" loading="lazy">
+        <img src="Uptown Radio 98.5/802276144_1068921249192494_2008556090022634205_n.jpg" class="recap-thumb" data-index="8" alt="98.5 Uptown Radio Thumbnail 9" loading="lazy">
+        <img src="Uptown Radio 98.5/803824379_1258235699777153_1848355814588370643_n.jpg" class="recap-thumb" data-index="9" alt="98.5 Uptown Radio Thumbnail 10" loading="lazy">
+        <img src="Uptown Radio 98.5/803924397_2321510771919002_6778913689084218073_n.jpg" class="recap-thumb" data-index="10" alt="98.5 Uptown Radio Thumbnail 11" loading="lazy">
+        <img src="Uptown Radio 98.5/805402788_29533333822933299_1028648116277984571_n.jpg" class="recap-thumb" data-index="11" alt="98.5 Uptown Radio Thumbnail 12" loading="lazy">
+        <img src="Uptown Radio 98.5/806211002_1644569747034177_7928075206019209191_n.jpg" class="recap-thumb" data-index="12" alt="98.5 Uptown Radio Thumbnail 13" loading="lazy">
+        <img src="Uptown Radio 98.5/806363837_965746989112071_7799279647586015228_n.jpg" class="recap-thumb" data-index="13" alt="98.5 Uptown Radio Thumbnail 14" loading="lazy">
+        <img src="Uptown Radio 98.5/807383844_1576601147499830_2982782490146266289_n.jpg" class="recap-thumb" data-index="14" alt="98.5 Uptown Radio Thumbnail 15" loading="lazy">
+        <img src="Uptown Radio 98.5/807758287_1364277758806839_8739232565211930530_n.jpg" class="recap-thumb" data-index="15" alt="98.5 Uptown Radio Thumbnail 16" loading="lazy">
+        <img src="Uptown Radio 98.5/808468988_1374467534772909_3451219810500261092_n.jpg" class="recap-thumb" data-index="16" alt="98.5 Uptown Radio Thumbnail 17" loading="lazy">
+        <img src="Uptown Radio 98.5/808942645_1076834055239454_5021305702423970128_n.jpg" class="recap-thumb" data-index="17" alt="98.5 Uptown Radio Thumbnail 18" loading="lazy">
+        <img src="Uptown Radio 98.5/808942645_1777563076820830_7724520972355042019_n.jpg" class="recap-thumb" data-index="18" alt="98.5 Uptown Radio Thumbnail 19" loading="lazy">
+        <img src="Uptown Radio 98.5/810448757_2370349350038441_7599660540344632835_n.jpg" class="recap-thumb" data-index="19" alt="98.5 Uptown Radio Thumbnail 20" loading="lazy">
+        <img src="Uptown Radio 98.5/810777372_1794200665046422_493929057943791255_n.jpg" class="recap-thumb" data-index="20" alt="98.5 Uptown Radio Thumbnail 21" loading="lazy">
+        <img src="Uptown Radio 98.5/810813074_1133038622486664_571299184721680972_n.jpg" class="recap-thumb" data-index="21" alt="98.5 Uptown Radio Thumbnail 22" loading="lazy">
+        <img src="Uptown Radio 98.5/812728902_2023354201689900_3224182834583764710_n.jpg" class="recap-thumb" data-index="22" alt="98.5 Uptown Radio Thumbnail 23" loading="lazy">
+        <img src="Uptown Radio 98.5/813831977_1996468167967541_6241313443866672547_n.jpg" class="recap-thumb" data-index="23" alt="98.5 Uptown Radio Thumbnail 24" loading="lazy">
+      </div>
+      <button class="recap-share-btn share-button" data-title="CODEBLUE WORLD Talk Radio on 98.5 Uptown Radio | DJWEIRDNASTY Event Recap" data-url="https://djweirdnasty.com/recap-codeblue-uptown-radio.html">&#128279; Share</button>
+      <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.15);">
+        <h3 style="color: #ffd860; margin-bottom: 1rem;">Keep Exploring</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+          <a href="event-recaps.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">More Event Recaps</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Photos and highlights from past DJWEIRDNASTY events.</p>
+          </a>
+          <a href="mixtapes.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Listen to Mixtapes</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Hear the sets that keep the party going.</p>
+          </a>
+          <a href="news.html" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Latest News</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">Music, sports, entertainment, and national headlines.</p>
+          </a>
+          <a href="index.html#events" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 1rem; display: block; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <strong style="color: #ff5bd7;">Upcoming Events</strong>
+            <p style="font-size: 0.85rem; color: #ccc; margin: 0.5rem 0 0;">See where DJWEIRDNASTY is playing next.</p>
+          </a>
+        </div>
+      </div>
+    </article>
+  </main>
+  <div class="recap-lightbox" id="recap-lightbox" onclick="recapCloseLightbox()">
+    <span class="recap-lightbox-close">&times;</span>
+    <img loading="lazy" src="" id="recap-lightbox-img" alt="Enlarged photo">
+  </div>
+  <footer class="container">
+    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1.5rem;">&copy; 2026 Djweirdnasty LLC. All rights reserved.</p>
+  </footer>
+<script src="comments.js?v=6"></script>
+<script src="site.js?v=23"></script>
+<script>
+  var recapTimers = {};
+  var RECAP_PER_PAGE = 3;
+
+  function recapCarouselState(c) {
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    var total = imgs.length;
+    var maxStart = Math.max(0, total - RECAP_PER_PAGE);
+    return { total: total, maxStart: maxStart };
+  }
+
+  function recapUpdate(id) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = parseInt(c.dataset.current || '0', 10);
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    var track = c.querySelector('.recap-carousel-track');
+    track.style.transform = 'translateX(-' + (current * (100 / RECAP_PER_PAGE)) + '%)';
+    var counter = document.getElementById(id + '-counter');
+    if (counter) {
+      var end = Math.min(current + RECAP_PER_PAGE, state.total);
+      counter.textContent = (current + 1) + ' \u2013 ' + end + ' / ' + state.total;
+    }
+    var thumbs = document.querySelectorAll('.recap-thumb');
+    thumbs.forEach(function(t) { t.classList.remove('active'); });
+    var activeThumb = document.querySelector('.recap-thumb[data-index="' + current + '"]');
+    if (activeThumb) activeThumb.classList.add('active');
+    return current;
+  }
+
+  function recapCarousel(id, dir) {
+    var c = document.getElementById(id);
+    var current = parseInt(c.dataset.current || '0', 10);
+    var state = recapCarouselState(c);
+    current = current + dir;
+    if (current < 0) current = 0;
+    if (current > state.maxStart) current = state.maxStart;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapGoTo(id, index) {
+    var c = document.getElementById(id);
+    var state = recapCarouselState(c);
+    var current = index;
+    if (current > state.maxStart) current = state.maxStart;
+    if (current < 0) current = 0;
+    c.dataset.current = current;
+    recapUpdate(id);
+  }
+
+  function recapStartAuto(id, interval) {
+    recapStopAuto(id);
+    recapTimers[id] = setInterval(function() { recapCarousel(id, 1); }, interval || 7000);
+  }
+
+  function recapStopAuto(id) {
+    if (recapTimers[id]) { clearInterval(recapTimers[id]); delete recapTimers[id]; }
+  }
+
+  function recapLightbox(src) {
+    var lb = document.getElementById('recap-lightbox');
+    var lbImg = document.getElementById('recap-lightbox-img');
+    lbImg.src = src;
+    lb.classList.add('active');
+  }
+
+  function recapCloseLightbox() {
+    document.getElementById('recap-lightbox').classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') recapCloseLightbox();
+    var c = document.getElementById('uptown-radio-carousel');
+    if (!c) return;
+    if (e.key === 'ArrowLeft') recapCarousel('uptown-radio-carousel', -1);
+    if (e.key === 'ArrowRight') recapCarousel('uptown-radio-carousel', 1);
+  });
+
+  (function() {
+    var c = document.getElementById('uptown-radio-carousel');
+    if (!c) return;
+    var track = c.querySelector('.recap-carousel-track');
+    var imgs = track.querySelectorAll('img');
+    imgs.forEach(function(img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function() {
+        recapLightbox(img.src);
+      });
+    });
+    c.addEventListener('mouseenter', function() { recapStopAuto('uptown-radio-carousel'); });
+    c.addEventListener('mouseleave', function() { recapStartAuto('uptown-radio-carousel'); });
+    c.addEventListener('touchstart', function() { recapStopAuto('uptown-radio-carousel'); });
+    c.addEventListener('touchend', function() { setTimeout(function() { recapStartAuto('uptown-radio-carousel'); }, 3000); });
+
+    var thumbs = document.getElementById('uptown-radio-thumbnails');
+    if (thumbs) {
+      thumbs.querySelectorAll('.recap-thumb').forEach(function(thumb) {
+        thumb.addEventListener('click', function() {
+          var idx = parseInt(thumb.getAttribute('data-index'), 10);
+          recapGoTo('uptown-radio-carousel', idx);
+          recapStopAuto('uptown-radio-carousel');
+        });
+      });
+    }
+
+    recapUpdate('uptown-radio-carousel');
+    recapStartAuto('uptown-radio-carousel', 7000);
+  })();
+</script>
+</body>
+</html>
