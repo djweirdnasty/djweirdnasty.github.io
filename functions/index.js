@@ -11,10 +11,9 @@ const ADMIN_UID = "3i7fQdPjN0Qxz3FysVPvnhtxzlJ3";
 const ADMIN_EMAIL = "djweirdnasty@gmail.com";
 const SEARCH_URL = "https://rork-dj-booking-payment-app.onrender.com/api/djs/search";
 
-// TEMP DISABLED: uncomment once these secrets are set via `firebase functions:secrets:set`
-// const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
-// const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
-// const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
+const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
+const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
@@ -78,6 +77,23 @@ async function sendEmail(apiKey, to, subject, html) {
 function money(n) {
   var num = Number(n) || 0;
   return "$" + num.toFixed(0);
+}
+
+async function sendExpoPush(token, title, body) {
+  var res = await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ to: token, title: title, body: body, sound: "default" })
+  });
+  var data = await res.json().catch(function () { return {}; });
+  var ticket = data && data.data;
+  if (ticket && ticket.status === "error") {
+    throw new Error("Expo push error: " + (ticket.message || "unknown"));
+  }
+  return data;
 }
 
 // TEMP DISABLED: uncomment once TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER secrets are set
@@ -421,7 +437,9 @@ exports.syncAllAuthUsers = onCall(async (request) => {
 });
 
 // Callable function: admin sends messages to users, DJs, or broadcast.
-exports.adminSendMessage = onCall(async (request) => {
+exports.adminSendMessage = onCall(
+  { secrets: [SENDGRID_API_KEY, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER] },
+  async (request) => {
   if (!request.auth) {
     throw new HttpsError("unauthenticated", "Must be signed in.");
   }
@@ -469,6 +487,7 @@ exports.adminSendMessage = onCall(async (request) => {
   let sent = 0;
   let failed = 0;
   let sentTo = [];
+  let pushSent = 0, emailSent = 0, smsSent = 0;
 
   for (const userDoc of userQuerySnapshot.docs) {
     const u = userDoc.data();
@@ -505,6 +524,49 @@ exports.adminSendMessage = onCall(async (request) => {
     } catch (err) {
       logger.error("[ADMIN MESSAGE] Failed to send to " + uid + ": " + err.message);
       failed++;
+      continue;
+    }
+
+    // Push notification (Expo push token stored on the user doc when they enable notifications).
+    if (u.expoPushToken) {
+      try {
+        await sendExpoPush(u.expoPushToken, subject || "New message from SOL Admin", body);
+        pushSent++;
+      } catch (err) {
+        logger.error("[ADMIN MESSAGE] Push failed for " + uid + ": " + err.message);
+      }
+    }
+
+    // Email via SendGrid.
+    if (u.email) {
+      try {
+        const emailHtml = "<p>" + (subject ? "<strong>" + subject + "</strong></p><p>" : "") +
+          body.replace(/\n/g, "<br>") + "</p><p style=\"color:#888;font-size:0.85rem;\">Sent by SOL Admin.</p>";
+        await sendEmail(SENDGRID_API_KEY.value(), u.email, subject || "Message from SOL Admin", emailHtml);
+        emailSent++;
+      } catch (err) {
+        logger.error("[ADMIN MESSAGE] Email failed for " + uid + ": " + err.message);
+      }
+    }
+
+    // SMS via Twilio — phone lives on the DJ verification profile, not the users doc.
+    try {
+      const verDoc = await db.collection("dj-verifications").doc(uid).get();
+      const rawPhone = verDoc.exists ? (verDoc.data().djProfile || {}).phone : null;
+      const phone = formatPhoneE164(rawPhone);
+      if (phone) {
+        const smsText = "SOL: " + (subject ? subject + " - " : "") + body;
+        await sendSms(
+          TWILIO_ACCOUNT_SID.value(),
+          TWILIO_AUTH_TOKEN.value(),
+          TWILIO_FROM_NUMBER.value(),
+          phone,
+          smsText.slice(0, 1500)
+        );
+        smsSent++;
+      }
+    } catch (err) {
+      logger.error("[ADMIN MESSAGE] SMS failed for " + uid + ": " + err.message);
     }
   }
 
@@ -515,14 +577,17 @@ exports.adminSendMessage = onCall(async (request) => {
     body: body,
     sent: sent,
     failed: failed,
+    pushSent: pushSent,
+    emailSent: emailSent,
+    smsSent: smsSent,
     sentTo: sentTo,
     sentBy: request.auth.uid,
     sentByEmail: request.auth.token ? request.auth.token.email : "",
     timestamp: timestamp
   });
 
-  logger.info("[ADMIN MESSAGE] Sent to " + sent + " recipients, " + failed + " failed.");
-  return { success: true, sent: sent, failed: failed };
+  logger.info("[ADMIN MESSAGE] Sent to " + sent + " recipients (" + failed + " failed). Push: " + pushSent + ", Email: " + emailSent + ", SMS: " + smsSent + ".");
+  return { success: true, sent: sent, failed: failed, pushSent: pushSent, emailSent: emailSent, smsSent: smsSent };
 });
 
 // Callable function: client validates a promo code without reading the full list.

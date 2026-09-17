@@ -4552,7 +4552,8 @@
         sendFn({ recipient: recipient, target: target, subject: subject, body: body })
           .then(function(result) {
             var r = result.data || {};
-            statusEl.textContent = 'Sent to ' + (r.sent || 0) + ' recipients' + (r.failed ? ' (' + r.failed + ' failed)' : '') + '.';
+            statusEl.textContent = 'Sent to ' + (r.sent || 0) + ' recipients' + (r.failed ? ' (' + r.failed + ' failed)' : '') +
+              '. Push: ' + (r.pushSent || 0) + ', Email: ' + (r.emailSent || 0) + ', SMS: ' + (r.smsSent || 0) + '.';
             statusEl.style.color = '#22c55e';
             adminMessageForm.reset();
             document.getElementById('sol-admin-message-specific-wrap').style.display = 'none';
