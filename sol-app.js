@@ -2629,6 +2629,7 @@
       box.innerHTML = '';
       if (snapshot.empty) {
         box.innerHTML = '<p style="color:#888; text-align:center;">No bookings yet. Book a DJ above!</p>';
+        populateBookingDropdowns([]);
         return;
       }
       var bookings = [];
@@ -2944,6 +2945,9 @@
         });
         sel.value = current;
       });
+      var hasActive = bookings.some(function(b) { return b.status !== 'cancelled'; });
+      var playlistWrap = document.getElementById('sol-playlist-wrap');
+      if (playlistWrap) playlistWrap.style.display = hasActive ? '' : 'none';
     }
 
     function syncUserDoc(user) {
