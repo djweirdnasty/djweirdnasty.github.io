@@ -827,8 +827,9 @@
       if (!user) return;
       var name = document.getElementById('sol-dj-name').textContent || 'DJ';
       var slug = djSlugify(name);
-      var url = window.location.origin + '/dj.html?' +
-        (slug ? 'dj=' + encodeURIComponent(slug) : 'uid=' + encodeURIComponent(user.uid));
+      var url = slug
+        ? window.location.origin + '/dj/' + encodeURIComponent(slug)
+        : window.location.origin + '/dj.html?uid=' + encodeURIComponent(user.uid);
       if (navigator.share) {
         navigator.share({ title: name + ' — SOL DJ', text: 'Check out my DJ profile on Sounds of Logan!', url: url });
       } else {
@@ -4595,8 +4596,9 @@
         var djName = decodeURIComponent(e.target.getAttribute('data-share-dj'));
         var djShareUid = e.target.getAttribute('data-share-dj-uid') || '';
         var djShareSlug = djSlugify(djName);
-        var shareUrl = window.location.origin + '/dj.html?' +
-          (djShareSlug ? 'dj=' + encodeURIComponent(djShareSlug) : 'uid=' + encodeURIComponent(djShareUid));
+        var shareUrl = djShareSlug
+          ? window.location.origin + '/dj/' + encodeURIComponent(djShareSlug)
+          : window.location.origin + '/dj.html?uid=' + encodeURIComponent(djShareUid);
         var shareText = 'Check out ' + djName + ' on SOL DJ Booking!';
         if (navigator.share) {
           navigator.share({ title: djName + ' — SOL DJ', text: shareText, url: shareUrl });

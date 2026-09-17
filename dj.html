@@ -13,84 +13,156 @@
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <meta name="theme-color" content="#ff4d8f">
+  <meta name="theme-color" content="#ff1111">
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      padding: 1.5rem 1rem;
-    }
-    .profile-wrap { max-width: 640px; margin: 0 auto; }
-    .profile-header { text-align: center; margin-bottom: 1.5rem; }
-    .profile-header img.logo { width: 56px; height: 56px; border-radius: 50%; }
-    .card {
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .avatar { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e; margin: 0 auto 1rem; display: block; }
-    .avatar-fallback { width: 140px; height: 140px; border-radius: 50%; background: #ff4d8f; display: flex; align-items: center; justify-content: center; font-size: 52px; font-weight: 700; margin: 0 auto 1rem; border: 4px solid #22c55e; }
-    .badge { display: inline-block; background: #22c55e22; color: #22c55e; border: 1px solid #22c55e; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; }
-    .stats { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
-    .stat { text-align: center; }
-    .stat .num { font-size: 1.25rem; font-weight: 700; color: #ffd860; }
-    .stat .lbl { font-size: 0.75rem; color: #888; }
-    .tag { display: inline-block; background: #1a1a1a; border: 1px solid #333; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.8rem; color: #ccc; margin: 0.15rem; }
-    .btn {
-      display: inline-block; background: #ff4d8f; color: #fff; border: none;
-      padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;
-      font-size: 1rem; font-weight: 600; text-decoration: none; text-align: center;
-    }
-    .btn.secondary { background: #1a1a1a; border: 1px solid #00d4ff; color: #00d4ff; }
-    h3.section { color: #ff4d8f; margin: 0 0 0.75rem; font-size: 1rem; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #050505; color: #fff; font-family: Arial, Helvetica, sans-serif; min-height: 100vh; }
 
-    /* Gallery (mirrors event recap / DJ console carousel) */
-    .gal-carousel { position: relative; margin: 0.5rem 0; overflow: hidden; border-radius: 12px; background: #0a0a0a; }
-    .gal-track { display: flex; transition: transform 0.4s ease; will-change: transform; }
-    .gal-track img { flex: 0 0 33.333%; width: 33.333%; height: auto; object-fit: contain; max-height: 280px; background: #000; cursor: zoom-in; box-sizing: border-box; padding: 0 3px; }
-    .gal-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); color: #fff; border: none; font-size: 1.5rem; padding: 0.5rem 1rem; cursor: pointer; border-radius: 50%; z-index: 2; transition: background 0.2s; }
-    .gal-btn:hover { background: rgba(255,77,143,0.8); }
-    .gal-btn.prev { left: 8px; }
-    .gal-btn.next { right: 8px; }
-    .gal-counter { text-align: center; color: #aaa; font-size: 0.85rem; margin-top: 0.5rem; }
-    .gal-thumbs { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; padding: 0.75rem; background: #0a0a0a; border: 1px solid #333; border-radius: 12px; max-height: 280px; overflow-y: auto; }
-    .gal-thumbs img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s, border 0.2s; border: 2px solid transparent; }
-    .gal-thumbs img:hover, .gal-thumbs img.active { opacity: 1; border: 2px solid #ff4d8f; }
-    .gal-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; justify-content: center; align-items: center; cursor: zoom-out; }
+    /* ============ HEADER ============ */
+    .sol-header { min-height: 135px; display: flex; align-items: center; padding: 20px 6%; border-bottom: 2px solid #292929; background: linear-gradient(135deg, #050505, #111111, #030303); position: relative; overflow: hidden; }
+    .sol-header::after { content: ""; position: absolute; right: 4%; top: -50px; width: 12px; height: 250px; background: #ff1111; transform: rotate(40deg); box-shadow: 0 0 20px #ff1111; }
+    .sol-brand { display: flex; align-items: center; gap: 25px; position: relative; z-index: 2; }
+    .sol-logo { width: 105px; height: 105px; object-fit: contain; }
+    .brand-divider { height: 65px; width: 3px; background: #ff1111; box-shadow: 0 0 10px #ff1111; }
+    .sol-brand h1 { margin: 0; font-size: clamp(26px, 4vw, 50px); font-weight: 900; letter-spacing: 2px; }
+    .sol-brand h1 span { color: #ff1111; }
+    .sol-brand p { margin: 5px 0 0; text-align: center; letter-spacing: 6px; font-size: 13px; color: #ddd; }
+
+    /* ============ MAIN ============ */
+    .profile-container { width: min(1100px, 94%); margin: 25px auto 50px; }
+
+    /* ============ DJ CARD ============ */
+    .dj-card { position: relative; display: grid; grid-template-columns: 220px 1fr 270px; gap: 30px; align-items: center; padding: 30px; border: 2px solid #292929; border-radius: 16px; background: radial-gradient(circle at 90% 50%, #171717, #070707 55%); overflow: hidden; box-shadow: 0 0 30px rgba(255,0,0,.08); }
+    .dj-photo-wrapper { width: 210px; height: 210px; padding: 7px; border-radius: 50%; border: 3px solid #ff1111; box-shadow: 0 0 15px rgba(255,0,0,.7); }
+    .dj-photo { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 5px solid #111; }
+    .dj-photo-fallback { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #111; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 64px; font-weight: 900; color: #ff1111; }
+
+    .dj-information h2 { margin: 0; font-size: clamp(36px, 5vw, 62px); line-height: 1; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+    .dj-title { display: flex; align-items: center; gap: 20px; margin: 12px 0 20px; }
+    .dj-title span { width: 120px; height: 3px; background: #ff1111; }
+    .dj-title strong { font-size: 22px; letter-spacing: 2px; }
+    .verified { display: inline-block; padding: 7px 15px; border: 2px solid #ff1111; border-radius: 25px; color: #fff; font-weight: bold; font-size: 13px; box-shadow: 0 0 10px rgba(255,0,0,.25); }
+    .location { margin-top: 15px; font-size: 17px; color: #ddd; }
+    .dj-bio { margin-top: 14px; font-size: 15px; line-height: 1.6; color: #ccc; }
+    .tags { margin-top: 12px; }
+    .tag { display: inline-block; background: #141414; border: 1px solid #ff1111; border-radius: 999px; padding: 4px 12px; font-size: 13px; color: #eee; margin: 3px 3px 0 0; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 30px; border-top: 1px solid #333; border-bottom: 1px solid #333; }
+    .stat { padding: 15px; text-align: center; border-right: 1px solid #ff1111; }
+    .stat:last-child { border-right: none; }
+    .stat strong { display: block; font-size: 28px; }
+    .stat small { display: block; margin-top: 5px; color: #aaa; font-weight: bold; font-size: 11px; letter-spacing: 1px; }
+    .star { color: #ff1111; }
+
+    .equipment { display: flex; align-items: center; gap: 10px; margin-top: 20px; font-size: 16px; flex-wrap: wrap; }
+    .equipment-icon { font-size: 25px; color: #ff1111; }
+    .equipment strong { color: #ff1111; }
+
+    .links-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .link-btn { display: inline-block; background: #080808; border: 1px solid #ff1111; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; transition: .2s ease; }
+    .link-btn:hover { box-shadow: 0 0 12px rgba(255,0,0,.4); transform: translateY(-1px); }
+
+    .profile-buttons { display: flex; gap: 15px; margin-top: 25px; }
+    .profile-buttons .pbtn { flex: 1; min-height: 58px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; transition: .2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: Arial, Helvetica, sans-serif; }
+    .book-button { border: none; color: #fff; background: linear-gradient(135deg, #ff2929, #c90000); box-shadow: 0 0 15px rgba(255,0,0,.3); }
+    .share-button { background: #080808; border: 2px solid #ff1111; color: #fff; }
+    .profile-buttons .pbtn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(255,0,0,.5); }
+
+    .vinyl-area { text-align: center; position: relative; }
+    .vinyl { width: 250px; max-width: 100%; filter: drop-shadow(0 0 15px rgba(255,0,0,.25)); }
+    .vinyl-title { margin-top: -10px; font-size: 18px; font-weight: 900; letter-spacing: 2px; }
+    .vinyl-title span { color: #ff1111; }
+
+    /* ============ SECTIONS ============ */
+    .sol-section { margin-top: 25px; padding: 25px; border: 2px solid #292929; border-radius: 16px; background: #080808; }
+    .section-title { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .section-title span { font-size: 28px; }
+    .section-title h3 { margin: 0; font-size: 24px; }
+    .red-line { flex: 1; height: 3px; background: #ff1111; }
+
+    /* ============ GALLERY ============ */
+    .gal-carousel { position: relative; overflow: hidden; border-radius: 12px; background: #020202; padding: 10px; }
+    .gal-track { display: flex; transition: transform .4s ease; will-change: transform; }
+    .gal-track img { flex: 0 0 33.333%; width: 33.333%; height: 180px; object-fit: cover; border-radius: 5px; cursor: zoom-in; box-sizing: border-box; padding: 0 6px; }
+    .gallery-navigation { display: flex; justify-content: center; align-items: center; gap: 40px; padding: 10px; font-size: 16px; }
+    .gallery-navigation button { background: transparent; border: none; color: #ff1111; font-size: 40px; cursor: pointer; line-height: 1; }
+    .gal-thumbs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 15px; border: 1px solid #333; border-radius: 10px; }
+    .gal-thumbs img { width: 100%; height: 85px; object-fit: cover; border-radius: 5px; border: 2px solid #222; cursor: pointer; transition: .2s ease; }
+    .gal-thumbs img:hover, .gal-thumbs img.active { border-color: #ff1111; transform: scale(1.03); box-shadow: 0 0 10px rgba(255,0,0,.5); }
+    .gal-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.95); justify-content: center; align-items: center; padding: 30px; cursor: zoom-out; }
     .gal-lightbox.active { display: flex; }
-    .gal-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+    .gal-lightbox img { max-width: 95%; max-height: 90%; object-fit: contain; border: 2px solid #ff1111; box-shadow: 0 0 30px rgba(255,0,0,.4); }
     .gal-lightbox-close { position: absolute; top: 16px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; }
-    @media (max-width: 640px) {
-      .gal-track img { flex: 0 0 50%; width: 50%; max-height: 200px; }
-    }
 
-    .gig { background: #0a0a0a; border: 1px solid #333; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; }
-    .gig a { color: #00d4ff; }
+    /* ============ MEDIA ============ */
+    .media-item { margin-bottom: 14px; }
+    .media-item audio { width: 100%; height: 40px; }
+    .media-item iframe, .media-item video { width: 100%; border: none; border-radius: 10px; }
+
+    .gig { background: #0d0d0d; border: 1px solid #333; border-left: 4px solid #ff1111; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+    .gig a { color: #ff5555; }
     .muted { color: #888; }
+
+    /* ============ BACK TO SOL ============ */
+    .back-sol { text-align: center; margin-top: 30px; padding: 20px; }
+    .back-sol a { text-decoration: none; font-size: 34px; font-weight: 900; letter-spacing: 3px; color: #fff; }
+    .back-sol i { color: #ff1111; font-family: cursive; margin: 0 8px; }
+    .back-sol strong { color: #fff; text-shadow: 0 0 10px rgba(255,0,0,.5); }
+    .back-sol a:hover { color: #ff1111; }
+    .back-sol a:hover strong, .back-sol a:hover span { color: #ff1111; }
+
+    .center-msg { text-align: center; padding: 40px 20px; }
+
+    /* ============ MOBILE ============ */
+    @media (max-width: 850px) {
+      .dj-card { grid-template-columns: 1fr; text-align: center; }
+      .dj-photo-wrapper { margin: auto; }
+      .dj-title { justify-content: center; }
+      .equipment { justify-content: center; }
+      .links-row { justify-content: center; }
+      .profile-buttons { flex-direction: column; }
+      .vinyl-area { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: none; }
+      .gal-track img { flex: 0 0 50%; width: 50%; height: 160px; }
+      .gal-thumbs { grid-template-columns: repeat(3, 1fr); }
+      .sol-brand h1 { font-size: 25px; }
+      .sol-brand p { font-size: 9px; letter-spacing: 3px; }
+    }
+    @media (max-width: 500px) {
+      .sol-header { padding: 15px; }
+      .sol-logo { width: 70px; height: 70px; }
+      .brand-divider { height: 50px; }
+      .dj-card { padding: 20px; }
+      .dj-information h2 { font-size: 36px; }
+      .sol-section { padding: 15px; }
+      .dj-photo-wrapper { width: 160px; height: 160px; }
+    }
   </style>
 </head>
 <body>
-  <div class="profile-wrap">
-    <div class="profile-header">
-      <img class="logo" src="sol-logo.png" alt="SOL">
-      <p class="muted" style="font-size:0.9rem; margin-top:0.25rem;">Sounds of Logan — DJ Booking</p>
-    </div>
-    <div id="profile-body">
-      <div class="card" style="text-align:center;">
-        <p class="muted">Loading DJ profile…</p>
+
+  <header class="sol-header">
+    <div class="sol-brand">
+      <img src="sol-logo.png" alt="SOL - Sounds of Logan" class="sol-logo">
+      <div class="brand-divider"></div>
+      <div>
+        <h1>SOUNDS OF <span>LOGAN</span></h1>
+        <p>DJ BOOKING PLATFORM</p>
       </div>
     </div>
-    <p style="text-align:center; margin-top:1rem;">
-      <a href="sol.html" class="muted" style="font-size:0.85rem;">&larr; Sounds of Logan</a>
-    </p>
-  </div>
+  </header>
+
+  <main class="profile-container">
+    <div id="profile-body">
+      <div class="sol-section center-msg"><p class="muted">Loading DJ profile…</p></div>
+    </div>
+    <div class="back-sol">
+      <a href="sol.html"><span>BACK</span><i>to</i><strong>SOL</strong></a>
+    </div>
+  </main>
 
   <div id="gal-lightbox" class="gal-lightbox">
     <span class="gal-lightbox-close" id="gal-lightbox-close" aria-label="Close">&times;</span>
@@ -118,7 +190,7 @@
     var galleryIndex = 0;
     var galleryAuto = null;
 
-    function perPage() { return window.innerWidth <= 640 ? 2 : 3; }
+    function perPage() { return window.innerWidth <= 850 ? 2 : 3; }
 
     function galUpdate() {
       var track = document.getElementById('gal-track');
@@ -159,24 +231,25 @@
     }
 
     function renderGallery(photos) {
-      galleryPhotos = photos || [];
-      if (!galleryPhotos.length) return '';
-      return '<h3 class="section">Photos</h3>' +
+      if (!photos.length) return '';
+      return '<section class="sol-section">' +
+        '<div class="section-title"><span>📷</span><h3>Photos</h3><div class="red-line"></div></div>' +
         '<div class="gal-carousel" id="gal-carousel">' +
-        '<button type="button" class="gal-btn prev" id="gal-prev" aria-label="Previous">&lsaquo;</button>' +
         '<div class="gal-track" id="gal-track">' +
-        galleryPhotos.map(function(u, i) {
+        photos.map(function(u, i) {
           return '<img loading="lazy" src="' + escAttr(u) + '" alt="Photo ' + (i + 1) + '">';
         }).join('') +
+        '</div></div>' +
+        '<div class="gallery-navigation">' +
+        '<button type="button" id="gal-prev" aria-label="Previous">&lsaquo;</button>' +
+        '<span id="gal-counter"></span>' +
+        '<button type="button" id="gal-next" aria-label="Next">&rsaquo;</button>' +
         '</div>' +
-        '<button type="button" class="gal-btn next" id="gal-next" aria-label="Next">&rsaquo;</button>' +
-        '</div>' +
-        '<div class="gal-counter" id="gal-counter"></div>' +
         '<div class="gal-thumbs" id="gal-thumbs">' +
-        galleryPhotos.map(function(u, i) {
+        photos.map(function(u, i) {
           return '<img loading="lazy" src="' + escAttr(u) + '" data-index="' + i + '" alt="Thumbnail ' + (i + 1) + '">';
         }).join('') +
-        '</div>';
+        '</div></section>';
     }
 
     function wireGallery() {
@@ -197,32 +270,37 @@
       });
       thumbs.querySelectorAll('img').forEach(function(t) {
         t.addEventListener('click', function() {
-          galleryIndex = parseInt(t.getAttribute('data-index'), 10);
-          galUpdate();
-          galStopAuto();
+          document.getElementById('gal-lightbox-img').src = t.src;
+          document.getElementById('gal-lightbox').classList.add('active');
         });
       });
       galUpdate();
       galStartAuto();
     }
 
+    function renderSection(icon, title, inner) {
+      return '<section class="sol-section">' +
+        '<div class="section-title"><span>' + icon + '</span><h3>' + title + '</h3><div class="red-line"></div></div>' +
+        inner + '</section>';
+    }
+
     function renderProfile(dj) {
-      document.title = dj.name + ' | SOL: Sounds of Logan';
+      document.title = dj.name + "'s Profile | Sounds of Logan";
       if (dj.slug) {
         history.replaceState(null, '', 'dj.html?dj=' + encodeURIComponent(dj.slug));
       }
       var initial = esc((dj.name || 'D').charAt(0).toUpperCase());
       var avatarHtml = dj.avatar
-        ? '<img class="avatar" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '">'
-        : '<div class="avatar-fallback">' + initial + '</div>';
+        ? '<img class="dj-photo" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '">'
+        : '<div class="dj-photo-fallback">' + initial + '</div>';
       var loc = [dj.city, dj.state].filter(Boolean).join(', ');
 
       var stats =
         '<div class="stats">' +
-        (dj.hourlyRate ? '<div class="stat"><div class="num">$' + esc(dj.hourlyRate) + '</div><div class="lbl">per hour</div></div>' : '') +
-        '<div class="stat"><div class="num">' + esc(dj.experience || 0) + '</div><div class="lbl">years exp.</div></div>' +
-        '<div class="stat"><div class="num">' + esc(dj.totalBookingsCompleted || 0) + '</div><div class="lbl">gigs</div></div>' +
-        '<div class="stat"><div class="num">⭐ ' + esc(dj.rating || 0) + '</div><div class="lbl">' + esc(dj.reviewCount || 0) + ' reviews</div></div>' +
+        '<div class="stat"><strong>' + (dj.hourlyRate ? '$' + esc(dj.hourlyRate) : '—') + '</strong><small>PER HOUR</small></div>' +
+        '<div class="stat"><strong>' + esc(dj.totalBookingsCompleted || 0) + '</strong><small>TOTAL GIGS</small></div>' +
+        '<div class="stat"><strong>' + esc(dj.rating || 0) + '</strong><small>RATING</small></div>' +
+        '<div class="stat"><strong class="star">★ ' + esc(dj.reviewCount || 0) + '</strong><small>REVIEWS</small></div>' +
         '</div>';
 
       var tags = '';
@@ -230,95 +308,101 @@
       (dj.specialties || []).forEach(function(s) { tags += '<span class="tag">' + esc(s) + '</span>'; });
 
       var equipment = (dj.equipment || []).length
-        ? '<p style="margin-top:0.75rem;"><strong style="color:#ff4d8f;">Equipment:</strong> <span style="color:#ccc;">' + esc(dj.equipment.join(', ')) + '</span></p>'
-        : '';
-
-      var samples = (dj.samples || []).length
-        ? '<h3 class="section">Sound Samples</h3>' + dj.samples.map(function(u) {
-            return '<audio controls src="' + escAttr(u) + '" style="width:100%; margin-bottom:0.5rem; height:36px;"></audio>';
-          }).join('')
-        : '';
-
-      var videos = (dj.videos || []).length
-        ? '<h3 class="section">Video Reel</h3>' + dj.videos.map(function(u) {
-            if (u.indexOf('youtube') >= 0 || u.indexOf('youtu.be') >= 0) {
-              var ytId = u.split('v=')[1] || u.split('youtu.be/')[1] || '';
-              return '<iframe width="100%" height="200" src="https://www.youtube.com/embed/' + escAttr(ytId.split('&')[0]) + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
-            }
-            if (u.indexOf('vimeo.com') >= 0) {
-              var vimeoId = u.split('vimeo.com/')[1] || '';
-              return '<iframe width="100%" height="200" src="https://player.vimeo.com/video/' + escAttr(vimeoId.split('?')[0]) + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
-            }
-            return '<video controls src="' + escAttr(u) + '" style="width:100%; border-radius:8px; margin-bottom:0.5rem;"></video>';
-          }).join('')
+        ? '<div class="equipment"><span class="equipment-icon">🎧</span><strong>Equipment:</strong><span>' + esc(dj.equipment.join(', ')) + '</span></div>'
         : '';
 
       var socials = dj.socialLinks || {};
       var socialBtns = '';
-      var socialList = [
+      [
         { key: 'instagram', label: '📸 Instagram' },
         { key: 'tiktok', label: '🎵 TikTok' },
         { key: 'youtube', label: '▶️ YouTube' },
         { key: 'facebook', label: '👍 Facebook' },
         { key: 'twitter', label: '𝕏 Twitter/X' }
-      ];
-      socialList.forEach(function(s) {
+      ].forEach(function(s) {
         if (socials[s.key]) {
-          socialBtns += '<a class="btn secondary" style="padding:0.5rem 1rem; font-size:0.85rem;" href="' + escAttr(socials[s.key]) + '" target="_blank" rel="noopener">' + s.label + '</a>';
+          socialBtns += '<a class="link-btn" href="' + escAttr(socials[s.key]) + '" target="_blank" rel="noopener">' + s.label + '</a>';
         }
       });
       var linksRow = '';
       if (dj.website || socialBtns) {
-        linksRow = '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap; justify-content:center;">' +
-          (dj.website ? '<a class="btn secondary" style="padding:0.5rem 1rem; font-size:0.85rem;" href="' + escAttr(dj.website) + '" target="_blank" rel="noopener">🌐 Website</a>' : '') +
+        linksRow = '<div class="links-row">' +
+          (dj.website ? '<a class="link-btn" href="' + escAttr(dj.website) + '" target="_blank" rel="noopener">🌐 Website</a>' : '') +
           socialBtns + '</div>';
       }
 
+      var samples = (dj.samples || []).length
+        ? renderSection('🎵', 'Sound Samples', dj.samples.map(function(u) {
+            return '<div class="media-item"><audio controls src="' + escAttr(u) + '"></audio></div>';
+          }).join(''))
+        : '';
+
+      var videos = (dj.videos || []).length
+        ? renderSection('🎬', 'Video Reel', dj.videos.map(function(u) {
+            if (u.indexOf('youtube') >= 0 || u.indexOf('youtu.be') >= 0) {
+              var ytId = u.split('v=')[1] || u.split('youtu.be/')[1] || '';
+              return '<div class="media-item"><iframe height="220" src="https://www.youtube.com/embed/' + escAttr(ytId.split('&')[0]) + '" allowfullscreen></iframe></div>';
+            }
+            if (u.indexOf('vimeo.com') >= 0) {
+              var vimeoId = u.split('vimeo.com/')[1] || '';
+              return '<div class="media-item"><iframe height="220" src="https://player.vimeo.com/video/' + escAttr(vimeoId.split('?')[0]) + '" allowfullscreen></iframe></div>';
+            }
+            return '<div class="media-item"><video controls src="' + escAttr(u) + '"></video></div>';
+          }).join(''))
+        : '';
+
       var gigs = (dj.gigs || []).length
-        ? '<h3 class="section">Upcoming Gigs</h3>' + dj.gigs.map(function(ev) {
+        ? renderSection('🎤', 'Upcoming Gigs', dj.gigs.map(function(ev) {
             return '<div class="gig">' +
               '<strong>' + esc(ev.title || 'Event') + '</strong>' +
-              (ev.venue ? '<div class="muted" style="font-size:0.85rem; margin-top:0.25rem;">📍 ' + esc(ev.venue) + '</div>' : '') +
-              '<div class="muted" style="font-size:0.85rem;">📅 ' + esc(ev.date || '') + (ev.startTime ? ' ' + esc(ev.startTime) + (ev.endTime ? '–' + esc(ev.endTime) : '') : '') + '</div>' +
-              (ev.description ? '<div class="muted" style="font-size:0.85rem; margin-top:0.25rem;">' + esc(ev.description) + '</div>' : '') +
-              (ev.coverCharge ? '<div style="color:#ffd860; font-size:0.85rem;">Cover: ' + esc(ev.coverCharge) + '</div>' : '') +
-              (ev.ticketUrl ? '<div style="margin-top:0.35rem;"><a href="' + escAttr(ev.ticketUrl) + '" target="_blank" rel="noopener">Get tickets</a></div>' : '') +
+              (ev.venue ? '<div class="muted" style="font-size:14px; margin-top:4px;">📍 ' + esc(ev.venue) + '</div>' : '') +
+              '<div class="muted" style="font-size:14px;">📅 ' + esc(ev.date || '') + (ev.startTime ? ' ' + esc(ev.startTime) + (ev.endTime ? '–' + esc(ev.endTime) : '') : '') + '</div>' +
+              (ev.description ? '<div class="muted" style="font-size:14px; margin-top:4px;">' + esc(ev.description) + '</div>' : '') +
+              (ev.coverCharge ? '<div style="color:#ff5555; font-size:14px;">Cover: ' + esc(ev.coverCharge) + '</div>' : '') +
+              (ev.ticketUrl ? '<div style="margin-top:6px;"><a href="' + escAttr(ev.ticketUrl) + '" target="_blank" rel="noopener">Get tickets</a></div>' : '') +
               '</div>';
-          }).join('')
+          }).join(''))
         : '';
 
       document.getElementById('profile-body').innerHTML =
-        '<div class="card" style="text-align:center;">' +
-        avatarHtml +
-        '<h1 style="font-size:1.6rem; margin-bottom:0.5rem;">' + esc(dj.name) + '</h1>' +
-        '<span class="badge">✅ Verified DJ</span>' +
-        (loc ? '<p class="muted" style="margin-top:0.5rem; font-size:0.9rem;">📍 ' + esc(loc) + '</p>' : '') +
+        '<section class="dj-card">' +
+        '<div class="dj-photo-wrapper">' + avatarHtml + '</div>' +
+        '<div class="dj-information">' +
+        '<h2>' + esc(dj.name) + '</h2>' +
+        '<div class="dj-title"><span></span><strong>DJ</strong><span></span></div>' +
+        '<div class="verified">✓ VERIFIED DJ</div>' +
+        (loc ? '<div class="location">📍 ' + esc(loc) + '</div>' : '') +
         stats +
-        (dj.bio ? '<p style="color:#ccc; font-size:0.95rem; line-height:1.6; text-align:left; margin-top:0.5rem;">' + esc(dj.bio).replace(/\n/g, '<br>') + '</p>' : '') +
-        (tags ? '<div style="margin-top:0.75rem;">' + tags + '</div>' : '') +
+        (dj.bio ? '<div class="dj-bio">' + esc(dj.bio).replace(/\n/g, '<br>') + '</div>' : '') +
+        (tags ? '<div class="tags">' + tags + '</div>' : '') +
         equipment +
         linksRow +
-        '<div style="display:flex; gap:0.5rem; margin-top:1.25rem; flex-wrap:wrap;">' +
-        '<a href="sol.html" class="btn" style="flex:1;">Book on SOL</a>' +
-        '<button type="button" id="share-btn" class="btn secondary" style="flex:1;">Share Profile</button>' +
+        '<div class="profile-buttons">' +
+        '<a href="sol.html" class="pbtn book-button">📅 BOOK ON SOL</a>' +
+        '<button type="button" id="share-btn" class="pbtn share-button">↗ SHARE PROFILE</button>' +
         '</div>' +
         '</div>' +
-        (galleryPhotos.length || samples || videos || gigs
-          ? '<div class="card">' + renderGallery(dj.photos) + samples + videos + gigs + '</div>'
-          : '');
+        '<div class="vinyl-area">' +
+        '<img src="sol-logo.png" alt="SOL" class="vinyl">' +
+        '<div class="vinyl-title">SOUNDS OF <span>LOGAN</span></div>' +
+        '</div>' +
+        '</section>' +
+        renderGallery(dj.photos || []) +
+        videos + samples + gigs;
 
       wireGallery();
 
       document.getElementById('share-btn').addEventListener('click', function() {
-        var url = 'https://djweirdnasty.com/dj.html?' +
-          (dj.slug ? 'dj=' + encodeURIComponent(dj.slug) : 'uid=' + encodeURIComponent(dj.uid));
+        var url = dj.slug
+          ? 'https://djweirdnasty.com/dj/' + encodeURIComponent(dj.slug)
+          : 'https://djweirdnasty.com/dj.html?uid=' + encodeURIComponent(dj.uid);
         if (navigator.share) {
-          navigator.share({ title: dj.name + ' — SOL DJ', text: 'Check out ' + dj.name + ' on Sounds of Logan!', url: url });
+          navigator.share({ title: dj.name + "'s Profile | Sounds of Logan", text: 'Book ' + dj.name + ' on Sounds of Logan', url: url });
         } else {
           navigator.clipboard.writeText(url).then(function() {
             var btn = document.getElementById('share-btn');
             btn.textContent = 'Link Copied!';
-            setTimeout(function() { btn.textContent = 'Share Profile'; }, 2000);
+            setTimeout(function() { btn.textContent = '↗ SHARE PROFILE'; }, 2000);
           });
         }
       });
@@ -338,7 +422,7 @@
 
     if (!djId && !djName) {
       document.getElementById('profile-body').innerHTML =
-        '<div class="card" style="text-align:center;"><p class="muted">No DJ specified.</p></div>';
+        '<div class="sol-section center-msg"><p class="muted">No DJ specified.</p></div>';
     } else {
       firebase.functions().httpsCallable('getPublicDjProfile')({ djId: djId, name: djName })
         .then(function(result) {
@@ -347,9 +431,9 @@
         })
         .catch(function(err) {
           document.getElementById('profile-body').innerHTML =
-            '<div class="card" style="text-align:center;">' +
+            '<div class="sol-section center-msg">' +
             '<p class="muted">DJ profile not found.</p>' +
-            '<p style="margin-top:1rem;"><a class="btn" href="sol.html">Browse DJs on SOL</a></p>' +
+            '<p style="margin-top:1rem;"><a class="pbtn book-button" style="padding:12px 24px;" href="sol.html">Browse DJs on SOL</a></p>' +
             '</div>';
           console.error('[DJ PROFILE]', err);
         });
