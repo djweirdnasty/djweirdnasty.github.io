@@ -742,48 +742,6 @@
       });
     }
 
-    // ---------- DJ Network (DJ-to-DJ messaging) ----------
-    function loadDJNetwork(uid) {
-      db.collection('dj-verifications').where('status', '==', 'approved').get()
-        .then(function(snapshot) {
-          var box = document.getElementById('sol-dj-network');
-          box.innerHTML = '';
-          if (snapshot.empty) { box.innerHTML = '<p style="color:#888;">No other DJs yet.</p>'; return; }
-          snapshot.forEach(function(doc) {
-            if (doc.id === uid) return;
-            var d = doc.data();
-            var p = d.djProfile || {};
-            var name = p.djName || p.stageName || d.displayName || 'DJ';
-            var email = d.email || p.email || '';
-            var card = document.createElement('div');
-            card.style.cssText = 'background:#111; border:1px solid #333; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center;';
-            card.innerHTML = '<span><strong>' + escapeHtml(name) + '</strong><br><span style="font-size:0.8rem; color:#666;">' + escapeHtml(email) + '</span></span><button type="button" class="submit-btn" style="padding:0.3rem 0.6rem; font-size:0.8rem;" data-dm-dj="' + escapeAttr(doc.id) + '" data-dm-name="' + encodeURIComponent(escapeHtml(name)) + '">Message</button>';
-            box.appendChild(card);
-          });
-          box.querySelectorAll('button[data-dm-dj]').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-              var toUid = btn.getAttribute('data-dm-dj');
-              var toName = decodeURIComponent(btn.getAttribute('data-dm-name'));
-              var msg = prompt('Message to ' + toName + ':');
-              if (!msg) return;
-              var user = auth.currentUser;
-              db.collection('dj-messages').add({
-                fromUid: user.uid,
-                fromName: user.displayName || user.email,
-                toUid: toUid,
-                toName: toName,
-                message: msg,
-                read: false,
-                sentAt: firebase.firestore.FieldValue.serverTimestamp()
-              }).then(function() {
-                btn.textContent = 'Sent!';
-                setTimeout(function() { btn.textContent = 'Message'; }, 2000);
-              });
-            });
-          });
-        });
-    }
-
     // ---------- DJ Waitlist ----------
     function loadDJWaitlist(uid) {
       db.collection('waitlist').where('djId', '==', uid).where('status', '==', 'waiting').get()
@@ -1590,7 +1548,6 @@
           loadDjGallery(user.uid);
           loadDJEarnings(user.uid);
           subscribeDJGigs(user.uid);
-          loadDJNetwork(user.uid);
           loadDJWaitlist(user.uid);
           loadDJCalendarData(user.uid);
           loadDJAnalytics(user.uid);
@@ -1724,10 +1681,26 @@
                 (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + escapeHtml(djRate) + '/hr</span>' : '') +
                 '</div>' +
                 '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + escapeHtml(d.status || 'unknown') + '</span>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
                 '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem;" data-delete-dj="' + escapeAttr(v.id) + '">Delete</button>';
               djsList.appendChild(card);
             });
             document.getElementById('sol-admin-stat-djs').textContent = count;
+            djsList.querySelectorAll('button[data-message-dj-admin]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var recipientSel = document.getElementById('sol-admin-message-recipient');
+                var targetInput = document.getElementById('sol-admin-message-target');
+                var targetWrap = document.getElementById('sol-admin-message-specific-wrap');
+                if (recipientSel) recipientSel.value = 'specific';
+                if (targetWrap) targetWrap.style.display = 'block';
+                if (targetInput) targetInput.value = btn.getAttribute('data-message-dj-admin-target');
+                adminSwitchTab('messages');
+                var messagesPanel = document.getElementById('sol-admin-panel-messages');
+                if (messagesPanel) messagesPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                var subjectInput = document.getElementById('sol-admin-message-subject');
+                if (subjectInput) subjectInput.focus();
+              });
+            });
           });
         })
         .catch(function(err) {
