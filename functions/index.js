@@ -1083,6 +1083,68 @@ exports.forceLogoutUser = onCall(async (request) => {
   }
 });
 
+// Sign out a user without banning them: revokes refresh tokens, stamps
+// users/{uid}.forceLogoutAt (clients compare it to their last sign-in time
+// and sign out live), and marks the DJ offline so they disappear from the map.
+exports.adminSignOutUser = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  const targetUid = String(request.data.uid || "");
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "uid is required.");
+  }
+  if (targetUid === ADMIN_UID) {
+    throw new HttpsError("permission-denied", "Cannot sign out the founder.");
+  }
+  try {
+    await admin.auth().revokeRefreshTokens(targetUid);
+    await db.collection("users").doc(targetUid).set({
+      forceLogoutAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    await db.collection("dj-status").doc(targetUid).set({
+      isOnline: false,
+      sharingLocation: false
+    }, { merge: true }).catch(function() {});
+    logger.info("[ADMIN SIGN OUT] " + request.auth.uid + " signed out " + targetUid);
+    return { success: true };
+  } catch (err) {
+    logger.error("[ADMIN SIGN OUT] error: " + err.message);
+    throw new HttpsError("internal", err.message);
+  }
+});
+
+// Mint a custom token so the admin can sign in as a DJ (impersonation).
+// The token is short-lived and only usable via signInWithCustomToken.
+exports.adminGetDjToken = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  const targetUid = String(request.data.uid || "");
+  if (!targetUid) {
+    throw new HttpsError("invalid-argument", "uid is required.");
+  }
+  if (targetUid === ADMIN_UID) {
+    throw new HttpsError("permission-denied", "Already the founder account.");
+  }
+  try {
+    const token = await admin.auth().createCustomToken(targetUid);
+    logger.info("[ADMIN IMPERSONATE] " + request.auth.uid + " minted token for " + targetUid);
+    return { token: token };
+  } catch (err) {
+    logger.error("[ADMIN IMPERSONATE] error: " + err.message);
+    throw new HttpsError("internal", err.message);
+  }
+});
+
 // Backfill the publicDjs collection for all existing DJs (admin only).
 exports.syncAllPublicDjs = onCall(async (request) => {
   if (!request.auth) {

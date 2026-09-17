@@ -1968,8 +1968,14 @@
                 (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + escapeHtml(djRate) + '/hr</span>' : '') +
                 '</div>' +
                 '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + escapeHtml(d.status || 'unknown') + '</span>' +
-                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.4rem 0.7rem; font-size:0.8rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
-                '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.4rem 0.7rem; font-size:0.8rem;" data-delete-dj="' + escapeAttr(v.id) + '">Delete</button>';
+                '<div style="display:flex; flex-wrap:wrap; gap:0.35rem; justify-content:flex-end; max-width:220px;">' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #22c55e; color:#22c55e; padding:0.35rem 0.6rem; font-size:0.75rem;" data-view-dj-admin="' + escapeAttr(v.id) + '" data-view-dj-name="' + escapeAttr(djName) + '">View</button>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ffd860; color:#ffd860; padding:0.35rem 0.6rem; font-size:0.75rem;" data-edit-dj-admin="' + escapeAttr(v.id) + '">Edit</button>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #00d4ff; color:#00d4ff; padding:0.35rem 0.6rem; font-size:0.75rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff9d5c; color:#ff9d5c; padding:0.35rem 0.6rem; font-size:0.75rem;" data-login-dj-admin="' + escapeAttr(v.id) + '" data-login-dj-name="' + escapeAttr(djName) + '">Log In</button>' +
+                '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff3b30; color:#ff3b30; padding:0.35rem 0.6rem; font-size:0.75rem;" data-signout-dj-admin="' + escapeAttr(v.id) + '" data-signout-dj-name="' + escapeAttr(djName) + '">Log Out</button>' +
+                '<button type="button" class="submit-btn" style="background:#ff3b30; padding:0.35rem 0.6rem; font-size:0.75rem;" data-delete-dj="' + escapeAttr(v.id) + '">Delete</button>' +
+                '</div>';
               djsList.appendChild(card);
             });
             document.getElementById('sol-admin-stat-djs').textContent = count;
@@ -1986,6 +1992,47 @@
                 if (messagesPanel) messagesPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 var subjectInput = document.getElementById('sol-admin-message-subject');
                 if (subjectInput) subjectInput.focus();
+              });
+            });
+            djsList.querySelectorAll('button[data-view-dj-admin]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var slug = djSlugify(btn.getAttribute('data-view-dj-name') || '');
+                window.open(slug ? '/dj/' + encodeURIComponent(slug) : 'dj.html?uid=' + encodeURIComponent(btn.getAttribute('data-view-dj-admin')), '_blank');
+              });
+            });
+            djsList.querySelectorAll('button[data-edit-dj-admin]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                openAdminDjEditModal(btn.getAttribute('data-edit-dj-admin'));
+              });
+            });
+            djsList.querySelectorAll('button[data-login-dj-admin]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var uid = btn.getAttribute('data-login-dj-admin');
+                var name = btn.getAttribute('data-login-dj-name') || 'this DJ';
+                if (!confirm('Sign in as ' + name + '?\n\nYou will be logged into SOL as them (DJ console, their data). To get back to your admin account you will need to sign in again with your own email/password.')) return;
+                btn.disabled = true;
+                firebase.functions().httpsCallable('adminGetDjToken')({ uid: uid })
+                  .then(function(res) {
+                    return auth.signInWithCustomToken(res.data.token);
+                  })
+                  .catch(function(err) {
+                    btn.disabled = false;
+                    alert('Could not sign in as DJ: ' + err.message);
+                  });
+              });
+            });
+            djsList.querySelectorAll('button[data-signout-dj-admin]').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var uid = btn.getAttribute('data-signout-dj-admin');
+                var name = btn.getAttribute('data-signout-dj-name') || 'this DJ';
+                if (!confirm('Sign ' + name + ' out of all sessions? They will be logged out on every device and marked offline. (This does not ban or delete their account.)')) return;
+                firebase.functions().httpsCallable('adminSignOutUser')({ uid: uid })
+                  .then(function() {
+                    adminStatus.textContent = name + ' signed out.';
+                    adminStatus.style.color = '#22c55e';
+                    setTimeout(function() { adminStatus.textContent = ''; }, 3000);
+                  })
+                  .catch(function(err) { alert('Error: ' + err.message); });
               });
             });
           });
@@ -2362,6 +2409,146 @@
     function closeAdminUserModal() {
       var modal = document.getElementById('sol-user-modal');
       if (modal) { modal.style.display = 'none'; }
+    }
+
+    // ---------- Admin DJ Edit Modal ----------
+    // Lets admin edit DJ profile fields directly — including admin-only
+    // fields DJs can't touch themselves (verification status, verified flag,
+    // featured flag).
+    function openAdminDjEditModal(uid) {
+      var existing = document.getElementById('sol-dj-edit-modal');
+      if (existing) existing.remove();
+      var modal = document.createElement('div');
+      modal.id = 'sol-dj-edit-modal';
+      modal.style.cssText = 'display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;';
+      modal.innerHTML =
+        '<div style="background:#111; border:1px solid #ffd860; border-radius:16px; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative;">' +
+        '<button type="button" id="sol-dj-edit-close" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>' +
+        '<h3 style="margin-top:0; color:#ffd860;">Edit DJ (Admin)</h3>' +
+        '<div id="sol-dj-edit-content" style="color:#ccc; font-size:0.9rem;">Loading...</div>' +
+        '</div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function(e) { if (e.target === modal) modal.style.display = 'none'; });
+      document.getElementById('sol-dj-edit-close').addEventListener('click', function() { modal.style.display = 'none'; });
+
+      var content = document.getElementById('sol-dj-edit-content');
+      Promise.all([
+        db.collection('djs').doc(uid).get(),
+        db.collection('dj-verifications').doc(uid).get(),
+        db.collection('users').doc(uid).get()
+      ]).then(function(res) {
+        var djDoc = res[0].exists ? res[0].data() : {};
+        var verDoc = res[1].exists ? res[1].data() : {};
+        var userDoc = res[2].exists ? res[2].data() : {};
+        var p = verDoc.djProfile || {};
+        var val = function() {
+          for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== '') return arguments[i];
+          }
+          return '';
+        };
+        var arrJoin = function(a) { return Array.isArray(a) ? a.join(', ') : (a || ''); };
+
+        var field = function(id, label, v, placeholder) {
+          return '<label style="display:block; margin-bottom:0.75rem;">' +
+            '<span style="color:#888; font-size:0.8rem;">' + label + '</span>' +
+            '<input type="text" id="' + id + '" value="' + escapeAttr(v) + '" placeholder="' + (placeholder || '') + '" style="width:100%; margin-top:0.25rem; padding:0.5rem; background:#1a1a1a; border:1px solid #444; border-radius:8px; color:#fff; box-sizing:border-box;">' +
+            '</label>';
+        };
+
+        content.innerHTML =
+          field('admde-stage', 'Stage Name', val(djDoc.stageName, p.stageName, p.djName, verDoc.stageName, userDoc.displayName)) +
+          '<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">' +
+          field('admde-city', 'City', val(djDoc.city, p.city, userDoc.city)) +
+          field('admde-state', 'State', val(djDoc.state, p.state, userDoc.state)) +
+          field('admde-rate', 'Hourly Rate ($)', val(djDoc.hourlyRate, p.hourlyRate, userDoc.hourlyRate)) +
+          field('admde-exp', 'Years Experience', val(djDoc.experience, p.yearsOfExperience, userDoc.experience)) +
+          '</div>' +
+          '<label style="display:block; margin-bottom:0.75rem;"><span style="color:#888; font-size:0.8rem;">Bio</span>' +
+          '<textarea id="admde-bio" rows="3" style="width:100%; margin-top:0.25rem; padding:0.5rem; background:#1a1a1a; border:1px solid #444; border-radius:8px; color:#fff; box-sizing:border-box;">' + escapeHtml(val(djDoc.bio, p.bio)) + '</textarea></label>' +
+          field('admde-genres', 'Genres (comma separated)', arrJoin(val(djDoc.genres, p.genres))) +
+          field('admde-specialties', 'Specialties (comma separated)', arrJoin(val(djDoc.specialties, p.specializations))) +
+          field('admde-equipment', 'Equipment (comma separated)', arrJoin(val(djDoc.equipment, p.equipment))) +
+          '<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">' +
+          field('admde-phone', 'Phone', val(djDoc.phone, p.phone, verDoc.phone)) +
+          field('admde-notifyemail', 'Notification Email', val(djDoc.notificationEmail, verDoc.notificationEmail)) +
+          field('admde-paypal', 'PayPal', val(djDoc.paypal, p.paypal)) +
+          field('admde-website', 'Website', val(djDoc.website, p.website)) +
+          '</div>' +
+          '<div style="border-top:1px solid #333; margin:0.75rem 0; padding-top:0.75rem;">' +
+          '<span style="color:#ffd860; font-size:0.8rem; font-weight:600;">ADMIN-ONLY CONTROLS</span>' +
+          '<label style="display:block; margin-top:0.5rem;"><span style="color:#888; font-size:0.8rem;">Verification Status</span>' +
+          '<select id="admde-status" style="width:100%; margin-top:0.25rem; padding:0.5rem; background:#1a1a1a; border:1px solid #444; border-radius:8px; color:#fff;">' +
+          ['pending', 'approved', 'rejected', 'suspended'].map(function(s) {
+            var cur = verDoc.status || 'pending';
+            return '<option value="' + s + '"' + (s === cur ? ' selected' : '') + '>' + s + '</option>';
+          }).join('') +
+          '</select></label>' +
+          '<label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;"><input type="checkbox" id="admde-verified"' + (userDoc.isVerifiedDJ === true || djDoc.isVerifiedDJ === true ? ' checked' : '') + '> Verified DJ (shows in search)</label>' +
+          '<label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem;"><input type="checkbox" id="admde-featured"' + (djDoc.featured === true ? ' checked' : '') + '> Featured DJ</label>' +
+          '</div>' +
+          '<button type="button" id="admde-save" class="submit-btn" style="width:100%; margin-top:1rem; padding:0.75rem; background:#ffd860; color:#000; font-weight:700;">Save Changes</button>' +
+          '<p id="admde-msg" style="font-size:0.8rem; margin-top:0.5rem;"></p>';
+
+        document.getElementById('admde-save').addEventListener('click', function() {
+          var msg = document.getElementById('admde-msg');
+          var splitCsv = function(id) {
+            return document.getElementById(id).value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+          };
+          var stageName = document.getElementById('admde-stage').value.trim();
+          var newStatus = document.getElementById('admde-status').value;
+          var isVerified = document.getElementById('admde-verified').checked;
+          var djUpdate = {
+            stageName: stageName,
+            profileSlug: djSlugify(stageName),
+            city: document.getElementById('admde-city').value.trim(),
+            state: document.getElementById('admde-state').value.trim(),
+            hourlyRate: parseFloat(document.getElementById('admde-rate').value) || 0,
+            experience: parseFloat(document.getElementById('admde-exp').value) || 0,
+            bio: document.getElementById('admde-bio').value.trim(),
+            genres: splitCsv('admde-genres'),
+            specialties: splitCsv('admde-specialties'),
+            equipment: splitCsv('admde-equipment'),
+            phone: document.getElementById('admde-phone').value.trim(),
+            notificationEmail: document.getElementById('admde-notifyemail').value.trim(),
+            paypal: document.getElementById('admde-paypal').value.trim(),
+            website: document.getElementById('admde-website').value.trim(),
+            isVerifiedDJ: isVerified,
+            featured: document.getElementById('admde-featured').checked,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+          var btn = this;
+          btn.disabled = true;
+          btn.textContent = 'Saving...';
+          Promise.all([
+            db.collection('djs').doc(uid).set(djUpdate, { merge: true }),
+            db.collection('dj-verifications').doc(uid).set({
+              status: newStatus,
+              djProfile: {
+                stageName: stageName,
+                djName: stageName,
+                city: djUpdate.city,
+                state: djUpdate.state,
+                hourlyRate: djUpdate.hourlyRate
+              }
+            }, { merge: true }),
+            db.collection('users').doc(uid).set({ isVerifiedDJ: isVerified }, { merge: true })
+          ]).then(function() {
+            msg.textContent = 'Saved.';
+            msg.style.color = '#22c55e';
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
+            loadAdminDJs();
+          }).catch(function(err) {
+            msg.textContent = 'Error: ' + err.message;
+            msg.style.color = '#ff3b30';
+            btn.disabled = false;
+            btn.textContent = 'Save Changes';
+          });
+        });
+      }).catch(function(err) {
+        content.innerHTML = '<p style="color:#ff4d8f;">Error loading DJ: ' + escapeHtml(err.message) + '</p>';
+      });
     }
 
     function openAdminUserModal(uid) {
@@ -3445,6 +3632,20 @@
             if (authStatus) {
               authStatus.textContent = 'Your account has been disabled.';
               authStatus.style.color = '#ff4d8f';
+            }
+            return;
+          }
+          var ud = doc.exists ? doc.data() : {};
+          if (ud.forceLogoutAt) {
+            var floMs = ud.forceLogoutAt.toMillis ? ud.forceLogoutAt.toMillis() : 0;
+            var lastSignInMs = Date.parse(user.metadata.lastSignInTime || '') || 0;
+            if (floMs > lastSignInMs) {
+              console.warn('[AUTH] Admin signed this account out.');
+              auth.signOut();
+              if (authStatus) {
+                authStatus.textContent = 'You were signed out by an administrator.';
+                authStatus.style.color = '#ff4d8f';
+              }
             }
           }
         });
