@@ -1248,6 +1248,21 @@
     const djShareLocBtn = document.getElementById('sol-dj-share-loc');
     const djLocStatus = document.getElementById('sol-dj-loc-status');
 
+    // Keep the searchable DJ location (djs/{uid}.location) in sync with live
+    // GPS — publicSearchDjs reads djs, not dj-status. Throttled to the first
+    // fix plus moves of ~2km+ so watchPosition ticks don't spam writes.
+    var lastSearchLoc = null;
+    function maybeUpdateDjSearchLocation(lat, lng) {
+      if (!auth.currentUser) return;
+      if (lastSearchLoc &&
+          Math.abs(lastSearchLoc.lat - lat) < 0.02 &&
+          Math.abs(lastSearchLoc.lng - lng) < 0.02) return;
+      lastSearchLoc = { lat: lat, lng: lng };
+      db.collection('djs').doc(auth.currentUser.uid).set({
+        location: { latitude: lat, longitude: lng }
+      }, { merge: true }).catch(function() {});
+    }
+
     djShareLocBtn.addEventListener('click', function() {
       if (djLocWatchId !== null) {
         navigator.geolocation.clearWatch(djLocWatchId);
@@ -1317,6 +1332,7 @@
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }
           }, { merge: true });
+          maybeUpdateDjSearchLocation(lat, lng);
           // Mark confirmed bookings as sharing
           db.collection('bookings').where('djId', '==', auth.currentUser.uid)
             .where('status', '==', 'confirmed').get().then(function(snap) {
@@ -1471,6 +1487,7 @@
               updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }
           }, { merge: true });
+          maybeUpdateDjSearchLocation(lat, lng);
         }
       }
 

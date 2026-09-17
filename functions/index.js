@@ -845,12 +845,17 @@ exports.publicSearchDjs = onCall(async (request) => {
     const verifiedUids = verifiedSnapshot.docs.map(d => d.id);
 
     const djsMap = {};
+    const statusMap = {};
     if (verifiedUids.length > 0) {
       const chunkSize = 10;
       for (let i = 0; i < verifiedUids.length; i += chunkSize) {
         const chunk = verifiedUids.slice(i, i + chunkSize);
         const djsSnapshot = await db.collection("djs").where(admin.firestore.FieldPath.documentId(), "in", chunk).get();
         djsSnapshot.forEach(d => { djsMap[d.id] = d.data() || {}; });
+        // dj-status holds the live/shared location — many DJs only ever set
+        // location here (GPS share), so it must be a fallback for the search.
+        const statusSnapshot = await db.collection("dj-status").where(admin.firestore.FieldPath.documentId(), "in", chunk).get();
+        statusSnapshot.forEach(d => { statusMap[d.id] = d.data() || {}; });
       }
     }
 
@@ -861,9 +866,11 @@ exports.publicSearchDjs = onCall(async (request) => {
     for (const uid of verifiedUids) {
       const u = userMap[uid] || {};
       const d = djsMap[uid] || {};
-      if (!d.location) continue;
-      const lat = getNumber(d.location.latitude, d.location._latitude, d.location.lat);
-      const lng = getNumber(d.location.longitude, d.location._longitude, d.location.lng);
+      const s = statusMap[uid] || {};
+      var loc = d.location || s.location;
+      if (!loc) continue;
+      const lat = getNumber(loc.latitude, loc._latitude, loc.lat);
+      const lng = getNumber(loc.longitude, loc._longitude, loc.lng);
       if (lat === null || lng === null) continue;
 
       const name = d.stageName || d.name || d.displayName || u.displayName || u.email || "DJ";
@@ -890,7 +897,7 @@ exports.publicSearchDjs = onCall(async (request) => {
         city: d.city || "",
         state: d.state || "",
         location: {
-          address: d.location ? (d.location.address || "") : "",
+          address: loc.address || (d.location && d.location.address) || "",
           city: d.city || "",
           state: d.state || "",
           latitude: lat,
