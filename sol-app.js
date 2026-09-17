@@ -166,7 +166,10 @@
         authStatus.style.color = '#ffd860';
         return;
       }
-      auth.sendPasswordResetEmail(email)
+      auth.sendPasswordResetEmail(email, {
+        url: 'https://djweirdnasty.com/reset-password.html',
+        handleCodeInApp: true
+      })
         .then(function() {
           trackSolEvent('password_reset', { method: 'email' });
           authStatus.textContent = 'If an account exists, a reset email has been sent.';
@@ -2322,7 +2325,10 @@
           statusEl.textContent = 'No email on file.';
           return;
         }
-        auth.sendPasswordResetEmail(email).then(function() {
+        auth.sendPasswordResetEmail(email, {
+          url: 'https://djweirdnasty.com/reset-password.html',
+          handleCodeInApp: true
+        }).then(function() {
           statusEl.style.color = '#22c55e';
           statusEl.textContent = 'Password reset email sent.';
         }).catch(function(err) { statusEl.style.color = '#ff4d8f'; statusEl.textContent = err.message; });
