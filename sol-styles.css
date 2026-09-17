@@ -38,6 +38,27 @@
       .sol-brand-sub { letter-spacing: 3px; font-size: 9px; }
     }
 
+    /* Full-width top banner variant (replaces site banner on sol.html) */
+    .sol-brand-header-top {
+      border: none;
+      border-radius: 0;
+      border-bottom: 2px solid #292929;
+      margin-bottom: 0;
+      padding: 20px 6%;
+      min-height: 135px;
+    }
+    .sol-brand-header-top .sol-brand-logo { width: 105px; height: 105px; }
+    .sol-brand-header-top .sol-brand-divider { height: 65px; }
+    .sol-brand-header-top .sol-brand-title { font-size: clamp(26px, 4vw, 50px); }
+    .sol-brand-header-top .sol-brand-sub { font-size: 13px; letter-spacing: 6px; text-align: center; }
+    @media (max-width: 500px) {
+      .sol-brand-header-top { padding: 15px; min-height: auto; }
+      .sol-brand-header-top .sol-brand-logo { width: 70px; height: 70px; }
+      .sol-brand-header-top .sol-brand-divider { height: 50px; }
+      .sol-brand-header-top .sol-brand-title { font-size: 25px; }
+      .sol-brand-header-top .sol-brand-sub { font-size: 9px; letter-spacing: 3px; }
+    }
+
     /* All .submit-btn buttons get consistent styling */
     .submit-btn {
       display: inline-flex;
