@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; frame-src https://www.youtube.com; connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; frame-src https://www.youtube.com https://player.vimeo.com; connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://us-central1-studio-3475382917-e5aaa.cloudfunctions.net; upgrade-insecure-requests">
   <title>DJ Profile | SOL: Sounds of Logan</title>
   <meta name="description" content="View this verified DJ's profile on Sounds of Logan — photos, stats, upcoming gigs, and more.">
   <meta property="og:title" content="DJ Profile | SOL: Sounds of Logan">
@@ -242,9 +242,34 @@
               var ytId = u.split('v=')[1] || u.split('youtu.be/')[1] || '';
               return '<iframe width="100%" height="200" src="https://www.youtube.com/embed/' + escAttr(ytId.split('&')[0]) + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
             }
+            if (u.indexOf('vimeo.com') >= 0) {
+              var vimeoId = u.split('vimeo.com/')[1] || '';
+              return '<iframe width="100%" height="200" src="https://player.vimeo.com/video/' + escAttr(vimeoId.split('?')[0]) + '" frameborder="0" allowfullscreen style="border-radius:8px; margin-bottom:0.5rem;"></iframe>';
+            }
             return '<video controls src="' + escAttr(u) + '" style="width:100%; border-radius:8px; margin-bottom:0.5rem;"></video>';
           }).join('')
         : '';
+
+      var socials = dj.socialLinks || {};
+      var socialBtns = '';
+      var socialList = [
+        { key: 'instagram', label: '📸 Instagram' },
+        { key: 'tiktok', label: '🎵 TikTok' },
+        { key: 'youtube', label: '▶️ YouTube' },
+        { key: 'facebook', label: '👍 Facebook' },
+        { key: 'twitter', label: '𝕏 Twitter/X' }
+      ];
+      socialList.forEach(function(s) {
+        if (socials[s.key]) {
+          socialBtns += '<a class="btn secondary" style="padding:0.5rem 1rem; font-size:0.85rem;" href="' + escAttr(socials[s.key]) + '" target="_blank" rel="noopener">' + s.label + '</a>';
+        }
+      });
+      var linksRow = '';
+      if (dj.website || socialBtns) {
+        linksRow = '<div style="display:flex; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap; justify-content:center;">' +
+          (dj.website ? '<a class="btn secondary" style="padding:0.5rem 1rem; font-size:0.85rem;" href="' + escAttr(dj.website) + '" target="_blank" rel="noopener">🌐 Website</a>' : '') +
+          socialBtns + '</div>';
+      }
 
       var gigs = (dj.gigs || []).length
         ? '<h3 class="section">Upcoming Gigs</h3>' + dj.gigs.map(function(ev) {
@@ -269,6 +294,7 @@
         (dj.bio ? '<p style="color:#ccc; font-size:0.95rem; line-height:1.6; text-align:left; margin-top:0.5rem;">' + esc(dj.bio).replace(/\n/g, '<br>') + '</p>' : '') +
         (tags ? '<div style="margin-top:0.75rem;">' + tags + '</div>' : '') +
         equipment +
+        linksRow +
         '<div style="display:flex; gap:0.5rem; margin-top:1.25rem; flex-wrap:wrap;">' +
         '<a href="sol.html" class="btn" style="flex:1;">Book on SOL</a>' +
         '<button type="button" id="share-btn" class="btn secondary" style="flex:1;">Share Profile</button>' +

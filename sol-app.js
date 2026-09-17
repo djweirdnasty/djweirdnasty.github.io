@@ -75,6 +75,23 @@
       return s;
     }
 
+    // Normalize a website URL: prepend https:// if missing.
+    function normalizeWebUrl(input) {
+      var s = String(input || '').trim();
+      if (!s) return '';
+      if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+      return s;
+    }
+
+    // Normalize a social entry: full URL passthrough, "@handle"/"handle" → domain URL.
+    function normalizeSocialUrl(input, domain) {
+      var s = String(input || '').trim();
+      if (!s) return '';
+      if (/^https?:\/\//i.test(s)) return s;
+      s = s.replace(/^@/, '');
+      return 'https://' + domain + '/' + s;
+    }
+
     // Parse a date-only string (YYYY-MM-DD or similar) as local to avoid UTC off-by-one.
     function parseLocalDate(input) {
       var s = String(input || '').trim();
@@ -301,6 +318,13 @@
           document.getElementById('sol-dj-hourly-rate').value = p.hourlyRate || '';
           document.getElementById('sol-dj-experience').value = p.experience || '';
           document.getElementById('sol-dj-bio').value = p.bio || '';
+          document.getElementById('sol-dj-website').value = p.website || '';
+          var socials = p.socialLinks || {};
+          document.getElementById('sol-dj-instagram').value = socials.instagram || '';
+          document.getElementById('sol-dj-tiktok').value = socials.tiktok || '';
+          document.getElementById('sol-dj-youtube-social').value = socials.youtube || '';
+          document.getElementById('sol-dj-facebook').value = socials.facebook || '';
+          document.getElementById('sol-dj-twitter').value = socials.twitter || '';
           if (d.licenseUrl) {
             var licStatusEl = document.getElementById('sol-dj-license-status');
             licStatusEl.textContent = 'License on file — upload a new file to replace it.';
@@ -359,6 +383,14 @@
         hourlyRate: parseFloat(document.getElementById('sol-dj-hourly-rate').value) || 0,
         experience: parseInt(document.getElementById('sol-dj-experience').value) || 0,
         bio: document.getElementById('sol-dj-bio').value.trim(),
+        website: normalizeWebUrl(document.getElementById('sol-dj-website').value),
+        socialLinks: {
+          instagram: normalizeSocialUrl(document.getElementById('sol-dj-instagram').value, 'instagram.com'),
+          tiktok: normalizeSocialUrl(document.getElementById('sol-dj-tiktok').value, 'tiktok.com'),
+          youtube: normalizeWebUrl(document.getElementById('sol-dj-youtube-social').value),
+          facebook: normalizeSocialUrl(document.getElementById('sol-dj-facebook').value, 'facebook.com'),
+          twitter: normalizeSocialUrl(document.getElementById('sol-dj-twitter').value, 'x.com')
+        },
         email: user.email,
         displayName: user.displayName || user.email
       };
@@ -682,6 +714,103 @@
       }
     });
     window.addEventListener('resize', djGalleryUpdate);
+
+    // ---------- DJ Videos (upload or YouTube link) ----------
+    function loadDjVideos(uid) {
+      db.collection('dj-videos').doc(uid).get().then(function(doc) {
+        var box = document.getElementById('sol-dj-videos-list');
+        if (!box) return;
+        box.innerHTML = '';
+        var videos = (doc.exists && doc.data().videos) || [];
+        videos.forEach(function(url) {
+          var isYT = url.indexOf('youtube') !== -1 || url.indexOf('youtu.be') !== -1;
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex; align-items:center; gap:0.5rem; background:#1a1a1a; border:1px solid #333; border-radius:8px; padding:0.5rem 0.75rem;';
+          row.innerHTML = '<span style="font-size:1rem;">' + (isYT ? '▶️' : '🎬') + '</span>' +
+            '<span style="flex:1; color:#ccc; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + escapeHtml(url) + '</span>' +
+            '<button type="button" style="background:none; border:none; color:#ff3b30; cursor:pointer; font-size:1.1rem;" data-del-video="' + escapeAttr(url) + '">&times;</button>';
+          box.appendChild(row);
+        });
+        box.querySelectorAll('button[data-del-video]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            db.collection('dj-videos').doc(uid).set({
+              videos: firebase.firestore.FieldValue.arrayRemove(btn.getAttribute('data-del-video'))
+            }, { merge: true }).then(function() { loadDjVideos(uid); });
+          });
+        });
+      }).catch(function() {});
+    }
+
+    document.getElementById('sol-dj-video-file').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var statusEl = document.getElementById('sol-dj-video-status');
+      if (!file.type.match('video.*')) {
+        statusEl.textContent = 'Please select a video file.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        statusEl.textContent = 'Video too large — max 100 MB. For bigger files, upload to YouTube and paste the link.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      var user = auth.currentUser;
+      if (!user) return;
+      statusEl.textContent = 'Uploading video...';
+      statusEl.style.color = '#ffd860';
+      var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+      var ref = storage.ref('public/' + user.uid + '/dj-videos/' + Date.now() + '.' + ext);
+      var upload = ref.put(file);
+      upload.on('state_changed', function(snap) {
+        if (snap.totalBytes > 0) {
+          statusEl.textContent = 'Uploading video... ' + Math.round(snap.bytesTransferred / snap.totalBytes * 100) + '%';
+        }
+      }, function(err) {
+        statusEl.textContent = 'Upload failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      }, function() {
+        ref.getDownloadURL().then(function(url) {
+          db.collection('dj-videos').doc(user.uid).set({
+            videos: firebase.firestore.FieldValue.arrayUnion(url)
+          }, { merge: true }).then(function() {
+            statusEl.textContent = 'Video added.';
+            statusEl.style.color = '#22c55e';
+            e.target.value = '';
+            loadDjVideos(user.uid);
+          });
+        }).catch(function(err) {
+          statusEl.textContent = 'Upload failed: ' + err.message;
+          statusEl.style.color = '#ff4d8f';
+        });
+      });
+    });
+
+    document.getElementById('sol-dj-video-add').addEventListener('click', function() {
+      var user = auth.currentUser;
+      if (!user) return;
+      var input = document.getElementById('sol-dj-video-url');
+      var statusEl = document.getElementById('sol-dj-video-status');
+      var url = input.value.trim();
+      if (!url) return;
+      if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+      if (!/youtube\.com|youtu\.be|vimeo\.com/i.test(url)) {
+        statusEl.textContent = 'Please paste a YouTube (or Vimeo) link. Use Upload Video for video files.';
+        statusEl.style.color = '#ff4d8f';
+        return;
+      }
+      db.collection('dj-videos').doc(user.uid).set({
+        videos: firebase.firestore.FieldValue.arrayUnion(url)
+      }, { merge: true }).then(function() {
+        input.value = '';
+        statusEl.textContent = 'Video link added.';
+        statusEl.style.color = '#22c55e';
+        loadDjVideos(user.uid);
+      }).catch(function(err) {
+        statusEl.textContent = 'Save failed: ' + err.message;
+        statusEl.style.color = '#ff4d8f';
+      });
+    });
 
     // ---------- DJ public profile share ----------
     document.getElementById('sol-dj-share-profile').addEventListener('click', function() {
@@ -1691,6 +1820,7 @@
           loadDJSetupForm(user);
           loadBlockedDates(user.uid);
           loadDjGallery(user.uid);
+          loadDjVideos(user.uid);
           loadDJEarnings(user.uid);
           subscribeDJGigs(user.uid);
           loadDJWaitlist(user.uid);
@@ -4244,6 +4374,17 @@
         '<div><strong style="color:#ff4d8f;">Bookings Completed:</strong> <span style="color:#ccc;">' + escapeHtml(dj.total_bookings_completed || 0) + '</span></div>' +
         '<div><strong style="color:#ff4d8f;">Match Score:</strong> <span style="color:#00d4ff;" id="sol-dj-match-score">Calculating...</span></div>' +
         '</div>' +
+        (function() {
+          var links = '';
+          var soc = dj.socialLinks || {};
+          if (dj.website) links += '<a href="' + escapeAttr(dj.website) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">🌐 Website</a>';
+          if (soc.instagram) links += '<a href="' + escapeAttr(soc.instagram) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">📸 Instagram</a>';
+          if (soc.tiktok) links += '<a href="' + escapeAttr(soc.tiktok) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">🎵 TikTok</a>';
+          if (soc.youtube) links += '<a href="' + escapeAttr(soc.youtube) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">▶️ YouTube</a>';
+          if (soc.facebook) links += '<a href="' + escapeAttr(soc.facebook) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">👍 Facebook</a>';
+          if (soc.twitter) links += '<a href="' + escapeAttr(soc.twitter) + '" target="_blank" rel="noopener" class="playlist-link" style="margin-right:0.75rem;">𝕏 X/Twitter</a>';
+          return links ? '<div style="margin:0.5rem 0;">' + links + '</div>' : '';
+        })() +
         '<div id="sol-dj-sound-samples" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading sound samples...</p></div>' +
         '<div id="sol-dj-video-reel" style="text-align:left; margin:1rem 0;"></div>' +
         '<div id="sol-dj-upcoming-events" style="text-align:left; margin:1rem 0;"></div>' +

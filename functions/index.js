@@ -894,6 +894,8 @@ exports.publicSearchDjs = onCall(async (request) => {
         total_bookings_completed: d.totalBookingsCompleted || 0,
         is_verified: true,
         experience: d.experience || d.yearsExperience || 0,
+        website: d.website || "",
+        socialLinks: d.socialLinks || {},
         city: d.city || "",
         state: d.state || "",
         location: {
@@ -990,6 +992,8 @@ exports.getPublicDjProfile = onCall(async (request) => {
       experience: d.experience || d.yearsExperience || 0,
       city: d.city || "",
       state: d.state || "",
+      website: d.website || "",
+      socialLinks: d.socialLinks || {},
       photos: photos,
       samples: samples,
       videos: videos,
