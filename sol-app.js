@@ -277,6 +277,7 @@
             preview.style.display = 'none';
           }
           document.getElementById('sol-dj-phone').value = p.phone || '';
+          document.getElementById('sol-dj-notify-email').value = p.notificationEmail || user.email || '';
           document.getElementById('sol-dj-sms-optin').checked = p.smsOptIn !== false;
           document.getElementById('sol-dj-paypal').value = p.paypal || '';
           document.getElementById('sol-dj-city').value = p.city || (p.location && p.location.city) || '';
@@ -329,6 +330,7 @@
         photoURL: document.getElementById('sol-dj-avatar-url').value.trim(),
         avatar: document.getElementById('sol-dj-avatar-url').value.trim(),
         phone: document.getElementById('sol-dj-phone').value.trim(),
+        notificationEmail: document.getElementById('sol-dj-notify-email').value.trim(),
         smsOptIn: document.getElementById('sol-dj-sms-optin').checked,
         paypal: document.getElementById('sol-dj-paypal').value.trim(),
         city: document.getElementById('sol-dj-city').value.trim(),

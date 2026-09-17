@@ -119,6 +119,9 @@
           <span>Text me new booking requests to my phone</span>
         </label>
 
+        <label for="notify-email">Email (for notifications)</label>
+        <input id="notify-email" type="text" placeholder="you@example.com">
+
         <label for="paypal">PayPal Email or PayPal.me Username (for payouts)</label>
         <input id="paypal" type="text" placeholder="you@example.com or paypal.me/yourname">
 
@@ -205,6 +208,7 @@
           var preview = document.getElementById('avatar-preview');
           if (avatarUrl) { preview.src = avatarUrl; preview.style.display = 'block'; }
           document.getElementById('phone').value = p.phone || '';
+          document.getElementById('notify-email').value = p.notificationEmail || user.email || '';
           document.getElementById('sms-optin').checked = p.smsOptIn !== false;
           document.getElementById('paypal').value = p.paypal || '';
           document.getElementById('city').value = p.city || (p.location && p.location.city) || '';
@@ -281,6 +285,7 @@
         photoURL: document.getElementById('avatar-url').value.trim(),
         avatar: document.getElementById('avatar-url').value.trim(),
         phone: document.getElementById('phone').value.trim(),
+        notificationEmail: document.getElementById('notify-email').value.trim(),
         smsOptIn: document.getElementById('sms-optin').checked,
         paypal: document.getElementById('paypal').value.trim(),
         city: document.getElementById('city').value.trim(),
