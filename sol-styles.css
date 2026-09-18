@@ -773,3 +773,45 @@
   #sol-dj-console .sol-dash-chip-info, #sol-dj-console .sol-avail #sol-avail-text { display:none; }
   #sol-dj-console .sol-dash-content { padding:8px; }
 }
+
+/* ===== DJ Dashboard compact tuning ===== */
+#sol-dj-console .sol-dash-sidebar { width:150px; }
+#sol-dj-console .sol-dash-brand { height:70px; }
+#sol-dj-console .sol-dash-brand img { width:58px; height:58px; }
+#sol-dj-console .sol-nav-item { height:36px; font-size:12px; gap:9px; padding:0 10px; margin-bottom:2px; }
+#sol-dj-console .sol-nav-icon { font-size:15px; width:18px; }
+#sol-dj-console .sol-nav-badge { min-width:16px; height:16px; font-size:9px; }
+#sol-dj-console .sol-dash-side-dj { padding:10px; }
+#sol-dj-console .sol-dash-wave { padding:10px; font-size:13px; }
+#sol-dj-console .sol-dash-header { min-height:52px; padding:0 12px; }
+#sol-dj-console .sol-dash-title h1 { font-size:19px; }
+#sol-dj-console .sol-dash-titlewave { font-size:14px; }
+#sol-dj-console .sol-dash-title span { font-size:7px; }
+#sol-dj-console .sol-dash-controls { gap:14px; }
+#sol-dj-console .sol-notif { font-size:16px; }
+#sol-dj-console .sol-dash-chip { padding-left:12px; }
+#sol-dj-console .sol-dash-chip-avatar { width:28px; height:28px; font-size:11px; }
+#sol-dj-console .sol-dash-content { padding:10px; }
+#sol-dj-console .sol-hero { min-height:150px; }
+#sol-dj-console .sol-vinyl-wrap { width:115px; height:115px; }
+#sol-dj-console .sol-bpm strong { font-size:15px; }
+#sol-dj-console .sol-bpm { left:12px; top:14px; }
+#sol-dj-console .sol-meter { height:34px; margin-top:5px; }
+#sol-dj-console .sol-tonearm { top:12px; right:14px; width:70px; height:90px; }
+#sol-dj-console .sol-tonearm-base { width:20px; height:20px; }
+#sol-dj-console .sol-tonearm-arm { right:13px; top:17px; width:5px; height:68px; }
+#sol-dj-console .sol-player-info { padding:16px 8px 12px 4px; }
+#sol-dj-console .sol-player-info h2 { font-size:19px; }
+#sol-dj-console .sol-player-info p { font-size:9px; margin:4px 0; }
+#sol-dj-console .sol-now-playing { margin-bottom:6px; }
+#sol-dj-console .sol-audio-wave { margin:10px 0; }
+#sol-dj-console .sol-player-controls { gap:12px; }
+#sol-dj-console .sol-player-controls .sol-play-btn { width:38px; height:38px; font-size:15px; }
+#sol-dj-console .sol-player-msg { font-size:15px; padding:16px; }
+#sol-dj-console .sol-kpi-grid { margin-top:8px; }
+#sol-dj-console .sol-kpi-cards > div { min-height:56px; padding:0.6rem !important; }
+#sol-dj-console .sol-kpi-cards > div > div:first-child { font-size:17px !important; }
+#sol-dj-console .sol-kpi-cards > div > div:last-child { font-size:0.7rem !important; }
+#sol-dj-console .sol-dash-grid { gap:8px; margin-top:8px; }
+#sol-dj-console .dash-panel { padding:9px; }
+#sol-dj-console .sol-dash-footer { min-height:32px; margin-top:8px; font-size:9px; gap:20px; }
