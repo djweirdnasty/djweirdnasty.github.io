@@ -21,9 +21,11 @@
     body { margin: 0; background: #050505; color: #fff; font-family: Arial, Helvetica, sans-serif; min-height: 100vh; }
 
     /* ============ HEADER ============ */
-    .sol-header { min-height: 135px; display: flex; align-items: center; padding: 20px 6%; border-bottom: 2px solid #292929; background: linear-gradient(135deg, #050505, #111111, #030303); position: relative; overflow: hidden; }
+    .sol-header { min-height: 135px; display: flex; align-items: center; justify-content: center; padding: 20px 6%; border-bottom: 2px solid #292929; background: linear-gradient(135deg, #050505, #111111, #030303); position: relative; overflow: hidden; }
     .sol-header::after { content: ""; position: absolute; right: 4%; top: -50px; width: 12px; height: 250px; background: #ff1111; transform: rotate(40deg); box-shadow: 0 0 20px #ff1111; }
-    .sol-brand { display: flex; align-items: center; gap: 25px; position: relative; z-index: 2; }
+    .sol-brand { display: flex; align-items: center; gap: clamp(30px, 6vw, 80px); position: relative; z-index: 2; }
+    .sol-brand-link { text-decoration: none; color: inherit; cursor: pointer; }
+    .sol-brand-link:hover h1 { text-shadow: 0 0 12px rgba(255, 17, 17, .6); }
     .sol-logo { width: 105px; height: 105px; object-fit: contain; }
     .brand-divider { height: 65px; width: 3px; background: #ff1111; box-shadow: 0 0 10px #ff1111; }
     .sol-brand h1 { margin: 0; font-size: clamp(26px, 4vw, 50px); font-weight: 900; letter-spacing: 2px; }
@@ -163,14 +165,14 @@
 <body>
 
   <header class="sol-header">
-    <div class="sol-brand">
+    <a href="sol.html" class="sol-brand sol-brand-link">
       <img src="sol-logo.png" alt="SOL - Sounds of Logan" class="sol-logo">
       <div class="brand-divider"></div>
       <div>
         <h1>SOUNDS OF <span>LOGAN</span></h1>
         <p>DJ BOOKING PLATFORM</p>
       </div>
-    </div>
+    </a>
   </header>
 
   <main class="profile-container">
