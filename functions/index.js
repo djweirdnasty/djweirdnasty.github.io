@@ -354,9 +354,10 @@ exports.notifyOnNewMessage = onDocumentCreated(
       var push = await notifyUser(recipientId, "New message from " + senderName, preview, chatLink);
       logger.info("[MSG PUSH] " + msg.senderId + " -> " + recipientId + " (web:" + push.webPush + " expo:" + push.expoPush + ")");
 
-      // Email fallback — only when no push channel reached the user, and at
-      // most once per 15 minutes per conversation+recipient.
-      if (push.webPush === 0 && push.expoPush === 0) {
+      // Email always goes out (throttled to one per 15 minutes per
+      // conversation+recipient) so DJs and clients get a real notification
+      // even if they ignore or never see the push.
+      {
         var throttleKey = "lastMsgEmailAt." + recipientId;
         var lastEmail = convo.lastMsgEmailAt && convo.lastMsgEmailAt[recipientId];
         var lastMs = lastEmail && lastEmail.toMillis ? lastEmail.toMillis() : (lastEmail || 0);
