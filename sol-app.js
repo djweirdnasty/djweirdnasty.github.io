@@ -3280,13 +3280,10 @@
         if (isH3 || !panel) {
           var title = isH3 ? (TITLE_MAP[el.textContent.trim().toLowerCase()] || el.textContent.trim()) : 'STATUS & LOCATION';
           panel = makePanel(title, el);
-          if (isH3) {
-            panel.querySelector('.panel-header').appendChild(el);
-            el.classList.add('panel-title');
-          }
           if (isH3 && /my earnings|analytics/i.test(el.textContent)) {
             railPanels.push({ key: /earnings/i.test(el.textContent) ? '#sol-dj-earnings' : '#sol-dj-analytics', panel: panel });
           }
+          if (isH3) el.remove();
         }
         if (!isH3) panel.appendChild(el);
       });
@@ -3311,9 +3308,37 @@
         rail.appendChild(quick);
       }
 
+      // Capture main panels in order, then distribute into independent
+      // columns so each column packs tightly (masonry-style).
+      grid._panels = Array.prototype.slice.call(grid.querySelectorAll(':scope > .dash-panel'));
+      layoutDashCols();
+      if (!grid.dataset.colWired) {
+        grid.dataset.colWired = '1';
+        var rzT;
+        window.addEventListener('resize', function() { clearTimeout(rzT); rzT = setTimeout(layoutDashCols, 200); });
+      }
+
       wireDashChrome();
       syncDashIdentity();
       updateDashBadges();
+    }
+
+    function layoutDashCols() {
+      var grid = document.getElementById('sol-dash-grid');
+      if (!grid || !grid._panels) return;
+      var w = grid.offsetWidth;
+      var n = w >= 1100 ? 3 : w >= 640 ? 2 : 1;
+      if (grid._colCount === n) return;
+      grid._colCount = n;
+      grid.innerHTML = '';
+      var cols = [];
+      for (var i = 0; i < n; i++) {
+        var c = document.createElement('div');
+        c.className = 'sol-dash-col';
+        grid.appendChild(c);
+        cols.push(c);
+      }
+      grid._panels.forEach(function(p, i) { cols[i % n].appendChild(p); });
     }
 
     function wireDashChrome() {

@@ -736,8 +736,11 @@ body { overflow-x:hidden; }
 #sol-dj-console .sol-kpi-cards > div > div:first-child { font-size:18px !important; }
 
 /* Panel grid */
-#sol-dj-console .sol-dash-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:8px; margin-top:8px; align-items:start; }
+#sol-dj-console .sol-dash-grid { display:flex; gap:8px; margin-top:8px; align-items:flex-start; }
+#sol-dj-console .sol-dash-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+#sol-dj-console .sol-dash-col > .dash-panel { width:100%; }
 #sol-dj-console .dash-panel #sol-dj-event-map-section h3 { display:none; }
+#sol-dj-console .dash-panel:has(> #sol-dj-event-map-section[style*="display:none"]) { display:none; }
 #sol-dj-console .dash-panel { background:linear-gradient(145deg,#0a0d10,#07090b); border:1px solid #252c33; border-radius:9px; padding:10px; min-width:0; }
 #sol-dj-console .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 #sol-dj-console .panel-title { margin:0 !important; font-size:11px !important; letter-spacing:0.5px; text-transform:uppercase; }
@@ -752,7 +755,6 @@ body { overflow-x:hidden; }
   #sol-dj-console .sol-dash-rail { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); }
 }
 @media (max-width:1200px) {
-  #sol-dj-console .sol-dash-grid { grid-template-columns:1fr 1fr; }
   #sol-dj-console .sol-hero { grid-template-columns:45% 55%; }
   #sol-dj-console .sol-player-msg { display:none; }
 }
@@ -763,7 +765,6 @@ body { overflow-x:hidden; }
   #sol-dj-console .sol-nav-text, #sol-dj-console .sol-nav-badge, #sol-dj-console .sol-dash-side-info, #sol-dj-console .sol-dash-wave { display:none; }
   #sol-dj-console .sol-nav-item { justify-content:center; }
   #sol-dj-console .sol-dash-side-dj { justify-content:center; }
-  #sol-dj-console .sol-dash-grid { grid-template-columns:1fr; }
   #sol-dj-console .sol-hero { grid-template-columns:1fr; }
   #sol-dj-console .sol-turntable { min-height:220px; }
   #sol-dj-console .sol-player-info { padding:18px; }
