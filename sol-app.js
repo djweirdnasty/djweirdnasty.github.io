@@ -3215,42 +3215,101 @@
       if (!grid || grid.dataset.built) return;
       grid.dataset.built = '1';
 
-      // The stats block (4 stat cards) becomes the KPI row, not a panel.
-      var kpiGrid = document.getElementById('sol-kpi-grid');
-      var kids = Array.prototype.slice.call(grid.children);
-      kids.forEach(function(el) {
-        if (el.querySelector && el.querySelector('#sol-dj-stat-pending')) {
-          el.classList.add('sol-kpi-cards');
-          kpiGrid.appendChild(el);
-        }
-      });
+      var rail = document.getElementById('sol-dash-rail');
+      var TITLE_MAP = {
+        'booking requests': 'BOOKING REQUESTS',
+        'upcoming events': 'UPCOMING GIGS',
+        'client conversations': 'LIVE CHAT',
+        'dj profile & verification': 'EDIT PROFILE',
+        'availability calendar': 'AVAILABILITY',
+        'photo gallery': 'MEDIA GALLERY',
+        'videos': 'VIDEOS',
+        'my earnings': 'MY EARNINGS',
+        'waitlist': 'WAITLIST',
+        'booking calendar': 'BOOKING CALENDAR',
+        'my upcoming gigs': 'MY GIGS',
+        'setlist & timeline builder': 'SETLIST & TIMELINE',
+        'analytics dashboard': 'PERFORMANCE',
+        'review a client': 'REVIEW A CLIENT'
+      };
 
-      // Group children into .dash-panel sections. Each <h3> starts a panel;
-      // leading non-h3 blocks (profile card, availability, location) group
-      // into one "DJ PROFILE" panel.
+      function makePanel(title, beforeEl) {
+        var p = document.createElement('section');
+        p.className = 'dash-panel';
+        var header = document.createElement('div');
+        header.className = 'panel-header';
+        var h = document.createElement('h3');
+        h.className = 'panel-title';
+        h.textContent = title;
+        header.appendChild(h);
+        p.appendChild(header);
+        grid.insertBefore(p, beforeEl);
+        return p;
+      }
+
+      var kids = Array.prototype.slice.call(grid.children);
       var panel = null;
-      kids = Array.prototype.slice.call(grid.children);
+      var railPanels = [];
+
       kids.forEach(function(el) {
+        // Stats block -> rail "AT A GLANCE"
+        if (el.querySelector && el.querySelector('#sol-dj-stat-pending')) {
+          var glance = makePanel('AT A GLANCE', el);
+          el.classList.add('sol-kpi-cards');
+          glance.appendChild(el);
+          railPanels.push({ key: '#sol-dj-stat-pending', panel: glance });
+          panel = null;
+          return;
+        }
+        // Event map -> its own panel in the main grid
+        if (el.id === 'sol-dj-event-map-section') {
+          var mapPanel = makePanel('EVENT LOCATION', el);
+          mapPanel.appendChild(el);
+          panel = null;
+          return;
+        }
+        // DJ profile card -> rail "PROFILE & VERIFICATION"
+        if (el.id === 'sol-dj-profile') {
+          var profPanel = makePanel('PROFILE & VERIFICATION', el);
+          profPanel.appendChild(el);
+          railPanels.push({ key: '#sol-dj-profile', panel: profPanel });
+          panel = null;
+          return;
+        }
         var isH3 = el.tagName === 'H3';
         if (isH3 || !panel) {
-          panel = document.createElement('section');
-          panel.className = 'dash-panel';
-          grid.insertBefore(panel, el);
-          var header = document.createElement('div');
-          header.className = 'panel-header';
+          var title = isH3 ? (TITLE_MAP[el.textContent.trim().toLowerCase()] || el.textContent.trim()) : 'STATUS & LOCATION';
+          panel = makePanel(title, el);
           if (isH3) {
+            panel.querySelector('.panel-header').appendChild(el);
             el.classList.add('panel-title');
-            header.appendChild(el);
-          } else {
-            var h = document.createElement('h3');
-            h.className = 'panel-title';
-            h.textContent = 'DJ PROFILE';
-            header.appendChild(h);
           }
-          panel.appendChild(header);
+          if (isH3 && /my earnings|analytics/i.test(el.textContent)) {
+            railPanels.push({ key: /earnings/i.test(el.textContent) ? '#sol-dj-earnings' : '#sol-dj-analytics', panel: panel });
+          }
         }
         if (!isH3) panel.appendChild(el);
       });
+
+      // Move rail panels into the right rail, ordered to match the design.
+      if (rail) {
+        var order = ['#sol-dj-stat-pending', '#sol-dj-earnings', '#sol-dj-analytics', '#sol-dj-profile'];
+        order.forEach(function(key) {
+          railPanels.forEach(function(rp) {
+            if (rp.key === key) rail.appendChild(rp.panel);
+          });
+        });
+        var quick = document.createElement('section');
+        quick.className = 'dash-panel';
+        quick.innerHTML = '<div class="panel-header"><h3 class="panel-title">QUICK LINKS</h3></div>' +
+          '<div class="sol-quick-links">' +
+          '<a href="javascript:void(0)" data-dash-link="sol-dj-setup">♙ My Profile</a>' +
+          '<a href="javascript:void(0)" data-dash-link="sol-dj-paypal">$ Payouts (PayPal)</a>' +
+          '<a href="javascript:void(0)" data-dash-link="sol-dj-instagram">▧ Socials</a>' +
+          '<a href="javascript:void(0)" data-dash-link="sol-dj-verify-status">✓ Verification</a>' +
+          '</div>';
+        rail.appendChild(quick);
+      }
 
       wireDashChrome();
       syncDashIdentity();
@@ -3312,6 +3371,19 @@
           playBtn.textContent = spinning ? 'Ⅱ' : '▶';
         });
       }
+
+      // Quick links — scroll to the target field/section.
+      document.querySelectorAll('.sol-quick-links a').forEach(function(a) {
+        if (a.dataset.wired) return;
+        a.dataset.wired = '1';
+        a.addEventListener('click', function() {
+          var t = document.getElementById(a.dataset.dashLink);
+          if (t) {
+            var p = t.closest('.dash-panel') || t;
+            p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
     }
 
     function syncAvailUI() {
