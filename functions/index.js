@@ -1182,10 +1182,13 @@ async function storageDownloadUrl(storagePath) {
   const bucket = admin.storage().bucket();
   const file = bucket.file(storagePath);
   const [exists] = await file.exists();
-  if (!exists) {
+  if (!exists || storagePath.endsWith("/")) {
     throw new HttpsError("not-found", "No file at " + storagePath);
   }
   const [meta] = await file.getMetadata();
+  if (Number(meta.size || 0) <= 0) {
+    throw new HttpsError("not-found", "Empty file at " + storagePath);
+  }
   let token = meta.metadata && meta.metadata.firebaseStorageDownloadTokens;
   if (token && token.indexOf(",") >= 0) token = token.split(",")[0];
   if (!token) {
