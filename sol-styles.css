@@ -38,17 +38,20 @@
       .sol-brand-sub { letter-spacing: 3px; font-size: 9px; }
     }
 
-    /* Flat black page background to match the SOL profile design */
-    body { background: #050505 none; }
+    /* Flat black page background to match the SOL profile design.
+       Scoped to .sol-page so it never leaks onto other pages that
+       share this stylesheet (index.html loads it for .submit-btn). */
+    body.sol-page { background: #050505 none; }
 
-    /* SOL page nav — match the banner type (bold Arial caps, red on black) */
-    header nav {
+    /* SOL page nav — match the banner type (bold Arial caps, red on black).
+       Scoped to .sol-page for the same reason. */
+    .sol-page header nav {
       background: #050505;
       padding: 0.85rem 1rem;
       border-bottom: 2px solid #292929;
     }
-    header nav a,
-    header nav a:visited {
+    .sol-page header nav a,
+    .sol-page header nav a:visited {
       font-family: Arial, Helvetica, sans-serif;
       font-weight: 900;
       letter-spacing: 3px;
@@ -57,23 +60,23 @@
       color: #ff1111;
       text-shadow: 0 0 8px rgba(255, 17, 17, 0.5);
     }
-    header nav a:hover,
-    header nav a:focus,
-    header nav a[aria-current="page"] {
+    .sol-page header nav a:hover,
+    .sol-page header nav a:focus,
+    .sol-page header nav a[aria-current="page"] {
       color: #ffffff;
       text-shadow: 0 0 10px rgba(255, 17, 17, 0.9);
       transform: none;
     }
-    header nav .nav-dropdown-content {
+    .sol-page header nav .nav-dropdown-content {
       background: #050505;
       border: 1px solid #ff1111;
     }
-    header nav .nav-dropdown-content a {
+    .sol-page header nav .nav-dropdown-content a {
       color: #ff1111;
       text-shadow: none;
     }
-    header nav .nav-dropdown-content a:hover,
-    header nav .nav-dropdown-content a:focus {
+    .sol-page header nav .nav-dropdown-content a:hover,
+    .sol-page header nav .nav-dropdown-content a:focus {
       background: rgba(255, 17, 17, 0.12);
       color: #fff;
     }
