@@ -1,4 +1,4 @@
-const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
@@ -320,6 +320,85 @@ exports.notifyOnBookingUpdate = onDocumentWritten(
       var p = pushes[i];
       await notifyUser(p.uid, p.title, p.body, "/sol.html");
       logger.info("[BOOKING PUSH] " + after.status + " -> " + p.uid + " for booking " + bookingId);
+    }
+  }
+);
+
+// New chat message -> notify the other participant. Push goes out on every
+// message (web + native app). Email is the fallback for users with no push
+// subscription, throttled to one email per conversation per recipient per
+// 15 minutes so active chats don't spam inboxes.
+exports.notifyOnNewMessage = onDocumentCreated(
+  {
+    document: "conversations/{conversationId}/messages/{messageId}",
+    secrets: [VAPID_PRIVATE_KEY, SENDGRID_API_KEY],
+  },
+  async (event) => {
+    try {
+      var msg = event.data && event.data.data ? event.data.data() : null;
+      if (!msg || !msg.senderId) return;
+
+      var conversationId = event.params.conversationId;
+      var convoRef = db.collection("conversations").doc(conversationId);
+      var convoDoc = await convoRef.get();
+      if (!convoDoc.exists) return;
+      var convo = convoDoc.data();
+
+      var recipientId = convo.clientId === msg.senderId ? convo.djId : convo.clientId;
+      if (!recipientId || recipientId === msg.senderId) return;
+
+      var senderName = msg.senderName || "Someone";
+      var preview = String(msg.text || "").slice(0, 140) || "New message";
+      var chatLink = "/sol.html?message=" + encodeURIComponent(msg.senderId);
+
+      var push = await notifyUser(recipientId, "New message from " + senderName, preview, chatLink);
+      logger.info("[MSG PUSH] " + msg.senderId + " -> " + recipientId + " (web:" + push.webPush + " expo:" + push.expoPush + ")");
+
+      // Email fallback — only when no push channel reached the user, and at
+      // most once per 15 minutes per conversation+recipient.
+      if (push.webPush === 0 && push.expoPush === 0) {
+        var throttleKey = "lastMsgEmailAt." + recipientId;
+        var lastEmail = convo.lastMsgEmailAt && convo.lastMsgEmailAt[recipientId];
+        var lastMs = lastEmail && lastEmail.toMillis ? lastEmail.toMillis() : (lastEmail || 0);
+        if (Date.now() - lastMs < 15 * 60 * 1000) {
+          logger.info("[MSG EMAIL] Throttled for " + recipientId + " on " + conversationId);
+          return;
+        }
+
+        var toEmail = null;
+        var userDoc = await db.collection("users").doc(recipientId).get();
+        if (userDoc.exists && userDoc.data().email) toEmail = userDoc.data().email;
+        if (!toEmail) {
+          var verDoc = await db.collection("dj-verifications").doc(recipientId).get();
+          if (verDoc.exists) toEmail = verDoc.data().notificationEmail || verDoc.data().email || null;
+        }
+        if (!toEmail) {
+          var authUser = await admin.auth().getUser(recipientId).catch(function () { return null; });
+          toEmail = authUser && authUser.email;
+        }
+        if (!toEmail) {
+          logger.info("[MSG EMAIL] No email on file for " + recipientId);
+          return;
+        }
+
+        var subject = "New message from " + senderName + " — SOL";
+        var html =
+          '<div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;">' +
+          '<h2 style="color:#ff1111;">New message on SOL</h2>' +
+          '<p><strong>' + senderName + '</strong> sent you a message:</p>' +
+          '<div style="background:#f4f4f4;border-left:4px solid #ff1111;padding:12px 16px;margin:16px 0;">' + preview + '</div>' +
+          '<p><a href="https://djweirdnasty.com' + chatLink + '" style="display:inline-block;background:#ff1111;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Reply in SOL Messenger</a></p>' +
+          '<p style="color:#888;font-size:12px;margin-top:24px;">Sounds of Logan — DJ Booking Platform</p>' +
+          '</div>';
+
+        await sendEmail(SENDGRID_API_KEY.value(), toEmail, subject, html);
+        var stamp = {};
+        stamp[throttleKey] = admin.firestore.FieldValue.serverTimestamp();
+        await convoRef.set(stamp, { merge: true }).catch(function () {});
+        logger.info("[MSG EMAIL] Sent to " + toEmail + " for " + recipientId);
+      }
+    } catch (err) {
+      logger.error("[MSG NOTIFY] Failed: " + err.message);
     }
   }
 );
