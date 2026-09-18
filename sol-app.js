@@ -3634,6 +3634,14 @@
 
         syncUserDoc(user);
 
+        // Deep link: sol.html?message=<djUid>&djname=<name> opens a DM thread.
+        var dmParams = new URLSearchParams(window.location.search);
+        var dmUid = dmParams.get('message');
+        if (dmUid && dmUid !== user.uid) {
+          createOrOpenDirectConversation(dmUid, dmParams.get('djname') || '', '');
+          history.replaceState(null, '', window.location.pathname);
+        }
+
         if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
         userDocUnsubscribe = db.collection('users').doc(user.uid).onSnapshot(function(doc) {
           if (doc.exists && doc.data().banned === true) {
@@ -4926,6 +4934,7 @@
     function openChat(conversationId) {
       activeConversationId = conversationId;
       document.getElementById('sol-chat-box').style.display = 'block';
+      document.getElementById('sol-chat-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
       const messagesBox = document.getElementById('sol-chat-messages');
       messagesBox.innerHTML = '';
 
