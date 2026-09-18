@@ -825,3 +825,40 @@ body { overflow-x:hidden; }
 #sol-dj-console .sol-dash-grid { gap:8px; margin-top:8px; }
 #sol-dj-console .dash-panel { padding:9px; }
 #sol-dj-console .sol-dash-footer { min-height:32px; margin-top:8px; font-size:9px; gap:20px; }
+
+/* ===== DJ Dashboard density overrides (compress legacy inline spacing) ===== */
+#sol-dj-console .dash-panel { font-size:12px; }
+#sol-dj-console .dash-panel > *:last-child { margin-bottom:0 !important; }
+#sol-dj-console .dash-panel [style*="padding:1.5rem"] { padding:0.65rem !important; }
+#sol-dj-console .dash-panel [style*="padding:1rem"] { padding:0.55rem !important; }
+#sol-dj-console .dash-panel [style*="padding:0.75rem"] { padding:0.45rem !important; }
+#sol-dj-console .dash-panel [style*="margin-bottom:1.5rem"] { margin-bottom:0.6rem !important; }
+#sol-dj-console .dash-panel [style*="margin-bottom:1rem"] { margin-bottom:0.5rem !important; }
+#sol-dj-console .dash-panel [style*="margin-bottom:0.75rem"] { margin-bottom:0.45rem !important; }
+#sol-dj-console .dash-panel [style*="margin-bottom:0.5rem"] { margin-bottom:0.35rem !important; }
+#sol-dj-console .dash-panel [style*="margin-top:2rem"] { margin-top:0.6rem !important; }
+#sol-dj-console .dash-panel [style*="margin-top:1.5rem"] { margin-top:0.6rem !important; }
+#sol-dj-console .dash-panel [style*="margin-top:1rem"] { margin-top:0.5rem !important; }
+#sol-dj-console .dash-panel [style*="margin-top:0.75rem"] { margin-top:0.45rem !important; }
+#sol-dj-console .dash-panel [style*="gap:1rem"] { gap:0.5rem !important; }
+#sol-dj-console .dash-panel [style*="gap:0.75rem"] { gap:0.4rem !important; }
+#sol-dj-console .dash-panel [style*="gap:0.5rem"] { gap:0.35rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:1.5rem"] { font-size:1.05rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:1.3rem"] { font-size:1rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:1.2rem"] { font-size:0.95rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:1.1rem"] { font-size:0.9rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:1rem"] { font-size:0.85rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:0.9rem"] { font-size:0.78rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:0.85rem"] { font-size:0.75rem !important; }
+#sol-dj-console .dash-panel [style*="font-size:0.8rem"] { font-size:0.72rem !important; }
+#sol-dj-console .dash-panel input,
+#sol-dj-console .dash-panel select,
+#sol-dj-console .dash-panel textarea { font-size:12px !important; }
+#sol-dj-console .dash-panel input[style*="padding:0.6rem"],
+#sol-dj-console .dash-panel textarea[style*="padding:0.6rem"] { padding:0.35rem 0.5rem !important; }
+#sol-dj-console .dash-panel button { font-size:12px; }
+#sol-dj-console .dash-panel button[style*="padding:0.75rem"],
+#sol-dj-console .dash-panel button[style*="padding:0.6rem"] { padding:0.4rem 0.7rem !important; }
+#sol-dj-console .dash-panel h4 { font-size:0.85rem; margin:0.4rem 0; }
+#sol-dj-console .dash-panel p { margin:0.3rem 0; }
+#sol-dj-console .dash-panel label { font-size:0.78rem; }
