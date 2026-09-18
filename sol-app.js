@@ -3637,8 +3637,12 @@
         // Deep link: sol.html?message=<djUid>&djname=<name> opens a DM thread.
         var dmParams = new URLSearchParams(window.location.search);
         var dmUid = dmParams.get('message');
-        if (dmUid && dmUid !== user.uid) {
-          createOrOpenDirectConversation(dmUid, dmParams.get('djname') || '', '');
+        if (dmUid) {
+          if (dmUid === user.uid) {
+            alert("That's your own DJ profile — sign in with a client account to test messaging.");
+          } else {
+            createOrOpenDirectConversation(dmUid, dmParams.get('djname') || '', '');
+          }
           history.replaceState(null, '', window.location.pathname);
         }
 
@@ -4998,12 +5002,10 @@
       const conversationId = bookingId + '_conversation';
       const conversationRef = db.collection('conversations').doc(conversationId);
 
-      conversationRef.get().then(function(doc) {
-        if (doc.exists) {
-          openChat(conversationId);
-          return;
-        }
+      var create = function() {
         const clientAvatar = user.photoURL || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid);
+        // merge:true — creates the doc if missing, updates if the get()
+        // was denied but the doc exists. Keeps any existing messages.
         conversationRef.set({
           id: conversationId,
           bookingId: bookingId,
@@ -5014,19 +5016,19 @@
           djName: djName || 'DJ',
           djAvatar: '',
           participants: [user.uid, djId],
-          unreadCount: 0,
-          lastMessage: '',
-          lastMessageTime: Date.now(),
-          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(function() {
+          unreadCount: 0
+        }, { merge: true }).then(function() {
           openChat(conversationId);
         }).catch(function(err) {
           console.error('Create conversation error:', err);
-          const status = document.getElementById('sol-quick-status');
-          status.textContent = 'Payment successful, but chat could not start: ' + err.message;
-          status.style.color = '#ffd860';
+          openChat(conversationId);
         });
-      });
+      };
+      // A get() on a missing doc fails the participants read rule —
+      // fall through to the create either way.
+      conversationRef.get().then(function(doc) {
+        if (doc.exists) openChat(conversationId); else create();
+      }).catch(create);
     }
 
     // Direct client -> DJ conversation (no booking required). Deterministic
@@ -5038,11 +5040,7 @@
       const conversationId = 'dm_' + user.uid + '_' + djId;
       const conversationRef = db.collection('conversations').doc(conversationId);
 
-      conversationRef.get().then(function(doc) {
-        if (doc.exists) {
-          openChat(conversationId);
-          return;
-        }
+      var create = function() {
         conversationRef.set({
           id: conversationId,
           type: 'direct',
@@ -5053,17 +5051,17 @@
           djName: djName || 'DJ',
           djAvatar: djAvatar || '',
           participants: [user.uid, djId],
-          unreadCount: 0,
-          lastMessage: '',
-          lastMessageTime: Date.now(),
-          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(function() {
+          unreadCount: 0
+        }, { merge: true }).then(function() {
           openChat(conversationId);
         }).catch(function(err) {
           console.error('Create DM error:', err);
-          alert('Could not start conversation: ' + err.message);
+          openChat(conversationId);
         });
-      });
+      };
+      conversationRef.get().then(function(doc) {
+        if (doc.exists) openChat(conversationId); else create();
+      }).catch(create);
     }
 
     function handlePaymentReturn() {
