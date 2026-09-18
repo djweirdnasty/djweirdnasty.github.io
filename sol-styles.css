@@ -647,3 +647,129 @@
 @media (max-width: 640px) {
   .sol-gallery-track img { flex: 0 0 50%; width: 50%; max-height: 180px; }
 }
+
+/* ===== DJ DASHBOARD (sidebar console) ===== */
+#sol-dj-console .sol-dash { display:flex; min-height:80vh; background:radial-gradient(circle at 70% 0%, rgba(255,0,20,0.08), transparent 30%), #030405; border:1px solid #252c33; border-radius:12px; overflow:hidden; }
+#sol-dj-console .sol-dash-sidebar { width:185px; flex-shrink:0; background:linear-gradient(180deg,#090c0f 0%,#050607 70%,#090305 100%); border-right:1px solid #22282e; display:flex; flex-direction:column; }
+#sol-dj-console .sol-dash-brand { height:110px; display:flex; justify-content:center; align-items:center; }
+#sol-dj-console .sol-dash-brand img { width:95px; height:95px; object-fit:contain; }
+#sol-dj-console .sol-dash-nav { padding:5px 9px; }
+#sol-dj-console .sol-nav-item { height:44px; display:flex; align-items:center; gap:12px; padding:0 12px; color:#adb3ba; font-size:13px; border-radius:6px; margin-bottom:4px; cursor:pointer; transition:0.2s; }
+#sol-dj-console .sol-nav-item:hover { background:#15191d; color:#fff; }
+#sol-dj-console .sol-nav-item.active { background:linear-gradient(90deg,#e50013,#79030c); color:#fff; box-shadow:0 0 20px rgba(255,0,20,0.25); }
+#sol-dj-console .sol-nav-icon { width:20px; text-align:center; font-size:18px; }
+#sol-dj-console .sol-nav-badge { margin-left:auto; background:#ff1020; min-width:19px; height:19px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:10px; padding:0 4px; }
+#sol-dj-console .sol-dash-side-dj { margin-top:auto; border-top:1px solid #1d2227; padding:14px 12px; display:flex; gap:10px; align-items:center; }
+#sol-dj-console .sol-dash-side-avatar { position:relative; width:38px; height:38px; border-radius:50%; border:1px solid #333; background:#ff1111; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; overflow:hidden; flex-shrink:0; }
+#sol-dj-console .sol-dash-side-info strong { display:block; font-size:11px; }
+#sol-dj-console .sol-dash-side-info span { display:block; font-size:8px; margin-top:3px; }
+#sol-dj-console .sol-verified { color:#28a9ff; }
+#sol-dj-console .sol-online { color:#00d875; }
+#sol-dj-console .sol-online i { display:inline-block; width:6px; height:6px; background:#00d875; border-radius:50%; margin-right:4px; }
+#sol-dj-console .sol-dash-wave { padding:14px; text-align:center; color:#ff1020; font-size:16px; }
+#sol-dj-console .sol-dash-wave small { display:block; color:#777; font-size:7px; letter-spacing:1px; line-height:1.7; margin-top:8px; }
+
+#sol-dj-console .sol-dash-main { flex:1; min-width:0; }
+#sol-dj-console .sol-dash-header { min-height:65px; border-bottom:1px solid #20262c; display:flex; align-items:center; justify-content:space-between; padding:0 18px; background:linear-gradient(180deg,#080b0e,#050607); gap:12px; flex-wrap:wrap; }
+#sol-dj-console .sol-dash-title { display:flex; align-items:center; gap:14px; }
+#sol-dj-console .sol-dash-title h1 { margin:0; font-size:24px; font-weight:800; letter-spacing:-1px; }
+#sol-dj-console .sol-dash-title span { font-size:8px; color:#89919a; letter-spacing:1px; }
+#sol-dj-console .sol-dash-titlewave { color:#ff1020; font-size:19px; letter-spacing:-4px; }
+#sol-dj-console .sol-dash-controls { display:flex; align-items:center; gap:20px; }
+#sol-dj-console .sol-avail { display:flex; align-items:center; gap:7px; font-size:11px; }
+#sol-dj-console .sol-green-dot, #sol-dj-console .sol-gray-dot { width:7px; height:7px; border-radius:50%; }
+#sol-dj-console .sol-green-dot { background:#00d875; box-shadow:0 0 8px #00d875; }
+#sol-dj-console .sol-gray-dot { background:#555; }
+#sol-dj-console .sol-toggle { width:37px; height:20px; border:0; background:#30363c; border-radius:20px; padding:2px; cursor:pointer; }
+#sol-dj-console .sol-toggle span { display:block; width:16px; height:16px; background:#fff; border-radius:50%; transition:0.2s; }
+#sol-dj-console .sol-toggle.on { background:#00d875; }
+#sol-dj-console .sol-toggle.on span { transform:translateX(17px); }
+#sol-dj-console .sol-notif { position:relative; font-size:19px; }
+#sol-dj-console .sol-notif b { position:absolute; top:-7px; right:-8px; background:#ff1020; width:16px; height:16px; font-size:8px; display:flex; justify-content:center; align-items:center; border-radius:50%; }
+#sol-dj-console .sol-dash-chip { display:flex; align-items:center; gap:8px; border-left:1px solid #252b31; padding-left:16px; }
+#sol-dj-console .sol-dash-chip-avatar { position:relative; width:33px; height:33px; border-radius:50%; background:#ff1111; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; overflow:hidden; }
+#sol-dj-console .sol-dash-chip-info strong { display:block; font-size:11px; }
+#sol-dj-console .sol-dash-chip-info small { color:#737b83; font-size:8px; }
+
+#sol-dj-console .sol-dash-content { padding:15px; }
+
+/* Hero player */
+#sol-dj-console .sol-hero { min-height:210px; border:1px solid #283039; border-radius:9px; overflow:hidden; display:grid; grid-template-columns:43% 35% 22%; background:radial-gradient(circle at 85% 45%, rgba(255,0,20,0.25), transparent 30%), linear-gradient(110deg,#080b0e,#090b0d); position:relative; }
+#sol-dj-console .sol-turntable { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle, rgba(255,0,20,0.22), transparent 45%); }
+#sol-dj-console .sol-vinyl-wrap { width:180px; height:180px; position:relative; }
+#sol-dj-console .sol-vinyl { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 0 16px rgba(255,0,20,0.35)); }
+#sol-dj-console .sol-vinyl.spinning { animation:solDashSpin 4s linear infinite; }
+#sol-dj-console .sol-vinyl-shine { position:absolute; inset:5%; border-radius:50%; background:linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.16) 50%, transparent 65%); pointer-events:none; animation:solDashShine 4s linear infinite; }
+@keyframes solDashSpin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes solDashShine { from{transform:rotate(0)} to{transform:rotate(-360deg)} }
+#sol-dj-console .sol-tonearm { position:absolute; top:18px; right:22px; width:95px; height:125px; pointer-events:none; }
+#sol-dj-console .sol-tonearm-base { position:absolute; right:5px; top:0; width:26px; height:26px; border-radius:50%; background:radial-gradient(circle,#777,#222 50%,#090909); border:2px solid #777; }
+#sol-dj-console .sol-tonearm-arm { position:absolute; right:17px; top:22px; width:6px; height:100px; background:linear-gradient(90deg,#333,#bbb,#222); transform:rotate(-28deg); transform-origin:top center; }
+#sol-dj-console .sol-tonearm-head { position:absolute; left:7px; bottom:5px; width:20px; height:12px; background:#aaa; transform:rotate(-28deg); }
+#sol-dj-console .sol-bpm { position:absolute; left:18px; top:22px; display:flex; flex-direction:column; text-align:center; }
+#sol-dj-console .sol-bpm strong { font-size:20px; }
+#sol-dj-console .sol-bpm span { font-size:8px; color:#777; }
+#sol-dj-console .sol-meter { display:flex; gap:2px; margin-top:8px; align-items:flex-end; height:50px; }
+#sol-dj-console .sol-meter i { width:5px; background:#ff1020; animation:solMeterPulse 0.7s infinite alternate; }
+#sol-dj-console .sol-meter i:nth-child(1){height:25%} #sol-dj-console .sol-meter i:nth-child(2){height:45%} #sol-dj-console .sol-meter i:nth-child(3){height:70%} #sol-dj-console .sol-meter i:nth-child(4){height:100%} #sol-dj-console .sol-meter i:nth-child(5){height:65%} #sol-dj-console .sol-meter i:nth-child(6){height:40%}
+@keyframes solMeterPulse { from{opacity:0.45} to{opacity:1} }
+#sol-dj-console .sol-player-info { padding:26px 10px 18px 5px; }
+#sol-dj-console .sol-now-playing { display:inline-block; color:#ff1020; font-size:9px; font-weight:800; margin-bottom:10px; }
+#sol-dj-console .sol-player-info h2 { margin:0; font-size:26px; font-weight:800; }
+#sol-dj-console .sol-player-info p { color:#7d858e; font-size:10px; letter-spacing:1px; }
+#sol-dj-console .sol-audio-wave { color:#ff1020; letter-spacing:3px; margin:18px 0; overflow:hidden; white-space:nowrap; }
+#sol-dj-console .sol-player-controls { display:flex; align-items:center; gap:16px; }
+#sol-dj-console .sol-player-controls button { background:transparent; border:0; color:#fff; font-size:16px; cursor:pointer; }
+#sol-dj-console .sol-player-controls .sol-play-btn { width:48px; height:48px; background:radial-gradient(circle,#ff2735,#d50010); border-radius:50%; box-shadow:0 0 25px rgba(255,0,20,0.45); font-size:19px; }
+#sol-dj-console .sol-player-msg { align-self:center; padding:28px; color:#ff1020; font-style:italic; font-size:20px; text-shadow:0 0 12px rgba(255,0,20,0.4); }
+#sol-dj-console .sol-player-msg strong { display:block; }
+
+/* KPI row */
+#sol-dj-console .sol-kpi-grid { margin-top:12px; }
+#sol-dj-console .sol-kpi-cards { grid-template-columns:repeat(4,1fr) !important; gap:10px !important; }
+#sol-dj-console .sol-kpi-cards > div { background:linear-gradient(135deg,#0c1014,#080b0e) !important; border:1px solid #252c33 !important; border-radius:9px !important; min-height:80px; display:flex; flex-direction:column; justify-content:center; }
+#sol-dj-console .sol-kpi-cards > div > div:first-child { font-size:22px !important; }
+
+/* Panel grid */
+#sol-dj-console .sol-dash-grid { display:grid; grid-template-columns:1.25fr 1fr 0.85fr; gap:10px; margin-top:12px; align-items:start; }
+#sol-dj-console .dash-panel { background:linear-gradient(145deg,#0a0d10,#07090b); border:1px solid #252c33; border-radius:9px; padding:12px; min-width:0; }
+#sol-dj-console .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+#sol-dj-console .panel-title { margin:0 !important; font-size:11px !important; letter-spacing:0.5px; text-transform:uppercase; }
+#sol-dj-console .panel-title::before { content:""; display:inline-block; width:3px; height:12px; background:#ff1020; margin-right:7px; vertical-align:-2px; }
+
+#sol-dj-console .sol-dash-footer { min-height:45px; border-top:1px solid #271014; display:flex; justify-content:center; align-items:center; gap:38px; color:#ff1020; font-size:10px; letter-spacing:4px; margin-top:12px; }
+#sol-dj-console .sol-dash-footer strong { font-size:9px; }
+
+/* Responsive */
+@media (max-width:1200px) {
+  #sol-dj-console .sol-dash-grid { grid-template-columns:1fr 1fr; }
+  #sol-dj-console .sol-hero { grid-template-columns:45% 55%; }
+  #sol-dj-console .sol-player-msg { display:none; }
+}
+@media (max-width:800px) {
+  #sol-dj-console .sol-dash-sidebar { width:60px; }
+  #sol-dj-console .sol-dash-brand img { width:44px; height:44px; }
+  #sol-dj-console .sol-dash-brand { height:65px; }
+  #sol-dj-console .sol-nav-text, #sol-dj-console .sol-nav-badge, #sol-dj-console .sol-dash-side-info, #sol-dj-console .sol-dash-wave { display:none; }
+  #sol-dj-console .sol-nav-item { justify-content:center; }
+  #sol-dj-console .sol-dash-side-dj { justify-content:center; }
+  #sol-dj-console .sol-dash-grid { grid-template-columns:1fr; }
+  #sol-dj-console .sol-hero { grid-template-columns:1fr; }
+  #sol-dj-console .sol-turntable { min-height:220px; }
+  #sol-dj-console .sol-player-info { padding:18px; }
+  #sol-dj-console .sol-kpi-cards { grid-template-columns:repeat(2,1fr) !important; }
+}
+@media (max-width:520px) {
+  #sol-dj-console .sol-dash { flex-direction:column; }
+  #sol-dj-console .sol-dash-sidebar { width:100%; flex-direction:row; align-items:center; border-right:none; border-bottom:1px solid #22282e; }
+  #sol-dj-console .sol-dash-brand { height:52px; padding:0 10px; }
+  #sol-dj-console .sol-dash-brand img { width:36px; height:36px; }
+  #sol-dj-console .sol-dash-nav { display:flex; overflow-x:auto; flex:1; padding:5px; }
+  #sol-dj-console .sol-nav-item { flex-shrink:0; }
+  #sol-dj-console .sol-dash-side-dj { display:none; }
+  #sol-dj-console .sol-dash-title span, #sol-dj-console .sol-dash-titlewave { display:none; }
+  #sol-dj-console .sol-dash-title h1 { font-size:18px; }
+  #sol-dj-console .sol-dash-controls { gap:10px; }
+  #sol-dj-console .sol-dash-chip-info, #sol-dj-console .sol-avail #sol-avail-text { display:none; }
+  #sol-dj-console .sol-dash-content { padding:8px; }
+}

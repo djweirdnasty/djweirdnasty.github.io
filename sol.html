@@ -55,7 +55,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="sol-styles.css?v=11">
+  <link rel="stylesheet" href="sol-styles.css?v=12">
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 
 </head>
@@ -120,7 +120,60 @@
         </div>
 
         <div id="sol-dj-console" style="display:none;">
-          <h2>DJ Console</h2>
+        <div class="sol-dash">
+          <aside class="sol-dash-sidebar">
+            <div class="sol-dash-brand"><img src="sol-logo.png" alt="SOL"></div>
+            <nav class="sol-dash-nav" id="sol-dash-nav">
+              <div class="sol-nav-item active" data-target="dash-top"><span class="sol-nav-icon">⌂</span><span class="sol-nav-text">Dashboard</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-booking-requests"><span class="sol-nav-icon">▣</span><span class="sol-nav-text">Bookings</span><b class="sol-nav-badge" id="sol-nav-badge-bookings" style="display:none;"></b></div>
+              <div class="sol-nav-item" data-target="sol-dj-calendar"><span class="sol-nav-icon">▦</span><span class="sol-nav-text">Calendar</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-earnings"><span class="sol-nav-icon">$</span><span class="sol-nav-text">Earnings</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-conversations"><span class="sol-nav-icon">▱</span><span class="sol-nav-text">Messages</span><b class="sol-nav-badge" id="sol-nav-badge-msgs" style="display:none;"></b></div>
+              <div class="sol-nav-item" data-target="sol-dj-gallery"><span class="sol-nav-icon">▧</span><span class="sol-nav-text">Media</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-analytics"><span class="sol-nav-icon">▥</span><span class="sol-nav-text">Analytics</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-setup"><span class="sol-nav-icon">♙</span><span class="sol-nav-text">Profile</span></div>
+              <div class="sol-nav-item" data-target="sol-dj-verify-status"><span class="sol-nav-icon">✓</span><span class="sol-nav-text">Verification</span></div>
+            </nav>
+            <div class="sol-dash-side-dj">
+              <div class="sol-dash-side-avatar" id="sol-dash-side-avatar">D</div>
+              <div class="sol-dash-side-info">
+                <strong id="sol-dash-side-name">DJ</strong>
+                <span class="sol-verified" id="sol-dash-side-verified" style="display:none;">✓ Verified DJ</span>
+                <span class="sol-online"><i></i> Online</span>
+              </div>
+            </div>
+            <div class="sol-dash-wave">〰〰〰〰<small>MUSIC PAYS.<br>GOOD VIBES.<br>PAY EVEN MORE.</small></div>
+          </aside>
+
+          <main class="sol-dash-main">
+            <header class="sol-dash-header" id="dash-top">
+              <div class="sol-dash-title"><h1>DJ CONSOLE</h1><div class="sol-dash-titlewave">▁▂▅▂▇▃▆▂▅</div><span>BOOKINGS / EARNINGS / YOUR BRAND. YOUR STAGE.</span></div>
+              <div class="sol-dash-controls">
+                <div class="sol-avail"><span id="sol-avail-dot" class="sol-gray-dot"></span><span id="sol-avail-text">Offline</span><button type="button" class="sol-toggle" id="sol-avail-toggle"><span></span></button></div>
+                <div class="sol-notif" id="sol-dash-notif">♧<b id="sol-dash-notif-badge" style="display:none;">0</b></div>
+                <div class="sol-dash-chip"><div class="sol-dash-chip-avatar" id="sol-dash-chip-avatar">D</div><div class="sol-dash-chip-info"><strong id="sol-dash-chip-name">DJ</strong><small>DJ</small></div><span>⌄</span></div>
+              </div>
+            </header>
+
+            <div class="sol-dash-content">
+              <section class="sol-hero">
+                <div class="sol-turntable">
+                  <div class="sol-vinyl-wrap"><img src="sol-logo.png" alt="SOL spinning record" class="sol-vinyl spinning" id="sol-dash-vinyl"><div class="sol-vinyl-shine"></div></div>
+                  <div class="sol-tonearm"><div class="sol-tonearm-base"></div><div class="sol-tonearm-arm"></div><div class="sol-tonearm-head"></div></div>
+                  <div class="sol-bpm"><strong>128</strong><span>BPM</span><div class="sol-meter"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+                </div>
+                <div class="sol-player-info">
+                  <span class="sol-now-playing">▶ NOW PLAYING</span>
+                  <h2 id="sol-dash-hero-name">DJ</h2>
+                  <p>TURN UP • MIX • REPEAT</p>
+                  <div class="sol-audio-wave">▂▅▂▇▅▃▇▂▆▃▅▇▂▅▃▆▂▇▃▅</div>
+                  <div class="sol-player-controls"><button type="button">⤨</button><button type="button">◀</button><button type="button" class="sol-play-btn" id="sol-dash-play">Ⅱ</button><button type="button">▶</button><button type="button">⤨</button></div>
+                </div>
+                <div class="sol-player-msg"><strong>REAL DJS.</strong><strong>REAL OPPORTUNITIES.</strong></div>
+              </section>
+
+              <div class="sol-kpi-grid" id="sol-kpi-grid"></div>
+              <div class="sol-dash-grid" id="sol-dash-grid">
 
           <div id="sol-dj-profile" style="display:flex; flex-direction:column; align-items:center; background:#111; border:1px solid #ff1111; border-radius:12px; padding:1.5rem; margin-bottom:1rem;">
             <img loading="lazy" id="sol-dj-avatar" src="" alt="" style="width:72px; height:72px; border-radius:36px; margin-bottom:0.5rem; display:none;" onerror="this.style.display='none'; document.getElementById('sol-dj-avatar-fallback').style.display='flex';">
@@ -421,6 +474,11 @@
             <button type="button" id="sol-client-review-submit" class="submit-btn" style="width:100%;">Submit Client Review</button>
           </div>
           <p id="sol-client-review-status" class="form-status" aria-live="polite" style="margin-bottom:1.5rem;"></p>
+              </div>
+              <footer class="sol-dash-footer"><span>〰〰〰</span><strong>BOOK • PLAY • GET PAID</strong><span>〰〰〰</span></footer>
+            </div>
+          </main>
+        </div>
         </div>
 
         <div id="sol-admin-console" style="display:none;">
@@ -1077,7 +1135,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=63"></script>
+  <script src="sol-app.js?v=64"></script>
 <script src="site.js?v=25"></script>
 </body>
 </html>

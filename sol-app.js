@@ -1834,6 +1834,7 @@
         djConsole.style.display = 'block';
         clientView.style.display = 'none';
         djModeToggleBtn.textContent = 'Client Mode';
+        buildDjDashboard();
         const user = auth.currentUser;
         if (user) {
           subscribeDJStatus(user);
@@ -3201,6 +3202,193 @@
       }, function(err) {
         list.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
       });
+    }
+
+    // ---------- DJ Dashboard Layout ----------
+    // Reorganizes the DJ console's existing sections into the sidebar/panel
+    // dashboard design. Runs once — every existing element keeps its id and
+    // wiring, it only gets re-parented into a .dash-panel card.
+    var dashMsgBadgeUnsub = null;
+
+    function buildDjDashboard() {
+      var grid = document.getElementById('sol-dash-grid');
+      if (!grid || grid.dataset.built) return;
+      grid.dataset.built = '1';
+
+      // The stats block (4 stat cards) becomes the KPI row, not a panel.
+      var kpiGrid = document.getElementById('sol-kpi-grid');
+      var kids = Array.prototype.slice.call(grid.children);
+      kids.forEach(function(el) {
+        if (el.querySelector && el.querySelector('#sol-dj-stat-pending')) {
+          el.classList.add('sol-kpi-cards');
+          kpiGrid.appendChild(el);
+        }
+      });
+
+      // Group children into .dash-panel sections. Each <h3> starts a panel;
+      // leading non-h3 blocks (profile card, availability, location) group
+      // into one "DJ PROFILE" panel.
+      var panel = null;
+      kids = Array.prototype.slice.call(grid.children);
+      kids.forEach(function(el) {
+        var isH3 = el.tagName === 'H3';
+        if (isH3 || !panel) {
+          panel = document.createElement('section');
+          panel.className = 'dash-panel';
+          grid.insertBefore(panel, el);
+          var header = document.createElement('div');
+          header.className = 'panel-header';
+          if (isH3) {
+            el.classList.add('panel-title');
+            header.appendChild(el);
+          } else {
+            var h = document.createElement('h3');
+            h.className = 'panel-title';
+            h.textContent = 'DJ PROFILE';
+            header.appendChild(h);
+          }
+          panel.appendChild(header);
+        }
+        if (!isH3) panel.appendChild(el);
+      });
+
+      wireDashChrome();
+      syncDashIdentity();
+      updateDashBadges();
+    }
+
+    function wireDashChrome() {
+      // Sidebar nav — scroll to the panel containing the target element.
+      var nav = document.getElementById('sol-dash-nav');
+      if (nav && !nav.dataset.wired) {
+        nav.dataset.wired = '1';
+        nav.addEventListener('click', function(e) {
+          var item = e.target.closest('.sol-nav-item');
+          if (!item) return;
+          nav.querySelectorAll('.sol-nav-item').forEach(function(n) { n.classList.remove('active'); });
+          item.classList.add('active');
+          var targetId = item.getAttribute('data-target');
+          if (targetId === 'sol-dj-conversations') { openMessenger(); return; }
+          var target = document.getElementById(targetId);
+          if (!target) return;
+          var panel = target.closest('.dash-panel') || target;
+          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+
+      // Availability toggle in the header drives the real online checkbox.
+      var availBtn = document.getElementById('sol-avail-toggle');
+      var realToggle = document.getElementById('sol-dj-online-toggle');
+      if (availBtn && realToggle && !availBtn.dataset.wired) {
+        availBtn.dataset.wired = '1';
+        availBtn.addEventListener('click', function() {
+          realToggle.click();
+        });
+      }
+      if (realToggle && !realToggle.dataset.availWired) {
+        realToggle.dataset.availWired = '1';
+        realToggle.addEventListener('change', syncAvailUI);
+      }
+      var notif = document.getElementById('sol-dash-notif');
+      if (notif && !notif.dataset.wired) {
+        notif.dataset.wired = '1';
+        notif.style.cursor = 'pointer';
+        notif.addEventListener('click', function() { openMessenger(); });
+      }
+      var statusLabel = document.getElementById('sol-dj-status-label');
+      if (statusLabel && !statusLabel.dataset.availWired) {
+        statusLabel.dataset.availWired = '1';
+        new MutationObserver(syncAvailUI).observe(statusLabel, { childList: true, characterData: true, subtree: true });
+      }
+      syncAvailUI();
+
+      // Vinyl play/pause button (decorative).
+      var playBtn = document.getElementById('sol-dash-play');
+      var vinyl = document.getElementById('sol-dash-vinyl');
+      if (playBtn && vinyl && !playBtn.dataset.wired) {
+        playBtn.dataset.wired = '1';
+        playBtn.addEventListener('click', function() {
+          var spinning = vinyl.classList.toggle('spinning');
+          playBtn.textContent = spinning ? 'Ⅱ' : '▶';
+        });
+      }
+    }
+
+    function syncAvailUI() {
+      var realToggle = document.getElementById('sol-dj-online-toggle');
+      var on = !!(realToggle && realToggle.checked);
+      var dot = document.getElementById('sol-avail-dot');
+      var txt = document.getElementById('sol-avail-text');
+      var btn = document.getElementById('sol-avail-toggle');
+      if (dot) dot.className = on ? 'sol-green-dot' : 'sol-gray-dot';
+      if (txt) txt.textContent = on ? 'Available' : 'Offline';
+      if (btn) btn.classList.toggle('on', on);
+    }
+
+    function syncDashIdentity() {
+      var name = (document.getElementById('sol-dj-name') || {}).textContent || '';
+      name = name.trim() || (auth.currentUser && (auth.currentUser.displayName || auth.currentUser.email)) || 'DJ';
+      var avatarImg = document.getElementById('sol-dj-avatar');
+      var avatarUrl = (avatarImg && avatarImg.src && avatarImg.style.display !== 'none') ? avatarImg.src : '';
+      var initial = name.charAt(0).toUpperCase();
+      var verified = document.getElementById('sol-dj-verified-badge');
+      var isVerified = verified && verified.style.display !== 'none';
+
+      ['sol-dash-side-name', 'sol-dash-chip-name', 'sol-dash-hero-name'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = name;
+      });
+      ['sol-dash-side-avatar', 'sol-dash-chip-avatar'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = avatarUrl
+          ? initial + '<img src="' + escapeAttr(avatarUrl) + '" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;" onerror="this.remove()">'
+          : initial;
+      });
+      var v = document.getElementById('sol-dash-side-verified');
+      if (v) v.style.display = isVerified ? '' : 'none';
+
+      // Re-sync when the DJ profile finishes loading async.
+      if (!syncDashIdentity.wired) {
+        syncDashIdentity.wired = true;
+        var mo = new MutationObserver(function() { syncDashIdentity(); });
+        ['sol-dj-name', 'sol-dj-avatar', 'sol-dj-verified-badge', 'sol-dj-avatar-fallback'].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) mo.observe(el, { attributes: true, childList: true, characterData: true, subtree: true });
+        });
+      }
+    }
+
+    function updateDashBadges() {
+      var user = auth.currentUser;
+      if (!user) return;
+      // Bookings badge mirrors the pending-requests stat.
+      var pendingEl = document.getElementById('sol-dj-stat-pending');
+      if (pendingEl && !pendingEl.dataset.badgeWired) {
+        pendingEl.dataset.badgeWired = '1';
+        var syncPending = function() {
+          var n = parseInt(pendingEl.textContent, 10) || 0;
+          var b = document.getElementById('sol-nav-badge-bookings');
+          if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; }
+        };
+        new MutationObserver(syncPending).observe(pendingEl, { childList: true, characterData: true, subtree: true });
+        syncPending();
+      }
+      // Messages badge = sum of unreadFor[uid] across the DJ's conversations.
+      if (!dashMsgBadgeUnsub) {
+        dashMsgBadgeUnsub = db.collection('conversations').where('djId', '==', user.uid)
+          .onSnapshot(function(snap) {
+            var total = 0;
+            snap.forEach(function(doc) {
+              var uf = doc.data().unreadFor;
+              if (uf && uf[user.uid]) total += uf[user.uid];
+            });
+            ['sol-nav-badge-msgs', 'sol-dash-notif-badge'].forEach(function(id) {
+              var el = document.getElementById(id);
+              if (el) { el.textContent = total; el.style.display = total ? '' : 'none'; }
+            });
+          }, function() {});
+      }
     }
 
     // ---------- Client Messages ----------
