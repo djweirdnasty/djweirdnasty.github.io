@@ -1173,6 +1173,134 @@ exports.adminGetDjToken = onCall(async (request) => {
   }
 });
 
+// Fix a DJ's avatar by pointing it at a real Storage object. Accepts either a
+// storage path (e.g. "DJ's/IMG_0593.jpg") or nothing — auto mode HEAD-checks
+// every verified/approved DJ's avatar and repairs dead links it can match by
+// filename under the DJ's/ prefix. Generates a firebase download token so the
+// URL works regardless of Storage rules.
+async function storageDownloadUrl(storagePath) {
+  const bucket = admin.storage().bucket();
+  const file = bucket.file(storagePath);
+  const [exists] = await file.exists();
+  if (!exists) {
+    throw new HttpsError("not-found", "No file at " + storagePath);
+  }
+  const [meta] = await file.getMetadata();
+  let token = meta.metadata && meta.metadata.firebaseStorageDownloadTokens;
+  if (token && token.indexOf(",") >= 0) token = token.split(",")[0];
+  if (!token) {
+    token = require("crypto").randomUUID();
+    await file.setMetadata({ metadata: { firebaseStorageDownloadTokens: token } });
+  }
+  return "https://firebasestorage.googleapis.com/v0/b/" + bucket.name +
+    "/o/" + encodeURIComponent(storagePath) + "?alt=media&token=" + token;
+}
+
+async function writeDjAvatar(uid, url) {
+  const writes = [
+    db.collection("djs").doc(uid).set({ photoURL: url, avatar: url }, { merge: true }),
+    db.collection("dj-verifications").doc(uid).set(
+      { photoURL: url, djProfile: { photoURL: url, avatar: url } }, { merge: true }),
+    db.collection("users").doc(uid).set({ photoURL: url }, { merge: true }),
+  ];
+  await Promise.all(writes);
+}
+
+exports.adminFixDjAvatar = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  if (request.auth.uid !== ADMIN_UID &&
+      (!request.auth.token || request.auth.token.email !== ADMIN_EMAIL)) {
+    throw new HttpsError("permission-denied", "Admin only.");
+  }
+  const targetUid = String(request.data.uid || "");
+  const storagePath = String(request.data.storagePath || "").replace(/^\/+/, "");
+
+  try {
+    if (targetUid && storagePath) {
+      const url = await storageDownloadUrl(storagePath);
+      await writeDjAvatar(targetUid, url);
+      logger.info("[FIX AVATAR] " + targetUid + " -> " + storagePath);
+      return { fixed: [targetUid], url: url };
+    }
+
+    // Auto mode: check every approved/verified DJ's avatar URL.
+    const uidSet = new Set();
+    const verSnap = await db.collection("dj-verifications").get();
+    verSnap.forEach(function(d) { if ((d.data().status || "") === "approved") uidSet.add(d.id); });
+    const uSnap = await db.collection("users").where("isVerifiedDJ", "==", true).get();
+    uSnap.forEach(function(d) { uidSet.add(d.id); });
+    const uids = Array.from(uidSet);
+
+    // Candidate files under the DJ's/ prefix for filename matching.
+    const bucket = admin.storage().bucket();
+    const [files] = await bucket.getFiles({ prefix: "DJ's/" });
+    const norm = function(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    const fileList = files.map(function(f) {
+      const base = f.name.split("/").pop().replace(/\.[^.]+$/, "");
+      return { path: f.name, key: norm(base) };
+    });
+
+    const fixed = [];
+    const skipped = [];
+    const unmatched = [];
+    for (const uid of uids) {
+      const [djDoc, verDoc, userDoc] = await Promise.all([
+        db.collection("djs").doc(uid).get(),
+        db.collection("dj-verifications").doc(uid).get(),
+        db.collection("users").doc(uid).get(),
+      ]);
+      const d = djDoc.exists ? djDoc.data() : {};
+      const vd = verDoc.exists ? verDoc.data() : {};
+      const ud = userDoc.exists ? userDoc.data() : {};
+      const vp = vd.djProfile || {};
+      const avatar = d.photoURL || d.avatar || vp.photoURL || vp.avatar ||
+        vd.photoURL || ud.photoURL || ud.avatar || "";
+
+      let alive = false;
+      if (avatar) {
+        try {
+          const head = await fetch(avatar, { method: "HEAD" });
+          alive = head.ok;
+        } catch (e) { alive = false; }
+      }
+      if (alive) { skipped.push(uid); continue; }
+
+      // First: the stored URL's own storage path — file may exist, just needs a token.
+      let pathFromUrl = "";
+      const m = String(avatar).match(/\/o\/([^?]+)/);
+      if (m) pathFromUrl = decodeURIComponent(m[1]);
+      if (pathFromUrl) {
+        try {
+          const url = await storageDownloadUrl(pathFromUrl);
+          await writeDjAvatar(uid, url);
+          fixed.push({ uid: uid, name: d.stageName || vd.stageName || "", path: pathFromUrl });
+          continue;
+        } catch (e) { /* file gone — fall through to name matching */ }
+      }
+
+      const name = d.stageName || d.name || vp.stageName || vp.djName ||
+        vd.stageName || vd.djName || ud.displayName || "";
+      const emailLocal = String(ud.email || vp.email || vd.email || "").split("@")[0];
+      const keys = [norm(name), norm(emailLocal), norm(name.replace(/^dj[\s-]*/i, ""))].filter(Boolean);
+      const hit = fileList.find(function(f) {
+        return keys.some(function(k) { return k && (f.key === k || f.key.indexOf(k) >= 0 || k.indexOf(f.key) >= 0); });
+      });
+      if (!hit) { unmatched.push({ uid: uid, name: name }); continue; }
+      const url = await storageDownloadUrl(hit.path);
+      await writeDjAvatar(uid, url);
+      fixed.push({ uid: uid, name: name, path: hit.path });
+    }
+    logger.info("[FIX AVATAR] auto: fixed=" + fixed.length + " skipped=" + skipped.length + " unmatched=" + unmatched.length);
+    return { fixed: fixed, alreadyOk: skipped.length, unmatched: unmatched };
+  } catch (err) {
+    if (err instanceof HttpsError) throw err;
+    logger.error("[FIX AVATAR] error: " + err.message);
+    throw new HttpsError("internal", err.message);
+  }
+});
+
 // Backfill the publicDjs collection for all existing DJs (admin only).
 exports.syncAllPublicDjs = onCall(async (request) => {
   if (!request.auth) {

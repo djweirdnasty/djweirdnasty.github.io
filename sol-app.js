@@ -2242,6 +2242,36 @@
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
     document.getElementById('sol-admin-tab-settings').addEventListener('click', function() { adminSwitchTab('settings'); loadAdminSettings(); });
 
+    var repairPhotosBtn = document.getElementById('sol-admin-repair-photos');
+    if (repairPhotosBtn) {
+      repairPhotosBtn.addEventListener('click', function() {
+        var btn = this;
+        if (!confirm('Scan all verified DJs and repair broken profile photos?\n\nThis re-links dead photo URLs to the real files in Storage and writes working links back to their profiles.')) return;
+        btn.textContent = 'Repairing...';
+        btn.disabled = true;
+        firebase.functions().httpsCallable('adminFixDjAvatar')({})
+          .then(function(result) {
+            var r = result.data || {};
+            btn.textContent = 'Repair Broken DJ Photos';
+            btn.disabled = false;
+            var fixedNames = (r.fixed || []).map(function(f) { return f.name || f.uid; });
+            var msg = 'Fixed ' + fixedNames.length + ' DJ photo(s)' +
+              (fixedNames.length ? ':\n' + fixedNames.join(', ') : '.') +
+              '\n' + (r.alreadyOk || 0) + ' already OK.';
+            if (r.unmatched && r.unmatched.length) {
+              msg += '\n\nNo photo found for: ' + r.unmatched.map(function(u) { return u.name || u.uid; }).join(', ') +
+                '\n(they keep the initial-letter icon until they upload one)';
+            }
+            alert(msg);
+          })
+          .catch(function(err) {
+            btn.textContent = 'Repair Broken DJ Photos';
+            btn.disabled = false;
+            alert('Repair failed: ' + err.message);
+          });
+      });
+    }
+
     var syncUsersBtn = document.getElementById('sol-admin-sync-users');
     if (syncUsersBtn) {
       syncUsersBtn.addEventListener('click', function() {
