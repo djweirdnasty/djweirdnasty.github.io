@@ -55,7 +55,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="sol-styles.css?v=16">
+  <link rel="stylesheet" href="sol-styles.css?v=17">
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 
 </head>
@@ -161,16 +161,23 @@
                 <div class="sol-turntable">
                   <div class="sol-vinyl-wrap"><img src="sol-logo.png" alt="SOL spinning record" class="sol-vinyl spinning" id="sol-dash-vinyl"><div class="sol-vinyl-shine"></div></div>
                   <div class="sol-tonearm"><div class="sol-tonearm-base"></div><div class="sol-tonearm-arm"></div><div class="sol-tonearm-head"></div></div>
-                  <div class="sol-bpm"><strong>128</strong><span>BPM</span><div class="sol-meter"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+                  <div class="sol-bpm"><strong id="sol-pl-bpm">128</strong><span>BPM</span><div class="sol-meter"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
                 </div>
                 <div class="sol-player-info">
-                  <span class="sol-now-playing">▶ NOW PLAYING</span>
-                  <h2 id="sol-dash-hero-name">DJ</h2>
-                  <p>TURN UP • MIX • REPEAT</p>
+                  <span class="sol-now-playing" id="sol-pl-status">SUGGESTION QUEUE</span>
+                  <h2 id="sol-pl-title">Press ▶ to preview</h2>
+                  <p id="sol-pl-artist">Indie rotation · popular hits · like/dislike is recorded</p>
                   <div class="sol-audio-wave">▂▅▂▇▅▃▇▂▆▃▅▇▂▅▃▆▂▇▃▅</div>
-                  <div class="sol-player-controls"><button type="button">⤨</button><button type="button">◀</button><button type="button" class="sol-play-btn" id="sol-dash-play">Ⅱ</button><button type="button">▶</button><button type="button">⤨</button></div>
+                  <div class="sol-player-controls">
+                    <button type="button" id="sol-pl-like" title="Like — recorded">👍</button>
+                    <button type="button" id="sol-pl-replay" title="Replay">⟲</button>
+                    <button type="button" class="sol-play-btn" id="sol-dash-play" title="Play / Pause">▶</button>
+                    <button type="button" id="sol-pl-skip" title="Skip">⏭</button>
+                    <button type="button" id="sol-pl-dislike" title="Dislike — recorded">👎</button>
+                  </div>
                 </div>
                 <div class="sol-player-msg"><strong>REAL DJS.</strong><strong>REAL OPPORTUNITIES.</strong></div>
+                <div id="sol-pl-frame"></div>
               </section>
 
               <div class="sol-dash-grid" id="sol-dash-grid">
@@ -240,6 +247,7 @@
             </div>
             <p id="sol-dj-event-map-label" style="color:#aaa; font-size:0.85rem; margin-top:0.5rem; text-align:center;"></p>
           </div>
+          <p id="sol-map-empty" style="display:none; color:#666; font-size:0.75rem; margin:0;">No active event location — the map appears here when a booking has a venue.</p>
 
           <h3>Client Conversations</h3>
           <div id="sol-dj-conversations" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
@@ -1137,7 +1145,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=66"></script>
+  <script src="sol-app.js?v=67"></script>
 <script src="site.js?v=25"></script>
 </body>
 </html>

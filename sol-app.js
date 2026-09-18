@@ -1798,7 +1798,10 @@
             if (c.unreadCount) totalUnread += c.unreadCount;
             const item = document.createElement('div');
             item.style.cssText = 'background:#111; border:1px solid #333; border-radius:10px; padding:0.75rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center;';
-            item.innerHTML = '<span><strong>' + escapeHtml(c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(c.lastMessage || 'No messages yet') + '</span></span><span style="font-size:0.75rem; color:#ff1111;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
+            var clientLetter = escapeHtml((c.clientName || 'C').charAt(0).toUpperCase());
+            var clientAv = '<span style="position:relative; width:34px; height:34px; border-radius:50%; background:#ff1111; display:inline-flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; overflow:hidden;">' + clientLetter +
+              (c.clientAvatar ? '<img src="' + escapeAttr(c.clientAvatar) + '" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;" onerror="this.remove()">' : '') + '</span>';
+            item.innerHTML = '<span style="display:flex; align-items:center; gap:0.6rem; min-width:0;">' + clientAv + '<span style="min-width:0;"><strong>' + escapeHtml(c.clientName || 'Client') + '</strong><br><span style="font-size:0.85rem; color:#888;">' + escapeHtml(c.lastMessage || 'No messages yet') + '</span></span></span><span style="font-size:0.75rem; color:#ff1111; flex-shrink:0;">' + (c.unreadCount ? c.unreadCount + ' unread' : '') + '</span>';
             item.addEventListener('click', function() {
               openChat(doc.id);
             });
@@ -3308,6 +3311,26 @@
         rail.appendChild(quick);
       }
 
+      // Wrap each panel's content in a scrollable body + add an expand button.
+      document.querySelectorAll('#sol-dj-console .dash-panel').forEach(function(p) {
+        var header = p.querySelector('.panel-header');
+        var body = document.createElement('div');
+        body.className = 'dash-panel-body';
+        Array.prototype.slice.call(p.children).forEach(function(ch) {
+          if (ch !== header) body.appendChild(ch);
+        });
+        p.appendChild(body);
+        if (header && !header.querySelector('.panel-expand')) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'panel-expand';
+          btn.title = 'Enlarge';
+          btn.textContent = '⤢';
+          btn.addEventListener('click', function(e) { e.stopPropagation(); openDashWindow(p); });
+          header.appendChild(btn);
+        }
+      });
+
       // Capture main panels in order, then distribute into independent
       // columns so each column packs tightly (masonry-style).
       grid._panels = Array.prototype.slice.call(grid.querySelectorAll(':scope > .dash-panel'));
@@ -3341,6 +3364,40 @@
       grid._panels.forEach(function(p, i) { cols[i % n].appendChild(p); });
     }
 
+    function dashBackdrop() {
+      var bd = document.getElementById('sol-dash-backdrop');
+      if (!bd) {
+        bd = document.createElement('div');
+        bd.id = 'sol-dash-backdrop';
+        bd.className = 'dash-backdrop';
+        bd.addEventListener('click', closeDashWindow);
+        document.body.appendChild(bd);
+      }
+      return bd;
+    }
+
+    function openDashWindow(panel) {
+      closeDashWindow();
+      panel.classList.add('dash-window-open');
+      dashBackdrop().style.display = 'block';
+      var header = panel.querySelector('.panel-header');
+      if (header && !header.querySelector('.panel-close')) {
+        var c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'panel-close';
+        c.title = 'Close';
+        c.textContent = '✕';
+        c.addEventListener('click', function(e) { e.stopPropagation(); closeDashWindow(); });
+        header.appendChild(c);
+      }
+    }
+
+    function closeDashWindow() {
+      document.querySelectorAll('.dash-window-open').forEach(function(p) { p.classList.remove('dash-window-open'); });
+      var bd = document.getElementById('sol-dash-backdrop');
+      if (bd) bd.style.display = 'none';
+    }
+
     function wireDashChrome() {
       // Sidebar nav — scroll to the panel containing the target element.
       var nav = document.getElementById('sol-dash-nav');
@@ -3353,10 +3410,12 @@
           item.classList.add('active');
           var targetId = item.getAttribute('data-target');
           if (targetId === 'sol-dj-conversations') { openMessenger(); return; }
+          if (targetId === 'dash-top') { closeDashWindow(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
           var target = document.getElementById(targetId);
           if (!target) return;
-          var panel = target.closest('.dash-panel') || target;
-          panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          var panel = target.closest('.dash-panel');
+          if (panel) openDashWindow(panel);
+          else target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
       }
 
@@ -3386,17 +3445,6 @@
       }
       syncAvailUI();
 
-      // Vinyl play/pause button (decorative).
-      var playBtn = document.getElementById('sol-dash-play');
-      var vinyl = document.getElementById('sol-dash-vinyl');
-      if (playBtn && vinyl && !playBtn.dataset.wired) {
-        playBtn.dataset.wired = '1';
-        playBtn.addEventListener('click', function() {
-          var spinning = vinyl.classList.toggle('spinning');
-          playBtn.textContent = spinning ? 'Ⅱ' : '▶';
-        });
-      }
-
       // Quick links — scroll to the target field/section.
       document.querySelectorAll('.sol-quick-links a').forEach(function(a) {
         if (a.dataset.wired) return;
@@ -3409,6 +3457,128 @@
           }
         });
       });
+
+      // ESC closes any open dashboard window.
+      if (!wireDashChrome.escWired) {
+        wireDashChrome.escWired = true;
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDashWindow(); });
+      }
+
+      initDjPlayer();
+    }
+
+    // ===== Hero suggestion-queue player =====
+    var djPlayer = { queue: [], idx: -1, playing: false, feedback: {} };
+
+    function buildDjQueue() {
+      function shuffle(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
+      var pop = shuffle(POPULAR_SONGS), indie = shuffle(INDIE_SONGS), q = [];
+      var pi = 0, ii = 0;
+      while (pi < pop.length || ii < indie.length) {
+        if (pi < pop.length) q.push(pop[pi++]);
+        if (pi < pop.length) q.push(pop[pi++]);
+        if (ii < indie.length) q.push(indie[ii++]);
+      }
+      return q;
+    }
+
+    function currentDjTrack() { return djPlayer.queue[djPlayer.idx]; }
+
+    function ytCmd(func, args) {
+      var f = document.querySelector('#sol-pl-frame iframe');
+      if (f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*');
+    }
+
+    function ytPlay(s) {
+      var frame = document.getElementById('sol-pl-frame');
+      if (!frame) return;
+      var q = encodeURIComponent(s.artist + ' ' + s.title + ' audio');
+      frame.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed?listType=search&list=' + q + '&autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
+      frame.style.display = 'block';
+      djPlayer.playing = true;
+      syncPlayerUI();
+    }
+
+    function syncPlayerUI() {
+      var s = currentDjTrack();
+      var playBtn = document.getElementById('sol-dash-play');
+      var vinyl = document.getElementById('sol-dash-vinyl');
+      var st = document.getElementById('sol-pl-status');
+      if (playBtn) playBtn.textContent = djPlayer.playing ? 'Ⅱ' : '▶';
+      if (vinyl) vinyl.classList.toggle('spinning', djPlayer.playing);
+      if (st && s) st.innerHTML = (djPlayer.playing ? '▶ NOW PLAYING' : 'Ⅱ PAUSED') + (s.isIndie ? ' · ⚡ INDIE ROTATION' : '');
+      var fb = s && djPlayer.feedback[s.id];
+      var like = document.getElementById('sol-pl-like');
+      var dis = document.getElementById('sol-pl-dislike');
+      if (like) { like.classList.toggle('pl-active', fb === 'like'); like.style.opacity = fb === 'like' ? '1' : '0.7'; }
+      if (dis) { dis.classList.toggle('pl-active', fb === 'dislike'); dis.style.opacity = fb === 'dislike' ? '1' : '0.7'; }
+    }
+
+    function loadDjTrack(autoplay) {
+      var s = currentDjTrack();
+      if (!s) return;
+      var t = document.getElementById('sol-pl-title');
+      var a = document.getElementById('sol-pl-artist');
+      var bpm = document.getElementById('sol-pl-bpm');
+      if (t) t.textContent = s.title;
+      if (a) a.textContent = s.artist + ' · ' + (s.genre || '') + (s.bpm ? ' · ' + s.bpm + ' BPM' : '');
+      if (bpm) bpm.textContent = s.bpm || '--';
+      if (autoplay) ytPlay(s); else { djPlayer.playing = false; syncPlayerUI(); }
+    }
+
+    function djQueueStep(step) {
+      if (!djPlayer.queue.length) djPlayer.queue = buildDjQueue();
+      djPlayer.idx = (djPlayer.idx + step + djPlayer.queue.length) % djPlayer.queue.length;
+      loadDjTrack(!!document.querySelector('#sol-pl-frame iframe'));
+    }
+
+    function sendSongFeedback(liked) {
+      var s = currentDjTrack();
+      var user = auth.currentUser;
+      if (!s || !user) return;
+      djPlayer.feedback[s.id] = liked ? 'like' : 'dislike';
+      syncPlayerUI();
+      db.collection('songFeedback').add({
+        djId: user.uid,
+        djName: user.displayName || user.email || '',
+        songId: s.id,
+        title: s.title,
+        artist: s.artist,
+        genre: s.genre || '',
+        bpm: s.bpm || null,
+        isIndie: !!s.isIndie,
+        liked: liked,
+        disliked: !liked,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function(err) { console.warn('songFeedback write failed:', err); });
+    }
+
+    function initDjPlayer() {
+      if (initDjPlayer.wired) return;
+      initDjPlayer.wired = true;
+      djPlayer.queue = buildDjQueue();
+      djPlayer.idx = 0;
+      loadDjTrack(false);
+      var playBtn = document.getElementById('sol-dash-play');
+      var skipBtn = document.getElementById('sol-pl-skip');
+      var replayBtn = document.getElementById('sol-pl-replay');
+      var likeBtn = document.getElementById('sol-pl-like');
+      var disBtn = document.getElementById('sol-pl-dislike');
+      if (playBtn) playBtn.addEventListener('click', function() {
+        var s = currentDjTrack();
+        if (!s) return;
+        if (!document.querySelector('#sol-pl-frame iframe')) { ytPlay(s); return; }
+        if (djPlayer.playing) { ytCmd('pauseVideo'); djPlayer.playing = false; }
+        else { ytCmd('playVideo'); djPlayer.playing = true; }
+        syncPlayerUI();
+      });
+      if (skipBtn) skipBtn.addEventListener('click', function() { djQueueStep(1); });
+      if (replayBtn) replayBtn.addEventListener('click', function() {
+        if (document.querySelector('#sol-pl-frame iframe')) { ytCmd('seekTo', [0]); ytCmd('playVideo'); djPlayer.playing = true; syncPlayerUI(); }
+        else loadDjTrack(true);
+      });
+      if (likeBtn) likeBtn.addEventListener('click', function() { sendSongFeedback(true); });
+      if (disBtn) disBtn.addEventListener('click', function() { sendSongFeedback(false); });
     }
 
     function syncAvailUI() {
@@ -3431,7 +3601,7 @@
       var verified = document.getElementById('sol-dj-verified-badge');
       var isVerified = verified && verified.style.display !== 'none';
 
-      ['sol-dash-side-name', 'sol-dash-chip-name', 'sol-dash-hero-name'].forEach(function(id) {
+      ['sol-dash-side-name', 'sol-dash-chip-name'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.textContent = name;
       });

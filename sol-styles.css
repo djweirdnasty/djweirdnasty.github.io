@@ -740,7 +740,26 @@ body { overflow-x:hidden; }
 #sol-dj-console .sol-dash-col { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
 #sol-dj-console .sol-dash-col > .dash-panel { width:100%; }
 #sol-dj-console .dash-panel #sol-dj-event-map-section h3 { display:none; }
-#sol-dj-console .dash-panel:has(> #sol-dj-event-map-section[style*="display:none"]) { display:none; }
+#sol-dj-console .dash-panel #sol-dj-event-map-section[style*="display:none"] + #sol-map-empty { display:block !important; }
+#sol-dj-console #sol-dj-event-map-section { margin-bottom:0 !important; }
+
+/* Panel internal scroll + expand-to-window */
+#sol-dj-console .dash-panel { display:flex; flex-direction:column; }
+#sol-dj-console .dash-panel-body { overflow-y:auto; max-height:340px; min-height:0; scrollbar-width:thin; scrollbar-color:#333 transparent; }
+#sol-dj-console .dash-panel-body::-webkit-scrollbar { width:5px; height:5px; }
+#sol-dj-console .dash-panel-body::-webkit-scrollbar-thumb { background:#333; border-radius:3px; }
+#sol-dj-console .sol-dash-rail .dash-panel-body { max-height:420px; }
+#sol-dj-console .panel-expand { background:none; border:1px solid #333; color:#89919a; width:20px; height:20px; border-radius:5px; font-size:11px; line-height:1; cursor:pointer; margin-left:auto; padding:0; flex-shrink:0; }
+#sol-dj-console .panel-expand:hover { color:#fff; border-color:#ff1020; }
+#sol-dj-console .panel-close { display:none; background:#ff1020; border:0; color:#fff; width:22px; height:22px; border-radius:6px; cursor:pointer; margin-left:6px; font-size:11px; flex-shrink:0; }
+#sol-dj-console .dash-panel.dash-window-open { position:fixed; top:5vh; left:50%; transform:translateX(-50%); width:min(880px, 94vw); max-height:88vh; z-index:1001; box-shadow:0 20px 60px rgba(0,0,0,0.85); }
+#sol-dj-console .dash-panel.dash-window-open .dash-panel-body { max-height:calc(88vh - 55px); }
+#sol-dj-console .dash-panel.dash-window-open .panel-close { display:block; }
+.dash-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:1000; backdrop-filter:blur(2px); }
+
+/* Suggestion-queue player */
+#sol-dj-console #sol-pl-frame { display:none; position:absolute; right:10px; bottom:10px; width:210px; height:118px; z-index:6; border:1px solid #333; border-radius:8px; overflow:hidden; background:#000; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
+#sol-dj-console .sol-player-controls button.pl-active { border-color:#ff1020 !important; color:#ff1020 !important; opacity:1 !important; box-shadow:0 0 10px rgba(255,16,32,0.4); }
 #sol-dj-console .dash-panel { background:linear-gradient(145deg,#0a0d10,#07090b); border:1px solid #252c33; border-radius:9px; padding:10px; min-width:0; }
 #sol-dj-console .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 #sol-dj-console .panel-title { margin:0 !important; font-size:11px !important; letter-spacing:0.5px; text-transform:uppercase; }
