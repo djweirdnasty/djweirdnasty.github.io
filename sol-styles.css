@@ -98,6 +98,19 @@
       .sol-brand-header-top { display: none; }
       #sol-app-content h2 { font-size: 1.3rem; }
       #sol-app-content .submit-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+
+      /* Admin DJ cards: stack so action buttons stay on screen */
+      .sol-admin-dj-card {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.6rem !important;
+      }
+      .sol-admin-dj-card > span { align-self: flex-start; }
+      .sol-admin-dj-btns {
+        max-width: none !important;
+        justify-content: flex-start !important;
+      }
+      .sol-admin-dj-btns .submit-btn { flex: 1 1 auto; }
     }
 
     /* All .submit-btn buttons get consistent styling */

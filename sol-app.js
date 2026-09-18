@@ -1952,6 +1952,7 @@
               var uidShort = v.id.substring(0, 10) + '...';
 
               var card = document.createElement('div');
+              card.className = 'sol-admin-dj-card';
               card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; align-items:center; gap:1rem;';
               var statusColor = d.status === 'approved' ? '#22c55e' : d.status === 'pending' ? '#ffd860' : '#ff3b30';
               var safeDjName = escapeHtml(djName);
@@ -1968,7 +1969,7 @@
                 (djRate ? '<br><span style="font-size:0.8rem; color:#22c55e;">$' + escapeHtml(djRate) + '/hr</span>' : '') +
                 '</div>' +
                 '<span style="color:' + statusColor + '; font-size:0.85rem; font-weight:600;">' + escapeHtml(d.status || 'unknown') + '</span>' +
-                '<div style="display:flex; flex-wrap:wrap; gap:0.35rem; justify-content:flex-end; max-width:220px;">' +
+                '<div class="sol-admin-dj-btns" style="display:flex; flex-wrap:wrap; gap:0.35rem; justify-content:flex-end; max-width:220px;">' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #22c55e; color:#22c55e; padding:0.35rem 0.6rem; font-size:0.75rem;" data-view-dj-admin="' + escapeAttr(v.id) + '" data-view-dj-name="' + escapeAttr(djName) + '">View</button>' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ffd860; color:#ffd860; padding:0.35rem 0.6rem; font-size:0.75rem;" data-edit-dj-admin="' + escapeAttr(v.id) + '">Edit</button>' +
                 '<button type="button" class="submit-btn" style="background:#1a1a1a; border:1px solid #ff5555; color:#ff5555; padding:0.35rem 0.6rem; font-size:0.75rem;" data-message-dj-admin="' + escapeAttr(v.id) + '" data-message-dj-admin-target="' + escapeAttr(djEmail || v.id) + '">Message</button>' +
