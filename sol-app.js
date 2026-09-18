@@ -5246,7 +5246,7 @@
       const user = auth.currentUser;
       if (!user || !djId || djId === user.uid) return;
 
-      const conversationId = 'dm_' + user.uid + '_' + djId;
+      const conversationId = 'dm_' + [user.uid, djId].sort().join('_');
       const conversationRef = db.collection('conversations').doc(conversationId);
 
       var create = function() {
