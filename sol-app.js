@@ -4935,30 +4935,239 @@
     let activeConversationId = null;
     let chatUnsubscribe = null;
 
-    function openChat(conversationId) {
-      activeConversationId = conversationId;
-      document.getElementById('sol-chat-box').style.display = 'block';
-      document.getElementById('sol-chat-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const messagesBox = document.getElementById('sol-chat-messages');
-      messagesBox.innerHTML = '';
+    // ===== SOL MESSENGER =====
+    var msgrConvoUnsubs = [];
+    var msgrMsgUnsub = null;
+    var msgrConvosByField = { clientId: {}, djId: {} };
+    var msgrActiveChatId = null;
+    var msgrActiveConvo = null;
 
-      if (chatUnsubscribe) chatUnsubscribe();
-      chatUnsubscribe = db.collection('conversations').doc(conversationId).collection('messages')
-        .orderBy('timestamp', 'asc')
+    function msgrEl(id) { return document.getElementById(id); }
+
+    function openMessenger(chatId) {
+      var m = msgrEl('sol-messenger');
+      if (!m || !auth.currentUser) return;
+      m.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      msgrShowList();
+      msgrSubscribeConversations();
+      if (chatId) msgrOpenChat(chatId);
+    }
+
+    function closeMessenger() {
+      var m = msgrEl('sol-messenger');
+      if (m) m.style.display = 'none';
+      document.body.style.overflow = '';
+      msgrConvoUnsubs.forEach(function(u) { u(); });
+      msgrConvoUnsubs = [];
+      if (msgrMsgUnsub) { msgrMsgUnsub(); msgrMsgUnsub = null; }
+      msgrConvosByField = { clientId: {}, djId: {} };
+      msgrActiveChatId = null;
+      msgrActiveConvo = null;
+    }
+
+    function msgrShowList() {
+      msgrEl('sol-msgr-chat').style.display = 'none';
+      msgrEl('sol-msgr-list').style.display = 'flex';
+      msgrActiveChatId = null;
+      if (msgrMsgUnsub) { msgrMsgUnsub(); msgrMsgUnsub = null; }
+    }
+
+    function msgrSubscribeConversations() {
+      var uid = auth.currentUser.uid;
+      msgrConvoUnsubs.forEach(function(u) { u(); });
+      msgrConvoUnsubs = [];
+      msgrConvosByField = { clientId: {}, djId: {} };
+      ['clientId', 'djId'].forEach(function(field) {
+        var unsub = db.collection('conversations').where(field, '==', uid)
+          .onSnapshot(function(snap) {
+            msgrConvosByField[field] = {};
+            snap.forEach(function(doc) { msgrConvosByField[field][doc.id] = doc.data(); });
+            msgrRenderList();
+            if (msgrActiveChatId && msgrConvosByField[field][msgrActiveChatId]) {
+              msgrActiveConvo = msgrConvosByField[field][msgrActiveChatId];
+            }
+          }, function(err) { console.error('Messenger conversations error:', err); });
+        msgrConvoUnsubs.push(unsub);
+      });
+    }
+
+    function msgrGetConvo(id) {
+      return msgrConvosByField.clientId[id] || msgrConvosByField.djId[id] || null;
+    }
+
+    function msgrOtherParty(d, uid) {
+      var isClient = d.clientId === uid;
+      return {
+        name: isClient ? (d.djName || 'DJ') : (d.clientName || 'Client'),
+        avatar: isClient ? (d.djAvatar || '') : (d.clientAvatar || ''),
+        id: isClient ? d.djId : d.clientId
+      };
+    }
+
+    function msgrTimeAgo(d) {
+      var ms = d.lastMessageTime || (d.lastMessageAt && d.lastMessageAt.toMillis ? d.lastMessageAt.toMillis() : 0);
+      if (!ms) return '';
+      var diff = Date.now() - ms;
+      if (diff < 60000) return 'now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + 'h';
+      if (diff < 604800000) return Math.floor(diff / 86400000) + 'd';
+      return new Date(ms).toLocaleDateString();
+    }
+
+    function msgrAvatarHtml(name, avatar, size) {
+      if (avatar) {
+        return '<img src="' + escapeAttr(avatar) + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.remove()">';
+      }
+      return escapeHtml((name || '?').charAt(0).toUpperCase());
+    }
+
+    function msgrRenderList() {
+      var box = msgrEl('sol-msgr-conversations');
+      if (!box || !auth.currentUser) return;
+      var uid = auth.currentUser.uid;
+      var q = (msgrEl('sol-msgr-search').value || '').trim().toLowerCase();
+      var merged = {};
+      ['clientId', 'djId'].forEach(function(f) {
+        Object.keys(msgrConvosByField[f]).forEach(function(id) { merged[id] = msgrConvosByField[f][id]; });
+      });
+      var list = Object.keys(merged).map(function(id) { return { id: id, d: merged[id] }; });
+      list.sort(function(a, b) { return (b.d.lastMessageTime || 0) - (a.d.lastMessageTime || 0); });
+      box.innerHTML = '';
+      var shown = 0;
+      list.forEach(function(c) {
+        var other = msgrOtherParty(c.d, uid);
+        if (q && other.name.toLowerCase().indexOf(q) === -1) return;
+        shown++;
+        var unread = (c.d.unreadFor && c.d.unreadFor[uid]) || 0;
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:12px; cursor:pointer;' + (unread ? ' background:#141414;' : '');
+        row.innerHTML =
+          '<div style="width:56px; height:56px; border-radius:50%; background:#ff1111; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:1.3rem; overflow:hidden; flex-shrink:0;">' + msgrAvatarHtml(other.name, other.avatar) + '</div>' +
+          '<div style="flex:1; min-width:0;">' +
+            '<div style="display:flex; align-items:center;">' +
+              '<span style="flex:1; color:#fff; font-size:1rem; font-weight:' + (unread ? '800' : '600') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(other.name) + '</span>' +
+              '<span style="color:#888; font-size:0.75rem; margin-left:8px; flex-shrink:0;">' + msgrTimeAgo(c.d) + '</span>' +
+            '</div>' +
+            '<div style="display:flex; align-items:center; margin-top:3px;">' +
+              '<span style="flex:1; color:' + (unread ? '#fff' : '#777') + '; font-size:0.85rem; font-weight:' + (unread ? '700' : '400') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(c.d.lastMessage || 'No messages yet') + '</span>' +
+              (unread ? '<span style="min-width:20px; height:20px; border-radius:10px; background:#ff1111; color:#fff; font-size:0.7rem; font-weight:800; display:flex; align-items:center; justify-content:center; margin-left:8px; padding:0 6px;">' + unread + '</span>' : '') +
+            '</div>' +
+          '</div>';
+        row.addEventListener('click', function() { msgrOpenChat(c.id); });
+        box.appendChild(row);
+      });
+      if (!shown) {
+        box.innerHTML = '<div style="text-align:center; padding:60px 20px; color:#777;"><div style="font-size:1.05rem; font-weight:700; color:#aaa; margin-bottom:6px;">No conversations yet</div>Message a DJ from their profile to get started.</div>';
+      }
+    }
+
+    function msgrOpenChat(conversationId) {
+      if (!auth.currentUser) return;
+      var uid = auth.currentUser.uid;
+      msgrActiveChatId = conversationId;
+      msgrEl('sol-msgr-list').style.display = 'none';
+      msgrEl('sol-msgr-chat').style.display = 'flex';
+
+      var setHeader = function(d) {
+        if (!d) return;
+        msgrActiveConvo = d;
+        var other = msgrOtherParty(d, uid);
+        msgrEl('sol-msgr-chat-name').textContent = other.name;
+        msgrEl('sol-msgr-chat-sub').textContent = d.clientId === uid ? 'DJ' : 'Client';
+        msgrEl('sol-msgr-chat-avatar').innerHTML = msgrAvatarHtml(other.name, other.avatar);
+      };
+      var cached = msgrGetConvo(conversationId);
+      if (cached) setHeader(cached);
+      else db.collection('conversations').doc(conversationId).get().then(function(doc) {
+        if (doc.exists) setHeader(doc.data());
+      }).catch(function() {});
+
+      var box = msgrEl('sol-msgr-messages');
+      box.innerHTML = '';
+      if (msgrMsgUnsub) msgrMsgUnsub();
+      var convoRef = db.collection('conversations').doc(conversationId);
+      msgrMsgUnsub = convoRef.collection('messages').orderBy('timestamp', 'asc')
         .onSnapshot(function(snapshot) {
-          messagesBox.innerHTML = '';
+          box.innerHTML = '';
+          var toMark = [];
+          var lastMineId = null, lastMineRead = false;
           snapshot.forEach(function(doc) {
-            const m = doc.data();
-            const mine = auth.currentUser && m.senderId === auth.currentUser.uid;
-            const bubble = document.createElement('div');
-            bubble.style.cssText = 'align-self:' + (mine ? 'flex-end' : 'flex-start') + '; background:' + (mine ? '#ff1111' : '#222') + '; color:#fff; padding:0.5rem 0.75rem; border-radius:10px; max-width:80%;';
-            bubble.textContent = (mine ? '' : (m.senderName || 'DJ') + ': ') + (m.text || '');
-            messagesBox.appendChild(bubble);
+            var m = doc.data();
+            var mine = m.senderId === uid;
+            if (!mine && !m.read) toMark.push(doc.id);
+            if (mine) { lastMineId = doc.id; lastMineRead = m.read; }
+            var wrap = document.createElement('div');
+            wrap.style.cssText = 'max-width:82%; margin-bottom:14px; align-self:' + (mine ? 'flex-end' : 'flex-start') + '; display:flex; flex-direction:column; align-items:' + (mine ? 'flex-end' : 'flex-start') + ';';
+            var ts = m.timestamp && m.timestamp.toMillis ? m.timestamp.toMillis() : 0;
+            var timeStr = ts ? new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
+            wrap.innerHTML =
+              '<div style="background:' + (mine ? '#ff1111' : '#222') + '; color:#fff; padding:10px 15px; border-radius:20px; ' + (mine ? 'border-bottom-right-radius:5px;' : 'border-bottom-left-radius:5px;') + ' font-size:0.95rem; line-height:1.4; word-break:break-word;">' + escapeHtml(m.text || '') + '</div>' +
+              '<div style="font-size:0.65rem; color:#666; margin-top:4px;">' + timeStr + (mine ? ' · ' + (m.read ? 'Seen' : 'Sent') : '') + '</div>';
+            box.appendChild(wrap);
           });
-          messagesBox.scrollTop = messagesBox.scrollHeight;
+          box.scrollTop = box.scrollHeight;
+          if (toMark.length) {
+            var batch = db.batch();
+            toMark.forEach(function(mid) {
+              batch.update(convoRef.collection('messages').doc(mid), { read: true, readAt: Date.now() });
+            });
+            batch.commit().catch(function() {});
+          }
+          convoRef.update('unreadFor.' + uid, 0).catch(function() {});
         }, function(err) {
-          console.error('Chat listener error:', err);
+          console.error('Messenger chat error:', err);
         });
+    }
+
+    function msgrSend() {
+      var input = msgrEl('sol-msgr-input');
+      var text = (input.value || '').trim();
+      var user = auth.currentUser;
+      if (!text || !msgrActiveChatId || !user) return;
+      var convoRef = db.collection('conversations').doc(msgrActiveChatId);
+      convoRef.collection('messages').add({
+        senderId: user.uid,
+        senderName: user.displayName || user.email || 'User',
+        senderAvatar: user.photoURL || '',
+        text: text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        read: false,
+        type: 'text'
+      }).then(function() {
+        var d = msgrActiveConvo || msgrGetConvo(msgrActiveChatId);
+        var recipient = d ? (d.clientId === user.uid ? d.djId : d.clientId) : null;
+        var upd = {
+          lastMessage: text,
+          lastMessageTime: Date.now(),
+          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+          lastMessageSenderId: user.uid,
+          unreadCount: firebase.firestore.FieldValue.increment(1)
+        };
+        if (recipient) upd['unreadFor.' + recipient] = firebase.firestore.FieldValue.increment(1);
+        return convoRef.update(upd);
+      }).catch(function(err) {
+        console.error('Messenger send error:', err);
+      });
+      input.value = '';
+    }
+
+    function openChat(conversationId) {
+      openMessenger(conversationId);
+    }
+
+    var msgrOpenBtn = document.getElementById('sol-open-messenger');
+    if (msgrOpenBtn) msgrOpenBtn.addEventListener('click', function() { openMessenger(); });
+    if (msgrEl('sol-msgr-close')) {
+      msgrEl('sol-msgr-close').addEventListener('click', closeMessenger);
+      msgrEl('sol-msgr-chat-close').addEventListener('click', closeMessenger);
+      msgrEl('sol-msgr-back').addEventListener('click', msgrShowList);
+      msgrEl('sol-msgr-send').addEventListener('click', msgrSend);
+      msgrEl('sol-msgr-search').addEventListener('input', msgrRenderList);
+      msgrEl('sol-msgr-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') msgrSend();
+      });
     }
 
     function sendChatMessage() {
