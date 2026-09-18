@@ -1237,10 +1237,14 @@ exports.adminFixDjAvatar = onCall(async (request) => {
     const bucket = admin.storage().bucket();
     const [files] = await bucket.getFiles({ prefix: "DJ's/" });
     const norm = function(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
-    const fileList = files.map(function(f) {
-      const base = f.name.split("/").pop().replace(/\.[^.]+$/, "");
-      return { path: f.name, key: norm(base) };
-    });
+    const fileList = files
+      .filter(function(f) {
+        return !f.name.endsWith("/") && Number(f.metadata.size || 0) > 0;
+      })
+      .map(function(f) {
+        const base = f.name.split("/").pop().replace(/\.[^.]+$/, "");
+        return { path: f.name, key: norm(base) };
+      });
 
     const fixed = [];
     const skipped = [];
@@ -1262,7 +1266,8 @@ exports.adminFixDjAvatar = onCall(async (request) => {
       if (avatar) {
         try {
           const head = await fetch(avatar, { method: "HEAD" });
-          alive = head.ok;
+          const ct = String(head.headers.get("content-type") || "");
+          alive = head.ok && ct.indexOf("image/") === 0;
         } catch (e) { alive = false; }
       }
       if (alive) { skipped.push(uid); continue; }
@@ -1287,7 +1292,12 @@ exports.adminFixDjAvatar = onCall(async (request) => {
       const hit = fileList.find(function(f) {
         return keys.some(function(k) { return k && (f.key === k || f.key.indexOf(k) >= 0 || k.indexOf(f.key) >= 0); });
       });
-      if (!hit) { unmatched.push({ uid: uid, name: name }); continue; }
+      if (!hit) {
+        // Clear the bogus URL so clients show the initial fallback cleanly.
+        if (avatar) await writeDjAvatar(uid, "");
+        unmatched.push({ uid: uid, name: name });
+        continue;
+      }
       const url = await storageDownloadUrl(hit.path);
       await writeDjAvatar(uid, url);
       fixed.push({ uid: uid, name: name, path: hit.path });
