@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sol-cache-v2';
+const CACHE_NAME = 'sol-cache-v3';
 const STATIC_ASSETS = [
   '/',
   '/sol.html',
@@ -55,8 +55,11 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Network-first for HTML, cache-first for static assets
-  if (req.destination === 'document' || req.mode === 'navigate') {
+  // Network-first for HTML and versioned app assets (cache-first can serve
+  // a stale sol-app.js forever once a bad version gets cached).
+  if (req.destination === 'document' || req.mode === 'navigate' ||
+      url.pathname === '/sol-app.js' || url.pathname === '/sol-styles.css' ||
+      url.pathname === '/sol.html' || url.pathname === '/dj.html') {
     e.respondWith(
       fetch(req).then(function(res) {
         var clone = res.clone();
