@@ -1038,7 +1038,9 @@ exports.getPublicDjProfile = onCall(async (request) => {
       uid: uid,
       slug: djSlugify(djName),
       name: djName,
-      avatar: d.photoURL || d.avatar || vp.photoURL || vp.avatar || "",
+      avatar: d.photoURL || d.avatar || vp.photoURL || vp.avatar ||
+        verData.photoURL || verData.avatar ||
+        (userDoc.exists ? (userDoc.data().photoURL || userDoc.data().avatar || "") : ""),
       bio: d.bio || vp.bio || "",
       genres: (d.genres && d.genres.length ? d.genres : (vp.genres || vp.specializations || [])),
       specialties: d.specialties || d.styles || [],
