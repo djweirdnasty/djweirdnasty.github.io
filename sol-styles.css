@@ -91,12 +91,13 @@
     .sol-brand-header-top .sol-brand-divider { height: 65px; }
     .sol-brand-header-top .sol-brand-title { font-size: clamp(26px, 4vw, 50px); }
     .sol-brand-header-top .sol-brand-sub { font-size: 13px; letter-spacing: 6px; text-align: center; }
-    @media (max-width: 500px) {
-      .sol-brand-header-top { padding: 15px; min-height: auto; }
-      .sol-brand-header-top .sol-brand-logo { width: 70px; height: 70px; }
-      .sol-brand-header-top .sol-brand-divider { height: 50px; }
-      .sol-brand-header-top .sol-brand-title { font-size: 25px; }
-      .sol-brand-header-top .sol-brand-sub { font-size: 9px; letter-spacing: 3px; }
+    /* On mobile the page header is position:fixed — hide the tall brand
+       header so it doesn't eat the screen; the mobile bar carries the
+       SOL logo instead. */
+    @media (max-width: 768px) {
+      .sol-brand-header-top { display: none; }
+      #sol-app-content h2 { font-size: 1.3rem; }
+      #sol-app-content .submit-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
     }
 
     /* All .submit-btn buttons get consistent styling */

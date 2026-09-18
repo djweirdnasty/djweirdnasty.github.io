@@ -117,28 +117,45 @@
 
     /* ============ MOBILE ============ */
     @media (max-width: 850px) {
-      .dj-card { grid-template-columns: 1fr; text-align: center; }
-      .dj-photo-wrapper { margin: auto; }
-      .dj-title { justify-content: center; }
-      .equipment { justify-content: center; }
+      .dj-card { grid-template-columns: 1fr; text-align: center; gap: 18px; padding: 20px; }
+      .dj-photo-wrapper { margin: auto; width: 150px; height: 150px; }
+      .dj-title { justify-content: center; margin: 8px 0 14px; }
+      .dj-title span { width: 60px; }
+      .equipment { justify-content: center; font-size: 14px; }
       .links-row { justify-content: center; }
-      .profile-buttons { flex-direction: column; }
+      .profile-buttons { flex-direction: column; margin-top: 18px; }
+      .profile-buttons .pbtn { min-height: 48px; font-size: 14px; }
       .vinyl-area { display: none; }
-      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stats { grid-template-columns: repeat(2, 1fr); margin-top: 20px; }
+      .stat { padding: 10px; }
       .stat:nth-child(2) { border-right: none; }
-      .gal-track img { flex: 0 0 50%; width: 50%; height: 160px; }
-      .gal-thumbs { grid-template-columns: repeat(3, 1fr); }
-      .sol-brand h1 { font-size: 25px; }
-      .sol-brand p { font-size: 9px; letter-spacing: 3px; }
+      .stat strong { font-size: 22px; }
+      .gal-track img { flex: 0 0 50%; width: 50%; height: 140px; }
+      .gal-thumbs { grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px; }
+      .gal-thumbs img { height: 62px; }
+      .gallery-navigation { gap: 25px; }
+      .sol-section { margin-top: 16px; padding: 16px; }
+      .section-title h3 { font-size: 19px; }
+      .section-title span { font-size: 22px; }
+      .back-sol { margin-top: 20px; padding: 14px; }
+      .back-sol a { font-size: 24px; }
+      .sol-header { min-height: auto; padding: 14px 5%; }
+      .sol-header::after { display: none; }
+      .sol-brand { gap: 14px; }
+      .sol-logo { width: 52px; height: 52px; }
+      .brand-divider { height: 38px; }
+      .sol-brand h1 { font-size: 22px; white-space: nowrap; }
+      .sol-brand p { font-size: 8px; letter-spacing: 3px; }
     }
     @media (max-width: 500px) {
-      .sol-header { padding: 15px; }
-      .sol-logo { width: 70px; height: 70px; }
-      .brand-divider { height: 50px; }
-      .dj-card { padding: 20px; }
-      .dj-information h2 { font-size: 36px; }
-      .sol-section { padding: 15px; }
-      .dj-photo-wrapper { width: 160px; height: 160px; }
+      .sol-header { padding: 12px 4%; }
+      .sol-logo { width: 44px; height: 44px; }
+      .brand-divider { height: 32px; }
+      .sol-brand h1 { font-size: 18px; }
+      .dj-card { padding: 16px; }
+      .dj-information h2 { font-size: 30px; }
+      .dj-photo-wrapper { width: 130px; height: 130px; }
+      .gal-thumbs { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>

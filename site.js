@@ -8,15 +8,16 @@
 
   if (header && nav) {
     // Create mobile header bar
+    var isSolPage = !!document.getElementById('sol-app-content');
     var mobileHeader = document.createElement('div');
     mobileHeader.className = 'mobile-header-bar';
     mobileHeader.innerHTML =
       '<button class="mobile-menu-btn" aria-label="Open menu" title="Menu">' +
       '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect y="5" width="24" height="2" rx="1" fill="#fff"/><rect y="11" width="24" height="2" rx="1" fill="#fff"/><rect y="17" width="24" height="2" rx="1" fill="#fff"/></svg>' +
       '</button>' +
-      '<a href="index.html" class="site-banner mobile-logo" aria-label="DJWEIRDNASTY Home">' +
-      '<img src="djweirdnasty-banner.webp" alt="DJWEIRDNASTY" />' +
-      '</a>' +
+      (isSolPage
+        ? '<a href="sol.html" class="site-banner mobile-logo" aria-label="SOL Home"><img src="sol-logo.png" alt="SOL - Sounds of Logan" /></a>'
+        : '<a href="index.html" class="site-banner mobile-logo" aria-label="DJWEIRDNASTY Home"><img src="djweirdnasty-banner.webp" alt="DJWEIRDNASTY" /></a>') +
       '<button class="mobile-search-btn" aria-label="Search" title="Search">' +
       '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a8 8 0 0 1 8 8 8 8 0 0 1-1.6 4.8l5.1 5.1a1 1 0 0 1-1.4 1.4l-5.1-5.1A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z" fill="#fff"/></svg>' +
       '</button>';
