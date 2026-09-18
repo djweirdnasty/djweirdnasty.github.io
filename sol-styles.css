@@ -86,7 +86,15 @@
       margin-bottom: 0;
       padding: 20px 6%;
       min-height: 135px;
+      justify-content: center;
+      gap: clamp(30px, 6vw, 80px);
     }
+    .sol-brand-link {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .sol-brand-link:hover .sol-brand-title { text-shadow: 0 0 12px rgba(255, 17, 17, .6); }
     .sol-brand-header-top .sol-brand-logo { width: 105px; height: 105px; }
     .sol-brand-header-top .sol-brand-divider { height: 65px; }
     .sol-brand-header-top .sol-brand-title { font-size: clamp(26px, 4vw, 50px); }
