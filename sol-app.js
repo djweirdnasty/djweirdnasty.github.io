@@ -3641,7 +3641,7 @@
           if (dmUid === user.uid) {
             alert("That's your own DJ profile — sign in with a client account to test messaging.");
           } else {
-            createOrOpenDirectConversation(dmUid, dmParams.get('djname') || '', '');
+            createOrOpenDirectConversation(dmUid, dmParams.get('djname') || '', dmParams.get('djavatar') || '');
           }
           history.replaceState(null, '', window.location.pathname);
         }
@@ -4985,7 +4985,7 @@
             snap.forEach(function(doc) { msgrConvosByField[field][doc.id] = doc.data(); });
             msgrRenderList();
             if (msgrActiveChatId && msgrConvosByField[field][msgrActiveChatId]) {
-              msgrActiveConvo = msgrConvosByField[field][msgrActiveChatId];
+              msgrSetHeader(msgrConvosByField[field][msgrActiveChatId]);
             }
           }, function(err) { console.error('Messenger conversations error:', err); });
         msgrConvoUnsubs.push(unsub);
@@ -5016,11 +5016,10 @@
       return new Date(ms).toLocaleDateString();
     }
 
-    function msgrAvatarHtml(name, avatar, size) {
-      if (avatar) {
-        return '<img src="' + escapeAttr(avatar) + '" style="width:100%; height:100%; object-fit:cover;" onerror="this.remove()">';
-      }
-      return escapeHtml((name || '?').charAt(0).toUpperCase());
+    function msgrAvatarHtml(name, avatar) {
+      var initial = escapeHtml((name || '?').charAt(0).toUpperCase());
+      if (!avatar) return initial;
+      return initial + '<img src="' + escapeAttr(avatar) + '" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover;" onerror="this.remove()">';
     }
 
     function msgrRenderList() {
@@ -5044,7 +5043,7 @@
         var row = document.createElement('div');
         row.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:12px; cursor:pointer;' + (unread ? ' background:#141414;' : '');
         row.innerHTML =
-          '<div style="width:56px; height:56px; border-radius:50%; background:#ff1111; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:1.3rem; overflow:hidden; flex-shrink:0;">' + msgrAvatarHtml(other.name, other.avatar) + '</div>' +
+          '<div style="position:relative; width:56px; height:56px; border-radius:50%; background:#ff1111; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:1.3rem; overflow:hidden; flex-shrink:0;">' + msgrAvatarHtml(other.name, other.avatar) + '</div>' +
           '<div style="flex:1; min-width:0;">' +
             '<div style="display:flex; align-items:center;">' +
               '<span style="flex:1; color:#fff; font-size:1rem; font-weight:' + (unread ? '800' : '600') + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(other.name) + '</span>' +
@@ -5063,6 +5062,37 @@
       }
     }
 
+    function msgrSetHeader(d) {
+      var uid = auth.currentUser && auth.currentUser.uid;
+      if (!d || !uid) return;
+      msgrActiveConvo = d;
+      var other = msgrOtherParty(d, uid);
+      msgrEl('sol-msgr-chat-name').textContent = other.name;
+      msgrEl('sol-msgr-chat-sub').textContent = d.clientId === uid ? 'DJ' : 'Client';
+      msgrEl('sol-msgr-chat-avatar').innerHTML = msgrAvatarHtml(other.name, other.avatar);
+      msgrBackfillAvatar(d, uid);
+    }
+
+    // If the other party's avatar is missing on the conversation doc (threads
+    // created before avatars were passed through), look it up once and write it
+    // back so the header and inbox show the real photo.
+    function msgrBackfillAvatar(d, uid) {
+      var other = msgrOtherParty(d, uid);
+      if (other.avatar || !other.id) return;
+      var field = (d.djId === other.id) ? 'djAvatar' : 'clientAvatar';
+      var lookup = (field === 'djAvatar' && firebase.functions)
+        ? firebase.functions().httpsCallable('getPublicDjProfile')({ djId: other.id })
+            .then(function(res) { var p = res && res.data; return (p && (p.avatar || p.photoURL)) || ''; })
+        : db.collection('users').doc(other.id).get()
+            .then(function(doc) { var u = doc.exists ? doc.data() : {}; return u.photoURL || u.avatar || ''; });
+      lookup.then(function(avatar) {
+        if (!avatar) return;
+        var upd = {};
+        upd[field] = avatar;
+        db.collection('conversations').doc(msgrActiveChatId).update(upd).catch(function() {});
+      }).catch(function() {});
+    }
+
     function msgrOpenChat(conversationId) {
       if (!auth.currentUser) return;
       var uid = auth.currentUser.uid;
@@ -5070,18 +5100,10 @@
       msgrEl('sol-msgr-list').style.display = 'none';
       msgrEl('sol-msgr-chat').style.display = 'flex';
 
-      var setHeader = function(d) {
-        if (!d) return;
-        msgrActiveConvo = d;
-        var other = msgrOtherParty(d, uid);
-        msgrEl('sol-msgr-chat-name').textContent = other.name;
-        msgrEl('sol-msgr-chat-sub').textContent = d.clientId === uid ? 'DJ' : 'Client';
-        msgrEl('sol-msgr-chat-avatar').innerHTML = msgrAvatarHtml(other.name, other.avatar);
-      };
       var cached = msgrGetConvo(conversationId);
-      if (cached) setHeader(cached);
+      if (cached) msgrSetHeader(cached);
       else db.collection('conversations').doc(conversationId).get().then(function(doc) {
-        if (doc.exists) setHeader(doc.data());
+        if (doc.exists) msgrSetHeader(doc.data());
       }).catch(function() {});
 
       var box = msgrEl('sol-msgr-messages');

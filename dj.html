@@ -417,7 +417,7 @@
         '<div class="profile-buttons">' +
         '<a href="sol.html" class="pbtn book-button">📅 BOOK ON SOL</a>' +
         (dj.uid
-          ? '<a href="sol.html?message=' + encodeURIComponent(dj.uid) + '&djname=' + encodeURIComponent(dj.name || '') + '" class="pbtn share-button">💬 MESSAGE</a>'
+          ? '<a href="sol.html?message=' + encodeURIComponent(dj.uid) + '&djname=' + encodeURIComponent(dj.name || '') + '&djavatar=' + encodeURIComponent(dj.avatar || '') + '" class="pbtn share-button">💬 MESSAGE</a>'
           : '<span class="pbtn share-button" style="opacity:0.5; cursor:not-allowed;">💬 MESSAGING UNAVAILABLE</span>') +
         '<button type="button" id="share-btn" class="pbtn share-button">↗ SHARE PROFILE</button>' +
         '</div>' +
