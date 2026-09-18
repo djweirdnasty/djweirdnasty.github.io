@@ -320,12 +320,21 @@
         '<div class="stat"><strong class="star">★ ' + esc(dj.reviewCount || 0) + '</strong><small>REVIEWS</small></div>' +
         '</div>';
 
-      var tags = '';
-      (dj.genres || []).forEach(function(g) { tags += '<span class="tag">' + esc(g) + '</span>'; });
-      (dj.specialties || []).forEach(function(s) { tags += '<span class="tag">' + esc(s) + '</span>'; });
+      var toArr = function(v) {
+        if (!v) return [];
+        if (Array.isArray(v)) return v.filter(Boolean).map(String);
+        return String(v).split(/[,\n;]+/).map(function(s) {
+          return s.replace(/^[\s\-•*]+/, '').trim();
+        }).filter(Boolean);
+      };
 
-      var equipment = (dj.equipment || []).length
-        ? '<div class="equipment"><span class="equipment-icon">🎧</span><strong>Equipment:</strong><span>' + esc(dj.equipment.join(', ')) + '</span></div>'
+      var tags = '';
+      toArr(dj.genres).forEach(function(g) { tags += '<span class="tag">' + esc(g) + '</span>'; });
+      toArr(dj.specialties).forEach(function(s) { tags += '<span class="tag">' + esc(s) + '</span>'; });
+
+      var equipArr = toArr(dj.equipment);
+      var equipment = equipArr.length
+        ? '<div class="equipment"><span class="equipment-icon">🎧</span><strong>Equipment:</strong><span>' + esc(equipArr.join(', ')) + '</span></div>'
         : '';
 
       var socials = dj.socialLinks || {};

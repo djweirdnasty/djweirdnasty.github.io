@@ -1034,6 +1034,17 @@ exports.getPublicDjProfile = onCall(async (request) => {
     const djName = d.stageName || d.name || d.displayName ||
       vp.stageName || vp.djName || vp.displayName ||
       verData.stageName || verData.djName || verData.displayName || "DJ";
+    // Fields may be stored as arrays OR comma/newline-separated strings.
+    const toArr = function (v) {
+      if (!v) return [];
+      if (Array.isArray(v)) return v.filter(Boolean).map(String);
+      return String(v).split(/[,\n;]+/).map(function (s) {
+        return s.replace(/^[\s\-•*]+/, "").trim();
+      }).filter(Boolean);
+    };
+    const genres = toArr(d.genres).length ? toArr(d.genres) :
+      (toArr(vp.genres).length ? toArr(vp.genres) : toArr(vp.specializations));
+    const equipment = toArr(d.equipment).length ? toArr(d.equipment) : toArr(vp.equipment);
     return {
       uid: uid,
       slug: djSlugify(djName),
@@ -1042,9 +1053,9 @@ exports.getPublicDjProfile = onCall(async (request) => {
         verData.photoURL || verData.avatar ||
         (userDoc.exists ? (userDoc.data().photoURL || userDoc.data().avatar || "") : ""),
       bio: d.bio || vp.bio || "",
-      genres: (d.genres && d.genres.length ? d.genres : (vp.genres || vp.specializations || [])),
-      specialties: d.specialties || d.styles || [],
-      equipment: (d.equipment && d.equipment.length ? d.equipment : (vp.equipment || [])),
+      genres: genres,
+      specialties: toArr(d.specialties).length ? toArr(d.specialties) : toArr(d.styles),
+      equipment: equipment,
       hourlyRate: d.hourlyRate || vp.hourlyRate || 0,
       rating: d.rating || 0,
       reviewCount: d.reviewCount || 0,
