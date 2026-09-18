@@ -308,7 +308,7 @@
       }
       var initial = esc((dj.name || 'D').charAt(0).toUpperCase());
       var avatarHtml = dj.avatar
-        ? '<img class="dj-photo" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '">'
+        ? '<img class="dj-photo" src="' + escAttr(dj.avatar) + '" alt="' + escAttr(dj.name) + '" data-i="' + escAttr(initial) + '" onerror="this.onerror=null;var d=document.createElement(\'div\');d.className=\'dj-photo-fallback\';d.textContent=this.dataset.i;this.replaceWith(d);">'
         : '<div class="dj-photo-fallback">' + initial + '</div>';
       var loc = [dj.city, dj.state].filter(Boolean).join(', ');
 

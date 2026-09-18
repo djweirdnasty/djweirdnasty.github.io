@@ -966,6 +966,23 @@ exports.getPublicDjProfile = onCall(async (request) => {
           });
         }
       }
+      // 4) Slug-match over approved verification profiles (covers DJs whose
+      //    names live only in dj-verifications.djProfile).
+      if (snap.empty) {
+        const verSnap = await db.collection("dj-verifications").where("status", "==", "approved").get();
+        verSnap.forEach(function(d) {
+          if (!snap.empty) return;
+          const vd = d.data() || {};
+          const vp = vd.djProfile || {};
+          const candidates = [vp.profileSlug, vp.stageName, vp.djName, vp.displayName, vd.stageName, vd.djName, vd.displayName, vd.realName];
+          for (const c of candidates) {
+            if (djSlugify(c) === slug) {
+              snap = { docs: [d], empty: false };
+              break;
+            }
+          }
+        });
+      }
       if (snap.empty) {
         throw new HttpsError("not-found", "DJ not found.");
       }
@@ -975,19 +992,25 @@ exports.getPublicDjProfile = onCall(async (request) => {
       throw new HttpsError("invalid-argument", "djId or name is required.");
     }
 
-    const userDoc = await db.collection("users").doc(uid).get();
-    if (!userDoc.exists || userDoc.data().isVerifiedDJ !== true) {
-      throw new HttpsError("not-found", "DJ not found.");
-    }
-
     const results = await Promise.all([
       db.collection("djs").doc(uid).get(),
       db.collection("dj-galleries").doc(uid).get(),
       db.collection("dj-samples").doc(uid).get(),
       db.collection("dj-videos").doc(uid).get(),
       db.collection("dj-events").doc(uid).get(),
+      db.collection("dj-verifications").doc(uid).get(),
+      db.collection("users").doc(uid).get(),
     ]);
     const d = results[0].exists ? results[0].data() : {};
+    const verData = results[5].exists ? results[5].data() : {};
+    const userDoc = results[6];
+    const vp = verData.djProfile || {};
+    // Verified via either the users flag or an approved verification.
+    const isVerified = (userDoc.exists && userDoc.data().isVerifiedDJ === true) ||
+      verData.status === "approved";
+    if (!isVerified) {
+      throw new HttpsError("not-found", "DJ not found.");
+    }
     const photos = results[1].exists ? (results[1].data().photos || []) : [];
     const samples = results[2].exists ? (results[2].data().samples || []) : [];
     const videos = results[3].exists ? (results[3].data().videos || []) : [];
@@ -1008,22 +1031,25 @@ exports.getPublicDjProfile = onCall(async (request) => {
       })
       .sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
 
+    const djName = d.stageName || d.name || d.displayName ||
+      vp.stageName || vp.djName || vp.displayName ||
+      verData.stageName || verData.djName || verData.displayName || "DJ";
     return {
       uid: uid,
-      slug: djSlugify(d.stageName || d.name || d.displayName || ""),
-      name: d.stageName || d.name || d.displayName || "DJ",
-      avatar: d.photoURL || d.avatar || "",
-      bio: d.bio || "",
-      genres: d.genres || [],
+      slug: djSlugify(djName),
+      name: djName,
+      avatar: d.photoURL || d.avatar || vp.photoURL || vp.avatar || "",
+      bio: d.bio || vp.bio || "",
+      genres: (d.genres && d.genres.length ? d.genres : (vp.genres || vp.specializations || [])),
       specialties: d.specialties || d.styles || [],
-      equipment: d.equipment || [],
-      hourlyRate: d.hourlyRate || 0,
+      equipment: (d.equipment && d.equipment.length ? d.equipment : (vp.equipment || [])),
+      hourlyRate: d.hourlyRate || vp.hourlyRate || 0,
       rating: d.rating || 0,
       reviewCount: d.reviewCount || 0,
       totalBookingsCompleted: d.totalBookingsCompleted || 0,
-      experience: d.experience || d.yearsExperience || 0,
-      city: d.city || "",
-      state: d.state || "",
+      experience: d.experience || d.yearsExperience || vp.yearsOfExperience || 0,
+      city: d.city || vp.city || "",
+      state: d.state || vp.state || "",
       website: d.website || "",
       socialLinks: d.socialLinks || {},
       photos: photos,

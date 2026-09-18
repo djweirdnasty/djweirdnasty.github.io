@@ -1959,7 +1959,7 @@
               var safeAvatar = escapeAttr(djAvatar);
               var safeInitial = escapeHtml((djName.charAt(0) || 'D').toUpperCase());
               var avatarHtml = djAvatar
-                ? '<img loading="lazy" src="' + safeAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:48px;height:48px;border-radius:50%;background:#ff5555;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>'
+                ? '<img loading="lazy" src="' + safeAvatar + '" style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div style="width:48px;height:48px;border-radius:50%;background:#ff5555;display:none;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>'
                 : '<div style="width:48px;height:48px;border-radius:50%;background:#ff5555;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;flex-shrink:0;">' + safeInitial + '</div>';
               card.innerHTML = avatarHtml +
                 '<div style="flex:1;"><strong>' + safeDjName + '</strong>' +
@@ -1997,8 +1997,7 @@
             });
             djsList.querySelectorAll('button[data-view-dj-admin]').forEach(function(btn) {
               btn.addEventListener('click', function() {
-                var slug = djSlugify(btn.getAttribute('data-view-dj-name') || '');
-                window.open(slug ? '/dj/' + encodeURIComponent(slug) : 'dj.html?uid=' + encodeURIComponent(btn.getAttribute('data-view-dj-admin')), '_blank');
+                window.open('dj.html?uid=' + encodeURIComponent(btn.getAttribute('data-view-dj-admin')), '_blank');
               });
             });
             djsList.querySelectorAll('button[data-edit-dj-admin]').forEach(function(btn) {
@@ -2318,7 +2317,7 @@
         var safeName = escapeHtml(name);
         var safeInitial = escapeHtml((name.charAt(0) || 'U').toUpperCase());
         var avatarHtml = avatar
-          ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;"><div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
+          ? '<img loading="lazy" src="' + escapeAttr(avatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>'
           : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">' + safeInitial + '</div>';
         var isProtected = d.protected === true;
         var badges = '';
@@ -4494,7 +4493,7 @@
         var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
         if (avatarUrl) {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid #22c55e;margin:0 auto; background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;position:relative;">' +
-            initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;">' +
+            initial + '<img loading="lazy" src="' + avatarUrl + '" style="width:100%;height:100%;object-fit:cover;position:absolute;" onerror="this.remove()">' +
             '</div>';
         } else {
           avatarHtml = '<div style="width:100px;height:100px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;margin:0 auto;border:3px solid #22c55e;">' + initial + '</div>';
@@ -4555,7 +4554,7 @@
       var initial = escapeHtml((dj.name || 'D').charAt(0).toUpperCase());
       var avatar = escapeAttr(dj.avatar || dj.photoURL || '');
       var avatarHtml = avatar
-        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;"><div style="width:120px;height:120px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
+        ? '<img loading="lazy" src="' + avatar + '" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #22c55e;margin:0 auto 1rem;display:block;" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div style="width:120px;height:120px;border-radius:50%;background:#ff1111;display:none;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>'
         : '<div style="width:120px;height:120px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:700;color:#fff;margin:0 auto 1rem;border:4px solid #22c55e;">' + initial + '</div>';
 
       var genres = escapeHtml((dj.genres || []).join(', ')) || 'Not specified';
@@ -4819,10 +4818,7 @@
         var dj = lastDjList[idx];
         if (!dj) return;
         var uid = dj.firebaseUid || dj.id || dj.uid || dj.dj_id || '';
-        var slug = djSlugify(dj.name || dj.djName || '');
-        if (slug) {
-          window.open('dj.html?dj=' + encodeURIComponent(slug), '_blank');
-        } else if (uid) {
+        if (uid) {
           window.open('dj.html?uid=' + encodeURIComponent(uid), '_blank');
         } else {
           showDJProfile(dj);
@@ -5154,7 +5150,7 @@
           card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:0.75rem; display:flex; align-items:center; gap:0.75rem; min-width:200px;';
           var safeName = escapeHtml(d.djName || 'D');
           var safeInitial = escapeHtml(safeName.charAt(0).toUpperCase());
-          var avatar = d.djAvatar ? '<img loading="lazy" src="' + escapeAttr(d.djAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + safeInitial + '</div>';
+          var avatar = d.djAvatar ? '<img loading="lazy" src="' + escapeAttr(d.djAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;var f=document.createElement(\'div\');f.style.cssText=\'width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;\';f.textContent=\'' + safeInitial + '\';this.replaceWith(f);">' : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">' + safeInitial + '</div>';
           card.innerHTML = avatar + '<div style="flex:1;"><strong>' + escapeHtml(d.djName || 'Unknown DJ') + '</strong></div><button type="button" class="submit-btn" style="background:#333; padding:0.3rem 0.6rem; font-size:0.8rem;" data-remove-saved="' + escapeAttr(doc.id) + '">✕</button>';
           box.appendChild(card);
         });
