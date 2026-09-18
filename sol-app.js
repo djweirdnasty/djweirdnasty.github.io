@@ -4616,6 +4616,9 @@
         '<div id="sol-dj-reviews" style="text-align:left; margin:1rem 0;"><p style="color:#888;">Loading reviews...</p></div>' +
         '<div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">' +
         (navUrl ? '<a href="' + escapeAttr(navUrl) + '" target="_blank" class="playlist-link" style="flex:1;">Get Directions</a>' : '') +
+        (auth.currentUser && djUid && auth.currentUser.uid !== djUid
+          ? '<button type="button" class="submit-btn" style="flex:1; background:#1a1a1a; border:1px solid #ff1111; color:#ff1111;" data-dm-dj="' + escapeAttr(djUid) + '" data-dm-dj-name="' + encodeURIComponent(dj.name || '') + '" data-dm-dj-avatar="' + encodeURIComponent(dj.avatar || dj.photoURL || '') + '">💬 Message</button>'
+          : '') +
         '<button type="button" class="submit-btn" style="flex:1;" data-share-dj="' + encodeURIComponent(dj.name || '') + '" data-share-dj-uid="' + djUid + '">Share Profile</button>' +
         '<button type="button" class="submit-btn" style="flex:1; background:#333;" data-save-dj="' + (djUid || '') + '" data-save-dj-name="' + encodeURIComponent(dj.name || '') + '" data-save-dj-avatar="' + encodeURIComponent(dj.avatar || dj.photoURL || '') + '">♥ Save DJ</button>' +
         '</div>';
@@ -4821,6 +4824,14 @@
           });
         }
       }
+      if (e.target && e.target.hasAttribute('data-dm-dj')) {
+        createOrOpenDirectConversation(
+          e.target.getAttribute('data-dm-dj'),
+          decodeURIComponent(e.target.getAttribute('data-dm-dj-name') || ''),
+          decodeURIComponent(e.target.getAttribute('data-dm-dj-avatar') || '')
+        );
+        this.style.display = 'none';
+      }
     });
 
     document.getElementById('sol-dj-track').addEventListener('click', function(e) {
@@ -4956,7 +4967,8 @@
         trackSolEvent('chat_message_sent', { conversation_id: activeConversationId });
         return db.collection('conversations').doc(activeConversationId).update({
           lastMessage: text,
-          lastMessageTime: Date.now()
+          lastMessageTime: Date.now(),
+          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
         });
       }).catch(function(err) {
         console.error('Send message error:', err);
@@ -4992,9 +5004,11 @@
           djId: djId,
           djName: djName || 'DJ',
           djAvatar: '',
+          participants: [user.uid, djId],
           unreadCount: 0,
           lastMessage: '',
-          lastMessageTime: Date.now()
+          lastMessageTime: Date.now(),
+          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
         }).then(function() {
           openChat(conversationId);
         }).catch(function(err) {
@@ -5002,6 +5016,43 @@
           const status = document.getElementById('sol-quick-status');
           status.textContent = 'Payment successful, but chat could not start: ' + err.message;
           status.style.color = '#ffd860';
+        });
+      });
+    }
+
+    // Direct client -> DJ conversation (no booking required). Deterministic
+    // id so a client/DJ pair always lands in the same thread.
+    function createOrOpenDirectConversation(djId, djName, djAvatar) {
+      const user = auth.currentUser;
+      if (!user || !djId || djId === user.uid) return;
+
+      const conversationId = 'dm_' + user.uid + '_' + djId;
+      const conversationRef = db.collection('conversations').doc(conversationId);
+
+      conversationRef.get().then(function(doc) {
+        if (doc.exists) {
+          openChat(conversationId);
+          return;
+        }
+        conversationRef.set({
+          id: conversationId,
+          type: 'direct',
+          clientId: user.uid,
+          clientName: user.displayName || user.email || 'Client',
+          clientAvatar: user.photoURL || ('https://api.dicebear.com/7.x/avataaars/svg?seed=' + user.uid),
+          djId: djId,
+          djName: djName || 'DJ',
+          djAvatar: djAvatar || '',
+          participants: [user.uid, djId],
+          unreadCount: 0,
+          lastMessage: '',
+          lastMessageTime: Date.now(),
+          lastMessageAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(function() {
+          openChat(conversationId);
+        }).catch(function(err) {
+          console.error('Create DM error:', err);
+          alert('Could not start conversation: ' + err.message);
         });
       });
     }
