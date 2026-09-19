@@ -233,10 +233,10 @@
     }
 
     /* Admin stats cards */
-    #sol-admin-console > div:first-child > div {
+    #sol-admin-console .sol-admin-body > div:first-child > div {
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    #sol-admin-console > div:first-child > div:hover {
+    #sol-admin-console .sol-admin-body > div:first-child > div:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(255, 17, 17, 0.15);
     }
@@ -409,22 +409,9 @@
       .sol-map-wrap { height: 320px; }
 
       /* Admin stats: 2-col on mobile */
-      #sol-admin-console > div:first-child { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
-      #sol-admin-console > div:first-child > div { padding: 0.6rem !important; }
-      #sol-admin-console > div:first-child > div > div:first-child { font-size: 1.1rem !important; }
-
-      /* Admin tab buttons: scrollable row */
-      #sol-admin-console > div[style*="flex-wrap:wrap"] {
-        flex-wrap: nowrap !important;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.5rem;
-      }
-      #sol-admin-console > div[style*="flex-wrap:wrap"] .submit-btn {
-        flex-shrink: 0;
-        padding: 0.4rem 0.8rem !important;
-        font-size: 0.8rem !important;
-      }
+      #sol-admin-console .sol-admin-body > div:first-child { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+      #sol-admin-console .sol-admin-body > div:first-child > div { padding: 0.6rem !important; }
+      #sol-admin-console .sol-admin-body > div:first-child > div > div:first-child { font-size: 1.1rem !important; }
 
       /* Admin earnings summary: stack */
       #sol-admin-panel-earnings > div[style*="grid-template-columns:repeat(3"] {
@@ -620,7 +607,7 @@
 
     /* Extra small phones */
     @media (max-width: 400px) {
-      #sol-admin-console > div:first-child { grid-template-columns: 1fr !important; }
+      #sol-admin-console .sol-admin-body > div:first-child { grid-template-columns: 1fr !important; }
       #sol-dj-track > div { flex: 0 0 180px !important; min-width: 180px !important; }
       #sol-app-content h2 { font-size: 1.1rem; }
       .submit-btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
@@ -844,6 +831,60 @@ body { overflow-x:hidden; }
 #sol-dj-console .sol-dash-grid { gap:8px; margin-top:8px; }
 #sol-dj-console .dash-panel { padding:9px; }
 #sol-dj-console .sol-dash-footer { min-height:32px; margin-top:8px; font-size:9px; gap:20px; }
+
+/* ===== Admin Console — same dash shell as the DJ console ===== */
+#sol-admin-console .sol-dash { display:flex; min-height:80vh; background:radial-gradient(circle at 70% 0%, rgba(255,0,20,0.08), transparent 30%), #030405; border:1px solid #252c33; border-left:none; border-right:none; width:100vw; margin-left:calc(50% - 50vw); }
+#sol-admin-console .sol-dash-sidebar { width:150px; flex-shrink:0; background:linear-gradient(180deg,#090c0f 0%,#050607 70%,#090305 100%); border-right:1px solid #22282e; display:flex; flex-direction:column; }
+#sol-admin-console .sol-dash-brand { height:70px; display:flex; justify-content:center; align-items:center; }
+#sol-admin-console .sol-dash-brand img { width:58px; height:58px; object-fit:contain; }
+#sol-admin-console .sol-dash-nav { padding:5px 9px; }
+#sol-admin-console .sol-nav-item { height:36px; display:flex; align-items:center; gap:9px; padding:0 10px; color:#adb3ba; font-size:12px; border-radius:6px; margin-bottom:2px; cursor:pointer; transition:0.2s; }
+#sol-admin-console .sol-nav-item:hover { background:#15191d; color:#fff; }
+#sol-admin-console .sol-nav-item.active { background:linear-gradient(90deg,#e50013,#79030c); color:#fff; box-shadow:0 0 20px rgba(255,0,20,0.25); }
+#sol-admin-console .sol-nav-icon { width:18px; text-align:center; font-size:15px; }
+#sol-admin-console .sol-dash-side-dj { margin-top:auto; border-top:1px solid #1d2227; padding:10px; display:flex; gap:10px; align-items:center; }
+#sol-admin-console .sol-dash-side-avatar { width:38px; height:38px; border-radius:50%; border:1px solid #333; background:#ff1111; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; flex-shrink:0; }
+#sol-admin-console .sol-dash-side-info strong { display:block; font-size:11px; }
+#sol-admin-console .sol-dash-side-info span { display:block; font-size:8px; margin-top:3px; }
+#sol-admin-console .sol-verified { color:#28a9ff; }
+#sol-admin-console .sol-dash-wave { padding:10px; text-align:center; color:#ff1020; font-size:13px; }
+#sol-admin-console .sol-dash-wave small { display:block; color:#777; font-size:7px; letter-spacing:1px; line-height:1.7; margin-top:8px; }
+#sol-admin-console .sol-dash-main { flex:1; min-width:0; }
+#sol-admin-console .sol-dash-header { min-height:52px; border-bottom:1px solid #20262c; display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:linear-gradient(180deg,#080b0e,#050607); gap:12px; flex-wrap:wrap; }
+#sol-admin-console .sol-dash-title { display:flex; align-items:center; gap:14px; }
+#sol-admin-console .sol-dash-title h1 { margin:0; font-size:19px; font-weight:800; letter-spacing:-1px; }
+#sol-admin-console .sol-dash-title span { font-size:7px; color:#89919a; letter-spacing:1px; }
+#sol-admin-console .sol-dash-titlewave { color:#ff1020; font-size:14px; letter-spacing:-4px; }
+#sol-admin-console .sol-dash-controls { display:flex; align-items:center; gap:14px; }
+#sol-admin-console .sol-dash-chip { display:flex; align-items:center; gap:8px; border-left:1px solid #252b31; padding-left:12px; }
+#sol-admin-console .sol-dash-chip-avatar { width:28px; height:28px; border-radius:50%; background:#ff1111; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; color:#fff; }
+#sol-admin-console .sol-dash-chip-info strong { display:block; font-size:11px; }
+#sol-admin-console .sol-dash-chip-info small { color:#737b83; font-size:8px; }
+#sol-admin-console .sol-dash-content { padding:10px; }
+#sol-admin-console .sol-admin-body { max-width:1100px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+
+@media (max-width:800px) {
+  #sol-admin-console .sol-dash-sidebar { width:60px; }
+  #sol-admin-console .sol-dash-brand img { width:44px; height:44px; }
+  #sol-admin-console .sol-dash-brand { height:65px; }
+  #sol-admin-console .sol-nav-text, #sol-admin-console .sol-dash-side-info, #sol-admin-console .sol-dash-wave { display:none; }
+  #sol-admin-console .sol-nav-item { justify-content:center; }
+  #sol-admin-console .sol-dash-side-dj { justify-content:center; }
+}
+@media (max-width:520px) {
+  #sol-admin-console .sol-dash { flex-direction:column; }
+  #sol-admin-console .sol-dash-sidebar { width:100%; flex-direction:row; align-items:center; border-right:none; border-bottom:1px solid #22282e; }
+  #sol-admin-console .sol-dash-brand { height:52px; padding:0 10px; }
+  #sol-admin-console .sol-dash-brand img { width:36px; height:36px; }
+  #sol-admin-console .sol-dash-nav { display:flex; overflow-x:auto; flex:1; padding:5px; }
+  #sol-admin-console .sol-nav-item { flex-shrink:0; }
+  #sol-admin-console .sol-dash-side-dj { display:none; }
+  #sol-admin-console .sol-dash-title span, #sol-admin-console .sol-dash-titlewave { display:none; }
+  #sol-admin-console .sol-dash-title h1 { font-size:18px; }
+  #sol-admin-console .sol-dash-controls { gap:10px; }
+  #sol-admin-console .sol-dash-chip-info { display:none; }
+  #sol-admin-console .sol-dash-content { padding:8px; }
+}
 
 /* ===== DJ Dashboard density overrides (compress legacy inline spacing) ===== */
 #sol-dj-console .dash-panel { font-size:12px; }

@@ -55,7 +55,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-functions-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
   <script async src="https://pagead2.googletagmanager.com/pagead/js/adsbygoogle.js?client=ca-pub-9518165099685321" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="sol-styles.css?v=18">
+  <link rel="stylesheet" href="sol-styles.css?v=19">
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 
 </head>
@@ -505,7 +505,41 @@
         </div>
 
         <div id="sol-admin-console" style="display:none;">
-          <h2>Admin Console</h2>
+        <div class="sol-dash">
+          <aside class="sol-dash-sidebar">
+            <div class="sol-dash-brand"><img src="sol-logo.png" alt="SOL"></div>
+            <nav class="sol-dash-nav">
+              <div class="sol-nav-item active" id="sol-admin-tab-djs"><span class="sol-nav-icon">♙</span><span class="sol-nav-text">Manage DJs</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-bookings"><span class="sol-nav-icon">▣</span><span class="sol-nav-text">All Bookings</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-verifications"><span class="sol-nav-icon">✓</span><span class="sol-nav-text">Verifications</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-users"><span class="sol-nav-icon">♟</span><span class="sol-nav-text">Users</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-messages"><span class="sol-nav-icon">▱</span><span class="sol-nav-text">Messages</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-earnings"><span class="sol-nav-icon">$</span><span class="sol-nav-text">Earnings</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-songs"><span class="sol-nav-icon">♫</span><span class="sol-nav-text">Songs</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-add-dj"><span class="sol-nav-icon">✚</span><span class="sol-nav-text">Add DJ</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-disputes"><span class="sol-nav-icon">⚠</span><span class="sol-nav-text">Disputes</span></div>
+              <div class="sol-nav-item" id="sol-admin-tab-settings"><span class="sol-nav-icon">⚙</span><span class="sol-nav-text">Settings</span></div>
+            </nav>
+            <div class="sol-dash-side-dj">
+              <div class="sol-dash-side-avatar">A</div>
+              <div class="sol-dash-side-info">
+                <strong>Admin</strong>
+                <span class="sol-verified">✓ Site Owner</span>
+              </div>
+            </div>
+            <div class="sol-dash-wave">〰〰〰〰<small>CONTROL<br>CENTER.</small></div>
+          </aside>
+
+          <main class="sol-dash-main">
+            <header class="sol-dash-header">
+              <div class="sol-dash-title"><h1>ADMIN CONSOLE</h1><div class="sol-dash-titlewave">▁▂▅▂▇▃▆▂▅</div><span>DJS / BOOKINGS / PAYOUTS / PLATFORM CONTROL.</span></div>
+              <div class="sol-dash-controls">
+                <div class="sol-dash-chip"><div class="sol-dash-chip-avatar">A</div><div class="sol-dash-chip-info"><strong>Admin</strong><small>OWNER</small></div><span>⌄</span></div>
+              </div>
+            </header>
+
+            <div class="sol-dash-content sol-admin-content">
+              <div class="sol-admin-body">
 
           <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:0.75rem; margin-bottom:1rem;">
             <div style="background:#111; border:1px solid #ff5555; border-radius:12px; padding:1rem; text-align:center;">
@@ -528,19 +562,6 @@
               <div style="font-size:1.5rem; font-weight:700; color:#22c55e;" id="sol-admin-stat-revenue">$0</div>
               <div style="font-size:0.8rem; color:#aaa;">Revenue</div>
             </div>
-          </div>
-
-          <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
-            <button type="button" id="sol-admin-tab-djs" class="submit-btn" style="background:#ff5555; color:#000;">Manage DJs</button>
-            <button type="button" id="sol-admin-tab-bookings" class="submit-btn">All Bookings</button>
-            <button type="button" id="sol-admin-tab-verifications" class="submit-btn">DJ Verifications</button>
-            <button type="button" id="sol-admin-tab-users" class="submit-btn">Users</button>
-            <button type="button" id="sol-admin-tab-messages" class="submit-btn">Messages</button>
-            <button type="button" id="sol-admin-tab-earnings" class="submit-btn">Earnings</button>
-            <button type="button" id="sol-admin-tab-songs" class="submit-btn">Songs</button>
-            <button type="button" id="sol-admin-tab-add-dj" class="submit-btn">Add DJ</button>
-            <button type="button" id="sol-admin-tab-disputes" class="submit-btn">Disputes</button>
-            <button type="button" id="sol-admin-tab-settings" class="submit-btn">Settings</button>
           </div>
 
           <div id="sol-admin-panel-djs">
@@ -682,6 +703,11 @@
           </div>
 
           <p id="sol-admin-status" class="form-status" aria-live="polite"></p>
+
+              </div>
+            </div>
+          </main>
+        </div>
         </div>
 
       <div id="sol-client-view">
@@ -1179,7 +1205,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=73"></script>
+  <script src="sol-app.js?v=74"></script>
 <script src="site.js?v=25"></script>
 </body>
 </html>

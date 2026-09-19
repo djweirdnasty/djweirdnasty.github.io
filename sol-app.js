@@ -2285,7 +2285,9 @@
         var btn = document.getElementById('sol-admin-tab-' + t);
         if (panel) panel.style.display = (t === activeId) ? 'block' : 'none';
         if (btn) {
-          if (t === activeId) { btn.style.background = '#ff5555'; btn.style.color = '#000'; }
+          if (btn.classList && btn.classList.contains('sol-nav-item')) {
+            btn.classList.toggle('active', t === activeId);
+          } else if (t === activeId) { btn.style.background = '#ff5555'; btn.style.color = '#000'; }
           else { btn.style.background = ''; btn.style.color = ''; }
         }
       });
