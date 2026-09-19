@@ -939,8 +939,8 @@
             var fee = Math.round(amount * 0.15);
             var paidOut = !!(b.payoutSent || b.finalPayoutSent || b.stripeTransferId);
             if (paidOut) paidAmt += djShare; else pendingAmt += djShare;
-            var pStatus = b.stripeTransferId ? 'Paid via Stripe' : (b.payoutBatchId || b.payoutSent || b.finalPayoutSent) ? 'Paid via PayPal' : (b.payoutStatus === 'awaiting_payout_setup' ? 'Awaiting payout setup' : 'Pending');
-            var pColor = paidOut ? '#22c55e' : (b.payoutStatus === 'awaiting_payout_setup' ? '#ff5555' : '#ffd860');
+            var pStatus = paidOut ? 'Paid ✓' : (b.payoutStatus === 'awaiting_paypal_setup' ? 'Awaiting PayPal setup' : 'Pending');
+            var pColor = paidOut ? '#22c55e' : (b.payoutStatus === 'awaiting_paypal_setup' ? '#ff5555' : '#ffd860');
             listHtml += '<div style="background:#0a0a0a; border:1px solid #333; border-radius:8px; padding:0.6rem;">' +
               '<div style="display:flex; justify-content:space-between; font-size:0.8rem;">' +
               '<strong>' + escapeHtml(b.eventType || b.event_type || 'Event') + '</strong>' +
@@ -970,50 +970,20 @@
         });
     }
 
-    // ---------- Stripe Connect payout setup (automatic payouts after completed gigs) ----------
+    // ---------- Automatic PayPal payouts (fires when a gig is marked complete) ----------
     function initDjPayoutSetup(user) {
       var statusEl = document.getElementById('sol-dj-payout-status');
-      var setupBtn = document.getElementById('sol-dj-payout-setup');
-      if (!statusEl || !setupBtn) return;
-
-      function renderStatus(res) {
-        var d = res && res.data ? res.data : {};
-        if (d.payoutsEnabled) {
-          statusEl.innerHTML = '<span style="color:#22c55e;">✓ Automatic payouts active</span>';
-          setupBtn.style.display = 'none';
-        } else if (d.onboarded) {
-          statusEl.innerHTML = '<span style="color:#ffd860;">Payout account under review — finish any remaining steps.</span>';
-          setupBtn.style.display = '';
-          setupBtn.textContent = 'Finish payout setup';
+      if (!statusEl) return;
+      db.collection('djs').doc(user.uid).get().then(function(doc) {
+        var paypal = doc.exists ? (doc.data().paypal || '').trim() : '';
+        if (paypal.indexOf('@') !== -1) {
+          statusEl.innerHTML = '<span style="color:#22c55e;">✓ Automatic payouts active → ' + escapeHtml(paypal) + '</span>';
+        } else if (paypal) {
+          statusEl.innerHTML = '<span style="color:#ffd860;">Add a PayPal <strong>email</strong> above (not a paypal.me link) for automatic payouts.</span>';
         } else {
-          statusEl.innerHTML = '<span style="color:#ffd860;">Not connected — set up payouts to get paid automatically.</span>';
-          setupBtn.style.display = '';
-          setupBtn.textContent = 'Set up automatic payouts';
+          statusEl.innerHTML = '<span style="color:#ffd860;">Add your PayPal email above to get paid automatically after each gig.</span>';
         }
-      }
-
-      firebase.functions().httpsCallable('getDjPayoutStatus')()
-        .then(renderStatus)
-        .catch(function() { statusEl.textContent = 'Automatic payouts: unavailable right now.'; });
-
-      if (!setupBtn.dataset.wired) {
-        setupBtn.dataset.wired = '1';
-        setupBtn.addEventListener('click', function() {
-          setupBtn.disabled = true;
-          setupBtn.textContent = 'Opening Stripe…';
-          firebase.functions().httpsCallable('getOrCreateDjPayoutAccount')()
-            .then(function(res) {
-              if (res.data && res.data.url) window.open(res.data.url, '_blank');
-            })
-            .catch(function(err) {
-              alert('Payout setup failed: ' + (err.message || 'Unknown error'));
-            })
-            .finally(function() {
-              setupBtn.disabled = false;
-              setupBtn.textContent = 'Set up automatic payouts';
-            });
-        });
-      }
+      }).catch(function() { statusEl.textContent = 'Automatic payouts: status unavailable.'; });
     }
 
     // ---------- DJ Custom Gigs (public/private events on schedule + profile) ----------
