@@ -3117,26 +3117,52 @@
         addSongBtn.disabled = true;
         st.style.color = '#888';
         st.textContent = 'Looking up track...';
+        var note = (noteEl.value || '').trim() || null;
+        var uid = auth.currentUser ? auth.currentUser.uid : 'admin';
         fetch('https://itunes.apple.com/lookup?id=' + trackId)
           .then(function(r) { return r.json(); })
           .then(function(d) {
             var t = d.results && d.results[0];
-            if (!t || t.wrapperType !== 'track') throw new Error('No song found for that link.');
-            return db.collection('songSuggestions').add({
-              title: t.trackName || 'Untitled',
-              artist: t.artistName || '',
-              appleMusicUrl: url,
-              itunesTrackId: trackId,
-              previewUrl: t.previewUrl || null,
-              artworkUrl: t.artworkUrl100 || null,
-              note: (noteEl.value || '').trim() || null,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              createdBy: auth.currentUser ? auth.currentUser.uid : 'admin'
-            }).then(function() { return t; });
+            if (!t) throw new Error('Nothing found for that link.');
+            if (t.wrapperType === 'track') return [t];
+            // Album/single link — resolve its tracks.
+            if (t.wrapperType === 'collection' || t.collectionId) {
+              st.textContent = 'Album found — loading its songs...';
+              return fetch('https://itunes.apple.com/lookup?id=' + trackId + '&entity=song&limit=15')
+                .then(function(r) { return r.json(); })
+                .then(function(d2) {
+                  var tracks = (d2.results || []).filter(function(x) { return x.wrapperType === 'track'; });
+                  if (!tracks.length) throw new Error('That album has no playable songs.');
+                  return tracks;
+                });
+            }
+            throw new Error('No song found for that link.');
           })
-          .then(function(t) {
+          .then(function(tracks) {
+            return db.collection('songSuggestions').where('itunesTrackId', 'in', tracks.slice(0, 10).map(function(t) { return String(t.trackId); })).get()
+              .then(function(existing) {
+                var seen = {};
+                existing.forEach(function(doc) { seen[doc.data().itunesTrackId] = true; });
+                var adds = tracks.filter(function(t) { return !seen[String(t.trackId)]; });
+                if (!adds.length) throw new Error('Already added — those songs are in the queue.');
+                return Promise.all(adds.map(function(t) {
+                  return db.collection('songSuggestions').add({
+                    title: t.trackName || 'Untitled',
+                    artist: t.artistName || '',
+                    appleMusicUrl: url,
+                    itunesTrackId: String(t.trackId),
+                    previewUrl: t.previewUrl || null,
+                    artworkUrl: t.artworkUrl100 || null,
+                    note: note,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: uid
+                  });
+                })).then(function() { return adds; });
+              });
+          })
+          .then(function(adds) {
             st.style.color = '#22c55e';
-            st.textContent = '✅ Added "' + (t.trackName || 'song') + '" — DJs will see it in their console queue.';
+            st.textContent = '✅ Added ' + adds.length + ' song' + (adds.length > 1 ? 's' : '') + ' — DJs will see it in their console queue.';
             urlEl.value = '';
             noteEl.value = '';
             addSongBtn.disabled = false;
