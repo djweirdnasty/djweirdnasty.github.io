@@ -3022,6 +3022,28 @@
         });
     }
 
+    var testPayoutBtn = document.getElementById('sol-admin-test-payout');
+    if (testPayoutBtn) {
+      testPayoutBtn.addEventListener('click', function() {
+        var st = document.getElementById('sol-admin-test-payout-status');
+        if (!confirm('Create a $1 test booking for YOUR DJ profile, mark it completed, and fire the real auto-payout? This pays out ALL unpaid earnings for that DJ (to its PayPal email).')) return;
+        testPayoutBtn.disabled = true;
+        testPayoutBtn.textContent = 'Testing…';
+        if (st) { st.style.color = '#ffd860'; st.textContent = 'Creating test booking and completing it…'; }
+        firebase.functions().httpsCallable('adminTestPayout')({})
+          .then(function(res) {
+            if (st) { st.style.color = '#22c55e'; st.textContent = '✓ Test booking ' + (res.data && res.data.bookingId) + ' completed — check PayPal for the payout (may take a few seconds).'; }
+          })
+          .catch(function(err) {
+            if (st) { st.style.color = '#ff1111'; st.textContent = 'Failed: ' + (err.message || 'Unknown error'); }
+          })
+          .finally(function() {
+            testPayoutBtn.disabled = false;
+            testPayoutBtn.textContent = '🧪 Test Auto-Payout ($1 booking → $0.85 to my PayPal)';
+          });
+      });
+    }
+
     function loadAdminMergeDjs() {
       var fromSel = document.getElementById('sol-merge-from');
       var toSel = document.getElementById('sol-merge-to');

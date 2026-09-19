@@ -671,6 +671,30 @@ exports.autoPayoutOnCompletion = onDocumentUpdated(
 
 
 
+// Admin test: creates a $1 booking for a DJ and marks it completed, which fires
+// autoPayoutOnCompletion end-to-end (real $0.85 PayPal payout + any other owed).
+exports.adminTestPayout = onCall(async (request) => {
+  var auth = request.auth;
+  if (!auth || (auth.uid !== ADMIN_UID && (!auth.token || auth.token.email !== ADMIN_EMAIL))) {
+    throw new HttpsError("permission-denied", "Only the SOL admin can test payouts.");
+  }
+  var djId = (request.data && request.data.djId) || auth.uid;
+  var ref = db.collection("bookings").doc();
+  await ref.set({
+    djId: djId,
+    clientId: auth.uid,
+    clientName: "PAYOUT TEST",
+    eventType: "Payout Test",
+    date: new Date().toISOString().slice(0, 10),
+    totalAmount: 1,
+    status: "confirmed",
+    isTestBooking: true,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+  await ref.set({ status: "completed" }, { merge: true });
+  return { bookingId: ref.id };
+});
+
 // Callable function: admin clicks "Sync Users" to create missing users/ docs for all Firebase Auth accounts.
 exports.syncAllAuthUsers = onCall(async (request) => {
   if (!request.auth) {

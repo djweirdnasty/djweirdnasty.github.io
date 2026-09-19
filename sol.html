@@ -610,6 +610,11 @@
             </div>
             <h4>DJ Earnings Breakdown</h4>
             <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+            <div style="margin-top:1rem; padding:0.75rem; background:#0a0a0a; border:1px solid #333; border-radius:8px;">
+              <button type="button" id="sol-admin-test-payout" class="submit-btn" style="background:#0070ba;">🧪 Test Auto-Payout ($1 booking → $0.85 to my PayPal)</button>
+              <p style="font-size:0.75rem; color:#777; margin:0.4rem 0 0;">Creates a test booking for your DJ profile, marks it completed, and fires the real auto-payout. Note: pays out ALL unpaid earnings for that DJ, not just the test.</p>
+              <p id="sol-admin-test-payout-status" class="form-status" aria-live="polite" style="margin-top:0.4rem;"></p>
+            </div>
             <div style="margin-top:1.5rem; padding:1rem; background:#111; border:1px solid #333; border-radius:12px;">
               <h4 style="color:#ffd860;">Merge Duplicate DJs</h4>
               <p style="color:#888; font-size:0.85rem; margin-bottom:0.75rem;">Move all data from the duplicate DJ into the main DJ, then delete the duplicate. Cannot undo.</p>
@@ -1158,7 +1163,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=70"></script>
+  <script src="sol-app.js?v=71"></script>
 <script src="site.js?v=25"></script>
 </body>
 </html>
