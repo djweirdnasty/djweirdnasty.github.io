@@ -758,7 +758,6 @@ body { overflow-x:hidden; }
 .dash-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:1000; backdrop-filter:blur(2px); }
 
 /* Suggestion-queue player */
-#sol-dj-console #sol-pl-frame { display:none; position:absolute; right:10px; bottom:10px; width:210px; height:118px; z-index:6; border:1px solid #333; border-radius:8px; overflow:hidden; background:#000; box-shadow:0 8px 24px rgba(0,0,0,0.6); }
 #sol-dj-console .sol-player-controls button.pl-active { border-color:#ff1020 !important; color:#ff1020 !important; opacity:1 !important; box-shadow:0 0 10px rgba(255,16,32,0.4); }
 #sol-dj-console .dash-panel { background:linear-gradient(145deg,#0a0d10,#07090b); border:1px solid #252c33; border-radius:9px; padding:10px; min-width:0; }
 #sol-dj-console .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }

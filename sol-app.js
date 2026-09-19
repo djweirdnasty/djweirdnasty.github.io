@@ -3467,8 +3467,8 @@
       initDjPlayer();
     }
 
-    // ===== Hero suggestion-queue player =====
-    var djPlayer = { queue: [], idx: -1, playing: false, feedback: {} };
+    // ===== Hero suggestion-queue player (30s previews via iTunes Search API) =====
+    var djPlayer = { queue: [], idx: -1, playing: false, feedback: {}, audio: null, previewCache: {} };
 
     function buildDjQueue() {
       function shuffle(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
@@ -3484,19 +3484,25 @@
 
     function currentDjTrack() { return djPlayer.queue[djPlayer.idx]; }
 
-    function ytCmd(func, args) {
-      var f = document.querySelector('#sol-pl-frame iframe');
-      if (f && f.contentWindow) f.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*');
+    function findPreview(s) {
+      if (djPlayer.previewCache[s.id] !== undefined) return Promise.resolve(djPlayer.previewCache[s.id]);
+      return fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(s.artist + ' ' + s.title) + '&media=music&entity=song&limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var url = (d.results && d.results[0] && d.results[0].previewUrl) || null;
+          djPlayer.previewCache[s.id] = url;
+          return url;
+        })
+        .catch(function() { djPlayer.previewCache[s.id] = null; return null; });
     }
 
-    function ytPlay(s) {
-      var frame = document.getElementById('sol-pl-frame');
-      if (!frame) return;
-      var q = encodeURIComponent(s.artist + ' ' + s.title + ' audio');
-      frame.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed?listType=search&list=' + q + '&autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>';
-      frame.style.display = 'block';
-      djPlayer.playing = true;
-      syncPlayerUI();
+    function ensureAudio() {
+      if (!djPlayer.audio) {
+        djPlayer.audio = new Audio();
+        djPlayer.audio.addEventListener('ended', function() { djQueueStep(1); });
+        djPlayer.audio.addEventListener('error', function() { djPlayer.playing = false; syncPlayerUI(); });
+      }
+      return djPlayer.audio;
     }
 
     function syncPlayerUI() {
@@ -3520,16 +3526,37 @@
       var t = document.getElementById('sol-pl-title');
       var a = document.getElementById('sol-pl-artist');
       var bpm = document.getElementById('sol-pl-bpm');
+      var st = document.getElementById('sol-pl-status');
       if (t) t.textContent = s.title;
       if (a) a.textContent = s.artist + ' · ' + (s.genre || '') + (s.bpm ? ' · ' + s.bpm + ' BPM' : '');
       if (bpm) bpm.textContent = s.bpm || '--';
-      if (autoplay) ytPlay(s); else { djPlayer.playing = false; syncPlayerUI(); }
+      var audio = ensureAudio();
+      audio.pause();
+      audio.removeAttribute('src');
+      djPlayer.playing = false;
+      if (st) st.innerHTML = '⌛ LOADING PREVIEW' + (s.isIndie ? ' · ⚡ INDIE ROTATION' : '');
+      syncPlayerUI();
+      findPreview(s).then(function(url) {
+        if (currentDjTrack() !== s) return;
+        if (!url) {
+          if (st) st.innerHTML = '✕ NO PREVIEW FOUND' + (s.isIndie ? ' · ⚡ INDIE ROTATION' : '');
+          return;
+        }
+        audio.src = url;
+        if (autoplay) {
+          var p = audio.play();
+          if (p) p.catch(function() { djPlayer.playing = false; syncPlayerUI(); });
+          djPlayer.playing = true;
+        }
+        syncPlayerUI();
+      });
     }
 
     function djQueueStep(step) {
       if (!djPlayer.queue.length) djPlayer.queue = buildDjQueue();
+      var wasPlaying = djPlayer.playing;
       djPlayer.idx = (djPlayer.idx + step + djPlayer.queue.length) % djPlayer.queue.length;
-      loadDjTrack(!!document.querySelector('#sol-pl-frame iframe'));
+      loadDjTrack(wasPlaying);
     }
 
     function sendSongFeedback(liked) {
@@ -3566,16 +3593,29 @@
       var disBtn = document.getElementById('sol-pl-dislike');
       if (playBtn) playBtn.addEventListener('click', function() {
         var s = currentDjTrack();
+        var audio = ensureAudio();
         if (!s) return;
-        if (!document.querySelector('#sol-pl-frame iframe')) { ytPlay(s); return; }
-        if (djPlayer.playing) { ytCmd('pauseVideo'); djPlayer.playing = false; }
-        else { ytCmd('playVideo'); djPlayer.playing = true; }
+        if (!audio.getAttribute('src')) { loadDjTrack(true); return; }
+        if (audio.paused) {
+          var p = audio.play();
+          if (p) p.catch(function() { djPlayer.playing = false; syncPlayerUI(); });
+          djPlayer.playing = true;
+        } else {
+          audio.pause();
+          djPlayer.playing = false;
+        }
         syncPlayerUI();
       });
       if (skipBtn) skipBtn.addEventListener('click', function() { djQueueStep(1); });
       if (replayBtn) replayBtn.addEventListener('click', function() {
-        if (document.querySelector('#sol-pl-frame iframe')) { ytCmd('seekTo', [0]); ytCmd('playVideo'); djPlayer.playing = true; syncPlayerUI(); }
-        else loadDjTrack(true);
+        var audio = ensureAudio();
+        if (audio.getAttribute('src')) {
+          audio.currentTime = 0;
+          var p = audio.play();
+          if (p) p.catch(function() { djPlayer.playing = false; syncPlayerUI(); });
+          djPlayer.playing = true;
+          syncPlayerUI();
+        } else loadDjTrack(true);
       });
       if (likeBtn) likeBtn.addEventListener('click', function() { sendSongFeedback(true); });
       if (disBtn) disBtn.addEventListener('click', function() { sendSongFeedback(false); });
