@@ -929,6 +929,34 @@
           document.getElementById('sol-dj-earnings-total').textContent = '$' + Math.round(total * 0.85).toLocaleString();
           document.getElementById('sol-dj-earnings-gigs').textContent = gigs;
           document.getElementById('sol-dj-earnings-fees').textContent = '$' + Math.round(total * 0.15).toLocaleString();
+
+          // Pending vs paid split + per-booking payout status (Uber/Lyft-style breakdown).
+          var pendingAmt = 0, paidAmt = 0;
+          var listHtml = '';
+          djEarningsBookings.forEach(function(b) {
+            var amount = Number(b.totalAmount || b.total_cost || 0);
+            var djShare = Math.round(amount * 0.85);
+            var fee = Math.round(amount * 0.15);
+            var paidOut = !!(b.payoutSent || b.finalPayoutSent || b.stripeTransferId);
+            if (paidOut) paidAmt += djShare; else pendingAmt += djShare;
+            var pStatus = b.stripeTransferId ? 'Paid via Stripe' : (b.payoutBatchId || b.payoutSent || b.finalPayoutSent) ? 'Paid via PayPal' : (b.payoutStatus === 'awaiting_payout_setup' ? 'Awaiting payout setup' : 'Pending');
+            var pColor = paidOut ? '#22c55e' : (b.payoutStatus === 'awaiting_payout_setup' ? '#ff5555' : '#ffd860');
+            listHtml += '<div style="background:#0a0a0a; border:1px solid #333; border-radius:8px; padding:0.6rem;">' +
+              '<div style="display:flex; justify-content:space-between; font-size:0.8rem;">' +
+              '<strong>' + escapeHtml(b.eventType || b.event_type || 'Event') + '</strong>' +
+              '<span style="color:' + pColor + '; font-size:0.75rem;">' + pStatus + '</span></div>' +
+              '<div style="font-size:0.75rem; color:#888; margin-top:0.2rem;">' + escapeHtml(b.date || b.eventDate || '') + ' · ' + escapeHtml(b.clientName || b.client_name || 'Client') + '</div>' +
+              '<div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#aaa; margin-top:0.3rem;">' +
+              '<span>Client paid $' + Math.round(amount).toLocaleString() + ' · SOL fee -$' + fee.toLocaleString() + '</span>' +
+              '<strong style="color:#22c55e;">$' + djShare.toLocaleString() + '</strong></div></div>';
+          });
+          var pendEl = document.getElementById('sol-dj-earnings-pending');
+          var paidEl = document.getElementById('sol-dj-earnings-paid');
+          var listEl = document.getElementById('sol-dj-earnings-list');
+          if (pendEl) pendEl.textContent = '$' + Math.round(pendingAmt).toLocaleString();
+          if (paidEl) paidEl.textContent = '$' + Math.round(paidAmt).toLocaleString();
+          if (listEl) listEl.innerHTML = listHtml || '<p style="color:#666; font-size:0.8rem; margin:0;">No completed gigs yet.</p>';
+
           renderDJEarningsPeriod();
 
           document.getElementById('sol-dj-export-csv').onclick = function() {
@@ -940,6 +968,52 @@
             a.click();
           };
         });
+    }
+
+    // ---------- Stripe Connect payout setup (automatic payouts after completed gigs) ----------
+    function initDjPayoutSetup(user) {
+      var statusEl = document.getElementById('sol-dj-payout-status');
+      var setupBtn = document.getElementById('sol-dj-payout-setup');
+      if (!statusEl || !setupBtn) return;
+
+      function renderStatus(res) {
+        var d = res && res.data ? res.data : {};
+        if (d.payoutsEnabled) {
+          statusEl.innerHTML = '<span style="color:#22c55e;">✓ Automatic payouts active</span>';
+          setupBtn.style.display = 'none';
+        } else if (d.onboarded) {
+          statusEl.innerHTML = '<span style="color:#ffd860;">Payout account under review — finish any remaining steps.</span>';
+          setupBtn.style.display = '';
+          setupBtn.textContent = 'Finish payout setup';
+        } else {
+          statusEl.innerHTML = '<span style="color:#ffd860;">Not connected — set up payouts to get paid automatically.</span>';
+          setupBtn.style.display = '';
+          setupBtn.textContent = 'Set up automatic payouts';
+        }
+      }
+
+      firebase.functions().httpsCallable('getDjPayoutStatus')()
+        .then(renderStatus)
+        .catch(function() { statusEl.textContent = 'Automatic payouts: unavailable right now.'; });
+
+      if (!setupBtn.dataset.wired) {
+        setupBtn.dataset.wired = '1';
+        setupBtn.addEventListener('click', function() {
+          setupBtn.disabled = true;
+          setupBtn.textContent = 'Opening Stripe…';
+          firebase.functions().httpsCallable('getOrCreateDjPayoutAccount')()
+            .then(function(res) {
+              if (res.data && res.data.url) window.open(res.data.url, '_blank');
+            })
+            .catch(function(err) {
+              alert('Payout setup failed: ' + (err.message || 'Unknown error'));
+            })
+            .finally(function() {
+              setupBtn.disabled = false;
+              setupBtn.textContent = 'Set up automatic payouts';
+            });
+        });
+      }
     }
 
     // ---------- DJ Custom Gigs (public/private events on schedule + profile) ----------
@@ -1848,6 +1922,7 @@
           loadDjGallery(user.uid);
           loadDjVideos(user.uid);
           loadDJEarnings(user.uid);
+          initDjPayoutSetup(user);
           subscribeDJGigs(user.uid);
           loadDJWaitlist(user.uid);
           loadDJCalendarData(user.uid);

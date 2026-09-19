@@ -1,4 +1,4 @@
-const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentWritten, onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
@@ -19,6 +19,13 @@ const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
 const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
+
+var _stripe = null;
+function stripeClient() {
+  if (!_stripe) _stripe = require("stripe")(STRIPE_SECRET_KEY.value());
+  return _stripe;
+}
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@djweirdnasty.com";
 
@@ -597,6 +604,185 @@ exports.sendPaypalPayout = onCall(
     logger.info("PayPal payout sent to DJ " + djId + " for $" + totalOwed + " (batch " + payoutBatchId + ")");
 
     return { success: true, payoutBatchId: payoutBatchId, status: batchStatus, amount: totalOwed };
+  }
+);
+
+// ---------------------------------------------------------------------------
+// Stripe Connect — marketplace payouts (Uber/Lyft-style):
+// client pays platform up front, DJ's 85% share transfers to their connected
+// Stripe Express account when the booking is marked completed.
+// ---------------------------------------------------------------------------
+
+// DJ clicks "Set up payouts" → creates/reuses their Express account and returns
+// a Stripe-hosted onboarding link.
+exports.getOrCreateDjPayoutAccount = onCall(
+  { secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    var auth = request.auth;
+    if (!auth) throw new HttpsError("unauthenticated", "Must be signed in.");
+    var djId = auth.uid;
+    var djRef = db.collection("djs").doc(djId);
+    var djDoc = await djRef.get();
+    if (!djDoc.exists) throw new HttpsError("not-found", "DJ profile not found.");
+    var dj = djDoc.data();
+    var stripe = stripeClient();
+
+    var accountId = dj.stripeAccountId;
+    if (!accountId) {
+      var acct = await stripe.accounts.create({
+        type: "express",
+        email: (auth.token && auth.token.email) || dj.email || undefined,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        metadata: { djId: djId },
+      });
+      accountId = acct.id;
+      await djRef.set({ stripeAccountId: accountId, payoutStatus: "onboarding" }, { merge: true });
+    }
+
+    var link = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: "https://djweirdnasty.com/sol.html",
+      return_url: "https://djweirdnasty.com/sol.html",
+      type: "account_onboarding",
+    });
+    return { accountId: accountId, url: link.url };
+  }
+);
+
+// DJ console polls this to show payout readiness.
+exports.getDjPayoutStatus = onCall(
+  { secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    var auth = request.auth;
+    if (!auth) throw new HttpsError("unauthenticated", "Must be signed in.");
+    var djRef = db.collection("djs").doc(auth.uid);
+    var djDoc = await djRef.get();
+    var accountId = djDoc.exists ? djDoc.data().stripeAccountId : null;
+    if (!accountId) return { onboarded: false, payoutsEnabled: false };
+
+    var acct = await stripeClient().accounts.retrieve(accountId);
+    var enabled = !!acct.payouts_enabled;
+    if (enabled && djDoc.data().payoutStatus !== "active") {
+      await djRef.set({ payoutStatus: "active" }, { merge: true });
+    }
+    return {
+      onboarded: !!acct.details_submitted,
+      payoutsEnabled: enabled,
+      accountId: accountId,
+    };
+  }
+);
+
+// When a booking flips to completed, transfer everything currently owed to the
+// DJ (deposit share + final share, 85%) to their Stripe Connect account.
+// Bookings without a Connect-ready DJ get payoutStatus=awaiting_payout_setup so
+// the admin PayPal fallback can still pay them.
+exports.autoPayoutOnCompletion = onDocumentUpdated(
+  { document: "bookings/{bookingId}", secrets: [STRIPE_SECRET_KEY] },
+  async (event) => {
+    var before = event.data && event.data.before.data();
+    var after = event.data && event.data.after.data();
+    if (!before || !after) return;
+    if (after.status !== "completed" || before.status === "completed") return;
+    var djId = after.djId || after.dj_id;
+    if (!djId) return;
+    var bookingId = event.params.bookingId;
+    var bookingRef = event.data.after.ref;
+
+    // Claim a short-lived lock so concurrent completion writes can't double-pay.
+    var lockRef = db.collection("payoutLocks").doc(djId);
+    var claimed = await db.runTransaction(async (tx) => {
+      var lock = await tx.get(lockRef);
+      var at = lock.exists ? (lock.data().at || 0) : 0;
+      if (Date.now() - at < 10 * 60 * 1000) return false;
+      tx.set(lockRef, { at: Date.now(), bookingId: bookingId });
+      return true;
+    });
+    if (!claimed) {
+      logger.warn("[AUTO PAYOUT] Skipped " + bookingId + " — payout already in flight for DJ " + djId);
+      return;
+    }
+
+    try {
+      var djDoc = await db.collection("djs").doc(djId).get();
+      var dj = djDoc.exists ? djDoc.data() : {};
+      var accountId = dj.stripeAccountId;
+
+      var ready = false;
+      if (accountId) {
+        var acct = await stripeClient().accounts.retrieve(accountId);
+        ready = !!acct.payouts_enabled;
+      }
+      if (!ready) {
+        await bookingRef.set({ payoutStatus: "awaiting_payout_setup" }, { merge: true });
+        await lockRef.delete();
+        logger.warn("[AUTO PAYOUT] DJ " + djId + " not payout-enabled — deferred to manual/PayPal path.");
+        return;
+      }
+
+      var snap = await db.collection("bookings")
+        .where("djId", "==", djId)
+        .where("status", "in", ["confirmed", "completed"])
+        .get();
+      var payable = [];
+      var totalOwed = 0;
+      snap.forEach(function (d) {
+        var r = computeBookingPayout(d.data());
+        if (r.owed > 0) {
+          totalOwed += r.owed;
+          payable.push({ ref: d.ref, payDeposit: r.payDeposit, payFinal: r.payFinal });
+        }
+      });
+      totalOwed = Math.round(totalOwed * 100) / 100;
+      if (totalOwed <= 0) {
+        await lockRef.delete();
+        return;
+      }
+
+      var transfer = await stripeClient().transfers.create(
+        {
+          amount: Math.round(totalOwed * 100),
+          currency: "usd",
+          destination: accountId,
+          description: "SOL payout for " + (dj.stageName || dj.displayName || "DJ"),
+          metadata: { djId: djId, bookingId: bookingId },
+        },
+        { idempotencyKey: "sol-payout-" + djId + "-" + bookingId }
+      );
+
+      var batch = db.batch();
+      var payoutRef = db.collection("payouts").doc();
+      batch.set(payoutRef, {
+        djId: djId,
+        djName: dj.stageName || dj.displayName || "DJ",
+        amount: totalOwed,
+        bookingIds: payable.map(function (p) { return p.ref.id; }),
+        stripeTransferId: transfer.id,
+        status: "transferred",
+        method: "stripe_connect",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdBy: "auto-completion",
+      });
+      payable.forEach(function (p) {
+        var update = {
+          stripeTransferId: transfer.id,
+          payoutAt: admin.firestore.FieldValue.serverTimestamp(),
+          payoutStatus: "transferred",
+        };
+        if (p.payDeposit) update.depositPayoutSent = true;
+        if (p.payFinal) update.finalPayoutSent = true;
+        batch.set(p.ref, update, { merge: true });
+      });
+      await batch.commit();
+      await lockRef.delete();
+      logger.info("[AUTO PAYOUT] Transferred $" + totalOwed + " to DJ " + djId + " (" + transfer.id + ")");
+    } catch (e) {
+      logger.error("[AUTO PAYOUT] Failed for DJ " + djId + " on booking " + bookingId + ": " + e.message);
+      await lockRef.delete();
+    }
   }
 );
 
