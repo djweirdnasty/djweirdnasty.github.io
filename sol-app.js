@@ -2279,7 +2279,7 @@
     }
 
     function adminSwitchTab(activeId) {
-      var tabs = ['djs','bookings','verifications','users','messages','earnings','add-dj','disputes','settings'];
+      var tabs = ['djs','bookings','verifications','users','messages','earnings','songs','add-dj','disputes','settings'];
       tabs.forEach(function(t) {
         var panel = document.getElementById('sol-admin-panel-' + t);
         var btn = document.getElementById('sol-admin-tab-' + t);
@@ -2297,6 +2297,7 @@
     document.getElementById('sol-admin-tab-users').addEventListener('click', function() { adminSwitchTab('users'); loadAdminUsers(); });
     document.getElementById('sol-admin-tab-messages').addEventListener('click', function() { adminSwitchTab('messages'); loadAdminMessageHistory(); });
     document.getElementById('sol-admin-tab-earnings').addEventListener('click', function() { adminSwitchTab('earnings'); loadAdminEarnings(); });
+    document.getElementById('sol-admin-tab-songs').addEventListener('click', function() { adminSwitchTab('songs'); loadAdminSongs(); });
     document.getElementById('sol-admin-tab-add-dj').addEventListener('click', function() { adminSwitchTab('add-dj'); });
     document.getElementById('sol-admin-tab-disputes').addEventListener('click', function() { adminSwitchTab('disputes'); loadAdminDisputes(); });
     document.getElementById('sol-admin-tab-settings').addEventListener('click', function() { adminSwitchTab('settings'); loadAdminSettings(); });
@@ -3049,6 +3050,104 @@
         });
     }
 
+    // ===== Admin: push suggested songs to DJs via Apple Music links =====
+    function parseAppleMusicTrackId(url) {
+      var m = url.match(/[?&]i=(\d+)/);              // album link with track param
+      if (m) return m[1];
+      m = url.match(/music\.apple\.com\/[^/]+\/song\/[^/]*?(\d{6,})/);  // song page
+      if (m) return m[1];
+      m = url.match(/\/(\d{6,})(?:[/?#]|$)/);        // any trailing numeric id
+      return m ? m[1] : null;
+    }
+
+    function loadAdminSongs() {
+      var list = document.getElementById('sol-admin-song-list');
+      if (!list) return;
+      list.innerHTML = '<p style="color:#888;">Loading...</p>';
+      db.collection('songSuggestions').orderBy('createdAt', 'desc').get()
+        .then(function(snap) {
+          list.innerHTML = '';
+          if (snap.empty) {
+            list.innerHTML = '<p style="color:#888;">No suggested songs yet — add one with an Apple Music link above.</p>';
+            return;
+          }
+          snap.forEach(function(doc) {
+            var s = doc.data();
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex; align-items:center; gap:0.75rem; background:#111; border:1px solid #333; border-radius:10px; padding:0.6rem 0.75rem;';
+            var art = s.artworkUrl
+              ? '<img src="' + escapeAttr(s.artworkUrl) + '" alt="" style="width:44px; height:44px; border-radius:8px; object-fit:cover;">'
+              : '<div style="width:44px; height:44px; border-radius:8px; background:#222; display:flex; align-items:center; justify-content:center;">🎵</div>';
+            row.innerHTML = art +
+              '<div style="flex:1; min-width:0;"><strong style="font-size:0.9rem;">' + escapeHtml(s.title || 'Untitled') + '</strong>' +
+              '<div style="font-size:0.8rem; color:#aaa;">' + escapeHtml(s.artist || '') + '</div>' +
+              (s.note ? '<div style="font-size:0.75rem; color:#888; font-style:italic;">' + escapeHtml(s.note) + '</div>' : '') + '</div>' +
+              '<button type="button" class="sol-admin-song-del" data-id="' + escapeAttr(doc.id) + '" style="background:transparent; border:1px solid #ff5555; color:#ff5555; border-radius:8px; padding:0.3rem 0.6rem; font-size:0.75rem; cursor:pointer;">Remove</button>';
+            list.appendChild(row);
+          });
+          list.querySelectorAll('.sol-admin-song-del').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              if (!confirm('Remove this song from every DJ\'s suggestion queue?')) return;
+              db.collection('songSuggestions').doc(btn.getAttribute('data-id')).delete()
+                .then(loadAdminSongs)
+                .catch(function(err) { alert('Remove failed: ' + err.message); });
+            });
+          });
+        })
+        .catch(function(err) {
+          list.innerHTML = '<p style="color:#ff1111;">Error: ' + escapeHtml(err.message) + '</p>';
+        });
+    }
+
+    var addSongBtn = document.getElementById('sol-admin-song-add');
+    if (addSongBtn) {
+      addSongBtn.addEventListener('click', function() {
+        var urlEl = document.getElementById('sol-admin-song-url');
+        var noteEl = document.getElementById('sol-admin-song-note');
+        var st = document.getElementById('sol-admin-song-status');
+        var url = (urlEl.value || '').trim();
+        var trackId = parseAppleMusicTrackId(url);
+        if (!trackId) {
+          st.style.color = '#ff5555';
+          st.textContent = 'That does not look like an Apple Music song link. Copy the link from Apple Music (Share → Copy Link on the song).';
+          return;
+        }
+        addSongBtn.disabled = true;
+        st.style.color = '#888';
+        st.textContent = 'Looking up track...';
+        fetch('https://itunes.apple.com/lookup?id=' + trackId)
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            var t = d.results && d.results[0];
+            if (!t || t.wrapperType !== 'track') throw new Error('No song found for that link.');
+            return db.collection('songSuggestions').add({
+              title: t.trackName || 'Untitled',
+              artist: t.artistName || '',
+              appleMusicUrl: url,
+              itunesTrackId: trackId,
+              previewUrl: t.previewUrl || null,
+              artworkUrl: t.artworkUrl100 || null,
+              note: (noteEl.value || '').trim() || null,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+              createdBy: auth.currentUser ? auth.currentUser.uid : 'admin'
+            }).then(function() { return t; });
+          })
+          .then(function(t) {
+            st.style.color = '#22c55e';
+            st.textContent = '✅ Added "' + (t.trackName || 'song') + '" — DJs will see it in their console queue.';
+            urlEl.value = '';
+            noteEl.value = '';
+            addSongBtn.disabled = false;
+            loadAdminSongs();
+          })
+          .catch(function(err) {
+            st.style.color = '#ff5555';
+            st.textContent = 'Failed: ' + err.message;
+            addSongBtn.disabled = false;
+          });
+      });
+    }
+
     var testPayoutBtn = document.getElementById('sol-admin-test-payout');
     if (testPayoutBtn) {
       testPayoutBtn.addEventListener('click', function() {
@@ -3566,7 +3665,7 @@
 
     function buildDjQueue() {
       function shuffle(a) { return a.slice().sort(function() { return Math.random() - 0.5; }); }
-      var pop = shuffle(POPULAR_SONGS), indie = shuffle(INDIE_SONGS), q = [];
+      var pop = shuffle(POPULAR_SONGS), indie = shuffle(INDIE_SONGS.concat(ADMIN_SONGS)), q = [];
       var pi = 0, ii = 0;
       while (pi < pop.length || ii < indie.length) {
         if (pi < pop.length) q.push(pop[pi++]);
@@ -3713,6 +3812,43 @@
       });
       if (likeBtn) likeBtn.addEventListener('click', function() { sendSongFeedback(true); });
       if (disBtn) disBtn.addEventListener('click', function() { sendSongFeedback(false); });
+
+      loadAdminSuggestedSongs();
+    }
+
+    // Pull admin-curated songs and splice them into the remaining queue as
+    // indie picks — already-played/currently-playing tracks stay untouched.
+    function loadAdminSuggestedSongs() {
+      return db.collection('songSuggestions').orderBy('createdAt', 'desc').get()
+        .then(function(snap) {
+          ADMIN_SONGS.length = 0;
+          snap.forEach(function(doc) {
+            var s = doc.data();
+            var song = {
+              id: 'adm-' + doc.id,
+              title: s.title || 'Untitled',
+              artist: s.artist || '',
+              genre: 'SOL Pick',
+              isIndie: true,
+              isAdminPick: true,
+              note: s.note || null
+            };
+            if (s.previewUrl) djPlayer.previewCache[song.id] = s.previewUrl;
+            ADMIN_SONGS.push(song);
+          });
+
+          var seen = {};
+          djPlayer.queue.forEach(function(t) { seen[t.id] = true; });
+          var fresh = ADMIN_SONGS.slice().sort(function() { return Math.random() - 0.5; }).filter(function(t) { return !seen[t.id]; });
+          if (!fresh.length) return;
+          var head = Math.max(djPlayer.idx, 0) + 1;
+          var rest = djPlayer.queue.slice(head);
+          fresh.forEach(function(t, i) {
+            rest.splice(Math.min(rest.length, 2 + i * 3), 0, t);
+          });
+          djPlayer.queue = djPlayer.queue.slice(0, head).concat(rest);
+        })
+        .catch(function() {});
     }
 
     function syncAvailUI() {
@@ -6972,6 +7108,10 @@
       { id: 'i10', title: 'Backwoods', artist: 'Trap Beckham', genre: 'Hip-Hop', isIndie: true, bpm: 155 }
     ];
 
+    // Admin-curated songs (songSuggestions collection) — pushed to every DJ's
+    // queue as indie-rotation picks. Populated async by loadAdminSuggestedSongs().
+    var ADMIN_SONGS = [];
+
     var songSuggestionsState = { suggestions: [], confirmedIds: {}, playedIndie: [], bookingId: null, djId: null, eventType: '' };
     var songRotationTimer = null;
 
@@ -6996,7 +7136,7 @@
 
       function shuffle(arr) { return arr.slice().sort(function() { return Math.random() - 0.5; }); }
 
-      var indieSlots = shuffle(INDIE_SONGS).slice(0, 2);
+      var indieSlots = shuffle(INDIE_SONGS.concat(ADMIN_SONGS)).slice(0, 2);
       var popularSlots = shuffle(ordered).slice(0, 3);
       return [popularSlots[0], indieSlots[0], popularSlots[1], indieSlots[1], popularSlots[2]].filter(Boolean);
     }

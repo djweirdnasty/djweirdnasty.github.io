@@ -537,6 +537,7 @@
             <button type="button" id="sol-admin-tab-users" class="submit-btn">Users</button>
             <button type="button" id="sol-admin-tab-messages" class="submit-btn">Messages</button>
             <button type="button" id="sol-admin-tab-earnings" class="submit-btn">Earnings</button>
+            <button type="button" id="sol-admin-tab-songs" class="submit-btn">Songs</button>
             <button type="button" id="sol-admin-tab-add-dj" class="submit-btn">Add DJ</button>
             <button type="button" id="sol-admin-tab-disputes" class="submit-btn">Disputes</button>
             <button type="button" id="sol-admin-tab-settings" class="submit-btn">Settings</button>
@@ -626,6 +627,21 @@
               <div id="sol-merge-status" class="form-status" aria-live="polite" style="min-height:1.2em;"></div>
             </div>
 
+          </div>
+
+          <div id="sol-admin-panel-songs" style="display:none;">
+            <h3>DJ Song Suggestions</h3>
+            <p style="color:#888; font-size:0.85rem;">Paste an Apple Music song link — the track is pushed to every DJ's console suggestion queue (they hear a 30s preview and can like/dislike it).</p>
+            <div style="background:#111; border:1px solid #333; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+              <label for="sol-admin-song-url" style="display:block; margin-bottom:0.25rem; color:#ccc;">Apple Music Link</label>
+              <input id="sol-admin-song-url" type="url" placeholder="https://music.apple.com/us/song/song-name/1234567890" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <label for="sol-admin-song-note" style="display:block; margin-bottom:0.25rem; color:#ccc;">Note for DJs (optional)</label>
+              <input id="sol-admin-song-note" type="text" placeholder="e.g. New Logan System drop — work this into sets" maxlength="200" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
+              <button type="button" id="sol-admin-song-add" class="submit-btn" style="width:100%;">Add Song</button>
+              <div id="sol-admin-song-status" class="form-status" aria-live="polite" style="margin-top:0.5rem; min-height:1.2em;"></div>
+            </div>
+            <h4>Suggested Songs</h4>
+            <div id="sol-admin-song-list" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
 
           <div id="sol-admin-panel-add-dj" style="display:none;">
@@ -1163,7 +1179,7 @@
   </div>
 
   <script>window.VAPID_PUBLIC_KEY = 'BKth1HKn9DWqvOh-xF5Ic_ao5aFOmmexju8l1GamXQB8zQy_gUJz8eLbnohT47KKbvkt9tZNPiN3cDnKcCGZK68';</script>
-  <script src="sol-app.js?v=72"></script>
+  <script src="sol-app.js?v=73"></script>
 <script src="site.js?v=25"></script>
 </body>
 </html>

@@ -333,6 +333,13 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // Admin-curated song suggestions pushed to every DJ's console queue.
+    // Any signed-in user (DJs) can read; only the site admin can add/remove.
+    match /songSuggestions/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // Indie artist rotation playback notifications (create-only; admin/SDK reads).
     match /indie-playback-notifications/{id} {
       allow create: if request.auth != null;
