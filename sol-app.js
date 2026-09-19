@@ -2987,8 +2987,12 @@
                 payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ffd860;" title="This DJ has not added a PayPal email or PayPal.me link yet.">🔒 $' + e.unpaidTotal.toFixed(2) + ' held in admin account (djweirdnasty) until DJ adds PayPal</span>';
               }
 
+              var manualBtnHtml = e.unpaidTotal > 0
+                ? ' <button type="button" class="sol-manual-paid-btn" data-dj-id="' + e.id + '" title="You already sent this money yourself (Send Money, cash, Zelle...) — mark it paid so it can\'t double-pay." style="display:inline-block; margin-top:0.4rem; background:transparent; color:#aaa; border:1px solid #555; padding:0.4rem 0.8rem; font-size:0.75rem; border-radius:8px; cursor:pointer;">Mark manual paid</button>'
+                : '';
+
               card.innerHTML = '<div><strong>' + escapeHtml(e.name) + '</strong><br><span style="font-size:0.85rem; color:#aaa;">' + e.gigs + ' gigs completed</span></div>' +
-                '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + e.total.toFixed(2) + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + '</div>';
+                '<div style="text-align:right;"><span style="font-size:1.2rem; font-weight:700; color:#ffd860;">$' + e.total.toFixed(2) + '</span><br><span style="font-size:0.8rem; color:#666;">earnings (85%)</span><br>' + payBtnHtml + manualBtnHtml + '</div>';
               earningsList.appendChild(card);
             });
 
@@ -3012,6 +3016,29 @@
                     btn.disabled = false;
                     btn.textContent = original;
                     alert('Payout failed: ' + (err.message || 'Unknown error'));
+                  });
+              });
+            });
+
+            earningsList.querySelectorAll('.sol-manual-paid-btn').forEach(function(btn) {
+              btn.addEventListener('click', function() {
+                var djId = btn.getAttribute('data-dj-id');
+                var note = prompt('Record an offline payout for this DJ (you already sent the money yourself — e.g. PayPal Send Money, cash, Zelle). Optional note:');
+                if (note === null) return;
+                if (!confirm('Mark ALL outstanding earnings for this DJ as PAID? Only do this after the money actually reached them.')) return;
+
+                btn.disabled = true;
+                btn.textContent = 'Recording...';
+
+                var markPaid = functions.httpsCallable('markDjPayoutManual');
+                markPaid({ djId: djId, note: note })
+                  .then(function() {
+                    setTimeout(function() { loadAdminEarnings(); }, 800);
+                  })
+                  .catch(function(err) {
+                    btn.disabled = false;
+                    btn.textContent = 'Mark manual paid';
+                    alert('Failed: ' + (err.message || 'Unknown error'));
                   });
               });
             });

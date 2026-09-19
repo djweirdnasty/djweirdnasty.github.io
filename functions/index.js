@@ -501,6 +501,26 @@ function computeBookingPayout(b) {
 // plain export is never treated as a Cloud Function trigger.
 exports.computeBookingPayout = computeBookingPayout;
 
+// Finds a DJ's confirmed/completed bookings with unpaid portions and totals
+// what's owed. Shared by the PayPal payout path and the manual-pay marker.
+async function scanPayableBookings(djId) {
+  var bookingsSnap = await db.collection("bookings")
+    .where("djId", "==", djId)
+    .where("status", "in", ["confirmed", "completed"])
+    .get();
+
+  var payable = [];
+  var totalOwed = 0;
+  bookingsSnap.forEach(function (doc) {
+    var result = computeBookingPayout(doc.data());
+    if (result.owed > 0) {
+      totalOwed += result.owed;
+      payable.push({ ref: doc.ref, payDeposit: result.payDeposit, payFinal: result.payFinal });
+    }
+  });
+  return { payable: payable, totalOwed: Math.round(totalOwed * 100) / 100 };
+}
+
 // Shared payout core: sends everything currently owed to a DJ via PayPal
 // Payouts and flags the bookings so neither this nor the auto-trigger can
 // double-pay. Throws Error with .code for the callable to map.
@@ -521,21 +541,9 @@ async function performDjPayout(djId, opts) {
     throw noEmail;
   }
 
-  var bookingsSnap = await db.collection("bookings")
-    .where("djId", "==", djId)
-    .where("status", "in", ["confirmed", "completed"])
-    .get();
-
-  var payable = [];
-  var totalOwed = 0;
-  bookingsSnap.forEach(function (doc) {
-    var result = computeBookingPayout(doc.data());
-    if (result.owed > 0) {
-      totalOwed += result.owed;
-      payable.push({ ref: doc.ref, payDeposit: result.payDeposit, payFinal: result.payFinal });
-    }
-  });
-  totalOwed = Math.round(totalOwed * 100) / 100;
+  var scan = await scanPayableBookings(djId);
+  var payable = scan.payable;
+  var totalOwed = scan.totalOwed;
 
   if (totalOwed <= 0) {
     var none = new Error("No outstanding payout for this DJ.");
@@ -669,6 +677,59 @@ exports.autoPayoutOnCompletion = onDocumentUpdated(
   }
 );
 
+// Admin fallback while PayPal Payouts approval is pending: records that the
+// DJ was paid outside the API (Send Money, cash, Zelle, etc.) and flags the
+// bookings so neither the admin button nor the auto-trigger can double-pay.
+exports.markDjPayoutManual = onCall(async (request) => {
+  var auth = request.auth;
+  if (!auth || (auth.uid !== ADMIN_UID && (!auth.token || auth.token.email !== ADMIN_EMAIL))) {
+    throw new HttpsError("permission-denied", "Only the SOL admin can record manual payouts.");
+  }
+
+  var djId = request.data && request.data.djId;
+  if (!djId) {
+    throw new HttpsError("invalid-argument", "djId is required.");
+  }
+  var note = ((request.data && request.data.note) || "").toString().trim().slice(0, 300);
+
+  var djDoc = await db.collection("djs").doc(djId).get();
+  if (!djDoc.exists) {
+    throw new HttpsError("not-found", "DJ profile not found.");
+  }
+
+  var scan = await scanPayableBookings(djId);
+  if (scan.totalOwed <= 0) {
+    throw new HttpsError("failed-precondition", "This DJ has no outstanding payout right now.");
+  }
+
+  var batch = db.batch();
+  var payoutRef = db.collection("payouts").doc();
+  batch.set(payoutRef, {
+    djId: djId,
+    djName: djDoc.data().stageName || djDoc.data().displayName || "DJ",
+    amount: scan.totalOwed,
+    bookingIds: scan.payable.map(function (p) { return p.ref.id; }),
+    status: "manual",
+    method: "manual",
+    note: note || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    createdBy: auth.uid,
+  });
+
+  scan.payable.forEach(function (p) {
+    var update = {
+      payoutAt: admin.firestore.FieldValue.serverTimestamp(),
+      payoutStatus: "manual",
+    };
+    if (p.payDeposit) update.depositPayoutSent = true;
+    if (p.payFinal) update.finalPayoutSent = true;
+    batch.set(p.ref, update, { merge: true });
+  });
+
+  await batch.commit();
+  logger.info("[MANUAL PAYOUT] DJ " + djId + " marked paid $" + scan.totalOwed + " by " + auth.uid);
+  return { success: true, amount: scan.totalOwed };
+});
 
 
 // Admin test: creates a $1 booking for a DJ and marks it completed, which fires
