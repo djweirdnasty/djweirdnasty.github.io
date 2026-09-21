@@ -82,7 +82,20 @@ service cloud.firestore {
     // ---------- DJ profile & verification ----------
     match /djs/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow write: if isOwner(uid) || isAdmin();
+      // Stripe Connect fields are managed only by the callable functions
+      // (Admin SDK) — owners may not set or change them, so a DJ can't point
+      // payouts at an account that isn't theirs or forge an enabled flag.
+      allow create: if isAdmin() || (
+        isOwner(uid) &&
+        !request.resource.data.keys().hasAny(['stripeAccountId', 'stripePayoutsEnabled', 'stripeDetailsSubmitted'])
+      );
+      allow update: if isAdmin() || (
+        isOwner(uid) &&
+        unchanged('stripeAccountId') &&
+        unchanged('stripePayoutsEnabled') &&
+        unchanged('stripeDetailsSubmitted')
+      );
+      allow delete: if isOwner(uid) || isAdmin();
     }
 
     // ---------- Public DJ directory (non-PII projection) ----------
@@ -198,6 +211,9 @@ service cloud.firestore {
         unchanged('depositPayoutSent') &&
         unchanged('finalPayoutSent') &&
         unchanged('payoutBatchId') &&
+        unchanged('stripeTransferId') &&
+        unchanged('payoutStatus') &&
+        unchanged('payoutAt') &&
         unchanged('refundAmount') &&
         unchanged('refund') &&
         unchanged('cancelledBy') &&

@@ -277,13 +277,14 @@
                 <span style="font-size:0.85rem; color:#ccc;">Text me new booking requests to my phone</span>
               </label>
 
-              <label for="sol-dj-paypal">PayPal Email or PayPal.me Username (for payouts)</label>
-              <input id="sol-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
-
               <div id="sol-dj-payout-box" style="margin-bottom:0.75rem; padding:0.75rem; border:1px solid #333; border-radius:8px; background:#0a0a0a;">
                 <span id="sol-dj-payout-status" style="font-size:0.85rem; color:#aaa;">Automatic payouts: checking…</span>
-                <p style="font-size:0.75rem; color:#777; margin:0.4rem 0 0;">Clients pay SOL up front — when your gig is marked complete, your share lands in the PayPal account above automatically.</p>
+                <button type="button" id="sol-dj-stripe-connect" class="submit-btn" style="display:none; margin-top:0.5rem; padding:0.5rem 1rem; background:#635bff;">Connect Stripe</button>
+                <p style="font-size:0.75rem; color:#777; margin:0.4rem 0 0;">Clients pay SOL up front — when your gig is marked complete, your 85% share is sent to your bank via Stripe automatically.</p>
               </div>
+
+              <label for="sol-dj-paypal">PayPal Email or PayPal.me Username (manual payout fallback)</label>
+              <input id="sol-dj-paypal" type="text" placeholder="you@example.com or paypal.me/yourname" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
 
               <label for="sol-dj-city">City</label>
               <input id="sol-dj-city" type="text" placeholder="Philadelphia" style="width:100%; padding:0.6rem; border-radius:8px; border:1px solid #444; background:#000; color:#fff; margin-bottom:0.75rem;">
@@ -633,7 +634,7 @@
             <h4>DJ Earnings Breakdown</h4>
             <div id="sol-admin-earnings-list" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
             <div style="margin-top:1rem; padding:0.75rem; background:#0a0a0a; border:1px solid #333; border-radius:8px;">
-              <button type="button" id="sol-admin-test-payout" class="submit-btn" style="background:#0070ba;">🧪 Test Auto-Payout ($1 booking → $0.85 to my PayPal)</button>
+              <button type="button" id="sol-admin-test-payout" class="submit-btn" style="background:#635bff;">🧪 Test Auto-Payout ($1 booking → $0.85 to my Stripe)</button>
               <p style="font-size:0.75rem; color:#777; margin:0.4rem 0 0;">Creates a test booking for your DJ profile, marks it completed, and fires the real auto-payout. Note: pays out ALL unpaid earnings for that DJ, not just the test.</p>
               <p id="sol-admin-test-payout-status" class="form-status" aria-live="polite" style="margin-top:0.4rem;"></p>
             </div>

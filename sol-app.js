@@ -939,8 +939,9 @@
             var fee = Math.round(amount * 0.15);
             var paidOut = !!(b.payoutSent || b.finalPayoutSent || b.stripeTransferId);
             if (paidOut) paidAmt += djShare; else pendingAmt += djShare;
-            var pStatus = paidOut ? 'Paid ✓' : (b.payoutStatus === 'awaiting_paypal_setup' ? 'Awaiting PayPal setup' : 'Pending');
-            var pColor = paidOut ? '#22c55e' : (b.payoutStatus === 'awaiting_paypal_setup' ? '#ff5555' : '#ffd860');
+            var awaitingSetup = b.payoutStatus === 'awaiting_stripe_setup' || b.payoutStatus === 'awaiting_paypal_setup';
+            var pStatus = paidOut ? 'Paid ✓' : (awaitingSetup ? 'Awaiting payout setup' : 'Pending');
+            var pColor = paidOut ? '#22c55e' : (awaitingSetup ? '#ff5555' : '#ffd860');
             listHtml += '<div style="background:#0a0a0a; border:1px solid #333; border-radius:8px; padding:0.6rem;">' +
               '<div style="display:flex; justify-content:space-between; font-size:0.8rem;">' +
               '<strong>' + escapeHtml(b.eventType || b.event_type || 'Event') + '</strong>' +
@@ -970,20 +971,63 @@
         });
     }
 
-    // ---------- Automatic PayPal payouts (fires when a gig is marked complete) ----------
+    // ---------- Automatic Stripe payouts (fires when a gig is marked complete) ----------
     function initDjPayoutSetup(user) {
       var statusEl = document.getElementById('sol-dj-payout-status');
+      var btnEl = document.getElementById('sol-dj-stripe-connect');
       if (!statusEl) return;
-      db.collection('djs').doc(user.uid).get().then(function(doc) {
-        var paypal = doc.exists ? (doc.data().paypal || '').trim() : '';
-        if (paypal.indexOf('@') !== -1) {
-          statusEl.innerHTML = '<span style="color:#22c55e;">✓ Automatic payouts active → ' + escapeHtml(paypal) + '</span>';
-        } else if (paypal) {
-          statusEl.innerHTML = '<span style="color:#ffd860;">Add a PayPal <strong>email</strong> above (not a paypal.me link) for automatic payouts.</span>';
+
+      function renderPayoutStatus(d) {
+        var acct = (d.stripeAccountId || '').trim();
+        if (acct && d.stripePayoutsEnabled) {
+          statusEl.innerHTML = '<span style="color:#22c55e;">✓ Automatic payouts active — Stripe connected</span>';
+          if (btnEl) btnEl.style.display = 'none';
+        } else if (acct) {
+          statusEl.innerHTML = '<span style="color:#ffd860;">Stripe account created — finish the setup to get paid automatically.</span>';
+          if (btnEl) { btnEl.style.display = 'inline-block'; btnEl.textContent = 'Finish Stripe Setup'; }
         } else {
-          statusEl.innerHTML = '<span style="color:#ffd860;">Add your PayPal email above to get paid automatically after each gig.</span>';
+          statusEl.innerHTML = '<span style="color:#ffd860;">Connect Stripe to get paid automatically after each gig.</span>';
+          if (btnEl) { btnEl.style.display = 'inline-block'; btnEl.textContent = 'Connect Stripe'; }
         }
-      }).catch(function() { statusEl.textContent = 'Automatic payouts: status unavailable.'; });
+      }
+
+      function refreshStatus() {
+        db.collection('djs').doc(user.uid).get()
+          .then(function(doc) { renderPayoutStatus(doc.exists ? doc.data() : {}); })
+          .catch(function() { statusEl.textContent = 'Automatic payouts: status unavailable.'; });
+      }
+
+      // Returning from Stripe hosted onboarding — sync the account status first.
+      if (/[?&]stripe=(return|refresh)/.test(location.search)) {
+        statusEl.innerHTML = '<span style="color:#888;">Checking Stripe setup…</span>';
+        firebase.functions().httpsCallable('getDjStripeStatus')({})
+            .then(refreshStatus)
+            .catch(refreshStatus);
+      } else {
+        refreshStatus();
+      }
+
+      if (btnEl && !btnEl.dataset.bound) {
+        btnEl.dataset.bound = '1';
+        btnEl.addEventListener('click', function() {
+          btnEl.disabled = true;
+          btnEl.textContent = 'Connecting…';
+          firebase.functions().httpsCallable('createDjConnectAccount')({})
+            .then(function(res) {
+              if (res.data && res.data.url) {
+                window.location.href = res.data.url;
+              } else {
+                btnEl.disabled = false;
+                refreshStatus();
+              }
+            })
+            .catch(function(err) {
+              btnEl.disabled = false;
+              btnEl.textContent = 'Connect Stripe';
+              statusEl.innerHTML = '<span style="color:#ff5555;">' + escapeHtml(err.message || 'Stripe setup failed.') + '</span>';
+            });
+        });
+      }
     }
 
     // ---------- DJ Custom Gigs (public/private events on schedule + profile) ----------
@@ -2965,29 +3009,32 @@
           var djIds = entries.map(function(e) { return e.id; });
           var djLookups = djIds.map(function(id) {
             return db.collection('djs').doc(id).get().then(function(doc) {
-              return { id: id, paypal: doc.exists ? (doc.data().paypal || '') : '' };
-            }).catch(function() { return { id: id, paypal: '' }; });
+              var d = doc.exists ? doc.data() : {};
+              return { id: id, paypal: d.paypal || '', stripeAccountId: d.stripeAccountId || '' };
+            }).catch(function() { return { id: id, paypal: '', stripeAccountId: '' }; });
           });
 
           Promise.all(djLookups).then(function(results) {
-            var paypalMap = {};
-            results.forEach(function(r) { paypalMap[r.id] = r.paypal; });
+            var djPayoutMap = {};
+            results.forEach(function(r) { djPayoutMap[r.id] = r; });
 
             entries.forEach(function(e) {
               var card = document.createElement('div');
               card.style.cssText = 'background:#111; border:1px solid #333; border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;';
-              var paypalInfo = paypalMap[e.id] || '';
+              var djPayout = djPayoutMap[e.id] || {};
+              var paypalInfo = djPayout.paypal || '';
+              var hasStripe = !!(djPayout.stripeAccountId || '').trim();
 
               var payBtnHtml;
               if (e.unpaidTotal <= 0) {
                 payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#22c55e;">✅ All paid</span>';
-              } else if (isPaypalEmail(paypalInfo)) {
-                payBtnHtml = '<button type="button" class="submit-btn sol-auto-payout-btn" data-dj-id="' + e.id + '" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay $' + e.unpaidTotal.toFixed(2) + ' via PayPal</button>';
+              } else if (hasStripe) {
+                payBtnHtml = '<button type="button" class="submit-btn sol-auto-payout-btn" data-dj-id="' + e.id + '" style="display:inline-block; margin-top:0.4rem; background:#635bff; color:#fff; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay $' + e.unpaidTotal.toFixed(2) + ' via Stripe</button>';
               } else if (paypalInfo) {
                 var payoutUrl = buildPaypalPayoutUrl(paypalInfo, e.unpaidTotal);
                 payBtnHtml = '<a href="' + payoutUrl + '" target="_blank" rel="noopener" class="submit-btn" style="display:inline-block; margin-top:0.4rem; background:#0070ba; color:#fff; text-decoration:none; padding:0.4rem 0.8rem; font-size:0.8rem; border-radius:8px;">Pay via PayPal (manual)</a>';
               } else {
-                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ffd860;" title="This DJ has not added a PayPal email or PayPal.me link yet.">🔒 $' + e.unpaidTotal.toFixed(2) + ' held in admin account (djweirdnasty) until DJ adds PayPal</span>';
+                payBtnHtml = '<span style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#ffd860;" title="This DJ has not connected Stripe yet.">🔒 $' + e.unpaidTotal.toFixed(2) + ' held in platform account until DJ connects Stripe</span>';
               }
 
               var manualBtnHtml = e.unpaidTotal > 0
@@ -3002,14 +3049,14 @@
             earningsList.querySelectorAll('.sol-auto-payout-btn').forEach(function(btn) {
               btn.addEventListener('click', function() {
                 var djId = btn.getAttribute('data-dj-id');
-                if (!confirm('Send the outstanding PayPal payout to this DJ now? This cannot be undone.')) return;
+                if (!confirm('Send the outstanding Stripe payout to this DJ now? This cannot be undone.')) return;
 
                 var original = btn.textContent;
                 btn.disabled = true;
                 btn.textContent = 'Sending...';
 
-                var sendPaypalPayout = functions.httpsCallable('sendPaypalPayout');
-                sendPaypalPayout({ djId: djId })
+                var sendDjPayout = functions.httpsCallable('sendDjPayout');
+                sendDjPayout({ djId: djId })
                   .then(function(result) {
                     btn.textContent = '✅ Sent $' + (result.data && result.data.amount ? result.data.amount.toFixed(2) : '');
                     btn.style.background = '#22c55e';
@@ -3180,20 +3227,20 @@
     if (testPayoutBtn) {
       testPayoutBtn.addEventListener('click', function() {
         var st = document.getElementById('sol-admin-test-payout-status');
-        if (!confirm('Create a $1 test booking for YOUR DJ profile, mark it completed, and fire the real auto-payout? This pays out ALL unpaid earnings for that DJ (to its PayPal email).')) return;
+        if (!confirm('Create a $1 test booking for YOUR DJ profile, mark it completed, and fire the real auto-payout? This pays out ALL unpaid earnings for that DJ (to its Stripe account).')) return;
         testPayoutBtn.disabled = true;
         testPayoutBtn.textContent = 'Testing…';
         if (st) { st.style.color = '#ffd860'; st.textContent = 'Creating test booking and completing it…'; }
         firebase.functions().httpsCallable('adminTestPayout')({})
           .then(function(res) {
-            if (st) { st.style.color = '#22c55e'; st.textContent = '✓ Test booking ' + (res.data && res.data.bookingId) + ' completed — check PayPal for the payout (may take a few seconds).'; }
+            if (st) { st.style.color = '#22c55e'; st.textContent = '✓ Test booking ' + (res.data && res.data.bookingId) + ' completed — check Stripe for the payout (may take a few seconds).'; }
           })
           .catch(function(err) {
             if (st) { st.style.color = '#ff1111'; st.textContent = 'Failed: ' + (err.message || 'Unknown error'); }
           })
           .finally(function() {
             testPayoutBtn.disabled = false;
-            testPayoutBtn.textContent = '🧪 Test Auto-Payout ($1 booking → $0.85 to my PayPal)';
+            testPayoutBtn.textContent = '🧪 Test Auto-Payout ($1 booking → $0.85 to my Stripe)';
           });
       });
     }
@@ -3525,7 +3572,7 @@
         quick.innerHTML = '<div class="panel-header"><h3 class="panel-title">QUICK LINKS</h3></div>' +
           '<div class="sol-quick-links">' +
           '<a href="javascript:void(0)" data-dash-link="sol-dj-setup">♙ My Profile</a>' +
-          '<a href="javascript:void(0)" data-dash-link="sol-dj-paypal">$ Payouts (PayPal)</a>' +
+          '<a href="javascript:void(0)" data-dash-link="sol-dj-payout-box">$ Payouts (Stripe)</a>' +
           '<a href="javascript:void(0)" data-dash-link="sol-dj-instagram">▧ Socials</a>' +
           '<a href="javascript:void(0)" data-dash-link="sol-dj-verify-status">✓ Verification</a>' +
           '</div>';

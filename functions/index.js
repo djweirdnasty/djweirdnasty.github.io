@@ -16,9 +16,7 @@ const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 
-const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
-const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
-const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
+const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const SENDGRID_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@djweirdnasty.com";
 
@@ -404,64 +402,18 @@ exports.notifyOnNewMessage = onDocumentCreated(
   }
 );
 
-function paypalBaseUrl(mode) {
-  return mode === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
-}
+// DJs return here after Stripe Connect onboarding.
+const SOL_URL = "https://djweirdnasty.com/sol.html";
 
-async function getPaypalAccessToken(clientId, clientSecret, mode) {
-  var url = paypalBaseUrl(mode) + "/v1/oauth2/token";
-  var res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Authorization": "Basic " + Buffer.from(clientId + ":" + clientSecret).toString("base64"),
-    },
-    body: "grant_type=client_credentials",
-  });
-  var data = await res.json().catch(function () { return {}; });
-  if (!res.ok) {
-    throw new Error("PayPal auth error " + res.status + ": " + JSON.stringify(data));
+// Stripe client is created lazily on first use — STRIPE_SECRET_KEY is a
+// secret, so .value() only works inside a function invocation context.
+const Stripe = require("stripe");
+var stripeClient = null;
+function getStripe() {
+  if (!stripeClient) {
+    stripeClient = Stripe(STRIPE_SECRET_KEY.value());
   }
-  return data.access_token;
-}
-
-async function sendPaypalPayoutBatch(accessToken, mode, receiverEmail, amount, note, senderItemId) {
-  var url = paypalBaseUrl(mode) + "/v1/payments/payouts";
-  var batchId = "sol_" + senderItemId + "_" + Date.now();
-
-  var body = {
-    sender_batch_header: {
-      sender_batch_id: batchId,
-      email_subject: "You have a payout from SOL!",
-      email_message: "You've received a DJ gig payout from Sounds of Logan (SOL).",
-    },
-    items: [
-      {
-        recipient_type: "EMAIL",
-        amount: { value: amount.toFixed(2), currency: "USD" },
-        receiver: receiverEmail,
-        note: note || "SOL DJ gig payout",
-        sender_item_id: senderItemId,
-      },
-    ],
-  };
-
-  var res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + accessToken,
-    },
-    body: JSON.stringify(body),
-  });
-
-  var data = await res.json().catch(function () { return {}; });
-  if (!res.ok) {
-    throw new Error("PayPal payout error " + res.status + ": " + JSON.stringify(data));
-  }
-  return data;
+  return stripeClient;
 }
 
 // Computes what's currently owed to a DJ for one booking.
@@ -502,7 +454,7 @@ function computeBookingPayout(b) {
 exports.computeBookingPayout = computeBookingPayout;
 
 // Finds a DJ's confirmed/completed bookings with unpaid portions and totals
-// what's owed. Shared by the PayPal payout path and the manual-pay marker.
+// what's owed. Shared by the Stripe payout path and the manual-pay marker.
 async function scanPayableBookings(djId) {
   var bookingsSnap = await db.collection("bookings")
     .where("djId", "==", djId)
@@ -521,9 +473,10 @@ async function scanPayableBookings(djId) {
   return { payable: payable, totalOwed: Math.round(totalOwed * 100) / 100 };
 }
 
-// Shared payout core: sends everything currently owed to a DJ via PayPal
-// Payouts and flags the bookings so neither this nor the auto-trigger can
-// double-pay. Throws Error with .code for the callable to map.
+// Shared payout core: sends everything currently owed to a DJ via a Stripe
+// Connect transfer (platform balance → DJ's Express account; Stripe pays their
+// bank on its normal schedule) and flags the bookings so neither this nor the
+// auto-trigger can double-pay. Throws Error with .code for the callable to map.
 async function performDjPayout(djId, opts) {
   opts = opts || {};
   var djDoc = await db.collection("djs").doc(djId).get();
@@ -533,12 +486,20 @@ async function performDjPayout(djId, opts) {
     throw nf;
   }
   var dj = djDoc.data();
-  var paypalEmail = (dj.paypal || "").trim();
+  var stripeAccountId = (dj.stripeAccountId || "").trim();
 
-  if (!paypalEmail || paypalEmail.indexOf("@") === -1) {
-    var noEmail = new Error("DJ has no valid PayPal email on file.");
-    noEmail.code = "no-paypal";
-    throw noEmail;
+  if (!stripeAccountId) {
+    var noAcct = new Error("DJ has not connected a Stripe account.");
+    noAcct.code = "no-stripe";
+    throw noAcct;
+  }
+
+  var stripe = getStripe();
+  var acct = await stripe.accounts.retrieve(stripeAccountId);
+  if (!acct.payouts_enabled) {
+    var notReady = new Error("DJ's Stripe account is not enabled for payouts yet.");
+    notReady.code = "no-stripe";
+    throw notReady;
   }
 
   var scan = await scanPayableBookings(djId);
@@ -551,43 +512,38 @@ async function performDjPayout(djId, opts) {
     throw none;
   }
 
-  var mode = PAYPAL_MODE.value() || "sandbox";
-  var accessToken = await getPaypalAccessToken(
-    PAYPAL_CLIENT_ID.value(),
-    PAYPAL_CLIENT_SECRET.value(),
-    mode
-  );
-
   var djName = dj.stageName || dj.displayName || "DJ";
-  var result = await sendPaypalPayoutBatch(
-    accessToken,
-    mode,
-    paypalEmail,
-    totalOwed,
-    "SOL gig payout for " + djName,
-    djId
-  );
 
-  var batchStatus = (result.batch_header && result.batch_header.batch_status) || "PENDING";
-  var payoutBatchId = (result.batch_header && result.batch_header.payout_batch_id) || null;
+  // Separate charges & transfers: this debits the platform's Stripe balance,
+  // which is funded by the client checkout payments landing there.
+  var transfer = await stripe.transfers.create({
+    amount: Math.round(totalOwed * 100),
+    currency: "usd",
+    destination: stripeAccountId,
+    description: "SOL gig payout for " + djName,
+    metadata: {
+      djId: djId,
+      bookingIds: payable.map(function (p) { return p.ref.id; }).join(","),
+    },
+  });
 
   var batch = db.batch();
   var payoutRef = db.collection("payouts").doc();
   batch.set(payoutRef, {
     djId: djId,
     djName: djName,
-    paypalEmail: paypalEmail,
+    stripeAccountId: stripeAccountId,
     amount: totalOwed,
     bookingIds: payable.map(function (p) { return p.ref.id; }),
-    payoutBatchId: payoutBatchId,
-    status: batchStatus,
-    mode: mode,
+    stripeTransferId: transfer.id,
+    status: "sent",
+    method: "stripe",
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     createdBy: opts.createdBy || "admin",
   });
 
   payable.forEach(function (p) {
-    var update = { payoutBatchId: payoutBatchId, payoutAt: admin.firestore.FieldValue.serverTimestamp(), payoutStatus: "sent" };
+    var update = { stripeTransferId: transfer.id, payoutAt: admin.firestore.FieldValue.serverTimestamp(), payoutStatus: "sent" };
     if (p.payDeposit) update.depositPayoutSent = true;
     if (p.payFinal) update.finalPayoutSent = true;
     batch.set(p.ref, update, { merge: true });
@@ -595,14 +551,14 @@ async function performDjPayout(djId, opts) {
 
   await batch.commit();
 
-  logger.info("PayPal payout sent to DJ " + djId + " for $" + totalOwed + " (batch " + payoutBatchId + ")");
+  logger.info("Stripe payout sent to DJ " + djId + " for $" + totalOwed + " (transfer " + transfer.id + ")");
 
-  return { success: true, payoutBatchId: payoutBatchId, status: batchStatus, amount: totalOwed };
+  return { success: true, stripeTransferId: transfer.id, status: "sent", amount: totalOwed };
 }
 
-exports.sendPaypalPayout = onCall(
+exports.sendDjPayout = onCall(
   {
-    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+    secrets: [STRIPE_SECRET_KEY],
   },
   async (request) => {
     var auth = request.auth;
@@ -619,8 +575,8 @@ exports.sendPaypalPayout = onCall(
       return await performDjPayout(djId, { createdBy: auth.uid });
     } catch (e) {
       if (e.code === "not-found") throw new HttpsError("not-found", e.message);
-      if (e.code === "no-paypal") {
-        throw new HttpsError("failed-precondition", "This DJ has no valid PayPal email on file. Funds are held in the admin PayPal account (djweirdnasty / kurtisctabb@gmail.com) until they add one.");
+      if (e.code === "no-stripe") {
+        throw new HttpsError("failed-precondition", "This DJ has not finished Stripe Connect setup. Their funds stay in the platform Stripe balance until they connect and complete onboarding.");
       }
       if (e.code === "nothing-owed") throw new HttpsError("failed-precondition", "This DJ has no outstanding payout right now.");
       throw new HttpsError("internal", e.message);
@@ -628,12 +584,97 @@ exports.sendPaypalPayout = onCall(
   }
 );
 
-// Marketplace payout automation (Uber/Lyft-style, PayPal rails):
+// DJ payout onboarding: creates (or resumes) a Stripe Express account for the
+// DJ and returns the hosted onboarding URL. Called from the DJ console.
+exports.createDjConnectAccount = onCall(
+  { secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    var auth = request.auth;
+    if (!auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    var djId = (request.data && request.data.djId) || auth.uid;
+    var isAdmin = auth.uid === ADMIN_UID || (auth.token && auth.token.email === ADMIN_EMAIL);
+    if (djId !== auth.uid && !isAdmin) {
+      throw new HttpsError("permission-denied", "You can only connect Stripe for your own DJ profile.");
+    }
+
+    var djDoc = await db.collection("djs").doc(djId).get();
+    var dj = djDoc.exists ? djDoc.data() : {};
+    var email = dj.notificationEmail || dj.email || (auth.token && auth.token.email) || "";
+    if (!email) {
+      throw new HttpsError("failed-precondition", "Add an email to your DJ profile first.");
+    }
+
+    var stripe = getStripe();
+    var accountId = (dj.stripeAccountId || "").trim();
+
+    if (!accountId) {
+      var account = await stripe.accounts.create({
+        type: "express",
+        country: "US",
+        email: email,
+        capabilities: { transfers: { requested: true } },
+        business_type: "individual",
+        metadata: { djId: djId },
+      });
+      accountId = account.id;
+      await db.collection("djs").doc(djId).set(
+        { stripeAccountId: accountId, stripePayoutsEnabled: false },
+        { merge: true }
+      );
+    } else {
+      var existing = await stripe.accounts.retrieve(accountId);
+      if (existing.details_submitted) {
+        await db.collection("djs").doc(djId).set(
+          { stripePayoutsEnabled: !!existing.payouts_enabled, stripeDetailsSubmitted: true },
+          { merge: true }
+        );
+        return { alreadyOnboarded: true, payoutsEnabled: !!existing.payouts_enabled, accountId: accountId };
+      }
+    }
+
+    var link = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: SOL_URL + "?stripe=refresh",
+      return_url: SOL_URL + "?stripe=return",
+      type: "account_onboarding",
+    });
+    return { url: link.url, accountId: accountId };
+  }
+);
+
+// Refreshes a DJ's Stripe Connect status onto their profile (called when they
+// return from onboarding) and returns it for the UI.
+exports.getDjStripeStatus = onCall(
+  { secrets: [STRIPE_SECRET_KEY] },
+  async (request) => {
+    var auth = request.auth;
+    if (!auth) throw new HttpsError("unauthenticated", "Sign in first.");
+    var djId = (request.data && request.data.djId) || auth.uid;
+    var isAdmin = auth.uid === ADMIN_UID || (auth.token && auth.token.email === ADMIN_EMAIL);
+    if (djId !== auth.uid && !isAdmin) {
+      throw new HttpsError("permission-denied", "You can only check Stripe status for your own DJ profile.");
+    }
+
+    var djDoc = await db.collection("djs").doc(djId).get();
+    var accountId = djDoc.exists ? (djDoc.data().stripeAccountId || "").trim() : "";
+    if (!accountId) return { connected: false };
+
+    var acct = await getStripe().accounts.retrieve(accountId);
+    var enabled = !!acct.payouts_enabled;
+    await db.collection("djs").doc(djId).set(
+      { stripePayoutsEnabled: enabled, stripeDetailsSubmitted: !!acct.details_submitted },
+      { merge: true }
+    );
+    return { connected: true, payoutsEnabled: enabled, detailsSubmitted: !!acct.details_submitted, accountId: accountId };
+  }
+);
+
+// Marketplace payout automation (Uber/Lyft-style, Stripe Connect rails):
 // the client pays SOL up front at booking; when the booking flips to
-// "completed" this immediately pushes the DJ's owed share (deposit + final,
-// 85%) to the PayPal email on their DJ profile.
+// "completed" this immediately transfers the DJ's owed share (deposit + final,
+// 85%) to the Stripe account connected on their DJ profile.
 exports.autoPayoutOnCompletion = onDocumentUpdated(
-  { document: "bookings/{bookingId}", secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE] },
+  { document: "bookings/{bookingId}", secrets: [STRIPE_SECRET_KEY] },
   async (event) => {
     var before = event.data && event.data.before.data();
     var after = event.data && event.data.after.data();
@@ -663,9 +704,9 @@ exports.autoPayoutOnCompletion = onDocumentUpdated(
       await bookingRef.set({ payoutStatus: "sent" }, { merge: true });
       logger.info("[AUTO PAYOUT] Paid DJ " + djId + " $" + res.amount + " for booking " + bookingId);
     } catch (e) {
-      if (e.code === "no-paypal" || e.code === "not-found") {
-        await bookingRef.set({ payoutStatus: "awaiting_paypal_setup" }, { merge: true });
-        logger.warn("[AUTO PAYOUT] DJ " + djId + " has no PayPal email — payout held until they add one.");
+      if (e.code === "no-stripe" || e.code === "not-found") {
+        await bookingRef.set({ payoutStatus: "awaiting_stripe_setup" }, { merge: true });
+        logger.warn("[AUTO PAYOUT] DJ " + djId + " has no Stripe account — payout held until they connect one.");
       } else if (e.code === "nothing-owed") {
         logger.info("[AUTO PAYOUT] Nothing owed for DJ " + djId + " on booking " + bookingId);
       } else {
@@ -677,9 +718,9 @@ exports.autoPayoutOnCompletion = onDocumentUpdated(
   }
 );
 
-// Admin fallback while PayPal Payouts approval is pending: records that the
-// DJ was paid outside the API (Send Money, cash, Zelle, etc.) and flags the
-// bookings so neither the admin button nor the auto-trigger can double-pay.
+// Admin fallback: records that the DJ was paid outside Stripe (PayPal Send
+// Money, cash, Zelle, etc.) and flags the bookings so neither the admin
+// button nor the auto-trigger can double-pay.
 exports.markDjPayoutManual = onCall(async (request) => {
   var auth = request.auth;
   if (!auth || (auth.uid !== ADMIN_UID && (!auth.token || auth.token.email !== ADMIN_EMAIL))) {
@@ -733,7 +774,7 @@ exports.markDjPayoutManual = onCall(async (request) => {
 
 
 // Admin test: creates a $1 booking for a DJ and marks it completed, which fires
-// autoPayoutOnCompletion end-to-end (real $0.85 PayPal payout + any other owed).
+// autoPayoutOnCompletion end-to-end (real $0.85 Stripe transfer + any other owed).
 exports.adminTestPayout = onCall(async (request) => {
   var auth = request.auth;
   if (!auth || (auth.uid !== ADMIN_UID && (!auth.token || auth.token.email !== ADMIN_EMAIL))) {
