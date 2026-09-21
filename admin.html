@@ -20,6 +20,13 @@
     .btn-save { background: #22c55e; color: #fff; }
     .btn-danger { background: #ff4d8f; color: #fff; }
     .login-box { max-width: 400px; margin: 3rem auto; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin: 1rem 0 2rem; }
+    .stat-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; text-align: center; }
+    .stat-card .num { font-size: 1.6rem; color: #00ff88; font-weight: bold; }
+    .stat-card .lbl { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .qr-box { text-align: center; padding: 1.5rem; border: 1px solid #333; border-radius: 8px; background: #111; }
+    .qr-box img { background: #fff; padding: 10px; border-radius: 8px; }
+    .admin-section { margin-top: 2.5rem; }
   </style>
   <meta name="google-adsense-account" content="ca-pub-9518165099685321">
 
@@ -111,12 +118,50 @@
         </p>
       </div>
 
-      <table class="admin-table" id="djsTable">
-        <thead>
-          <tr><th>Name</th><th>Email</th><th>Verified</th><th>Status</th><th>Rate</th><th>City</th><th>Actions</th></tr>
-        </thead>
-        <tbody id="djsBody"></tbody>
-      </table>
+      <div class="admin-section">
+        <h2>Analytics</h2>
+        <div class="stat-grid" id="statGrid"></div>
+      </div>
+
+      <div class="admin-section">
+        <h2>DJs</h2>
+        <table class="admin-table" id="djsTable">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Verified</th><th>Status</th><th>Rate</th><th>City</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="djsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-section">
+        <h2>Bookings / Active Gigs</h2>
+        <table class="admin-table" id="bookingsTable">
+          <thead>
+            <tr><th>Client</th><th>DJ</th><th>Event</th><th>Date</th><th>Status</th><th>Total</th></tr>
+          </thead>
+          <tbody id="bookingsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-section">
+        <h2>Feedback &amp; Reviews</h2>
+        <table class="admin-table" id="feedbackTable">
+          <thead>
+            <tr><th>Client</th><th>DJ</th><th>Rating</th><th>Comment</th><th>Date</th></tr>
+          </thead>
+          <tbody id="feedbackBody"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-section">
+        <h2>QR Share</h2>
+        <div class="qr-box">
+          <img id="qrBooking" alt="QR code linking to the SOL booking page" width="200" height="200" />
+          <p>Scan to open the booking page</p>
+          <p><a id="qrBookingLink" href="https://djweirdnasty.com/sol.html">https://djweirdnasty.com/sol.html</a></p>
+        </div>
+      </div>
+
       <p class="form-status" id="status"></p>
     </section>
   </main>
@@ -154,7 +199,98 @@
     function showDashboard() {
       $('loginBox').style.display = 'none';
       $('dashboard').style.display = 'block';
+      loadAll();
+    }
+
+    function loadAll() {
+      loadAnalytics();
       loadDJs();
+      loadBookings();
+      loadFeedback();
+      setupQR();
+    }
+
+    function setupQR() {
+      const url = 'https://djweirdnasty.com/sol.html';
+      $('qrBooking').src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(url);
+    }
+
+    async function loadAnalytics() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/analytics', { headers: { 'x-admin-key': adminKey } });
+        if (!res.ok) throw new Error(await res.text());
+        const a = await res.json();
+        const cards = [
+          ['DJs', a.total_djs],
+          ['Verified', a.verified_djs],
+          ['Online', a.online_djs],
+          ['Bookings', a.total_bookings],
+          ['Active Gigs', a.active_gigs],
+          ['Revenue', '$' + Number(a.total_revenue || 0).toFixed(2)],
+          ['Avg Booking', '$' + Number(a.avg_booking_value || 0).toFixed(2)],
+          ['Reviews', a.feedback_count],
+          ['Avg Rating', a.avg_rating]
+        ];
+        $('statGrid').innerHTML = cards.map(c =>
+          '<div class="stat-card"><div class="num">' + esc(c[1]) + '</div><div class="lbl">' + esc(c[0]) + '</div></div>'
+        ).join('');
+      } catch (e) {
+        $('statGrid').innerHTML = '<div class="stat-card"><div class="lbl">Analytics unavailable</div></div>';
+      }
+    }
+
+    async function loadBookings() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/bookings', { headers: { 'x-admin-key': adminKey } });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const tb = $('bookingsBody');
+        tb.innerHTML = '';
+        if (!data.bookings || !data.bookings.length) {
+          tb.innerHTML = '<tr><td colspan="6">No bookings yet.</td></tr>';
+          return;
+        }
+        data.bookings.forEach((b) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + esc(b.client_name) + '</td>' +
+            '<td>' + esc(b.dj_name || 'Unassigned') + '</td>' +
+            '<td>' + esc(b.event_type || '') + '</td>' +
+            '<td>' + esc(b.event_date || '') + '</td>' +
+            '<td>' + esc(b.status) + '</td>' +
+            '<td>$' + esc(Number(b.total_cost || 0).toFixed(2)) + '</td>';
+          tb.appendChild(tr);
+        });
+      } catch (e) {
+        $('bookingsBody').innerHTML = '<tr><td colspan="6">Error loading bookings.</td></tr>';
+      }
+    }
+
+    async function loadFeedback() {
+      try {
+        const res = await fetch(API_BASE + '/api/admin/feedback', { headers: { 'x-admin-key': adminKey } });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        const tb = $('feedbackBody');
+        tb.innerHTML = '';
+        if (!data.feedback || !data.feedback.length) {
+          tb.innerHTML = '<tr><td colspan="5">No feedback yet.</td></tr>';
+          return;
+        }
+        data.feedback.forEach((f) => {
+          const tr = document.createElement('tr');
+          const date = (f.created_at || '').slice(0, 10);
+          tr.innerHTML =
+            '<td>' + esc(f.client_name || 'Anonymous') + '</td>' +
+            '<td>' + esc(f.dj_name || f.dj_id || '') + '</td>' +
+            '<td>' + esc(f.rating) + '/5</td>' +
+            '<td>' + esc(f.comment || '') + '</td>' +
+            '<td>' + esc(date) + '</td>';
+          tb.appendChild(tr);
+        });
+      } catch (e) {
+        $('feedbackBody').innerHTML = '<tr><td colspan="5">Error loading feedback.</td></tr>';
+      }
     }
 
     async function loadDJs() {
@@ -302,7 +438,7 @@
       f.style.display = f.style.display === 'none' ? 'block' : 'none';
     });
 
-    $('refreshBtn').addEventListener('click', loadDJs);
+    $('refreshBtn').addEventListener('click', loadAll);
     $('createBtn').addEventListener('click', createDJ);
 
     if (adminKey) showDashboard();

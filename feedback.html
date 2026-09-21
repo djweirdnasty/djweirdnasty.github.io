@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://audiomack.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://rork-dj-booking-payment-app.onrender.com https://www.google-analytics.com https://analytics.google.com; upgrade-insecure-requests">
+  <title>Leave a Review | DJWEIRDNASTY</title>
+  <meta name="description" content="Rate your DJ and leave feedback about your event.">
+  <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="stylesheet" href="style.css?v=23">
+  <style>
+    .fb-form { max-width: 520px; margin: 2rem auto; }
+    .fb-form label { display: block; margin: 1rem 0 0.3rem; }
+    .fb-form input, .fb-form select, .fb-form textarea {
+      width: 100%; padding: 10px; background: #111; color: #fff;
+      border: 1px solid #333; border-radius: 6px; font-family: inherit;
+    }
+    .fb-form textarea { min-height: 110px; resize: vertical; }
+    .stars { display: flex; gap: 0.4rem; font-size: 2rem; cursor: pointer; }
+    .stars span { color: #444; transition: color 0.15s; }
+    .stars span.on { color: #ffc107; }
+    .review-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+    .review-card .rc-head { display: flex; justify-content: space-between; color: #888; font-size: 0.85rem; }
+    .review-card .rc-stars { color: #ffc107; }
+    #reviewsList { max-width: 640px; margin: 1rem auto; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="site-banner">
+        <img src="djweirdnasty-banner.webp" alt="DJ WEIRD NA$TY" />
+      </div>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="sol.html">SOL</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="info">
+      <h1>Rate Your DJ</h1>
+      <p>Booked a DJ through SOL? Let us know how it went.</p>
+
+      <div class="fb-form">
+        <label for="fbDj">DJ</label>
+        <select id="fbDj"><option value="">Loading DJs…</option></select>
+
+        <label>Rating</label>
+        <div class="stars" id="starRow">
+          <span data-v="1">&#9733;</span><span data-v="2">&#9733;</span><span data-v="3">&#9733;</span><span data-v="4">&#9733;</span><span data-v="5">&#9733;</span>
+        </div>
+
+        <label for="fbName">Your name (optional)</label>
+        <input id="fbName" type="text" placeholder="Anonymous" />
+
+        <label for="fbComment">Review</label>
+        <textarea id="fbComment" placeholder="How was the event?"></textarea>
+
+        <p><button id="fbSubmit" class="playlist-link">Submit Review</button></p>
+        <p class="form-status" id="fbStatus"></p>
+      </div>
+
+      <h2 style="text-align:center;">Recent Reviews</h2>
+      <div id="reviewsList"><p style="text-align:center;color:#888;">Select a DJ to see their reviews.</p></div>
+    </section>
+  </main>
+  <footer class="container">
+    <p style="text-align: center; color: #888; font-size: 0.85rem; margin-top: 1.5rem;">&copy; 2026 Djweirdnasty LLC. All rights reserved.</p>
+  </footer>
+  <script>
+    const API_BASE = 'https://rork-dj-booking-payment-app.onrender.com';
+    let rating = 0;
+
+    const $ = (id) => document.getElementById(id);
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function setStatus(t, color) {
+      $('fbStatus').textContent = t;
+      $('fbStatus').style.color = color || '#00ff88';
+    }
+
+    document.querySelectorAll('#starRow span').forEach((s) => {
+      s.addEventListener('click', () => {
+        rating = parseInt(s.dataset.v, 10);
+        document.querySelectorAll('#starRow span').forEach((x) => {
+          x.classList.toggle('on', parseInt(x.dataset.v, 10) <= rating);
+        });
+      });
+    });
+
+    async function loadDJs() {
+      try {
+        const res = await fetch(API_BASE + '/api/djs');
+        const data = await res.json();
+        const sel = $('fbDj');
+        sel.innerHTML = '<option value="">Choose a DJ…</option>';
+        (data.djs || []).forEach((d) => {
+          const o = document.createElement('option');
+          o.value = d.id;
+          o.textContent = d.name;
+          sel.appendChild(o);
+        });
+      } catch (e) {
+        $('fbDj').innerHTML = '<option value="">Could not load DJs</option>';
+      }
+    }
+
+    async function loadReviews(djId) {
+      const list = $('reviewsList');
+      if (!djId) { list.innerHTML = '<p style="text-align:center;color:#888;">Select a DJ to see their reviews.</p>'; return; }
+      try {
+        const res = await fetch(API_BASE + '/api/djs/' + encodeURIComponent(djId) + '/reviews');
+        const data = await res.json();
+        if (!data.reviews || !data.reviews.length) {
+          list.innerHTML = '<p style="text-align:center;color:#888;">No reviews yet — be the first!</p>';
+          return;
+        }
+        list.innerHTML = '<p style="text-align:center;color:#888;">Average rating: ' + esc(data.avg_rating) + '/5 (' + data.review_count + ' reviews)</p>' +
+          data.reviews.map((r) =>
+            '<div class="review-card"><div class="rc-head"><span>' + esc(r.client_name || 'Anonymous') + '</span>' +
+            '<span class="rc-stars">' + '&#9733;'.repeat(r.rating) + '</span></div>' +
+            '<p>' + esc(r.comment || '') + '</p></div>'
+          ).join('');
+      } catch (e) {
+        list.innerHTML = '<p style="text-align:center;color:#888;">Could not load reviews.</p>';
+      }
+    }
+
+    $('fbDj').addEventListener('change', () => loadReviews($('fbDj').value));
+
+    $('fbSubmit').addEventListener('click', async () => {
+      const djId = $('fbDj').value;
+      if (!djId) { setStatus('Please choose a DJ.', '#ff4d8f'); return; }
+      if (!rating) { setStatus('Please select a star rating.', '#ff4d8f'); return; }
+      const djName = $('fbDj').options[$('fbDj').selectedIndex].textContent;
+      setStatus('Submitting…', '#888');
+      try {
+        const res = await fetch(API_BASE + '/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dj_id: djId,
+            dj_name: djName,
+            client_name: $('fbName').value.trim(),
+            rating,
+            comment: $('fbComment').value.trim()
+          })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        setStatus('Thanks! Your review was submitted.');
+        $('fbComment').value = '';
+        loadReviews(djId);
+      } catch (e) {
+        setStatus('Submit failed: ' + e.message, '#ff4d8f');
+      }
+    });
+
+    loadDJs();
+  </script>
+<script src="site.js?v=23"></script>
+</body>
+</html>
