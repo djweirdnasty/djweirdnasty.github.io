@@ -416,6 +416,23 @@ function getStripe() {
   return stripeClient;
 }
 
+// Reads a v2 connected account's readiness to receive transfers.
+// stripe_transfers capability "active" = the DJ can be paid; the requirements
+// summary tells us whether they've finished submitting what Stripe needs.
+async function getStripeAccountStatus(stripe, accountId) {
+  var acct = await stripe.v2.core.accounts.retrieve(accountId, {
+    include: ["configuration.recipient", "requirements"],
+  });
+  var sb = (((acct.configuration || {}).recipient || {}).capabilities || {}).stripe_balance || {};
+  var transfersStatus = (sb.stripe_transfers && sb.stripe_transfers.status) || null;
+  var minDeadline = (((acct.requirements || {}).summary || {}).minimum_deadline || {}).status || null;
+  return {
+    transfersActive: transfersStatus === "active",
+    transfersStatus: transfersStatus,
+    detailsSubmitted: minDeadline !== null && minDeadline !== "currently_due" && minDeadline !== "past_due",
+  };
+}
+
 // Computes what's currently owed to a DJ for one booking.
 // Deposit share becomes payable as soon as the DJ accepts (status confirmed or later) —
 // this is the DJ's cut of whatever the client already paid to lock in the gig.
@@ -495,8 +512,8 @@ async function performDjPayout(djId, opts) {
   }
 
   var stripe = getStripe();
-  var acct = await stripe.accounts.retrieve(stripeAccountId);
-  if (!acct.payouts_enabled) {
+  var acctStatus = await getStripeAccountStatus(stripe, stripeAccountId);
+  if (!acctStatus.transfersActive) {
     var notReady = new Error("DJ's Stripe account is not enabled for payouts yet.");
     notReady.code = "no-stripe";
     throw notReady;
@@ -608,12 +625,25 @@ exports.createDjConnectAccount = onCall(
     var accountId = (dj.stripeAccountId || "").trim();
 
     if (!accountId) {
-      var account = await stripe.accounts.create({
-        type: "express",
-        country: "US",
-        email: email,
-        capabilities: { transfers: { requested: true } },
-        business_type: "individual",
+      // Accounts v2: recipient configuration lets the account receive
+      // transfers without being the merchant of record; Stripe carries
+      // fees/losses per this platform's managed-risk setup.
+      var account = await stripe.v2.core.accounts.create({
+        contact_email: email,
+        display_name: dj.stageName || dj.displayName || "SOL DJ",
+        dashboard: "express",
+        identity: { country: "us", entity_type: "individual" },
+        configuration: {
+          recipient: {
+            capabilities: {
+              stripe_balance: { stripe_transfers: { requested: true } },
+            },
+          },
+        },
+        defaults: {
+          currency: "usd",
+          responsibilities: { fees_collector: "stripe", losses_collector: "stripe" },
+        },
         metadata: { djId: djId },
       });
       accountId = account.id;
@@ -622,21 +652,26 @@ exports.createDjConnectAccount = onCall(
         { merge: true }
       );
     } else {
-      var existing = await stripe.accounts.retrieve(accountId);
-      if (existing.details_submitted) {
+      var st = await getStripeAccountStatus(stripe, accountId);
+      if (st.transfersActive) {
         await db.collection("djs").doc(djId).set(
-          { stripePayoutsEnabled: !!existing.payouts_enabled, stripeDetailsSubmitted: true },
+          { stripePayoutsEnabled: true, stripeDetailsSubmitted: true },
           { merge: true }
         );
-        return { alreadyOnboarded: true, payoutsEnabled: !!existing.payouts_enabled, accountId: accountId };
+        return { alreadyOnboarded: true, payoutsEnabled: true, accountId: accountId };
       }
     }
 
-    var link = await stripe.accountLinks.create({
+    var link = await stripe.v2.core.accountLinks.create({
       account: accountId,
-      refresh_url: SOL_URL + "?stripe=refresh",
-      return_url: SOL_URL + "?stripe=return",
-      type: "account_onboarding",
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: SOL_URL + "?stripe=refresh",
+          return_url: SOL_URL + "?stripe=return",
+        },
+      },
     });
     return { url: link.url, accountId: accountId };
   }
@@ -659,13 +694,12 @@ exports.getDjStripeStatus = onCall(
     var accountId = djDoc.exists ? (djDoc.data().stripeAccountId || "").trim() : "";
     if (!accountId) return { connected: false };
 
-    var acct = await getStripe().accounts.retrieve(accountId);
-    var enabled = !!acct.payouts_enabled;
+    var st = await getStripeAccountStatus(getStripe(), accountId);
     await db.collection("djs").doc(djId).set(
-      { stripePayoutsEnabled: enabled, stripeDetailsSubmitted: !!acct.details_submitted },
+      { stripePayoutsEnabled: st.transfersActive, stripeDetailsSubmitted: st.detailsSubmitted },
       { merge: true }
     );
-    return { connected: true, payoutsEnabled: enabled, detailsSubmitted: !!acct.details_submitted, accountId: accountId };
+    return { connected: true, payoutsEnabled: st.transfersActive, detailsSubmitted: st.detailsSubmitted, accountId: accountId };
   }
 );
 
