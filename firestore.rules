@@ -52,6 +52,23 @@ service cloud.firestore {
         (request.resource.data[field] is string && request.resource.data[field].size() <= max);
     }
 
+    // True when the owner of users/{ownerId} has `senderId` in their
+    // blockedUsers array — used to enforce chat blocking server-side.
+    function userHasBlocked(ownerId, senderId) {
+      return exists(/databases/$(database)/documents/users/$(ownerId)) &&
+        senderId in get(/databases/$(database)/documents/users/$(ownerId)).data.get('blockedUsers', []);
+    }
+
+    // True when another participant in the conversation blocked `senderId`.
+    // `participants` is the canonical field (written by the web app);
+    // app-created docs fall back to clientId/djId. 1:1 conversations only.
+    function isBlockedByParticipant(conversationId, senderId) {
+      let convo = get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+      let p = convo.get('participants', [convo.get('clientId', ''), convo.get('djId', '')]);
+      return (p.size() > 0 && p[0] != senderId && userHasBlocked(p[0], senderId)) ||
+             (p.size() > 1 && p[1] != senderId && userHasBlocked(p[1], senderId));
+    }
+
     // ---------- users ----------
     // Owner can manage their own profile, but can never grant themselves
     // admin/verified/unbanned status — those are admin-only fields.
@@ -315,7 +332,8 @@ service cloud.firestore {
         );
         allow create: if isSignedIn() &&
           request.resource.data.senderId == request.auth.uid &&
-          stringWithin('text', 2000);
+          stringWithin('text', 2000) &&
+          !isBlockedByParticipant(conversationId, request.auth.uid);
         allow update, delete: if isAdmin();
       }
     }
@@ -360,6 +378,16 @@ service cloud.firestore {
     match /indie-playback-notifications/{id} {
       allow create: if request.auth != null;
       allow read, update, delete: if false;
+    }
+
+    // ---------- Abuse reports (UGC moderation for App Store review) ----------
+    // Any signed-in user can file a report against another user; only the
+    // site admin can read or resolve them.
+    match /reports/{id} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() &&
+        request.resource.data.reporterId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     // Default deny for anything not explicitly matched above.
