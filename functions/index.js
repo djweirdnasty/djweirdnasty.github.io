@@ -1,4 +1,5 @@
 const { onDocumentWritten, onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
@@ -745,11 +746,39 @@ exports.autoPayoutOnCompletion = onDocumentUpdated(
         logger.warn("[AUTO PAYOUT] DJ " + djId + " has no Stripe account — payout held until they connect one.");
       } else if (e.code === "nothing-owed") {
         logger.info("[AUTO PAYOUT] Nothing owed for DJ " + djId + " on booking " + bookingId);
+      } else if (/insufficient funds/i.test(e.message || "")) {
+        // The client's charge hasn't settled to the available balance yet —
+        // retryPendingPayouts picks it up once funds land.
+        await bookingRef.set({ payoutStatus: "insufficient_funds" }, { merge: true });
+        logger.warn("[AUTO PAYOUT] Platform balance too low for DJ " + djId + " on booking " + bookingId + " — will retry.");
       } else {
         logger.error("[AUTO PAYOUT] Failed for DJ " + djId + " on booking " + bookingId + ": " + e.message);
       }
     } finally {
       await lockRef.delete();
+    }
+  }
+);
+
+// Daily sweep for payouts that couldn't send on first attempt — mainly
+// "insufficient_funds" (client charge still settling into the platform
+// balance) and DJs who connected Stripe after a gig completed. The
+// deposit/final paid flags make re-runs safe: paid portions are skipped.
+exports.retryPendingPayouts = onSchedule(
+  { schedule: "every 24 hours", secrets: [STRIPE_SECRET_KEY] },
+  async () => {
+    var djs = await db.collection("djs").get();
+    for (var doc of djs.docs) {
+      var dj = doc.data();
+      if (!(dj.stripeAccountId || "").trim()) continue;
+      var scan = await scanPayableBookings(doc.id);
+      if (scan.totalOwed <= 0) continue;
+      try {
+        var res = await performDjPayout(doc.id, { createdBy: "retry-scheduler" });
+        logger.info("[RETRY PAYOUT] Paid DJ " + doc.id + " $" + res.amount);
+      } catch (e) {
+        logger.warn("[RETRY PAYOUT] DJ " + doc.id + " still unpaid: " + e.message);
+      }
     }
   }
 );

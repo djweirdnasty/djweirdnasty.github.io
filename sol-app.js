@@ -940,7 +940,7 @@
             var paidOut = !!(b.payoutSent || b.finalPayoutSent || b.stripeTransferId);
             if (paidOut) paidAmt += djShare; else pendingAmt += djShare;
             var awaitingSetup = b.payoutStatus === 'awaiting_stripe_setup' || b.payoutStatus === 'awaiting_paypal_setup';
-            var pStatus = paidOut ? 'Paid ✓' : (awaitingSetup ? 'Awaiting payout setup' : 'Pending');
+            var pStatus = paidOut ? 'Paid ✓' : (awaitingSetup ? 'Awaiting payout setup' : (b.payoutStatus === 'insufficient_funds' ? 'Payout retrying (funds settling)' : 'Pending'));
             var pColor = paidOut ? '#22c55e' : (awaitingSetup ? '#ff5555' : '#ffd860');
             listHtml += '<div style="background:#0a0a0a; border:1px solid #333; border-radius:8px; padding:0.6rem;">' +
               '<div style="display:flex; justify-content:space-between; font-size:0.8rem;">' +
