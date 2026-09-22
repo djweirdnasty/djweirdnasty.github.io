@@ -1,0 +1,3 @@
+[submodule "rork-app$"]
+	path = rork-app$
+	url = https://github.com/djweirdnasty/rork-dj-booking---payment-app.git
