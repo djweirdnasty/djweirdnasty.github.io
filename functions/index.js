@@ -625,15 +625,17 @@ exports.createDjConnectAccount = onCall(
     var accountId = (dj.stripeAccountId || "").trim();
 
     if (!accountId) {
-      // Accounts v2: recipient configuration lets the account receive
-      // transfers without being the merchant of record; Stripe carries
-      // fees/losses per this platform's managed-risk setup.
+      // Accounts v2 with this platform's Managed Risk setup: losses_collector
+      // must be "stripe", and that value is only valid when the account has a
+      // merchant configuration — so DJs get card_payments + stripe_transfers.
+      // "full" dashboard because Express + Managed Risk is preview-only.
       var account = await stripe.v2.core.accounts.create({
         contact_email: email,
         display_name: dj.stageName || dj.displayName || "SOL DJ",
-        dashboard: "express",
+        dashboard: "full",
         identity: { country: "us", entity_type: "individual" },
         configuration: {
+          merchant: { capabilities: { card_payments: { requested: true } } },
           recipient: {
             capabilities: {
               stripe_balance: { stripe_transfers: { requested: true } },
@@ -667,7 +669,7 @@ exports.createDjConnectAccount = onCall(
       use_case: {
         type: "account_onboarding",
         account_onboarding: {
-          configurations: ["recipient"],
+          configurations: ["merchant", "recipient"],
           refresh_url: SOL_URL + "?stripe=refresh",
           return_url: SOL_URL + "?stripe=return",
         },
