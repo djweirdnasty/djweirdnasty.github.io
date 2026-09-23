@@ -382,7 +382,10 @@ service cloud.firestore {
     // ---------- Client <-> DJ chat ----------
     match /conversations/{conversationId} {
       allow read, update: if isSignedIn() && (
-        request.auth.uid in resource.data.get('participants', []) || isAdmin()
+        request.auth.uid in resource.data.get('participants', []) ||
+        request.auth.uid == resource.data.get('clientId', '') ||
+        request.auth.uid == resource.data.get('djId', '') ||
+        isAdmin()
       );
       allow create: if isSignedIn() && request.auth.uid in request.resource.data.get('participants', []);
       allow delete: if isAdmin();
@@ -390,6 +393,8 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if isSignedIn() && (
           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('participants', []) ||
+          request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('clientId', '') ||
+          request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('djId', '') ||
           isAdmin()
         );
         allow create: if isSignedIn() &&
