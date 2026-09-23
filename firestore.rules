@@ -494,6 +494,38 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // ---------- In-app notifications ----------
+    // Notification docs are addressed via recipientId (userId kept for
+    // legacy readers). Any signed-in user may create a notification for
+    // someone else; only the recipient can read/update/delete it.
+    match /notifications/{id} {
+      allow read, update, delete: if isAdmin() || (
+        isSignedIn() && (
+          resource.data.get('recipientId', null) == request.auth.uid ||
+          resource.data.get('userId', null) == request.auth.uid
+        )
+      );
+      allow create: if isSignedIn();
+    }
+
+    // ---------- Typing indicators ----------
+    // Doc ids are {conversationId}_{uid}. Presence is low-sensitivity —
+    // any signed-in user may read, but only the owner may write their doc.
+    match /typing/{id} {
+      allow read: if isSignedIn();
+      // On create the userId comes from the request; on partial updates
+      // (e.g. timestamp-only) fall back to the existing doc's userId.
+      allow write: if isSignedIn() &&
+        request.resource.data.get('userId', resource.data.get('userId', null)) == request.auth.uid;
+    }
+
+    // ---------- User presence ----------
+    // Doc id is the user's uid; only the owner writes their last-seen.
+    match /user-status/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid) || isAdmin();
+    }
+
     // Default deny for anything not explicitly matched above.
     match /{document=**} {
       allow read, write: if false;

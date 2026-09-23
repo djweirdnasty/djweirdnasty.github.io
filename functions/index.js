@@ -93,14 +93,24 @@ function money(n) {
   return "$" + num.toFixed(0);
 }
 
-async function sendExpoPush(token, title, body) {
+async function sendExpoPush(token, title, body, options) {
+  var message = {
+    to: token,
+    title: title,
+    body: body,
+    sound: (options && options.sound) || "default",
+    priority: "high",
+  };
+  if (options && options.data) message.data = options.data;
+  if (options && options.channelId) message.channelId = options.channelId;
+  if (options && options.badge != null) message.badge = options.badge;
   var res = await fetch("https://exp.host/--/api/v2/push/send", {
     method: "POST",
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ to: token, title: title, body: body, sound: "default" })
+    body: JSON.stringify(message)
   });
   var data = await res.json().catch(function () { return {}; });
   var ticket = data && data.data;
@@ -158,6 +168,191 @@ async function notifyUser(uid, title, body, url) {
   }
   return result;
 }
+
+// Callable bridge for app clients: users/{uid}.expoPushToken is owner-only
+// under Firestore rules, so clients cannot resolve another user's push
+// token themselves. Resolves the recipient (uid first, optional email
+// fallback), fans out to Expo push + web push, and writes the in-app
+// inbox doc under notifications/.
+exports.sendUserNotification = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const d = request.data || {};
+  const { userId, userEmail, title, body, data, sound, channelId, notificationType } = d;
+  if (!userId || !title || !body) {
+    throw new HttpsError("invalid-argument", "userId, title, and body are required.");
+  }
+
+  let uid = userId;
+  let userDoc = await db.collection("users").doc(userId).get();
+  if (!userDoc.exists && userEmail) {
+    const snap = await db.collection("users").where("email", "==", userEmail).limit(1).get();
+    if (!snap.empty) {
+      userDoc = snap.docs[0];
+      uid = userDoc.id;
+    }
+  }
+  if (!userDoc.exists) {
+    return { success: false, error: "user_not_found" };
+  }
+
+  let expoPush = 0;
+  const token = userDoc.data().expoPushToken;
+  if (token) {
+    try {
+      await sendExpoPush(token, title, body, {
+        sound: sound,
+        channelId: channelId,
+        data: data,
+        badge: 1,
+      });
+      expoPush = 1;
+    } catch (err) {
+      logger.error("[SEND USER NOTIF] Expo push failed for " + uid + ": " + err.message);
+    }
+  }
+
+  let webPush = 0;
+  try {
+    const sent = await sendWebPush(uid, {
+      title: title,
+      body: body,
+      tag: "sol-" + Date.now(),
+      data: { url: (data && data.url) || "/sol.html" },
+    });
+    if (sent) webPush = 1;
+  } catch (err) {
+    logger.error("[SEND USER NOTIF] Web push failed for " + uid + ": " + err.message);
+  }
+
+  await db.collection("notifications").add({
+    recipientId: uid,
+    senderId: request.auth.uid,
+    type: notificationType || "general",
+    title: title,
+    message: body,
+    data: data || {},
+    read: false,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  }).catch((err) => {
+    logger.warn("[SEND USER NOTIF] Inbox doc write failed for " + uid + ": " + err.message);
+  });
+
+  if (!expoPush && !webPush && !token) {
+    return { success: false, error: "no_push_token" };
+  }
+  return { success: true, expoPush, webPush };
+});
+
+// Full account deletion for App Store 5.1.1(v) compliance.
+// The client-side delete path could only remove a few collections — most
+// deletes are admin/owner-restricted under the rules and silently failed,
+// leaving profile, DJ, and message data behind. Runs with Admin SDK.
+exports.deleteMyAccount = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const uid = request.auth.uid;
+  const deleted = [];
+  const errors = [];
+
+  // Docs keyed directly by uid across collections.
+  const uidCollections = [
+    "users", "djs", "publicDjs", "dj-verifications", "dj-status",
+    "user-status", "dj-availability", "dj-galleries", "dj-samples",
+    "dj-videos", "dj-events", "client-verifications", "push-subscriptions",
+    "admin-users",
+  ];
+  for (const col of uidCollections) {
+    try {
+      await db.collection(col).doc(uid).delete();
+      deleted.push(col + "/" + uid);
+    } catch (err) {
+      // Not-found is fine; anything else gets reported.
+      if (err && err.code !== 5) errors.push(col + ": " + err.message);
+    }
+  }
+
+  // Docs owned by the user under field-scoped collections.
+  const ownedQueries = [
+    ["notifications", "recipientId"],
+    ["typing", "userId"],
+    ["saved-djs", "userId"],
+    ["feedback", "userId"],
+    ["tips", "clientId"],
+    ["waitlist", "userId"],
+    ["playlists", "userId"],
+    ["setlists", "djId"],
+    ["pending-requests", "clientId"],
+    ["booking-requests", "clientId"],
+  ];
+  for (const [col, field] of ownedQueries) {
+    try {
+      const snap = await db.collection(col).where(field, "==", uid).get();
+      for (const doc of snap.docs) {
+        await doc.ref.delete();
+        deleted.push(col + "/" + doc.id);
+      }
+    } catch (err) {
+      errors.push(col + ": " + err.message);
+    }
+  }
+
+  // Strip the user's marker from conversations they participated in so
+  // they stop appearing for the other party. Message history is retained
+  // for the counterparty's records — Apple requires account+PII removal,
+  // not deletion of shared transaction records.
+  try {
+    const convos = await db.collection("conversations")
+      .where("participants", "array-contains", uid).get();
+    for (const doc of convos.docs) {
+      await doc.ref.update({
+        participants: admin.firestore.FieldValue.arrayRemove(uid),
+        [`leftAt_${uid}`]: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      deleted.push("conversations/" + doc.id + " (left)");
+    }
+  } catch (err) {
+    errors.push("conversations: " + err.message);
+  }
+
+  // Anonymize PII on bookings where the user is a party (kept for the
+  // counterparty + financial records).
+  try {
+    for (const field of ["clientId", "djId"]) {
+      const snap = await db.collection("bookings").where(field, "==", uid).get();
+      for (const doc of snap.docs) {
+        const scrub = {};
+        if (doc.data().clientId === uid) {
+          scrub.clientName = "Deleted user";
+          scrub.clientEmail = null;
+          scrub.clientAvatar = null;
+        }
+        if (doc.data().djId === uid) {
+          scrub.djName = "Deleted user";
+          scrub.djEmail = null;
+          scrub.djAvatar = null;
+        }
+        if (Object.keys(scrub).length) await doc.ref.update(scrub);
+      }
+    }
+  } catch (err) {
+    errors.push("bookings anonymize: " + err.message);
+  }
+
+  // Finally remove the Auth account itself — Admin SDK has no
+  // recent-login requirement, so users aren't forced to re-auth first.
+  try {
+    await admin.auth().deleteUser(uid);
+  } catch (err) {
+    errors.push("auth: " + err.message);
+    throw new HttpsError("internal", "Data deleted but auth removal failed: " + err.message);
+  }
+
+  logger.info("[DELETE ACCOUNT] uid=" + uid + " deleted=" + deleted.length + " errors=" + errors.length);
+  return { success: errors.length === 0, deleted: deleted.length, errors };
+});
 
 // TEMP DISABLED: uncomment once TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER secrets are set
 /*
