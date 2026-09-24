@@ -433,9 +433,11 @@
         .then(function() {
           db.collection('djs').doc(user.uid).set(profileData, { merge: true });
           db.collection('users').doc(user.uid).set({ isDJ: true, role: 'dj' }, { merge: true });
+          // dj-status is world-readable and carries only presence/location —
+          // scrub any identity fields written by older versions.
           db.collection('dj-status').doc(user.uid).set({
-            djName: profileData.stageName || '',
-            djAvatar: profileData.photoURL || ''
+            djName: firebase.firestore.FieldValue.delete(),
+            djAvatar: firebase.firestore.FieldValue.delete()
           }, { merge: true });
           statusEl.textContent = keepApproved ? 'Profile updated!' : 'Profile saved & submitted for verification!';
           statusEl.style.color = '#22c55e';
@@ -1501,8 +1503,10 @@
         isOnline: online,
         isVerified: isVerifiedDJ,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-        djName: user.displayName || user.email || 'DJ',
-        djId: user.uid
+        djId: user.uid,
+        // dj-status must never carry identity — scrub legacy fields.
+        djName: firebase.firestore.FieldValue.delete(),
+        djAvatar: firebase.firestore.FieldValue.delete()
       }, { merge: true }).catch(function(err) {
         djConsoleStatus.textContent = 'Failed to update status: ' + err.message;
         djConsoleStatus.style.color = '#ff1111';
@@ -2018,6 +2022,30 @@
       loadAdminDisputes();
       loadAdminUsers();
       loadAdminEarnings();
+      scrubDjStatusIdentities();
+    }
+
+    // One-time-per-session cleanup: older builds wrote djName/djAvatar/etc.
+    // into dj-status, which is world-readable. Strip identity fields so the
+    // collection carries only presence + location.
+    var djStatusScrubbed = false;
+    function scrubDjStatusIdentities() {
+      if (djStatusScrubbed || isAdmin !== true) return;
+      djStatusScrubbed = true;
+      db.collection('dj-status').get().then(function(snap) {
+        var del = firebase.firestore.FieldValue.delete();
+        snap.forEach(function(doc) {
+          var d = doc.data() || {};
+          if (d.djName === undefined && d.djAvatar === undefined &&
+              d.name === undefined && d.displayName === undefined &&
+              d.email === undefined) return;
+          doc.ref.set({
+            djName: del, djAvatar: del, name: del, displayName: del, email: del
+          }, { merge: true }).catch(function() {});
+        });
+      }).catch(function(err) {
+        console.warn('dj-status scrub skipped:', err && err.message);
+      });
     }
 
     function loadAdminDJs() {
@@ -4755,14 +4783,69 @@
       renderDJMarker(doc.id, data, lat, lng);
     }
 
+    // dj-status is world-readable and carries no identity. Admins resolve
+    // name/avatar from the profile collections and cache them per session.
+    var djIdentities = {};
+    function getDjIdentity(djId) {
+      if (djIdentities[djId] !== undefined && djIdentities[djId] !== null) {
+        return djIdentities[djId];
+      }
+      var pub = allDjs.find(function(dj) {
+        return (dj.id || dj.uid || dj.dj_id) === djId;
+      });
+      if (pub) {
+        djIdentities[djId] = {
+          name: pub.name || pub.stageName || pub.displayName || 'DJ',
+          avatar: pub.avatar || pub.photoURL || ''
+        };
+        return djIdentities[djId];
+      }
+      return null;
+    }
+
+    function fetchDjIdentity(djId) {
+      if (djIdentities[djId] !== undefined) return;
+      djIdentities[djId] = null; // in-flight sentinel
+      var done = function(identity) {
+        djIdentities[djId] = identity || { name: 'DJ', avatar: '' };
+        var dj = onlineDJs[djId];
+        if (dj) renderDJMarker(djId, dj.data, dj.lat, dj.lng);
+        renderAdminOnlineDjs();
+      };
+      db.collection('djs').doc(djId).get().then(function(doc) {
+        if (doc.exists) {
+          var d = doc.data() || {};
+          done({
+            name: d.stageName || d.displayName || d.name || d.djName || 'DJ',
+            avatar: d.photoURL || d.avatar || ''
+          });
+          return null;
+        }
+        return db.collection('dj-verifications').doc(djId).get().then(function(vdoc) {
+          if (vdoc.exists) {
+            var v = vdoc.data() || {};
+            var p = v.djProfile || v;
+            done({
+              name: p.stageName || p.djName || p.displayName || 'DJ',
+              avatar: p.photoURL || p.avatar || v.photoURL || v.avatar || ''
+            });
+          } else {
+            done(null);
+          }
+        });
+      }).catch(function() { done(null); });
+    }
+
     function renderDJMarker(djId, data, lat, lng) {
-      var djName = data.djName || 'DJ';
-      var initial = djName.charAt(0).toUpperCase();
       // DJ safety: clients see identical anonymous blue markers — no name,
       // photo, genre, rating, or any identifying info. Only admins see
       // the real identity behind each marker.
       var showIdentity = isAdmin === true;
-      var avatar = showIdentity ? (data.djAvatar || data.avatar || data.photoURL || '') : '';
+      var identity = showIdentity ? getDjIdentity(djId) : null;
+      if (showIdentity && !identity) fetchDjIdentity(djId);
+      var djName = (identity && identity.name) || 'DJ';
+      var initial = djName.charAt(0).toUpperCase();
+      var avatar = identity ? (identity.avatar || '') : '';
       var popupHtml;
       if (showIdentity) {
         var popupAvatar = avatar
@@ -4808,8 +4891,9 @@
       box.innerHTML = '';
       ids.forEach(function(uid) {
         var dj = onlineDJs[uid] || {};
-        var d = dj.data || {};
-        var name = escapeHtml(d.djName || d.name || 'DJ');
+        var identity = getDjIdentity(uid);
+        if (!identity) fetchDjIdentity(uid);
+        var name = escapeHtml((identity && identity.name) || 'DJ');
         var lat = Number(dj.lat);
         var lng = Number(dj.lng);
         var coordStr = (!isNaN(lat) && !isNaN(lng)) ? (lat.toFixed(4) + ', ' + lng.toFixed(4)) : 'Location unavailable';
