@@ -1460,7 +1460,14 @@
               updateData.responseTimeMs = Date.now() - created.toMillis();
             }
           }
-          bookingRef.set(updateData, { merge: true })
+          // Identity reveal: acceptance is the moment the client learns
+          // which DJ took the booking — attach the approved profile fields.
+          db.collection('djs').doc(user.uid).get().then(function(djDoc) {
+            var d = djDoc.exists ? (djDoc.data() || {}) : {};
+            updateData.djName = d.stageName || d.displayName || d.name || user.displayName || 'DJ';
+            updateData.djAvatar = d.photoURL || d.avatar || '';
+            updateData.djEmail = user.email || '';
+            bookingRef.set(updateData, { merge: true })
             .then(function() {
               djConsoleStatus.textContent = 'Booking accepted! Client notified.';
               djConsoleStatus.style.color = '#22c55e';
@@ -1470,6 +1477,11 @@
               djConsoleStatus.textContent = 'Failed: ' + err.message;
               djConsoleStatus.style.color = '#ff1111';
             });
+          }).catch(function() {
+            // Profile lookup failed — still accept with auth-profile identity
+            updateData.djName = updateData.djName || user.displayName || 'DJ';
+            bookingRef.set(updateData, { merge: true }).catch(function() {});
+          });
         });
       } else {
         bookingRef.set(updateData, { merge: true })
