@@ -2381,6 +2381,34 @@
     }
 
     document.getElementById('sol-admin-tab-djs').addEventListener('click', function() { adminSwitchTab('djs'); });
+    document.getElementById('sol-admin-sync-dj-flags').addEventListener('click', function() {
+      var statusEl = document.getElementById('sol-admin-sync-dj-flags-status');
+      statusEl.textContent = 'Syncing…';
+      statusEl.style.color = '#ffd860';
+      // Backfill isDJ/role on users docs for DJs who signed up via the
+      // website — the app filters DJ queries on those flags.
+      db.collection('dj-verifications').get().then(function(snap) {
+        var uids = snap.docs.map(function(d) { return d.id; });
+        var updated = 0;
+        return Promise.all(uids.map(function(uid) {
+          return db.collection('users').doc(uid).get().then(function(udoc) {
+            var u = udoc.exists ? (udoc.data() || {}) : {};
+            var update = { isDJ: true };
+            // Never downgrade an existing role (e.g. admin)
+            if (u.role !== 'admin') update.role = 'dj';
+            return db.collection('users').doc(uid).set(update, { merge: true })
+              .then(function() { updated++; });
+          });
+        })).then(function() {
+          statusEl.textContent = 'Done — ' + updated + ' users docs flagged (' + uids.length + ' verifications).';
+          statusEl.style.color = '#22c55e';
+          trackSolEvent('admin_dj_flags_synced', { updated: updated, total: uids.length });
+        });
+      }).catch(function(err) {
+        statusEl.textContent = 'Sync failed: ' + err.message;
+        statusEl.style.color = '#ff1111';
+      });
+    });
     document.getElementById('sol-admin-tab-bookings').addEventListener('click', function() { adminSwitchTab('bookings'); });
     document.getElementById('sol-admin-tab-verifications').addEventListener('click', function() { adminSwitchTab('verifications'); });
     document.getElementById('sol-admin-tab-users').addEventListener('click', function() { adminSwitchTab('users'); loadAdminUsers(); });
