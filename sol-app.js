@@ -2015,6 +2015,8 @@
       loadAdminVerifications();
       loadAdminOnlineCount();
       loadAdminDisputes();
+      loadAdminUsers();
+      loadAdminEarnings();
     }
 
     function loadAdminDJs() {
@@ -2082,7 +2084,8 @@
                 '</div>';
               djsList.appendChild(card);
             });
-            document.getElementById('sol-admin-stat-djs').textContent = count;
+            var approvedCount = verDocs.filter(function(v) { return v.data.status === 'approved'; }).length;
+            document.getElementById('sol-admin-stat-djs').textContent = approvedCount;
             djsList.querySelectorAll('button[data-message-dj-admin]').forEach(function(btn) {
               btn.addEventListener('click', function() {
                 var recipientSel = document.getElementById('sol-admin-message-recipient');
