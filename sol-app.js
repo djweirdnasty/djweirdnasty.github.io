@@ -38,6 +38,9 @@
     const functions = firebase.functions();
     const storage = firebase.storage();
 
+    // Founder/admin's own DJ profile — the only avatar allowed on map markers.
+    var FOUNDER_DJ_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
+
     // ---------- SOL Analytics ----------
     function trackSolEvent(name, params) {
       if (typeof gtag !== 'function') return;
@@ -4756,7 +4759,9 @@
     function renderDJMarker(djId, data, lat, lng) {
       var djName = data.djName || 'DJ';
       var initial = djName.charAt(0).toUpperCase();
-      var avatar = data.djAvatar || data.avatar || data.photoURL || '';
+      // DJ safety: never show a DJ's photo at their live location on the map —
+      // except the admin/founder's own profile.
+      var avatar = djId === FOUNDER_DJ_UID ? (data.djAvatar || data.avatar || data.photoURL || '') : '';
       var popupAvatar = avatar
         ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
         : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
