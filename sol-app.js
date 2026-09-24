@@ -432,6 +432,7 @@
       db.collection('dj-verifications').doc(user.uid).set(verData, { merge: true })
         .then(function() {
           db.collection('djs').doc(user.uid).set(profileData, { merge: true });
+          db.collection('users').doc(user.uid).set({ isDJ: true, role: 'dj' }, { merge: true });
           db.collection('dj-status').doc(user.uid).set({
             djName: profileData.stageName || '',
             djAvatar: profileData.photoURL || ''
@@ -2084,8 +2085,7 @@
                 '</div>';
               djsList.appendChild(card);
             });
-            var approvedCount = verDocs.filter(function(v) { return v.data.status === 'approved'; }).length;
-            document.getElementById('sol-admin-stat-djs').textContent = approvedCount;
+            document.getElementById('sol-admin-stat-djs').textContent = count;
             djsList.querySelectorAll('button[data-message-dj-admin]').forEach(function(btn) {
               btn.addEventListener('click', function() {
                 var recipientSel = document.getElementById('sol-admin-message-recipient');
@@ -2618,6 +2618,12 @@
         document.getElementById('admde-avatar-file').addEventListener('change', function(e) {
           var file = e.target.files && e.target.files[0];
           if (!file) return;
+          var adminUser = auth.currentUser;
+          if (!adminUser) {
+            avatarStatus.textContent = 'You must be signed in to upload.';
+            avatarStatus.style.color = '#ff3b30';
+            return;
+          }
           if (!file.type.match('image.*')) {
             avatarStatus.textContent = 'Please select an image file.';
             avatarStatus.style.color = '#ff3b30';
@@ -2631,7 +2637,7 @@
           avatarStatus.textContent = 'Uploading...';
           avatarStatus.style.color = '#ffd860';
           var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-          var ref = storage.ref('djs/' + uid + '/avatar-' + Date.now() + '.' + ext);
+          var ref = storage.ref('public/' + adminUser.uid + '/dj-avatars/' + uid + '-' + Date.now() + '.' + ext);
           ref.put(file).then(function() {
             return ref.getDownloadURL();
           }).then(function(url) {
