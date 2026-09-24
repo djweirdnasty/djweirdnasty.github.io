@@ -38,9 +38,6 @@
     const functions = firebase.functions();
     const storage = firebase.storage();
 
-    // Founder/admin's own DJ profile — the only avatar allowed on map markers.
-    var FOUNDER_DJ_UID = '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3';
-
     // ---------- SOL Analytics ----------
     function trackSolEvent(name, params) {
       if (typeof gtag !== 'function') return;
@@ -4143,7 +4140,9 @@
         var eventType = b.eventType || b.event_type || 'Event';
         var date = b.date || b.eventDate || '';
         var startTime = b.startTime || b.event_time || '';
-        var djName = b.djName || 'DJ';
+        // DJ identity is revealed only after a DJ accepts (djId is assigned).
+        // Broadcast/pending bookings show a generic label instead.
+        var djName = b.djId ? (b.djName || 'DJ') : 'Awaiting DJ acceptance';
         var amount = b.totalAmount || b.total_cost || 0;
         var status = b.status || 'unknown';
         var statusColor = status === 'confirmed' ? '#22c55e' : status === 'pending' ? '#ffd860' : status === 'completed' ? '#ff5555' : '#ff3b30';
@@ -4759,22 +4758,30 @@
     function renderDJMarker(djId, data, lat, lng) {
       var djName = data.djName || 'DJ';
       var initial = djName.charAt(0).toUpperCase();
-      // DJ safety: never show a DJ's photo at their live location on the map —
-      // except the admin/founder's own profile.
-      var avatar = djId === FOUNDER_DJ_UID ? (data.djAvatar || data.avatar || data.photoURL || '') : '';
-      var popupAvatar = avatar
-        ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
-        : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
-      var popupHtml = '<div style="text-align:center;">' + popupAvatar +
-                      '<strong>' + djName + '</strong><br>' +
-                      '<span style="color:#22c55e;font-size:12px;">Online</span>' +
-                      '</div>';
+      // DJ safety: clients see identical anonymous blue markers — no name,
+      // photo, genre, rating, or any identifying info. Only admins see
+      // the real identity behind each marker.
+      var showIdentity = isAdmin === true;
+      var avatar = showIdentity ? (data.djAvatar || data.avatar || data.photoURL || '') : '';
+      var popupHtml;
+      if (showIdentity) {
+        var popupAvatar = avatar
+          ? '<img loading="lazy" src="' + avatar + '" style="width:40px;height:40px;border-radius:50%;display:block;margin:0 auto 6px;object-fit:cover;" onerror="this.style.display=\'none\'" />'
+          : '<div style="width:40px;height:40px;border-radius:50%;background:#ff1111;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 6px;">' + initial + '</div>';
+        popupHtml = '<div style="text-align:center;">' + popupAvatar +
+                    '<strong>' + djName + '</strong><br>' +
+                    '<span style="color:#22c55e;font-size:12px;">Online</span>' +
+                    '</div>';
+      } else {
+        popupHtml = '<div style="text-align:center;"><strong>DJ available nearby</strong><br>' +
+                    '<span style="color:#22c55e;font-size:12px;">Online</span></div>';
+      }
 
       if (djMarkers[djId]) {
         djMarkers[djId].setLngLat([lng, lat]);
         djMarkers[djId].setPopup(new mapboxgl.Popup().setHTML(popupHtml));
       } else {
-        var el = createDJMarkerEl(avatar, initial);
+        var el = showIdentity ? createDJMarkerEl(avatar, initial) : createSolPin('#3b82f6', 16);
         djMarkers[djId] = new mapboxgl.Marker({ element: el })
           .setLngLat([lng, lat])
           .setPopup(new mapboxgl.Popup().setHTML(popupHtml))
