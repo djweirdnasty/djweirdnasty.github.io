@@ -2554,6 +2554,7 @@
           return '';
         };
         var arrJoin = function(a) { return Array.isArray(a) ? a.join(', ') : (a || ''); };
+        var currentAvatar = val(djDoc.photoURL, djDoc.avatar, p.photoURL, p.avatar, verDoc.photoURL, verDoc.avatar, userDoc.photoURL, userDoc.avatar);
 
         var field = function(id, label, v, placeholder) {
           return '<label style="display:block; margin-bottom:0.75rem;">' +
@@ -2563,6 +2564,14 @@
         };
 
         content.innerHTML =
+          '<div style="margin-bottom:0.75rem;"><span style="color:#888; font-size:0.8rem;">Profile Picture</span>' +
+          '<div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.35rem;">' +
+          '<img id="admde-avatar-img" src="' + escapeAttr(currentAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #444;' + (currentAvatar ? '' : 'display:none;') + '" onerror="this.onerror=null;this.style.display=\'none\';">' +
+          '<div style="flex:1;">' +
+          '<input type="file" id="admde-avatar-file" accept="image/*" style="font-size:0.8rem; color:#ccc; margin-bottom:0.4rem; width:100%;">' +
+          '<input type="text" id="admde-avatar-url" value="' + escapeAttr(currentAvatar) + '" placeholder="https://… or choose a file above" style="width:100%; padding:0.5rem; background:#1a1a1a; border:1px solid #444; border-radius:8px; color:#fff; box-sizing:border-box; font-size:0.8rem;">' +
+          '<div id="admde-avatar-status" style="font-size:0.75rem; margin-top:0.3rem; min-height:1em;"></div>' +
+          '</div></div></div>' +
           field('admde-stage', 'Stage Name', val(djDoc.stageName, p.stageName, p.djName, verDoc.stageName, userDoc.displayName)) +
           '<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">' +
           field('admde-city', 'City', val(djDoc.city, p.city, userDoc.city)) +
@@ -2596,6 +2605,44 @@
           '<button type="button" id="admde-save" class="submit-btn" style="width:100%; margin-top:1rem; padding:0.75rem; background:#ffd860; color:#000; font-weight:700;">Save Changes</button>' +
           '<p id="admde-msg" style="font-size:0.8rem; margin-top:0.5rem;"></p>';
 
+        var avatarUrlInput = document.getElementById('admde-avatar-url');
+        var avatarImg = document.getElementById('admde-avatar-img');
+        var avatarStatus = document.getElementById('admde-avatar-status');
+        avatarUrlInput.addEventListener('input', function() {
+          var u = avatarUrlInput.value.trim();
+          if (u) { avatarImg.src = u; avatarImg.style.display = 'block'; }
+        });
+        document.getElementById('admde-avatar-file').addEventListener('change', function(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          if (!file.type.match('image.*')) {
+            avatarStatus.textContent = 'Please select an image file.';
+            avatarStatus.style.color = '#ff3b30';
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            avatarStatus.textContent = 'Image must be under 5 MB.';
+            avatarStatus.style.color = '#ff3b30';
+            return;
+          }
+          avatarStatus.textContent = 'Uploading...';
+          avatarStatus.style.color = '#ffd860';
+          var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+          var ref = storage.ref('djs/' + uid + '/avatar-' + Date.now() + '.' + ext);
+          ref.put(file).then(function() {
+            return ref.getDownloadURL();
+          }).then(function(url) {
+            avatarUrlInput.value = url;
+            avatarImg.src = url;
+            avatarImg.style.display = 'block';
+            avatarStatus.textContent = 'Upload complete — click Save Changes.';
+            avatarStatus.style.color = '#22c55e';
+          }).catch(function(err) {
+            avatarStatus.textContent = 'Upload failed: ' + err.message;
+            avatarStatus.style.color = '#ff3b30';
+          });
+        });
+
         document.getElementById('admde-save').addEventListener('click', function() {
           var msg = document.getElementById('admde-msg');
           var splitCsv = function(id) {
@@ -2604,8 +2651,11 @@
           var stageName = document.getElementById('admde-stage').value.trim();
           var newStatus = document.getElementById('admde-status').value;
           var isVerified = document.getElementById('admde-verified').checked;
+          var avatarUrl = document.getElementById('admde-avatar-url').value.trim();
           var djUpdate = {
             stageName: stageName,
+            photoURL: avatarUrl,
+            avatar: avatarUrl,
             profileSlug: djSlugify(stageName),
             city: document.getElementById('admde-city').value.trim(),
             state: document.getElementById('admde-state').value.trim(),
@@ -2630,15 +2680,19 @@
             db.collection('djs').doc(uid).set(djUpdate, { merge: true }),
             db.collection('dj-verifications').doc(uid).set({
               status: newStatus,
+              photoURL: avatarUrl,
+              avatar: avatarUrl,
               djProfile: {
                 stageName: stageName,
                 djName: stageName,
                 city: djUpdate.city,
                 state: djUpdate.state,
-                hourlyRate: djUpdate.hourlyRate
+                hourlyRate: djUpdate.hourlyRate,
+                photoURL: avatarUrl,
+                avatar: avatarUrl
               }
             }, { merge: true }),
-            db.collection('users').doc(uid).set({ isVerifiedDJ: isVerified }, { merge: true })
+            db.collection('users').doc(uid).set({ isVerifiedDJ: isVerified, photoURL: avatarUrl, avatar: avatarUrl }, { merge: true })
           ]).then(function() {
             msg.textContent = 'Saved.';
             msg.style.color = '#22c55e';
