@@ -249,9 +249,14 @@ service cloud.firestore {
           // confirmed/lets_go too because a DJ may confirm arrival before any
           // GPS update has flipped the status to on_the_way.
           (resource.data.get('status', 'pending') == 'pending' && request.resource.data.get('status', 'pending') == 'confirmed') ||
-          (resource.data.get('status', 'pending') == 'confirmed' && request.resource.data.get('status', 'pending') in ['lets_go', 'on_the_way', 'arrived', 'completed']) ||
-          (resource.data.get('status', 'pending') == 'lets_go' && request.resource.data.get('status', 'pending') in ['on_the_way', 'arrived']) ||
-          (resource.data.get('status', 'pending') == 'on_the_way' && request.resource.data.get('status', 'pending') in ['arrived', 'completed']) ||
+          // The event phase starts automatically at the scheduled start time
+          // and ends at the scheduled end — whichever participant's device is
+          // open writes 'started'/'completed', so every active pre-start state
+          // must be able to reach them (a DJ may never tap the buttons, or the
+          // app may have been closed during travel).
+          (resource.data.get('status', 'pending') == 'confirmed' && request.resource.data.get('status', 'pending') in ['lets_go', 'on_the_way', 'arrived', 'started', 'completed']) ||
+          (resource.data.get('status', 'pending') == 'lets_go' && request.resource.data.get('status', 'pending') in ['on_the_way', 'arrived', 'started', 'completed']) ||
+          (resource.data.get('status', 'pending') == 'on_the_way' && request.resource.data.get('status', 'pending') in ['arrived', 'started', 'completed']) ||
           (resource.data.get('status', 'pending') == 'arrived' && request.resource.data.get('status', 'pending') in ['started', 'completed']) ||
           (resource.data.get('status', 'pending') == 'started' && request.resource.data.get('status', 'pending') == 'completed')
         ) &&
