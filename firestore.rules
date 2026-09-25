@@ -222,8 +222,12 @@ service cloud.firestore {
         !request.resource.data.keys().hasAny(['stripeTransferId', 'payoutBatchId', 'payoutAt'])
       );
       allow update: if isAdmin() || (
+        // Updates are already constrained to the booking's two parties plus
+        // the forward-only lifecycle below, so they do not require a verified
+        // email — otherwise clients who never clicked the verification link
+        // could not cancel or manage their own bookings. Verification is
+        // still required to CREATE bookings (anti-spam).
         isSignedIn() &&
-        isEmailVerified() &&
         // Only the two parties may update — a DJ may also claim a booking
         // whose djId was never assigned (open broadcast requests).
         (
@@ -241,12 +245,14 @@ service cloud.firestore {
           // arrived, started) and users must be able to cancel throughout.
           (request.resource.data.get('status', 'pending') == 'cancelled' &&
            resource.data.get('status', 'pending') in ['pending', 'confirmed', 'lets_go', 'on_the_way', 'arrived', 'started']) ||
-          // Forward-only lifecycle progression.
+          // Forward-only lifecycle progression. 'arrived' is allowed from
+          // confirmed/lets_go too because a DJ may confirm arrival before any
+          // GPS update has flipped the status to on_the_way.
           (resource.data.get('status', 'pending') == 'pending' && request.resource.data.get('status', 'pending') == 'confirmed') ||
-          (resource.data.get('status', 'pending') == 'confirmed' && request.resource.data.get('status', 'pending') in ['lets_go', 'on_the_way', 'completed']) ||
-          (resource.data.get('status', 'pending') == 'lets_go' && request.resource.data.get('status', 'pending') == 'on_the_way') ||
-          (resource.data.get('status', 'pending') == 'on_the_way' && request.resource.data.get('status', 'pending') == 'arrived') ||
-          (resource.data.get('status', 'pending') == 'arrived' && request.resource.data.get('status', 'pending') == 'started') ||
+          (resource.data.get('status', 'pending') == 'confirmed' && request.resource.data.get('status', 'pending') in ['lets_go', 'on_the_way', 'arrived', 'completed']) ||
+          (resource.data.get('status', 'pending') == 'lets_go' && request.resource.data.get('status', 'pending') in ['on_the_way', 'arrived']) ||
+          (resource.data.get('status', 'pending') == 'on_the_way' && request.resource.data.get('status', 'pending') in ['arrived', 'completed']) ||
+          (resource.data.get('status', 'pending') == 'arrived' && request.resource.data.get('status', 'pending') in ['started', 'completed']) ||
           (resource.data.get('status', 'pending') == 'started' && request.resource.data.get('status', 'pending') == 'completed')
         ) &&
         (
@@ -267,7 +273,11 @@ service cloud.firestore {
         unchanged('payoutAt') &&
         unchanged('refundAmount') &&
         unchanged('refund') &&
-        unchanged('cancelledBy') &&
+        // cancelledBy may only be written as the caller's own uid — it is an
+        // audit field, so parties can record their cancellation but can never
+        // attribute it to someone else.
+        (unchanged('cancelledBy') ||
+         request.resource.data.get('cancelledBy', null) == request.auth.uid) &&
         unchanged('createdAt')
       );
       allow delete: if isAdmin();

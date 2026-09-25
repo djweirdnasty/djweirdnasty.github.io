@@ -1,59 +1,97 @@
 rules_version = '2';
-// SOL DJ Booking — Firebase Storage security rules.
 service firebase.storage {
   match /b/{bucket}/o {
-    function isSignedIn() {
+    function isAuthenticated() {
       return request.auth != null;
     }
-    function isOwner(uid) {
-      return isSignedIn() && request.auth.uid == uid;
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
+
     function isAdmin() {
-      return isSignedIn() && (
+      return isAuthenticated() && (
         request.auth.uid == '3i7fQdPjN0Qxz3FysVPvnhtxzlJ3' ||
         request.auth.token.email == 'djweirdnasty@gmail.com'
       );
     }
 
-    // DJ avatars, galleries, samples, videos — users can write only their own.
-    // Constrain to media types and a 5 MB cap per object.
-    match /djs/{uid}/{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if (isOwner(uid) || isAdmin()) &&
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*|audio/.*|video/.*|application/pdf');
-    }
-
-    // Driver's licenses — owner or admin only. Images/PDF, 5 MB cap.
-    match /licenses/{uid}/{allPaths=**} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow write: if isOwner(uid) &&
+    // Driver's licenses — private: owner and admin only. Images/PDF, 5 MB cap.
+    match /licenses/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) &&
         request.resource.size < 5 * 1024 * 1024 &&
         request.resource.contentType.matches('image/.*|application/pdf');
     }
 
-    // Public uploads (avatars, galleries, videos) — anyone can read, owner writes.
-    // Images/audio/pdf capped at 5 MB; videos may be up to 100 MB.
-    match /public/{uid}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isOwner(uid) &&
-        request.resource.contentType.matches('image/.*|audio/.*|video/.*|application/pdf') &&
-        (request.resource.size < 5 * 1024 * 1024 ||
-         (request.resource.contentType.matches('video/.*') && request.resource.size < 100 * 1024 * 1024));
-    }
-
-    // Client-specific uploads (ID verification, etc.) — owner or admin.
-    // Constrain to images/PDF and a 2 MB cap.
-    match /clients/{uid}/{allPaths=**} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow write: if (isOwner(uid) || isAdmin()) &&
+    // Client verification uploads — private: owner and admin only.
+    match /clients/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) &&
         request.resource.size < 2 * 1024 * 1024 &&
         request.resource.contentType.matches('image/.*|application/pdf');
     }
 
-    // Catch-all: deny by default.
+    match /profile-pictures/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+    
+    match /header-photos/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+    
+    match /djs/{djId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(djId) || isAdmin();
+    }
+
+    // DJ portfolio gallery — public read (shown on profiles), owner write.
+    match /portfolio/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId) &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*');
+    }
+
+    // Event photos uploaded against a booking — parties only.
+    match /event-photos/{bookingId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        resource == null ||
+        firestore.get(/databases/$(database)/documents/bookings/$(bookingId)).data.clientId == request.auth.uid ||
+        firestore.get(/databases/$(database)/documents/bookings/$(bookingId)).data.djId == request.auth.uid
+      );
+    }
+
+    // Voice messages inside a chat — conversation participants only.
+    match /voice-messages/{conversationId}/{allPaths=**} {
+      allow read, write: if isAuthenticated() &&
+        request.auth.uid in firestore.get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('participantIds', []);
+    }
+    
+    match /bookings/{bookingId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        resource == null ||
+        firestore.get(/databases/$(database)/documents/bookings/$(bookingId)).data.clientId == request.auth.uid ||
+        firestore.get(/databases/$(database)/documents/bookings/$(bookingId)).data.djId == request.auth.uid
+      );
+    }
+    
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
     match /{allPaths=**} {
-      allow read, write: if isAdmin();
+      allow read, write: if false;
     }
   }
 }
