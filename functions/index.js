@@ -143,7 +143,10 @@ async function sendWebPush(uid, payload) {
 
 // Fans a notification out to every push channel a user has:
 // Web Push (PWA/browser) + Expo push (native app). Returns counts sent.
-async function notifyUser(uid, title, body, url) {
+// `data` is merged into the Expo push payload; recipientUid is always
+// included so the receiving app can drop pushes that were delivered to a
+// device whose push token is stale/misassigned to another account.
+async function notifyUser(uid, title, body, url, data) {
   var result = { webPush: 0, expoPush: 0 };
   try {
     var sent = await sendWebPush(uid, {
@@ -160,7 +163,8 @@ async function notifyUser(uid, title, body, url) {
     var userDoc = await db.collection("users").doc(uid).get();
     var token = userDoc.exists ? userDoc.data().expoPushToken : null;
     if (token) {
-      await sendExpoPush(token, title, body);
+      var pushData = Object.assign({}, data || {}, { recipientUid: uid });
+      await sendExpoPush(token, title, body, { data: pushData });
       result.expoPush = 1;
     }
   } catch (err) {
@@ -168,6 +172,39 @@ async function notifyUser(uid, title, body, url) {
   }
   return result;
 }
+
+// Claims an Expo push token for the signed-in user. Expo tokens are
+// per-device, not per-account — a device that previously registered under a
+// different account leaves a stale copy of the same token on that user's
+// doc, so pushes for that user would be delivered to this device. This
+// strips the token from every OTHER user doc and writes it on ours.
+exports.claimExpoPushToken = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+  const uid = request.auth.uid;
+  const token = (request.data && request.data.token) || null;
+  if (typeof token !== "string" || !token) {
+    throw new HttpsError("invalid-argument", "token is required.");
+  }
+
+  const stale = await db.collection("users").where("expoPushToken", "==", token).get();
+  const batch = db.batch();
+  var stripped = 0;
+  stale.docs.forEach(function (d) {
+    if (d.id !== uid) {
+      batch.update(d.ref, { expoPushToken: admin.firestore.FieldValue.delete() });
+      stripped++;
+    }
+  });
+  batch.set(db.collection("users").doc(uid), {
+    expoPushToken: token,
+    lastTokenUpdate: Date.now(),
+  }, { merge: true });
+  await batch.commit();
+  logger.info("[PUSH TOKEN] Claimed for " + uid + ", stripped from " + stripped + " other user(s)");
+  return { success: true, stripped: stripped };
+});
 
 // Callable bridge for app clients: users/{uid}.expoPushToken is owner-only
 // under Firestore rules, so clients cannot resolve another user's push
@@ -204,7 +241,7 @@ exports.sendUserNotification = onCall(async (request) => {
       await sendExpoPush(token, title, body, {
         sound: sound,
         channelId: channelId,
-        data: data,
+        data: Object.assign({}, data || {}, { recipientUid: uid }),
         badge: 1,
       });
       expoPush = 1;
@@ -512,7 +549,11 @@ exports.notifyOnBookingUpdate = onDocumentWritten(
 
     for (var i = 0; i < pushes.length; i++) {
       var p = pushes[i];
-      await notifyUser(p.uid, p.title, p.body, "/sol.html");
+      await notifyUser(p.uid, p.title, p.body, "/sol.html", {
+        type: "booking",
+        bookingId: bookingId,
+        status: after.status
+      });
       logger.info("[BOOKING PUSH] " + after.status + " -> " + p.uid + " for booking " + bookingId);
     }
   }
@@ -545,7 +586,11 @@ exports.notifyOnNewMessage = onDocumentCreated(
       var preview = String(msg.text || "").slice(0, 140) || "New message";
       var chatLink = "/sol.html?message=" + encodeURIComponent(msg.senderId);
 
-      var push = await notifyUser(recipientId, "New message from " + senderName, preview, chatLink);
+      var push = await notifyUser(recipientId, "New message from " + senderName, preview, chatLink, {
+        type: "message",
+        conversationId: conversationId,
+        senderId: msg.senderId
+      });
       logger.info("[MSG PUSH] " + msg.senderId + " -> " + recipientId + " (web:" + push.webPush + " expo:" + push.expoPush + ")");
 
       // Email always goes out (throttled to one per 15 minutes per
@@ -1220,7 +1265,9 @@ exports.adminSendMessage = onCall(
     // Push notification (Expo push token for the app + Web Push subscription for the PWA).
     if (u.expoPushToken) {
       try {
-        await sendExpoPush(u.expoPushToken, subject || "New message from SOL Admin", body);
+        await sendExpoPush(u.expoPushToken, subject || "New message from SOL Admin", body, {
+          data: { type: "admin", recipientUid: uid }
+        });
         pushSent++;
       } catch (err) {
         logger.error("[ADMIN MESSAGE] Push failed for " + uid + ": " + err.message);
