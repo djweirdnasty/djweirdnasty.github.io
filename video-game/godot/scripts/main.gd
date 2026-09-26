@@ -54,6 +54,9 @@ func _ready() -> void:
 	entities.add_child(player)
 
 	_make_crosshair()
+	_touch_ui = load("res://scripts/touch_ui.gd").new()
+	_touch_ui.visible = _has_touch()
+	hud.add_child(_touch_ui)
 	hud.title_screen.visible = true
 	hud.title_screen.gui_input.connect(_on_title_input)
 	if "--smoke" in OS.get_cmdline_args() or "--smoke" in OS.get_cmdline_user_args():
@@ -173,6 +176,19 @@ func _make_crosshair() -> void:
 	crosshair.material_override = m
 	crosshair.rotation_degrees.x = 90
 	crosshair.position.y = 1.0
+
+
+var _touch_ui: Control = null
+
+# is_touchscreen_available() is unreliable on the web export, so also
+# probe navigator.maxTouchPoints and lazily reveal the controls on the
+# first real touch event.
+func _has_touch() -> bool:
+	if "--touch" in OS.get_cmdline_args() or DisplayServer.is_touchscreen_available():
+		return true
+	if OS.has_feature("web"):
+		return float(JavaScriptBridge.eval("navigator.maxTouchPoints || 0")) > 0
+	return false
 
 
 func _on_title_input(event: InputEvent) -> void:

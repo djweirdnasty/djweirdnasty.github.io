@@ -153,6 +153,21 @@ The build lands in `../web/` (index.html + index.js + index.wasm +
 index.pck, ~70 MB) and `../index.html` redirects visitors to it. The 2D
 canvas version stays playable directly at `resident_evil_proto.html`.
 
+### Touch controls
+
+`scripts/touch_ui.gd` ports the 2D game's touch layer: a D-pad
+(bottom-left) plus FIRE / E / R / weapon 1–4 buttons (bottom-right).
+Buttons inject `InputEventAction` via `Input.parse_input_event`, so they
+flow through the same `InputMap` actions as the keyboard/mouse bindings.
+The UI is hidden on non-touch devices, shown at start when the platform
+reports a touchscreen (`DisplayServer.is_touchscreen_available()` or
+`navigator.maxTouchPoints` on web), and lazily reveals on the first real
+`InputEventScreenTouch`. FIRE mirrors the 2D single-button semantics —
+it emits `shoot` and `mash` together (shoot / struggle / getup /
+restart). Screen taps outside the buttons still reach the viewport, so
+mouse-from-touch emulation keeps driving aim. Force the UI on desktop
+with `--touch` for testing.
+
 ## Known differences / remaining work
 
 - No audio: the original has no audio system; none was invented. Godot

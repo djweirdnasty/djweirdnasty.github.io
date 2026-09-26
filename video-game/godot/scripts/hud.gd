@@ -173,7 +173,8 @@ func _build_title() -> void:
 	var title := _lbl("YOUIE", 64, YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(title)
-	for line in ["It is a survival shooter under development", "", "Click to start", "", "Find keys, fight zombies, escape each level.", "WASD: move | Click: shoot | E: interact | R: reload"]:
+	var help := "WASD: move | Click: shoot | E: interact | R: reload" if not DisplayServer.is_touchscreen_available() else "D-Pad: move | FIRE: shoot/mash | E: interact | R: reload"
+	for line in ["It is a survival shooter under development", "", "Click to start", "", "Find keys, fight zombies, escape each level.", help]:
 		var l := _lbl(line, 16, GREEN if not line.begins_with("WASD") else Color(0.53, 0.53, 0.53))
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		v.add_child(l)
