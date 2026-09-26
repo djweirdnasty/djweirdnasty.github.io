@@ -179,6 +179,7 @@ func _make_crosshair() -> void:
 
 
 var _touch_ui: Control = null
+var _aim_suppress_pos := Vector2(-9999, -9999)
 
 # is_touchscreen_available() is unreliable on the web export, so also
 # probe navigator.maxTouchPoints and lazily reveal the controls on the
@@ -737,15 +738,29 @@ func _process(delta: float) -> void:
 			" anim=", player.rig.current if player.rig else "none",
 			" model_vis=", player.rig.model.visible if player.rig and player.rig.model else null)
 
-	# Aim: project mouse ray onto the ground plane (y=0).
+	# Aim: project mouse ray onto the ground plane (y=0). Skip while the
+	# touch UI is handling a finger — otherwise stick/button touches swing
+	# the crosshair (and facing) to the bottom of the screen. The emulated
+	# mouse position lingers after the finger lifts, so also skip while it
+	# still equals the position held at release.
 	var mouse := get_viewport().get_mouse_position()
-	var ro := camera.project_ray_origin(mouse)
-	var rn := camera.project_ray_normal(mouse)
-	if rn.y != 0.0:
-		var t := -ro.y / rn.y
-		if t > 0.0:
-			var hit := ro + rn * t
-			aim = Vector2(clampf(hit.x, 0, LevelsData.WORLD.x), clampf(hit.z, 0, LevelsData.WORLD.y))
+	var aim_ok := true
+	if _touch_ui != null:
+		if _touch_ui.is_capturing():
+			_aim_suppress_pos = mouse
+			aim_ok = false
+		elif mouse == _aim_suppress_pos:
+			aim_ok = false
+		else:
+			_aim_suppress_pos = Vector2(-9999, -9999)
+	if aim_ok:
+		var ro := camera.project_ray_origin(mouse)
+		var rn := camera.project_ray_normal(mouse)
+		if rn.y != 0.0:
+			var t := -ro.y / rn.y
+			if t > 0.0:
+				var hit := ro + rn * t
+				aim = Vector2(clampf(hit.x, 0, LevelsData.WORLD.x), clampf(hit.z, 0, LevelsData.WORLD.y))
 	crosshair.position = Vector3(aim.x, 1.0, aim.y)
 
 	# Camera follows the player (JS lerp 0.1), clamped to the world.
