@@ -139,6 +139,20 @@ licensed under CC-BY 4.0, via poly.pizza.
 
 Run: `Godot --path godot --headless --smoke --quit-after 4000`
 
+## Web export
+
+`export_presets.cfg` defines a **Web** preset built with
+`variant/thread_support=false` (single-threaded wasm), so the game runs
+on GitHub Pages without needing COOP/COEP isolation headers. Export with:
+
+```
+Godot --headless --path godot --export-release "Web" /abs/path/video-game/web/index.html
+```
+
+The build lands in `../web/` (index.html + index.js + index.wasm +
+index.pck, ~70 MB) and `../index.html` redirects visitors to it. The 2D
+canvas version stays playable directly at `resident_evil_proto.html`.
+
 ## Known differences / remaining work
 
 - No audio: the original has no audio system; none was invented. Godot
