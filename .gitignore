@@ -7,6 +7,9 @@ firebase-debug.log
 # Godot editor/import cache
 video-game/godot/.godot/
 
+# Python venv used by sprite tooling
+video-game/.venv/
+
 # Large video files - hosted on Cloudflare R2
 *.mp4
 BBW BUNNIES AND DONS/VIDEOS/

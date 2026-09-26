@@ -448,94 +448,6 @@ if ((paulgaulCycleImg.complete && paulgaulCycleImg.naturalWidth > 0) ||
     (paulgaulStaticImg.complete && paulgaulStaticImg.naturalWidth > 0) ||
     (paulgaulMovementImg.complete && paulgaulMovementImg.naturalWidth > 0)) preparePaulgaulFrames();
 
-// --- Youie character + weapon sprite sheet ---
-// The sheet is not a uniform grid: frame widths vary and row labels sit
-// inside the art area. Sprite pixels are opaque while the sheet background
-// is dark and low-alpha, so each row band is sliced by scanning for opaque
-// column runs (gaps <= 8px stay inside one frame) and cropping to the
-// content's tight bounding box. Row y-ranges were measured from the sheet.
-const youieSheetImg = new Image();
-youieSheetImg.src = 'YOUIE-CHARACTER-AND-WEAPON-SPRITE-SHEET.png';
-let youieSheetKeyed = null;
-const youieFrames = { idle: [], walk: [], run: [], jump: [], shoot: [], reload: [], hit: [], death: [] };
-const youieWeaponSprites = {}; // 'Pistol' | 'Shotgun' | 'Grenade Launcher' | 'RPG' -> canvas
-const YOUIE_ROW_BANDS = {
-  idle:   [43, 140],
-  walk:   [144, 238],
-  run:    [245, 336],
-  jump:   [347, 435],
-  shoot:  [445, 539],
-  reload: [546, 644],
-  hit:    [651, 744],
-  death:  [757, 799],
-};
-const YOUIE_CHAR_X = [80, 762];          // character area (row labels live at x < 80)
-const YOUIE_LINEUP_Y = [877, 989];       // weapon lineup strip along the bottom
-const YOUIE_LINEUP_NAMES = ['Pistol', 'Shotgun', 'Grenade Launcher', 'RPG']; // left-to-right; SMG art fills the grenade launcher slot
-
-function prepareYouieSheet() {
-  if (youieSheetImg.naturalWidth === 0) return;
-  const w = youieSheetImg.naturalWidth, h = youieSheetImg.naturalHeight;
-  const off = document.createElement('canvas');
-  off.width = w; off.height = h;
-  const octx = off.getContext('2d', { willReadFrequently: true });
-  octx.drawImage(youieSheetImg, 0, 0);
-  const imgData = octx.getImageData(0, 0, w, h);
-  const data = imgData.data;
-  for (let i = 3; i < data.length; i += 4) {
-    if (data[i] < 140) data[i] = 0;
-  }
-  octx.putImageData(imgData, 0, 0);
-  youieSheetKeyed = off;
-  const alphaAt = (x, y) => data[(y * w + x) * 4 + 3];
-
-  function sliceRow(y0, y1, x0, x1) {
-    const frames = [];
-    const colHas = (cx) => {
-      for (let cy = y0; cy < y1; cy++) if (alphaAt(cx, cy) >= 140) return true;
-      return false;
-    };
-    let x = x0;
-    while (x < x1) {
-      while (x < x1 && !colHas(x)) x++;
-      if (x >= x1) break;
-      let end = x, gap = 0, cx = x + 1;
-      while (cx < x1) {
-        if (colHas(cx)) { end = cx; gap = 0; }
-        else if (++gap > 8) break;
-        cx++;
-      }
-      let top = y1, bot = y0;
-      for (let px = x; px <= end; px++) {
-        for (let py = y0; py < y1; py++) {
-          if (alphaAt(px, py) >= 140) { if (py < top) top = py; if (py > bot) bot = py; }
-        }
-      }
-      const fw = end - x + 1, fh = bot - top + 1;
-      if (fw > 4 && fh > 4) {
-        const c = document.createElement('canvas');
-        c.width = fw; c.height = fh;
-        c.getContext('2d').drawImage(youieSheetKeyed, x, top, fw, fh, 0, 0, fw, fh);
-        frames.push(c);
-      }
-      x = cx;
-    }
-    return frames;
-  }
-
-  for (const key in YOUIE_ROW_BANDS) {
-    const [y0, y1] = YOUIE_ROW_BANDS[key];
-    youieFrames[key] = sliceRow(y0, y1, YOUIE_CHAR_X[0], YOUIE_CHAR_X[1]);
-  }
-  const lineup = sliceRow(YOUIE_LINEUP_Y[0], YOUIE_LINEUP_Y[1], 0, w)
-    .filter(f => f.width > 40);
-  YOUIE_LINEUP_NAMES.forEach((name, i) => {
-    if (lineup[i]) youieWeaponSprites[name] = lineup[i];
-  });
-}
-youieSheetImg.addEventListener('load', prepareYouieSheet);
-if (youieSheetImg.complete && youieSheetImg.naturalWidth > 0) prepareYouieSheet();
-
 // Frame rect (x, y, frameW, frameH, frameCount) measured from
 // zombie-animation-sprite.png, with text labels cropped out. Only the
 // falling/death sequence is used from this sheet (walk animation now uses
@@ -1403,13 +1315,8 @@ function loadLevel(n, preserve = false, from = '') {
   if (levelStates[currentLevel] && levelStates[currentLevel].zombies) {
     zombies = levelStates[currentLevel].zombies.map(z => ({ ...z, vx: z.vx || 0, vy: z.vy || 0, stagger: 0 }));
   } else {
-    // Zombie defs may override the per-level defaults (boss / big monster
-    // entries carry their own size, stats and flags). Bosses always spawn;
-    // regular zombies are still capped per level (0 in the Safe Room,
-    // then 2N-1).
-    const zombieCap = currentLevel === 0 ? 0 : 2 * currentLevel - 1;
-    let regularSeen = 0;
     zombies = lvl.zombies.map(z => ({
+      x: z.x, y: z.y,
       size: 12,
       speed: lvl.zombieSpeed,
       health: lvl.zombieHealth,
@@ -1417,9 +1324,8 @@ function loadLevel(n, preserve = false, from = '') {
       damage: lvl.zombieDamage,
       lastAttack: 0,
       stagger: 0,
-      vx: 0, vy: 0,
-      ...z
-    })).filter(z => (z.isBoss || z.isBigMonster) ? true : regularSeen++ < zombieCap);
+      vx: 0, vy: 0
+    })).slice(0, currentLevel === 0 ? 0 : 2 * currentLevel - 1);
   }
   // Spawn any pending big monsters for this level
   if (pendingBigMonsters[currentLevel]) {
@@ -2223,12 +2129,6 @@ function drawLootKey(ctx, x, y, s) {
 }
 
 function drawWeapon(ctx, x, y, s, weapon) {
-  const spr = weapon && youieWeaponSprites[weapon.name];
-  if (spr) {
-    const w = s * 4.2, h = w * (spr.height / spr.width);
-    ctx.drawImage(spr, x - w / 2, y - h / 2, w, h);
-    return;
-  }
   ctx.save();
   ctx.translate(x, y);
   ctx.fillStyle = '#555';
@@ -2841,7 +2741,6 @@ function draw() {
   const drawH = Math.min(s * 7, ctx.canvas.height * 0.4);
   const alive = !player.dead && !player.won;
   const moving = alive && (input.w || input.s || input.a || input.d || input.ArrowUp || input.ArrowDown || input.ArrowLeft || input.ArrowRight);
-  const youieReady = youieFrames.idle.length > 0;
 
   // Brief recoil kick opposite the aim direction right after firing.
   const RECOIL_MS = 90;
@@ -2931,15 +2830,15 @@ function draw() {
           duration = Math.max(300, GETUP_BASE_MS - player.mashCount * 100);
           elapsed = now - player.knockStart;
         }
-      } else if (player.reloading && !youieReady) {
+      } else if (player.reloading) {
         frames = PLAYER_COMBAT_FRAMES.reload;
         duration = RELOAD_MS;
         elapsed = now - player.reloadStart;
-      } else if (!youieReady && alive && player.weapon && now - lastShot < 200) {
+      } else if (alive && player.weapon && now - lastShot < 200) {
         frames = PLAYER_COMBAT_FRAMES.aimShoot;
         duration = 200;
         elapsed = now - lastShot;
-      } else if (!youieReady && alive && now - player.lastHit < HURT_MS) {
+      } else if (alive && now - player.lastHit < HURT_MS) {
         frames = PLAYER_COMBAT_FRAMES.hurt;
         duration = HURT_MS;
         elapsed = now - player.lastHit;
@@ -2973,76 +2872,6 @@ function draw() {
     const hasShotgun = player.weapon && player.weapon.name === 'Shotgun';
     if (activeBiteZombie) {
       // Player is already rendered as part of the combined bite/grab overlay.
-    } else if (youieReady) {
-      // YOUIE character sheet — side-view frames, flipped for left-facing.
-      if (player.dead) {
-        const dFrames = youieFrames.death.length ? youieFrames.death : youieFrames.idle;
-        const dt = Math.min(1, (now - (player.deathStart || now)) / PLAYER_DEATH_ANIM_MS);
-        const dFrame = dFrames[Math.min(dFrames.length - 1, Math.floor(dt * dFrames.length))];
-        // Corpse lies flat — scale by body length rather than standing height.
-        const dW = drawH;
-        const dH = dW * (dFrame.height / dFrame.width);
-        ctx.save();
-        ctx.translate(rcx, rcy);
-        ctx.drawImage(dFrame, -dW / 2, -dH * 0.6, dW, dH);
-        ctx.restore();
-      } else {
-        let frames, frameIdx;
-        const hurtNow = now - player.lastHit < HURT_MS;
-        if (player.reloading && youieFrames.reload.length) {
-          frames = youieFrames.reload;
-          const t = Math.min(1, (now - player.reloadStart) / RELOAD_MS);
-          frameIdx = Math.min(frames.length - 1, Math.floor(t * frames.length));
-        } else if (player.weapon && youieFrames.shoot.length && (now - lastShot < 250 || fireHeld || mouseHeld)) {
-          frames = youieFrames.shoot;
-          frameIdx = (now - lastShot < 250)
-            ? Math.min(frames.length - 1, Math.floor((now - lastShot) / 250 * frames.length))
-            : 0;
-        } else if (hurtNow && youieFrames.hit.length) {
-          frames = youieFrames.hit;
-          const t = Math.min(1, (now - player.lastHit) / HURT_MS);
-          frameIdx = Math.min(frames.length - 1, Math.floor(t * frames.length));
-        } else if (moving && youieFrames.walk.length) {
-          frames = youieFrames.walk;
-          frameIdx = Math.floor(now / 100) % frames.length;
-        } else if (player.weapon && player.weapon.name === 'Pistol' && youieFrames.shoot.length) {
-          // Idle row is unarmed — an armed idle holds the pistol aim pose.
-          frames = youieFrames.shoot;
-          frameIdx = 0;
-        } else {
-          frames = youieFrames.idle;
-          frameIdx = Math.floor(now / 400) % frames.length;
-        }
-        const frame = frames[frameIdx];
-        const yDrawW = drawH * (frame.width / frame.height);
-        ctx.save();
-        ctx.translate(rcx, rcy);
-        if (facing.x < 0) ctx.scale(-1, 1);
-        ctx.drawImage(frame, -yDrawW / 2, -drawH, yDrawW, drawH);
-        if (hitFlash) {
-          ctx.globalCompositeOperation = 'source-atop';
-          ctx.fillStyle = '#f00';
-          ctx.globalAlpha = 0.5;
-          ctx.fillRect(-yDrawW / 2, -drawH, yDrawW, drawH);
-          ctx.globalAlpha = 1;
-          ctx.globalCompositeOperation = 'source-over';
-        }
-        ctx.restore();
-        // Held-weapon overlay — the SHOOT row only depicts the pistol, so
-        // long guns are drawn separately at the aim angle.
-        const wspr = player.weapon && youieWeaponSprites[player.weapon.name];
-        const inShootPose = frames === youieFrames.shoot;
-        if (wspr && !player.reloading && !hurtNow && !(inShootPose && player.weapon.name === 'Pistol')) {
-          const aimAng = Math.atan2(dy, dx);
-          const wLen = s * 3.4;
-          const wH = wLen * (wspr.height / wspr.width);
-          ctx.save();
-          ctx.translate(rcx + Math.cos(aimAng) * s * 1.1, rcy - drawH * 0.48 + Math.sin(aimAng) * s * 0.6);
-          ctx.rotate(aimAng);
-          ctx.drawImage(wspr, -wLen * 0.3, -wH / 2, wLen, wH);
-          ctx.restore();
-        }
-      }
     } else if (hasShotgun && playerShotgunFrames.idle.length > 0) {
       const frames = moving && playerShotgunFrames.walk.length > 0 ? playerShotgunFrames.walk : playerShotgunFrames.idle;
       const animFrame = moving ? (Math.floor(now / 120) % frames.length) : 0;
@@ -3158,8 +2987,7 @@ function draw() {
     const t = now - lastShot;
     const flashAlpha = 1 - (t / MUZZLE_FLASH_MS);
     const aimAng = Math.atan2(dy, dx);
-    const muzzleDist = s * (player.weapon.name === 'Shotgun' ? 2.6 :
-      (player.weapon.name === 'RPG' || player.weapon.name === 'Grenade Launcher') ? 3.4 : 2.1);
+    const muzzleDist = s * (player.weapon.name === 'Shotgun' ? 2.6 : 2.1);
     const fx = rcx + Math.cos(aimAng) * muzzleDist;
     const fy = rcy - drawH * 0.55 + Math.sin(aimAng) * muzzleDist * 0.35;
     const flen = s * (0.9 + Math.random() * 0.4);

@@ -42,12 +42,6 @@ godot/
     Man_A.glb, Man_B.glb,    other CC0 candidates from the same pack
     Man_Suit.glb             (not currently used)
   assets/sprites/          Original PNG sprite sheets (kept as reference/FX)
-    characters/YOUIE-CHARACTER-AND-WEAPON-SPRITE-SHEET.png
-                             Youie final-art reference sheet: state rows
-                             (idle/walk/run/jump/shoot/reload/hit/death) +
-                             weapon lineup. Its "SMG" block is the stand-in
-                             for the in-game Grenade Launcher — there is no
-                             SMG inventory item (see "Known differences").
 ```
 
 ## System mapping

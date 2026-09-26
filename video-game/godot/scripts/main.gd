@@ -434,14 +434,12 @@ func load_level(n: int, preserve := false, from := "") -> void:
 			_spawn_zombie(zd, lvl)
 	else:
 		var count: int = 0 if current_level == 0 else 2 * current_level - 1
-		var regular_seen := 0
+		var idx := 0
 		for zd in lvl.zombies:
-			var is_elite: bool = zd.get("is_boss", false) or zd.get("is_big_monster", false)
-			if is_elite:
-				_spawn_zombie(zd, lvl)
-			elif regular_seen < count:
-				_spawn_zombie(zd, lvl)
-				regular_seen += 1
+			if idx >= count:
+				break
+			_spawn_zombie(zd, lvl)
+			idx += 1
 	# Pending big monsters queued by loot keys.
 	if pending_big_monsters.has(current_level):
 		for bm in pending_big_monsters[current_level]:
