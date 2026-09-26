@@ -4,6 +4,9 @@ node_modules/
 .wrangler/
 firebase-debug.log
 
+# Godot editor/import cache
+video-game/godot/.godot/
+
 # Large video files - hosted on Cloudflare R2
 *.mp4
 BBW BUNNIES AND DONS/VIDEOS/
