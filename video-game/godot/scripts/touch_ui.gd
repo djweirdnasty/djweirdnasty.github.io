@@ -188,18 +188,24 @@ func _layout_controls() -> void:
 	var left := handedness == "left"
 	_stick.scale_factor = s
 	_aim_stick.scale_factor = s
+	# Corner anchors misbehave for children of a CanvasLayer (offsets are
+	# applied against the parent size at write time, then re-resolved), so
+	# keep all anchors top-left and use plain parent coordinates — this
+	# re-runs whenever the viewport resizes.
+	for c in [_stick, _aim_stick, _actions]:
+		c.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_stick.size = pad_size
 	_aim_stick.size = pad_size
-	_stick.set_anchors_preset(Control.PRESET_BOTTOM_LEFT if not left else Control.PRESET_BOTTOM_RIGHT)
-	_stick.position = Vector2(12, -pad_size.y - 12) if not left else Vector2(-pad_size.x - 12, -pad_size.y - 12)
-	_aim_stick.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT if not left else Control.PRESET_BOTTOM_LEFT)
-	_aim_stick.position = Vector2(-pad_size.x - 12, -pad_size.y - 12) if not left else Vector2(12, -pad_size.y - 12)
+	_stick.position = Vector2(size.x - pad_size.x - 12 if left else 12,
+		size.y - pad_size.y - 12)
+	_aim_stick.position = Vector2(12 if left else size.x - pad_size.x - 12,
+		size.y - pad_size.y - 12)
 	var button_size := Vector2(BTN, BTN) * s
 	var gap := GAP * s
 	var width := 4 * button_size.x + 3 * gap
 	_actions.size = Vector2(width, button_size.y * 2 + gap)
-	_actions.set_anchors_preset(Control.PRESET_TOP_RIGHT if not left else Control.PRESET_TOP_LEFT)
-	_actions.position = Vector2(-width - 12, 64) if not left else Vector2(12, 132)
+	_actions.position = Vector2(12 if left else size.x - width - 12,
+		132 if left else 64)
 	for i in _weapon_buttons.size():
 		_weapon_buttons[i].position = Vector2(i * (button_size.x + gap), 0)
 		_weapon_buttons[i].size = button_size

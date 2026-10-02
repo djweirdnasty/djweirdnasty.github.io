@@ -77,9 +77,14 @@ func _build_hud() -> void:
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hud)
 	var options := _button("OPTIONS")
+	# Write anchor-relative offsets directly — setting `position` on a
+	# corner-anchored control resolves against whatever the parent's size
+	# happens to be at write time, which lands the button off-screen.
 	options.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	options.position = Vector2(-116, 12)
-	options.size = Vector2(104, 36)
+	options.offset_left = -116
+	options.offset_top = 12
+	options.offset_right = -12
+	options.offset_bottom = 48
 	options.pressed.connect(func(): open_settings(false); settings_requested.emit())
 	hud.add_child(options)
 

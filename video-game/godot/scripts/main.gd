@@ -112,6 +112,7 @@ func _ready() -> void:
 			_shot_level = int(OS.get_cmdline_args()[i + 1])
 
 
+
 var _shot_at := -1
 var _frame := 0
 var _shot_level := -1
@@ -380,8 +381,20 @@ func _has_touch() -> bool:
 	if "--touch" in OS.get_cmdline_args() or DisplayServer.is_touchscreen_available():
 		return true
 	if OS.has_feature("web"):
-		return float(JavaScriptBridge.eval("navigator.maxTouchPoints || 0")) > 0
+		# Global execution context so eval() returns the expression's value
+		# (default context wraps the code in a function, returning undefined).
+		return bool(JavaScriptBridge.eval(
+			"(navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window || (window.matchMedia && matchMedia('(pointer: coarse)').matches)",
+			true))
 	return false
+
+
+# Control._input does not reach the TouchUI while it is hidden, so the
+# lazy reveal also lives here — Node._input runs regardless of visibility.
+func _input(event: InputEvent) -> void:
+	if _touch_ui != null and not _touch_ui.visible \
+			and (event is InputEventScreenTouch or event is InputEventScreenDrag):
+		_touch_ui.visible = true
 
 
 func _on_title_input(event: InputEvent) -> void:
