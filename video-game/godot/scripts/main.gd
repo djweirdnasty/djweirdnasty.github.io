@@ -5,6 +5,9 @@ extends Node3D
 ## loop, level management and game-state flow from resident_evil_proto.html.
 
 const LAYER_WORLD := 1
+const CHECKPOINT_PATH := "user://youie-checkpoint.json"
+const WINNER_PATH := "user://youie-winner.save"
+const SETTINGS_PATH := "user://youie-settings.cfg"
 
 @onready var world: WorldBuilder = $LevelRoot
 @onready var entities: Node3D = $Entities
@@ -37,6 +40,22 @@ var game_started := false
 var cutscene_active := false
 var intro_shown := false
 var game_beaten := false
+var checkpoint_available := false
+var checkpoint_data := {}
+var _checkpoint_path := CHECKPOINT_PATH
+var _winner_path := WINNER_PATH
+var _smoke_testing := false
+var settings := {
+	"qte_mode": "press",
+	"touch_layout": "right",
+	"touch_size": 1.0,
+	"aim_sensitivity": 1.0,
+	"text_scale": 1.0,
+	"bindings": {},
+}
+var _remap_action := ""
+var _qte_hold_progress := 0.0
+var settings_paused := false
 
 var aim := Vector2(400, 240)       # world-space aim point
 var moving := false
@@ -46,8 +65,14 @@ var message_until := 0
 
 
 func _ready() -> void:
+	_smoke_testing = "--smoke" in OS.get_cmdline_args() or "--smoke" in OS.get_cmdline_user_args()
+	if _smoke_testing:
+		_checkpoint_path = "user://youie-smoke-checkpoint.json"
+		_winner_path = "user://youie-smoke-winner.save"
+	_load_settings()
 	_register_input()
-	game_beaten = FileAccess.file_exists("user://youie-winner.save")
+	game_beaten = FileAccess.file_exists(_winner_path)
+	checkpoint_available = _read_checkpoint()
 
 	player = Player.new()
 	player.died.connect(_on_player_died)
@@ -56,10 +81,25 @@ func _ready() -> void:
 	_make_crosshair()
 	_touch_ui = load("res://scripts/touch_ui.gd").new()
 	_touch_ui.visible = _has_touch()
+	_touch_ui.control_scale = float(settings.touch_size)
+	_touch_ui.handedness = str(settings.touch_layout)
 	hud.add_child(_touch_ui)
+	hud.apply_settings(settings)
+	hud.set_resume_available(checkpoint_available)
+	if OS.has_feature("web"):
+		hud.set_storage_persistent(OS.is_userfs_persistent())
+	for action in _default_bindings():
+		var bound_key := int(settings.bindings.get(action, _default_bindings()[action][0]))
+		hud.set_action_binding(action, OS.get_keycode_string(bound_key))
+	hud.new_game_requested.connect(restart)
+	hud.resume_requested.connect(resume_checkpoint)
+	hud.settings_requested.connect(func(): settings_paused = true)
+	hud.settings_closed.connect(func(): settings_paused = false)
+	hud.setting_changed.connect(_on_setting_changed)
+	hud.remap_requested.connect(_begin_remap)
+	hud.reset_bindings_requested.connect(_reset_bindings)
 	hud.title_screen.visible = true
-	hud.title_screen.gui_input.connect(_on_title_input)
-	if "--smoke" in OS.get_cmdline_args() or "--smoke" in OS.get_cmdline_user_args():
+	if _smoke_testing:
 		call_deferred("_smoke_test")
 	elif "--autostart" in OS.get_cmdline_args() or "--autostart" in OS.get_cmdline_user_args():
 		# Skip title + intro cutscene (dev/verification convenience).
@@ -84,6 +124,27 @@ func _smoke_test() -> void:
 	restart()
 	await get_tree().physics_frame
 	await get_tree().physics_frame
+	player.health = 73
+	player.weapons = [LevelsData.weapon("Pistol")]
+	player.weapon_index = 0
+	player.weapon = player.weapons[0].duplicate(true)
+	player.ammo = 7
+	player.ammo_reserve = 19
+	_write_checkpoint()
+	checkpoint_data = {}
+	checkpoint_available = _read_checkpoint()
+	assert(checkpoint_available and int(checkpoint_data.current_level) == 0)
+	resume_checkpoint()
+	assert(player.health == 73 and player.ammo == 7 and player.ammo_reserve == 19 and player.weapon.name == "Pistol")
+	player.health = player.max_health
+	player.weapons = []
+	player.weapon_index = -1
+	player.weapon = null
+	player.ammo = 0
+	player.ammo_reserve = 0
+	_write_checkpoint()
+	await get_tree().physics_frame
+	print("SMOKE checkpoint resume ok: level=", current_level)
 	print("SMOKE start: level=", current_level, " walls=", walls.size(), " items=", items.size(), " zombies=", zombies.size())
 	# Move + shoot.
 	Input.action_press("move_right")
@@ -128,6 +189,9 @@ func _smoke_test() -> void:
 	for i in range(3, 10):
 		next_level()
 		await get_tree().process_frame
+		if current_level == 3:
+			assert(zombies.size() == LevelsData.LEVELS[3].zombies.size())
+			assert(not _objective_complete(LevelsData.LEVELS[3]))
 		print("SMOKE level=", current_level, " zombies=", zombies.size(), " walls=", walls.size(), " items=", items.size(), " grey_door=", grey_door != null, " item_doors=", item_doors.size())
 	# Win.
 	next_level()
@@ -136,8 +200,8 @@ func _smoke_test() -> void:
 	print("SMOKE DONE")
 
 
-func _register_input() -> void:
-	var binds := {
+func _default_bindings() -> Dictionary:
+	return {
 		"move_up": [KEY_W, KEY_UP],
 		"move_down": [KEY_S, KEY_DOWN],
 		"move_left": [KEY_A, KEY_LEFT],
@@ -148,18 +212,146 @@ func _register_input() -> void:
 		"weapon_1": [KEY_1], "weapon_2": [KEY_2], "weapon_3": [KEY_3], "weapon_4": [KEY_4],
 		"fullscreen": [KEY_F11],
 	}
+
+
+func _register_input() -> void:
+	var binds := _default_bindings()
 	for action in binds:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
-		for key in binds[action]:
+		InputMap.action_erase_events(action)
+		var keys: Array = [int(settings.bindings[action])] if settings.bindings.has(action) else binds[action]
+		for key in keys:
 			var ev := InputEventKey.new()
-			ev.physical_keycode = key
+			ev.physical_keycode = int(key)
 			InputMap.action_add_event(action, ev)
 	if not InputMap.has_action("shoot"):
 		InputMap.add_action("shoot")
+	InputMap.action_erase_events("shoot")
 	var mb := InputEventMouseButton.new()
 	mb.button_index = MOUSE_BUTTON_LEFT
 	InputMap.action_add_event("shoot", mb)
+
+
+func _load_settings() -> void:
+	var config := ConfigFile.new()
+	if config.load(SETTINGS_PATH) != OK:
+		return
+	for key in ["qte_mode", "touch_layout", "touch_size", "aim_sensitivity", "text_scale"]:
+		settings[key] = config.get_value("options", key, settings[key])
+	settings.qte_mode = settings.qte_mode if settings.qte_mode in ["press", "hold", "assist"] else "press"
+	settings.touch_layout = settings.touch_layout if settings.touch_layout in ["right", "left"] else "right"
+	settings.touch_size = clampf(float(settings.touch_size), 0.75, 1.35)
+	settings.aim_sensitivity = clampf(float(settings.aim_sensitivity), 0.5, 2.0)
+	settings.text_scale = clampf(float(settings.text_scale), 0.8, 1.5)
+	var saved_bindings = config.get_value("bindings", "keys", {})
+	settings.bindings = saved_bindings if saved_bindings is Dictionary else {}
+
+
+func _save_settings() -> void:
+	var config := ConfigFile.new()
+	for key in ["qte_mode", "touch_layout", "touch_size", "aim_sensitivity", "text_scale"]:
+		config.set_value("options", key, settings[key])
+	config.set_value("bindings", "keys", settings.bindings)
+	config.save(SETTINGS_PATH)
+
+
+func _on_setting_changed(name: String, value: Variant) -> void:
+	settings[name] = value
+	match name:
+		"touch_size":
+			_touch_ui.set_control_scale(float(value))
+		"touch_layout":
+			_touch_ui.set_handedness(str(value))
+		"text_scale":
+			hud.set_text_scale(float(value))
+	_save_settings()
+
+
+func _begin_remap(action: String) -> void:
+	_remap_action = action
+	hud.set_remap_status("Press a key for %s (Esc cancels)." % action.replace("_", " "))
+
+
+func _apply_binding(action: String, keycode: int) -> void:
+	if keycode == 0:
+		return
+	InputMap.action_erase_events(action)
+	var event := InputEventKey.new()
+	event.physical_keycode = keycode
+	InputMap.action_add_event(action, event)
+	settings.bindings[action] = keycode
+	hud.set_action_binding(action, OS.get_keycode_string(keycode))
+	hud.set_remap_status("")
+	_remap_action = ""
+	_save_settings()
+
+
+func _reset_bindings() -> void:
+	settings.bindings.clear()
+	_register_input()
+	for action in ["move_up", "move_down", "move_left", "move_right", "interact", "reload", "mash"]:
+		hud.set_action_binding(action, OS.get_keycode_string(_default_bindings()[action][0]))
+	hud.set_remap_status("Default bindings restored.")
+	_save_settings()
+
+
+func _read_checkpoint() -> bool:
+	if not FileAccess.file_exists(_checkpoint_path):
+		return false
+	var parsed = JSON.parse_string(FileAccess.get_file_as_string(_checkpoint_path))
+	if not parsed is Dictionary or int(parsed.get("version", 0)) != 1:
+		return false
+	var level := int(parsed.get("current_level", -1))
+	if level < 0 or level >= LevelsData.LEVELS.size():
+		return false
+	checkpoint_data = parsed
+	return true
+
+
+func _write_checkpoint() -> void:
+	if player == null or not game_started or player.dead or player.won:
+		return
+	var saved_states := {}
+	for level in level_states:
+		saved_states[str(level)] = level_states[level]
+	var queued_monsters := {}
+	for level in pending_big_monsters:
+		queued_monsters[str(level)] = pending_big_monsters[level]
+	var data := {
+		"version": 1,
+		"current_level": current_level,
+		"game_beaten": game_beaten,
+		"player": {
+			"health": player.health,
+			"ammo": player.ammo,
+			"ammo_reserve": player.ammo_reserve,
+			"keys": player.keys,
+			"grey_keys": player.grey_keys,
+			"master_keys": player.master_keys,
+			"weapons": player.weapons,
+			"weapon_index": player.weapon_index,
+		},
+		"level_states": saved_states,
+		"pending_big_monsters": queued_monsters,
+	}
+	var file := FileAccess.open(_checkpoint_path, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(data))
+		file.flush()
+		checkpoint_data = data
+		checkpoint_available = true
+		hud.set_resume_available(true)
+
+
+func _clear_checkpoint() -> void:
+	var file := FileAccess.open(_checkpoint_path, FileAccess.WRITE)
+	if file:
+		file.store_string("{}")
+		file.flush()
+	checkpoint_data = {}
+	checkpoint_available = false
+	hud.set_resume_available(false)
 
 
 func _make_crosshair() -> void:
@@ -178,7 +370,7 @@ func _make_crosshair() -> void:
 	crosshair.position.y = 1.0
 
 
-var _touch_ui: Control = null
+var _touch_ui: TouchUI = null
 var _aim_suppress_pos := Vector2(-9999, -9999)
 
 # is_touchscreen_available() is unreliable on the web export, so also
@@ -198,6 +390,24 @@ func _on_title_input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not _remap_action.is_empty():
+		if event is InputEventKey and event.pressed and not event.echo:
+			if event.keycode == KEY_ESCAPE:
+				hud.set_remap_status("Key assignment cancelled.")
+				_remap_action = ""
+			else:
+				_apply_binding(_remap_action, event.physical_keycode if event.physical_keycode != 0 else event.keycode)
+			get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_cancel"):
+		if settings_paused:
+			hud.close_settings()
+		elif game_started:
+			hud.open_settings(false)
+			settings_paused = true
+		return
+	if settings_paused:
+		return
 	if event.is_action_pressed("fullscreen"):
 		var mode := DisplayServer.window_get_mode()
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if mode == DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -208,7 +418,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			restart()
 			return
 		shoot()
-	if event.is_action_pressed("mash") and game_started and not player.dead and not player.won:
+	if event.is_action_pressed("mash") and game_started and not player.dead and not player.won and settings.qte_mode != "hold":
 		if player.grab_phase == "struggle" or player.knock_phase == "getup":
 			player.mash_count += 1
 	if event.is_action_pressed("interact"):
@@ -227,14 +437,53 @@ func _unhandled_input(event: InputEvent) -> void:
 # Game flow — restart / respawn / level transitions (ports of the JS fns)
 # ---------------------------------------------------------------------------
 
+func resume_checkpoint() -> void:
+	if not checkpoint_available:
+		return
+	var data: Dictionary = checkpoint_data
+	current_level = int(data.current_level)
+	game_beaten = bool(data.get("game_beaten", game_beaten))
+	level_states = {}
+	for level in data.get("level_states", {}):
+		level_states[int(level)] = data.level_states[level]
+	pending_big_monsters = {}
+	for level in data.get("pending_big_monsters", {}):
+		pending_big_monsters[int(level)] = data.pending_big_monsters[level]
+	var start: Dictionary = LevelsData.LEVELS[current_level].start
+	player.reset_state(Vector2(start.x, start.y), game_beaten)
+	var saved_player: Dictionary = data.get("player", {})
+	player.health = clampi(int(saved_player.get("health", player.max_health)), 1, player.max_health)
+	player.ammo = maxi(0, int(saved_player.get("ammo", 0)))
+	player.ammo_reserve = maxi(0, int(saved_player.get("ammo_reserve", 0)))
+	player.keys = maxi(0, int(saved_player.get("keys", 0)))
+	player.grey_keys = maxi(0, int(saved_player.get("grey_keys", 0)))
+	player.master_keys = maxi(0, int(saved_player.get("master_keys", 0)))
+	var saved_weapons = saved_player.get("weapons", [])
+	player.weapons = saved_weapons.duplicate(true) if saved_weapons is Array else []
+	player.weapon_index = int(saved_player.get("weapon_index", -1))
+	player.weapon = player.weapons[player.weapon_index].duplicate(true) if player.weapon_index >= 0 and player.weapon_index < player.weapons.size() else null
+	game_started = true
+	intro_shown = true
+	settings_paused = false
+	hud.title_screen.visible = false
+	hud.settings_panel.visible = false
+	hud.cutscene_panel.visible = false
+	hud.win_panel.visible = false
+	load_level(current_level, true)
+	show_message("Checkpoint resumed.", 2500)
+
+
 func restart() -> void:
 	if cutscene_active:
 		return
 	if player.dead:
 		respawn()
 		return
+	_clear_checkpoint()
+	settings_paused = false
 	game_started = true
 	hud.title_screen.visible = false
+	hud.settings_panel.visible = false
 	hud.cutscene_panel.visible = false
 	hud.win_panel.visible = false
 	current_level = 0
@@ -274,7 +523,8 @@ func next_level() -> void:
 	if current_level >= LevelsData.LEVELS.size():
 		player.won = true
 		game_beaten = true
-		var f := FileAccess.open("user://youie-winner.save", FileAccess.WRITE)
+		_clear_checkpoint()
+		var f := FileAccess.open(_winner_path, FileAccess.WRITE)
 		if f: f.store_string("true"); f.close()
 		show_message("ALL LEVELS CLEARED! Press R to restart.", 5000)
 		show_cutscene(LevelsData.ENDING_TEXT, func(): hud.win_panel.visible = true)
@@ -450,7 +700,7 @@ func load_level(n: int, preserve := false, from := "") -> void:
 		for zd in st.zombies:
 			_spawn_zombie(zd, lvl)
 	else:
-		var count: int = 0 if current_level == 0 else 2 * current_level - 1
+		var count: int = lvl.zombies.size() if lvl.get("objective", "keys") == "clear" else (0 if current_level == 0 else 2 * current_level - 1)
 		var idx := 0
 		for zd in lvl.zombies:
 			if idx >= count:
@@ -506,9 +756,12 @@ func load_level(n: int, preserve := false, from := "") -> void:
 	elif player.weapon_index >= 0 and player.weapon_index < player.weapons.size():
 		player.weapon = player.weapons[player.weapon_index].duplicate()
 
+	_update_door_visual()
 	if game_started:
 		var back_hint := " Press LEFT to go back." if current_level > 0 else ""
-		show_message("%s: %s%s" % [lvl.name, ("Find %d keys." % lvl.keys_needed) if lvl.keys_needed > 1 else "Find the key. Escape.", back_hint], 3000)
+		var objective := "Eliminate all zombies and reach the exit." if lvl.get("objective", "keys") == "clear" else ("Find %d keys." % lvl.keys_needed if lvl.keys_needed > 1 else "Find the key. Escape.")
+		show_message("%s: %s%s" % [lvl.name, objective, back_hint], 4000)
+		_write_checkpoint()
 
 
 func _spawn_zombie(def: Dictionary, lvl: Dictionary) -> Zombie:
@@ -521,9 +774,15 @@ func _spawn_zombie(def: Dictionary, lvl: Dictionary) -> Zombie:
 	return z
 
 
+func _objective_complete(lvl: Dictionary) -> bool:
+	if lvl.get("objective", "keys") == "clear":
+		return zombies.is_empty()
+	return player.keys >= lvl.keys_needed
+
+
 func _update_door_visual() -> void:
 	var lvl: Dictionary = LevelsData.LEVELS[current_level]
-	var unlocked: bool = player.keys >= lvl.keys_needed
+	var unlocked := _objective_complete(lvl)
 	door_body.collision_layer = 0 if unlocked else LAYER_WORLD
 	door_mesh.material_override = world.door_open_mat if unlocked else world.door_mat
 
@@ -745,7 +1004,14 @@ func _process(delta: float) -> void:
 	# still equals the position held at release.
 	var mouse := get_viewport().get_mouse_position()
 	var aim_ok := true
-	if _touch_ui != null:
+	if _touch_ui != null and _touch_ui.is_aiming():
+		var stick_target := player.world2 + _touch_ui.aim_direction * 240.0
+		stick_target.x = clampf(stick_target.x, 0.0, LevelsData.WORLD.x)
+		stick_target.y = clampf(stick_target.y, 0.0, LevelsData.WORLD.y)
+		var aim_weight := clampf(delta * float(settings.aim_sensitivity) * 10.0, 0.0, 1.0)
+		aim = aim.lerp(stick_target, aim_weight)
+		aim_ok = false
+	elif _touch_ui != null:
 		if _touch_ui.is_capturing():
 			_aim_suppress_pos = mouse
 			aim_ok = false
@@ -784,15 +1050,18 @@ func _process(delta: float) -> void:
 	hud.set_health(player.health, player.max_health)
 	var ammo_mag = player.ammo
 	var ammo_res = player.ammo_reserve
-	hud.set_info(current_level + 1, lvl.name, player.health, ammo_mag, ammo_res, player.keys, lvl.keys_needed, player.weapon.name if player.weapon else "NONE")
+	hud.set_info(current_level + 1, lvl.name, player.health, ammo_mag, ammo_res, player.keys, lvl.keys_needed, player.weapon.name if player.weapon else "NONE", zombies.size() if lvl.get("objective", "keys") == "clear" else -1)
 	if now > message_until:
 		message = ""
 	hud.set_message(message)
 	hud.set_interact(interact_prompt_text() if game_started and not player.dead and not player.won else "")
 	if player.grab_phase == "struggle":
-		hud.show_mash(true, float(player.mash_count) / LevelsData.STRUGGLE_MASH_NEEDED, "MASH SPACE!")
+		var mash_target := 3 if settings.qte_mode == "assist" else LevelsData.STRUGGLE_MASH_NEEDED
+		var mash_prompt := "HOLD TO ESCAPE" if settings.qte_mode == "hold" else ("PRESS 3 TIMES TO ESCAPE" if settings.qte_mode == "assist" else "MASH SPACE!")
+		hud.show_mash(true, float(player.mash_count) / mash_target, mash_prompt)
 	elif player.knock_phase == "getup":
-		hud.show_mash(true, float(player.mash_count) * 100.0 / LevelsData.GETUP_BASE_MS, "MASH SPACE TO GET UP!")
+		var getup_prompt := "HOLD TO GET UP" if settings.qte_mode == "hold" else "MASH SPACE TO GET UP!"
+		hud.show_mash(true, float(player.mash_count) * (200.0 if settings.qte_mode == "assist" else 100.0) / LevelsData.GETUP_BASE_MS, getup_prompt)
 	else:
 		hud.show_mash(false, 0)
 	if player.reloading:
@@ -802,7 +1071,7 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(dt: float) -> void:
-	if not game_started or player.dead or player.won:
+	if settings_paused or not game_started or player.dead or player.won:
 		return
 	var now := Time.get_ticks_msec()
 	var lvl: Dictionary = LevelsData.LEVELS[current_level]
@@ -816,15 +1085,22 @@ func _physics_process(dt: float) -> void:
 		aim = player.world2 + Vector2(-150, -60)
 	moving = dir != Vector2.ZERO and player.can_act()
 	player.move_input(dir, dt)
-	player.combat_update(now, show_message)
+	if settings.qte_mode == "hold" and Input.is_action_pressed("mash") and (player.grab_phase == "struggle" or player.knock_phase == "getup"):
+		_qte_hold_progress += dt * 12.0
+		while _qte_hold_progress >= 1.0:
+			player.mash_count += 1
+			_qte_hold_progress -= 1.0
+	else:
+		_qte_hold_progress = 0.0
+	player.combat_update(now, show_message, str(settings.qte_mode))
 
 	var prect := _player_rect()
 
 	# --- Locked-door message (the body itself blocks movement) ---
-	if player.keys < lvl.keys_needed and _rect_hit(prect.x, prect.y, prect.w, prect.h, door):
-		show_message("Locked. Need %d keys." % lvl.keys_needed)
+	if not _objective_complete(lvl) and _rect_hit(prect.x, prect.y, prect.w, prect.h, door):
+		show_message("The horde still blocks the exit." if lvl.get("objective", "keys") == "clear" else "Locked. Need %d keys." % lvl.keys_needed)
 
-	if player.keys >= lvl.keys_needed and has_exited():
+	if _objective_complete(lvl) and has_exited():
 		next_level()
 		return
 
@@ -885,6 +1161,7 @@ func _physics_process(dt: float) -> void:
 			if now - z.death_start > LevelsData.ZOMBIE_DEATH_ANIM_MS:
 				zombies.remove_at(i)
 				z.queue_free()
+				_update_door_visual()
 			continue
 		var ev = z.update_ai(dt, now, player, zombies, can_see, z == feeding_zombie)
 		if ev == null:
@@ -913,7 +1190,7 @@ func _physics_process(dt: float) -> void:
 				player.grab_phase_start = now
 				player.mash_count = 0
 				feeding_zombie = z
-				show_message("Mash SPACE to break free!", LevelsData.STRUGGLE_WINDOW_MS + LevelsData.GRAB_MS)
+				show_message("Hold or tap your struggle control to break free.", LevelsData.STRUGGLE_WINDOW_MS + LevelsData.GRAB_MS)
 
 	# --- Bullets ---
 	for i in range(bullets.size() - 1, -1, -1):

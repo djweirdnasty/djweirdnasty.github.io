@@ -174,13 +174,13 @@ const LEVELS := [
 		],
 	},
 	{
-		"name": "Horde", "theme": "medical",
+		"name": "Horde", "theme": "medical", "objective": "clear",
 		"start": { "x": 80, "y": 360 },
 		"walls": [], "_wall_set": "mansion",
 		"door": DOORS.right,
-		"keys_needed": 1,
+		"keys_needed": 0,
 		"items": [
-			{ "type": "key", "x": 540, "y": 120, "size": 8 },
+			{ "type": "med", "x": 540, "y": 120, "size": 8, "amount": 30 },
 			{ "type": "ammo", "x": 500, "y": 100, "size": 8, "amount": 4 },
 			{ "type": "ammo", "x": 450, "y": 360, "size": 8, "amount": 4 },
 			{ "type": "ammo", "x": 120, "y": 120, "size": 8, "amount": 6 },

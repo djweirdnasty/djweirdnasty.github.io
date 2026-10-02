@@ -209,7 +209,7 @@ func move_input(dir: Vector2, dt: float) -> void:
 
 
 # Grapple + knockdown + reload state machines — port of handlePlayerCombatState.
-func combat_update(now: int, msg_cb: Callable) -> void:
+func combat_update(now: int, msg_cb: Callable, qte_mode := "press") -> void:
 	if grabbed_by:
 		var z = grabbed_by
 		var elapsed: int = now - grab_phase_start
@@ -220,7 +220,8 @@ func combat_update(now: int, msg_cb: Callable) -> void:
 					grab_phase_start = now
 					mash_count = 0
 			"struggle":
-				if mash_count >= LevelsData.STRUGGLE_MASH_NEEDED:
+				var needed_presses := 3 if qte_mode == "assist" else LevelsData.STRUGGLE_MASH_NEEDED
+				if mash_count >= needed_presses:
 					grab_phase = "escape"
 					grab_phase_start = now
 				elif elapsed >= LevelsData.STRUGGLE_WINDOW_MS:
@@ -258,7 +259,8 @@ func combat_update(now: int, msg_cb: Callable) -> void:
 					knock_start = now
 					mash_count = 0
 			"getup":
-				var getup_duration: int = maxi(300, LevelsData.GETUP_BASE_MS - mash_count * 100)
+				var mash_bonus := 200 if qte_mode == "assist" else 100
+				var getup_duration: int = maxi(300, LevelsData.GETUP_BASE_MS - mash_count * mash_bonus)
 				if elapsed >= getup_duration:
 					knocked_down = false
 					knock_phase = null

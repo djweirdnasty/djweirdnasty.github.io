@@ -55,7 +55,7 @@ godot/
 | Sprite-sheet characters              | `character_rig.gd` + KayKit GLB rigs    |
 | WASD/mouse/mobile input              | Godot `InputMap` actions + mouse        |
 | DOM HUD / menus                      | `hud.gd` Control nodes (CanvasLayer)    |
-| `localStorage` win flag              | `user://youie-winner.save`              |
+| Checkpoint, settings, completion flag | `user://youie-checkpoint.json`, `user://youie-settings.cfg`, and `user://youie-winner.save` |
 
 ## 3D character layer (Option 3)
 
@@ -133,7 +133,8 @@ licensed under CC-BY 4.0, via poly.pizza.
 - `--shot-walk` — inject diagonal movement for screenshot verification.
 - `--shot-close` — close camera + debug light for character inspection.
 - `--smoke` — headless smoke test: builds all 10 levels, fires a shot,
-  runs AI, exercises grab/struggle, walks the win path, prints `SMOKE ...`.
+  runs AI, exercises grab/struggle and checkpoint resume, walks the win path,
+  and prints `SMOKE ...`. Uses separate smoke-only save paths.
 - `scenes/rig_test.tscn` — standalone character viewer:
   `Godot --path godot res://scenes/rig_test.tscn --anim Idle --glb res://...`
 
@@ -149,24 +150,35 @@ on GitHub Pages without needing COOP/COEP isolation headers. Export with:
 Godot --headless --path godot --export-release "Web" /abs/path/video-game/web/index.html
 ```
 
-The build lands in `../web/` (index.html + index.js + index.wasm +
-index.pck, ~70 MB) and `../index.html` redirects visitors to it. The 2D
+The existing browser build lists a 39,514,754-byte wasm file and a
+31,901,752-byte pack (~71.4 MB total before transfer compression). The Web
+preset now excludes unused model candidates, legacy sprite sheets, and the
+standalone rig-test scene listed in `export_presets.cfg`; source files remain
+in the project. A temporary PCK-only export using that preset produced a
+9,725,672-byte pack, about 69.5% smaller. The existing `../web/` build was not
+overwritten; run the release export above to publish the trimmed pack. The 2D
 canvas version stays playable directly at `resident_evil_proto.html`.
 
 ### Touch controls
 
-`scripts/touch_ui.gd` ports the 2D game's touch layer: a D-pad
-(bottom-left) plus FIRE / E / R / weapon 1–4 buttons (bottom-right).
-Buttons inject `InputEventAction` via `Input.parse_input_event`, so they
-flow through the same `InputMap` actions as the keyboard/mouse bindings.
-The UI is hidden on non-touch devices, shown at start when the platform
-reports a touchscreen (`DisplayServer.is_touchscreen_available()` or
-`navigator.maxTouchPoints` on web), and lazily reveals on the first real
-`InputEventScreenTouch`. FIRE mirrors the 2D single-button semantics —
-it emits `shoot` and `mash` together (shoot / struggle / getup /
-restart). Screen taps outside the buttons still reach the viewport, so
-mouse-from-touch emulation keeps driving aim. Force the UI on desktop
-with `--touch` for testing.
+`scripts/touch_ui.gd` provides floating movement and aim sticks plus FIRE,
+interact, reload, and weapon buttons. The aim stick can be placed on either
+side, and the Options screen saves handedness and control size. Buttons
+inject `InputEventAction` through the same `InputMap` as keyboard bindings.
+The controls appear on detected touch devices and reveal on first touch;
+screen taps outside the controls still support direct tap-to-aim. FIRE emits
+`shoot` and `mash` for combat, struggle, and get-up actions. Force touch
+controls on desktop with `--touch` for testing.
+
+### Checkpoints and accessibility
+
+Level-entry checkpoints save campaign state to `user://youie-checkpoint.json`
+and expose Resume on the title screen. On Web, `user://` uses IndexedDB;
+the title screen warns when Godot reports that browser persistence is
+unavailable. Options persist QTE mode, touch layout and scale, aim response,
+text size, and remappable keyboard bindings in `user://youie-settings.cfg`.
+QTE modes are rapid presses, hold, and reduced presses. Horde level uses an
+eliminate-all objective to unlock its exit.
 
 ## Known differences / remaining work
 

@@ -1,6 +1,14 @@
 class_name HUD
 extends CanvasLayer
 
+signal new_game_requested
+signal resume_requested
+signal settings_requested
+signal settings_closed
+signal setting_changed(name: String, value: Variant)
+signal remap_requested(action: String)
+signal reset_bindings_requested
+
 ## Godot Control recreation of the original game's HTML/canvas UI:
 ## title screen, cutscene overlay, HUD (portrait, health, ammo, keys, weapon),
 ## interact prompt, QTE/reload bars, message line, vignette.
@@ -20,12 +28,21 @@ var mash_fill: ColorRect
 var reload_fill: ColorRect
 var reload_panel: Control
 var title_screen: Control
+var resume_button: Button
+var storage_notice: Label
+var settings_panel: Control
 var cutscene_panel: Control
 var cutscene_text: Label
 var win_panel: Control
 var vignette: TextureRect
+var remap_status: Label
 
 var mono := SystemFont.new()
+var _labels: Array[Label] = []
+var _setting_controls := {}
+var _binding_buttons := {}
+var _text_scale := 1.0
+var _settings_from_title := false
 
 
 func _ready() -> void:
@@ -33,6 +50,7 @@ func _ready() -> void:
 	layer = 10
 	_build_hud()
 	_build_title()
+	_build_settings()
 	_build_cutscene()
 	_build_win()
 	_build_vignette()
@@ -47,6 +65,8 @@ func _lbl(text: String, size: int, color: Color) -> Label:
 	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0))
 	l.add_theme_constant_override("shadow_offset_x", 2)
 	l.add_theme_constant_override("shadow_offset_y", 2)
+	l.set_meta("base_font_size", size)
+	_labels.append(l)
 	return l
 
 
@@ -56,6 +76,12 @@ func _build_hud() -> void:
 	hud.set_anchors_preset(Control.PRESET_FULL_RECT)
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hud)
+	var options := _button("OPTIONS")
+	options.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	options.position = Vector2(-116, 12)
+	options.size = Vector2(104, 36)
+	options.pressed.connect(func(): open_settings(false); settings_requested.emit())
+	hud.add_child(options)
 
 	# Portrait + health bar (top-left, like the canvas HUD).
 	var portrait_tex := AtlasTexture.new()
@@ -163,27 +189,190 @@ func _panel(color: Color) -> Panel:
 
 
 func _build_title() -> void:
-	title_screen = _panel(Color(0.02, 0.02, 0.02, 0.85))
+	title_screen = _panel(Color(0.02, 0.02, 0.02, 0.9))
 	var v := VBoxContainer.new()
 	v.set_anchors_preset(Control.PRESET_CENTER)
-	v.position = Vector2(-240, -120)
-	v.size = Vector2(480, 240)
+	v.position = Vector2(-260, -220)
+	v.size = Vector2(520, 440)
 	v.alignment = BoxContainer.ALIGNMENT_CENTER
 	title_screen.add_child(v)
 	var title := _lbl("YOUIE", 64, YELLOW)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(title)
-	var help := "WASD: move | Click: shoot | E: interact | R: reload" if not DisplayServer.is_touchscreen_available() else "D-Pad: move | FIRE: shoot/mash | E: interact | R: reload"
-	for line in ["It is a survival shooter under development", "", "Click to start", "", "Find keys, fight zombies, escape each level.", help]:
-		var l := _lbl(line, 16, GREEN if not line.begins_with("WASD") else Color(0.53, 0.53, 0.53))
+	var help := "WASD / arrows + mouse: move, aim, and shoot | E: interact | R: reload | Touch: dual sticks + FIRE"
+	for line in ["Survive the estate. Find a way out.", "", "Find keys, fight zombies, and escape each level.", help]:
+		var l := _lbl(line, 16, GREEN)
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		v.add_child(l)
-	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(10, 10)
-	btn.visible = false
-	title_screen.add_child(btn)
+	storage_notice = _lbl("Browser storage may be blocked; progress may not persist.", 14, YELLOW)
+	storage_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	storage_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	storage_notice.visible = false
+	v.add_child(storage_notice)
+	var start := _button("NEW GAME")
+	start.pressed.connect(func(): new_game_requested.emit())
+	v.add_child(start)
+	resume_button = _button("RESUME")
+	resume_button.disabled = true
+	resume_button.pressed.connect(func(): resume_requested.emit())
+	v.add_child(resume_button)
+	var options := _button("OPTIONS & ACCESSIBILITY")
+	options.pressed.connect(func(): open_settings(true); settings_requested.emit())
+	v.add_child(options)
 	title_screen.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(title_screen)
+
+
+func _button(text: String) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.custom_minimum_size = Vector2(220, 42)
+	b.add_theme_font_override("font", mono)
+	b.add_theme_font_size_override("font_size", 18)
+	b.add_theme_color_override("font_color", GREEN)
+	b.focus_mode = Control.FOCUS_ALL
+	var bs := StyleBoxFlat.new()
+	bs.bg_color = Color(0.0, 0.2, 0.0, 0.7)
+	bs.border_color = GREEN
+	bs.set_border_width_all(1)
+	bs.set_corner_radius_all(6)
+	b.add_theme_stylebox_override("normal", bs)
+	var hover: StyleBoxFlat = bs.duplicate()
+	hover.bg_color = Color(0.0, 0.4, 0.0, 0.9)
+	b.add_theme_stylebox_override("hover", hover)
+	b.add_theme_stylebox_override("pressed", hover)
+	return b
+
+
+func _build_settings() -> void:
+	settings_panel = _panel(Color(0.01, 0.01, 0.01, 0.96))
+	settings_panel.visible = false
+	var layout := VBoxContainer.new()
+	layout.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layout.offset_left = 24
+	layout.offset_top = 18
+	layout.offset_right = -24
+	layout.offset_bottom = -18
+	settings_panel.add_child(layout)
+	var heading := _lbl("OPTIONS & ACCESSIBILITY", 30, YELLOW)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	layout.add_child(heading)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(scroll)
+	var rows := VBoxContainer.new()
+	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(rows)
+	_add_option_row(rows, "Struggle / get-up", "qte_mode", ["Rapid presses", "Hold", "Reduced presses"], ["press", "hold", "assist"])
+	_add_option_row(rows, "Touch layout", "touch_layout", ["Right-handed", "Left-handed"], ["right", "left"])
+	_add_slider_row(rows, "Touch control size", "touch_size", 0.75, 1.35, 0.05)
+	_add_slider_row(rows, "Aim sensitivity", "aim_sensitivity", 0.5, 2.0, 0.1)
+	_add_slider_row(rows, "Text size", "text_scale", 0.8, 1.5, 0.1)
+	var controls := _lbl("Keyboard bindings — select an action, then press a key", 16, YELLOW)
+	rows.add_child(controls)
+	for action in ["move_up", "move_down", "move_left", "move_right", "interact", "reload", "mash"]:
+		var row := HBoxContainer.new()
+		var name := _lbl(action.replace("_", " ").capitalize(), 16, GREEN)
+		name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name)
+		var key_button := _button("Unassigned")
+		key_button.custom_minimum_size = Vector2(180, 36)
+		key_button.pressed.connect(func(): remap_requested.emit(action))
+		_binding_buttons[action] = key_button
+		row.add_child(key_button)
+		rows.add_child(row)
+	remap_status = _lbl("", 15, YELLOW)
+	remap_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rows.add_child(remap_status)
+	var reset := _button("RESTORE DEFAULT KEYS")
+	reset.pressed.connect(func(): reset_bindings_requested.emit())
+	layout.add_child(reset)
+	var back := _button("BACK")
+	back.pressed.connect(close_settings)
+	layout.add_child(back)
+	add_child(settings_panel)
+
+
+func _add_option_row(parent: VBoxContainer, label: String, key: String, names: Array, values: Array) -> void:
+	var row := HBoxContainer.new()
+	var title := _lbl(label, 17, GREEN)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title)
+	var option := OptionButton.new()
+	option.add_theme_font_override("font", mono)
+	for i in names.size():
+		option.add_item(names[i])
+		option.set_item_metadata(i, values[i])
+	option.item_selected.connect(func(index: int): setting_changed.emit(key, option.get_item_metadata(index)))
+	row.add_child(option)
+	_setting_controls[key] = option
+	parent.add_child(row)
+
+
+func _add_slider_row(parent: VBoxContainer, label: String, key: String, min_value: float, max_value: float, step: float) -> void:
+	var row := HBoxContainer.new()
+	var title := _lbl(label, 17, GREEN)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(title)
+	var slider := HSlider.new()
+	slider.min_value = min_value
+	slider.max_value = max_value
+	slider.step = step
+	slider.custom_minimum_size = Vector2(220, 32)
+	slider.value_changed.connect(func(value: float): setting_changed.emit(key, value))
+	row.add_child(slider)
+	_setting_controls[key] = slider
+	parent.add_child(row)
+
+
+func set_resume_available(available: bool) -> void:
+	resume_button.disabled = not available
+
+
+func set_storage_persistent(persistent: bool) -> void:
+	storage_notice.visible = not persistent
+
+
+func open_settings(from_title: bool) -> void:
+	_settings_from_title = from_title
+	title_screen.visible = false
+	settings_panel.visible = true
+
+
+func close_settings() -> void:
+	settings_panel.visible = false
+	title_screen.visible = _settings_from_title
+	settings_closed.emit()
+
+
+func apply_settings(values: Dictionary) -> void:
+	for key in _setting_controls:
+		var control: Control = _setting_controls[key]
+		var value = values.get(key)
+		if control is OptionButton:
+			for i in control.item_count:
+				if control.get_item_metadata(i) == value:
+					control.select(i)
+		elif control is HSlider and value != null:
+			control.value = value
+	set_text_scale(float(values.get("text_scale", 1.0)))
+
+
+func set_text_scale(scale: float) -> void:
+	_text_scale = scale
+	for label in _labels:
+		if is_instance_valid(label):
+			label.add_theme_font_size_override("font_size", roundi(float(label.get_meta("base_font_size")) * scale))
+
+
+func set_action_binding(action: String, key_name: String) -> void:
+	if _binding_buttons.has(action):
+		_binding_buttons[action].text = key_name
+
+
+func set_remap_status(text: String) -> void:
+	remap_status.text = text
 
 
 func _build_cutscene() -> void:
@@ -280,9 +469,10 @@ func set_health(hp: int, max_hp: int) -> void:
 	status_label.add_theme_color_override("font_color", c)
 
 
-func set_info(level_num: int, level_name: String, hp: int, ammo_mag, ammo_res, keys: int, keys_needed: int, weapon_name: String) -> void:
+func set_info(level_num: int, level_name: String, hp: int, ammo_mag, ammo_res, keys: int, keys_needed: int, weapon_name: String, zombies_left := -1) -> void:
 	var ammo_text := "%s/%s" % [str(ammo_mag), str(ammo_res)]
-	info_label.text = "LV: %d [%s]  HP: %d  AMMO: %s  KEYS: %d/%d  GUN: %s" % [level_num, level_name, maxi(0, hp), ammo_text, keys, keys_needed, weapon_name]
+	var goal_text := "ZOMBIES: %d" % zombies_left if zombies_left >= 0 else "KEYS: %d/%d" % [keys, keys_needed]
+	info_label.text = "LV: %d [%s]  HP: %d  AMMO: %s  %s  GUN: %s" % [level_num, level_name, maxi(0, hp), ammo_text, goal_text, weapon_name]
 
 
 func set_message(text: String) -> void:
