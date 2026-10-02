@@ -203,9 +203,13 @@ func _layout_controls() -> void:
 	var button_size := Vector2(BTN, BTN) * s
 	var gap := GAP * s
 	var width := 4 * button_size.x + 3 * gap
-	_actions.size = Vector2(width, button_size.y * 2 + gap)
-	_actions.position = Vector2(12 if left else size.x - width - 12,
-		132 if left else 64)
+	# Action cluster sits directly above the aim stick so the same thumb
+	# can reach FIRE/E/R without leaving the pad. Weapon row stays on top.
+	var actions_h := button_size.y * 2 + gap
+	_actions.size = Vector2(width, actions_h)
+	_actions.position = Vector2(
+		12 if left else size.x - width - 12,
+		size.y - pad_size.y - actions_h - 20)
 	for i in _weapon_buttons.size():
 		_weapon_buttons[i].position = Vector2(i * (button_size.x + gap), 0)
 		_weapon_buttons[i].size = button_size
