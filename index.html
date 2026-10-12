@@ -13,7 +13,7 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.instagram.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.gstatic.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube.com https://www.instagram.com https://embed.music.apple.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://www.instagram.com https://djweirdnasty-newsletter.onrender.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.firebaseio.com https://firestore.googleapis.com https://rork-dj-booking-payment-app.onrender.com https://api.mapbox.com https://events.mapbox.com https://nominatim.openstreetmap.org https://router.project-osrm.org; worker-src 'self' blob:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.instagram.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.gstatic.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https://pub-bee05643124541c98db36d257c5b9944.r2.dev; frame-src https://www.youtube.com https://www.instagram.com https://embed.music.apple.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com; connect-src 'self' https://www.instagram.com https://djweirdnasty-newsletter.onrender.com https://www.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.firebaseio.com https://firestore.googleapis.com https://rork-dj-booking-payment-app.onrender.com https://api.mapbox.com https://events.mapbox.com https://nominatim.openstreetmap.org https://router.project-osrm.org; worker-src 'self' blob:; upgrade-insecure-requests">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" type="image/x-icon" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -152,6 +152,31 @@
     .recap-thumbnails img.active {
       opacity: 1;
       border: 2px solid #ff4d8f;
+    }
+    .recap-video-slideshow {
+      position: relative;
+      max-width: 760px;
+      margin: 1rem auto;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+    }
+    .recap-video-track {
+      display: flex;
+      transition: transform 0.4s ease;
+      will-change: transform;
+    }
+    .recap-video-slide {
+      flex: 0 0 100%;
+      width: 100%;
+      box-sizing: border-box;
+      background: #000;
+    }
+    .recap-video-slide video {
+      display: block;
+      width: 100%;
+      max-height: 70vh;
+      background: #000;
     }
     .recap-lightbox {
       display: none;
@@ -342,32 +367,54 @@
     <section id="latest-murrdah" class="info">
       <h2>Latest Event Recap</h2>
       <p>Photos and highlights from the most recent DJWEIRDNASTY event.</p>
-      <div class="recap-carousel" id="jersey-jam-carousel">
-        <button class="recap-carousel-btn prev" onclick="recapCarousel('jersey-jam-carousel',-1)" aria-label="Previous">&lsaquo;</button>
+      <div class="recap-carousel" id="impact-tour-carousel">
+        <button class="recap-carousel-btn prev" onclick="recapCarousel('impact-tour-carousel',-1)" aria-label="Previous">&lsaquo;</button>
         <div class="recap-carousel-track">
-          <img src="thumbs/jersey-jam-01.webp" alt="Jersey Jam Philly Photo 1" loading="lazy">
-          <img src="thumbs/jersey-jam-02.webp" alt="Jersey Jam Philly Photo 2" loading="lazy">
-          <img src="thumbs/jersey-jam-03.webp" alt="Jersey Jam Philly Photo 3" loading="lazy">
-          <img src="thumbs/jersey-jam-04.webp" alt="Jersey Jam Philly Photo 4" loading="lazy">
-          <img src="thumbs/jersey-jam-05.webp" alt="Jersey Jam Philly Photo 5" loading="lazy">
-          <img src="thumbs/jersey-jam-06.webp" alt="Jersey Jam Philly Photo 6" loading="lazy">
-          <img src="thumbs/jersey-jam-07.webp" alt="Jersey Jam Philly Photo 7" loading="lazy">
-          <img src="thumbs/jersey-jam-08.webp" alt="Jersey Jam Philly Photo 8" loading="lazy">
-          <img src="thumbs/jersey-jam-09.webp" alt="Jersey Jam Philly Photo 9" loading="lazy">
-          <img src="thumbs/jersey-jam-10.webp" alt="Jersey Jam Philly Photo 10" loading="lazy">
-          <img src="thumbs/jersey-jam-11.webp" alt="Jersey Jam Philly Photo 11" loading="lazy">
-          <img src="thumbs/jersey-jam-12.webp" alt="Jersey Jam Philly Photo 12" loading="lazy">
+          <img src="thumbs/impact-tour-01.webp" alt="Impact Tour Delaware Photo 1" loading="lazy">
+          <img src="thumbs/impact-tour-02.webp" alt="Impact Tour Delaware Photo 2" loading="lazy">
+          <img src="thumbs/impact-tour-03.webp" alt="Impact Tour Delaware Photo 3" loading="lazy">
+          <img src="thumbs/impact-tour-04.webp" alt="Impact Tour Delaware Photo 4" loading="lazy">
+          <img src="thumbs/impact-tour-05.webp" alt="Impact Tour Delaware Photo 5" loading="lazy">
+          <img src="thumbs/impact-tour-06.webp" alt="Impact Tour Delaware Photo 6" loading="lazy">
+          <img src="thumbs/impact-tour-07.webp" alt="Impact Tour Delaware Photo 7" loading="lazy">
+          <img src="thumbs/impact-tour-08.webp" alt="Impact Tour Delaware Photo 8" loading="lazy">
+          <img src="thumbs/impact-tour-09.webp" alt="Impact Tour Delaware Photo 9" loading="lazy">
+          <img src="thumbs/impact-tour-10.webp" alt="Impact Tour Delaware Photo 10" loading="lazy">
+          <img src="thumbs/impact-tour-11.webp" alt="Impact Tour Delaware Photo 11" loading="lazy">
+          <img src="thumbs/impact-tour-12.webp" alt="Impact Tour Delaware Photo 12" loading="lazy">
         </div>
-        <button class="recap-carousel-btn next" onclick="recapCarousel('jersey-jam-carousel',1)" aria-label="Next">&rsaquo;</button>
+        <button class="recap-carousel-btn next" onclick="recapCarousel('impact-tour-carousel',1)" aria-label="Next">&rsaquo;</button>
       </div>
-      <p class="recap-carousel-counter" id="jersey-jam-carousel-counter"></p>
+      <p class="recap-carousel-counter" id="impact-tour-carousel-counter"></p>
+      <h3 style="margin-top: 1.5rem;">Video Recap</h3>
+      <div class="recap-video-slideshow" id="impact-tour-videos">
+        <button class="recap-carousel-btn prev" onclick="recapVideoSlide('impact-tour-videos',-1)" aria-label="Previous video">&lsaquo;</button>
+        <div class="recap-video-track">
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_020909097.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-01.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_021101178.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-02.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_021359142.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-03.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_021635681.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-04.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_021744257.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-05.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_023128162.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-06.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_031807207.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-07.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_035117206.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-08.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_035153406.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-09.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_035317741.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-10.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_040506746.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-11.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_040727733.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-12.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_040922018.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-13.mp4"></video></div>
+          <div class="recap-video-slide"><video controls playsinline preload="none" poster="THE IMPACT TOUR DELAWARE/Videos/posters/PXL_20261012_041016251.jpg" src="https://pub-bee05643124541c98db36d257c5b9944.r2.dev/impact-tour-delaware-14.mp4"></video></div>
+        </div>
+        <button class="recap-carousel-btn next" onclick="recapVideoSlide('impact-tour-videos',1)" aria-label="Next video">&rsaquo;</button>
+      </div>
+      <p class="recap-carousel-counter" id="impact-tour-videos-counter"></p>
       <div class="events-grid" id="latest-murrdah-grid">
         <article class="event-card">
-          <h3>Jersey Jam Philly — BBW Bunnies &amp; Dons Tour #13</h3>
-          <img loading="lazy" src="buns-dons-bbw/Main-Flyer.jpg" alt="Jersey Jam Philly — BBW Bunnies &amp; Dons Tour #13 Flyer" class="event-flyer">
-          <p><em>Saturday, September 19, 2026 &mdash; 313 S 60th St, Philadelphia, PA</em></p>
-          <p>BBW Bunnies &amp; Dons brought the Jersey Jam to West Philly and everybody pulled up repping their teams, with DJWEIRDNASTY on the decks. 37 photos from the event.</p>
-          <a href="recap-bbw-bunnies-dons-jersey-jam.html" class="playlist-link">View More &nearr;</a>
+          <h3>The Impact Tour 2026 — New Castle, Delaware</h3>
+          <img loading="lazy" src="THE IMPACT TOUR DELAWARE/d4mSloan.png" alt="The Impact Tour 2026 — D4M $loan Flyer" class="event-flyer">
+          <p><em>Sunday, October 11, 2026 &mdash; Emmaculate, 3800 N Dupont, New Castle, DE</em></p>
+          <p>Tourgodz + Killa Management kicked off The Impact Tour in Delaware. Headlined by D4M $loan with a special appearance by Trap Beckham. Music Over Violence. 15 photos and 14 videos from the show.</p>
+          <a href="recap-impact-tour-delaware.html" class="playlist-link">View More &nearr;</a>
         </article>
       </div>
     </section>
@@ -858,6 +905,32 @@
       document.getElementById('recap-lightbox').classList.remove('active');
     }
 
+    function recapVideoUpdate(id) {
+      var c = document.getElementById(id);
+      var slides = c.querySelectorAll('.recap-video-slide');
+      var total = slides.length;
+      var current = parseInt(c.dataset.current || '0', 10);
+      if (current < 0) current = 0;
+      if (current > total - 1) current = total - 1;
+      c.dataset.current = current;
+      var track = c.querySelector('.recap-video-track');
+      track.style.transform = 'translateX(-' + (current * 100) + '%)';
+      slides.forEach(function(slide, i) {
+        var v = slide.querySelector('video');
+        if (v && i !== current && !v.paused) v.pause();
+      });
+      var counter = document.getElementById(id + '-counter');
+      if (counter) counter.textContent = (current + 1) + ' / ' + total;
+      return current;
+    }
+
+    function recapVideoSlide(id, dir) {
+      var c = document.getElementById(id);
+      var current = parseInt(c.dataset.current || '0', 10);
+      c.dataset.current = current + dir;
+      recapVideoUpdate(id);
+    }
+
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') recapCloseLightbox();
       var c = document.querySelector('.recap-carousel');
@@ -905,6 +978,12 @@
       c.addEventListener('touchend', function() { setTimeout(function() { recapStartAuto(id); }, 3000); });
       recapUpdate(id);
       recapStartAuto(id, 7000);
+    })();
+
+    (function() {
+      var vc = document.getElementById('impact-tour-videos');
+      if (!vc) return;
+      recapVideoUpdate('impact-tour-videos');
     })();
   </script>
 
